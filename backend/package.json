@@ -1,0 +1,45 @@
+{
+  "name": "k8s-webui-backend",
+  "version": "1.0.0",
+  "description": "Kubernetes Infrastructure WebUI Backend API",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir ./dist",
+    "start": "bun dist/index.js",
+    "test": "bun test",
+    "lint": "eslint src/**/*.ts",
+    "type-check": "tsc --noEmit",
+    "generate-key": "bun run scripts/generate-key.ts"
+  },
+  "dependencies": {
+    "@kubernetes/client-node": "^0.21.0",
+    "hono": "^3.12.8",
+    "ioredis": "^5.3.2",
+    "postgres": "^3.4.3",
+    "paseto": "^3.1.4",
+    "bcrypt": "^5.1.1",
+    "zod": "^3.22.4",
+    "ws": "^8.15.1",
+    "@hono/node-ws": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/bcrypt": "^5.0.2",
+    "@types/ws": "^8.5.10",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "kubernetes",
+    "infrastructure",
+    "webui",
+    "api",
+    "bun",
+    "hono"
+  ],
+  "author": "arc",
+  "license": "MIT"
+}
