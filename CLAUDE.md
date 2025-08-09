@@ -170,6 +170,13 @@ docker-compose up
 
 ### Git Commit Guidelines
 
+- NEVER add co-authors, "Generated with" tags, or metadata
+- Focus on what changed and why, not how or who
+- Use present tense ("add feature" not "added feature")
+- Use lowercase for description
+- No period at the end of description
+- Keep description under 50 characters
+
 Follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
 
 **Format**: `type(scope): description`
@@ -189,11 +196,3 @@ Follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0
 - `fix(auth): resolve PASETO token expiration issue`
 - `docs(readme): update installation instructions`
 - `refactor(api): extract common response handlers`
-
-**Rules**:
-- Use present tense ("add feature" not "added feature")
-- Use lowercase for description
-- No period at the end of description
-- Keep description under 50 characters
-- NEVER add co-authors, "Generated with" tags, or metadata
-- Focus on what changed and why, not how or who
