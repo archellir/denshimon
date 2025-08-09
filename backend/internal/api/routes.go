@@ -31,21 +31,16 @@ func RegisterRoutes(
 		}
 	}
 
+	// Initialize auth handlers
+	authHandlers := NewAuthHandlers(authService, db, redis)
+
 	// Auth endpoints (no auth required)
-	mux.HandleFunc("POST /api/auth/login", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement login handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("POST /api/auth/logout", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement logout handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("POST /api/auth/refresh", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement token refresh handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
+	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
+	mux.HandleFunc("POST /api/auth/logout", corsMiddleware(authHandlers.Logout))
+	
+	// Protected auth endpoints
+	mux.HandleFunc("POST /api/auth/refresh", corsMiddleware(authService.AuthMiddleware(authHandlers.Refresh)))
+	mux.HandleFunc("GET /api/auth/me", corsMiddleware(authService.AuthMiddleware(authHandlers.Me)))
 
 	// Protected routes (require auth)
 	
