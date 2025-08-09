@@ -14,6 +14,7 @@ require (
 require (
 	aidanwoods.dev/go-result v0.3.1 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
+	k8s.io/metrics v0.33.3 // indirect
 )
 
 require (
