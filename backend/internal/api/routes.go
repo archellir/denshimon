@@ -5,6 +5,7 @@ import (
 
 	"github.com/archellir/k8s-webui/internal/auth"
 	"github.com/archellir/k8s-webui/internal/database"
+	"github.com/archellir/k8s-webui/internal/gitops"
 	"github.com/archellir/k8s-webui/internal/k8s"
 )
 
@@ -15,6 +16,9 @@ func RegisterRoutes(
 	db *database.PostgresDB,
 	redis *database.RedisClient,
 ) {
+	// Initialize services
+	gitopsService := gitops.NewService(db.DB)
+	server := NewServer(gitopsService)
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -31,8 +35,9 @@ func RegisterRoutes(
 		}
 	}
 
-	// Initialize auth handlers
+	// Initialize handlers
 	authHandlers := NewAuthHandlers(authService, db, redis)
+	k8sHandlers := NewKubernetesHandlers(k8sClient)
 
 	// Auth endpoints (no auth required)
 	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
@@ -44,49 +49,22 @@ func RegisterRoutes(
 
 	// Protected routes (require auth)
 	
-	// Kubernetes endpoints
-	mux.HandleFunc("GET /api/k8s/pods", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement list pods handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
+	// Kubernetes endpoints (require authentication)
+	mux.HandleFunc("GET /api/k8s/pods", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListPods)))
+	mux.HandleFunc("GET /api/k8s/pods/{name}", corsMiddleware(authService.AuthMiddleware(k8sHandlers.GetPod)))
+	mux.HandleFunc("POST /api/k8s/pods/{name}/restart", corsMiddleware(authService.AuthMiddleware(k8sHandlers.RestartPod)))
+	mux.HandleFunc("DELETE /api/k8s/pods/{name}", corsMiddleware(authService.AuthMiddleware(k8sHandlers.DeletePod)))
+	mux.HandleFunc("GET /api/k8s/pods/{name}/logs", corsMiddleware(authService.AuthMiddleware(k8sHandlers.GetPodLogs)))
+	
+	mux.HandleFunc("GET /api/k8s/deployments", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListDeployments)))
+	mux.HandleFunc("PATCH /api/k8s/deployments/{name}/scale", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ScaleDeployment)))
+	
+	mux.HandleFunc("GET /api/k8s/nodes", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListNodes)))
+	mux.HandleFunc("GET /api/k8s/health", corsMiddleware(k8sHandlers.HealthCheck)) // No auth required for health check
 
-	mux.HandleFunc("GET /api/k8s/pods/{name}", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement get pod handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("POST /api/k8s/pods/{name}/restart", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement restart pod handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("DELETE /api/k8s/pods/{name}", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement delete pod handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/k8s/pods/{name}/logs", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement pod logs handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
+	// TODO: Implement remaining endpoints
 	mux.HandleFunc("POST /api/k8s/pods/{name}/exec", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement pod exec handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/k8s/deployments", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement list deployments handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("PATCH /api/k8s/deployments/{name}/scale", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement scale deployment handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/k8s/nodes", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement list nodes handler
+		// TODO: Implement pod exec handler (WebSocket)
 		w.WriteHeader(http.StatusNotImplemented)
 	}))
 
@@ -95,31 +73,20 @@ func RegisterRoutes(
 		w.WriteHeader(http.StatusNotImplemented)
 	}))
 
-	// GitOps endpoints
-	mux.HandleFunc("GET /api/gitops/repos", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement list repos handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("POST /api/gitops/repos", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement add repo handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("DELETE /api/gitops/repos/{id}", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement delete repo handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/gitops/apps", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement list apps handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("POST /api/gitops/apps/{id}/sync", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement sync app handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
+	// GitOps endpoints (require authentication)
+	// Repository endpoints
+	mux.HandleFunc("GET /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(server.handleListRepositories)))
+	mux.HandleFunc("POST /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(server.handleCreateRepository)))
+	mux.HandleFunc("GET /api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(server.handleGetRepository)))
+	mux.HandleFunc("POST /api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(server.handleSyncRepository)))
+	mux.HandleFunc("DELETE /api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(server.handleDeleteRepository)))
+	
+	// Application endpoints
+	mux.HandleFunc("GET /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(server.handleListApplications)))
+	mux.HandleFunc("POST /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(server.handleCreateApplication)))
+	mux.HandleFunc("GET /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleGetApplication)))
+	mux.HandleFunc("POST /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleSyncApplication)))
+	mux.HandleFunc("DELETE /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleDeleteApplication)))
 
 	// Monitoring endpoints
 	mux.HandleFunc("GET /api/metrics/cluster", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
