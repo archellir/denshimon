@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -76,4 +77,28 @@ func (c *Client) Config() *rest.Config {
 func (c *Client) HealthCheck(ctx context.Context) error {
 	_, err := c.clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{Limit: 1})
 	return err
+}
+
+// Additional methods needed by metrics service
+func (c *Client) ListNodes(ctx context.Context) (*corev1.NodeList, error) {
+	return c.clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+}
+
+func (c *Client) GetNode(ctx context.Context, name string) (*corev1.Node, error) {
+	return c.clientset.CoreV1().Nodes().Get(ctx, name, metav1.GetOptions{})
+}
+
+func (c *Client) ListPods(ctx context.Context, namespace string) (*corev1.PodList, error) {
+	if namespace == "" {
+		return c.clientset.CoreV1().Pods(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	}
+	return c.clientset.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
+}
+
+func (c *Client) GetPod(ctx context.Context, namespace, name string) (*corev1.Pod, error) {
+	return c.clientset.CoreV1().Pods(namespace).Get(ctx, name, metav1.GetOptions{})
+}
+
+func (c *Client) ListNamespaces(ctx context.Context) (*corev1.NamespaceList, error) {
+	return c.clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 }
