@@ -7,6 +7,7 @@ import (
 	"github.com/archellir/k8s-webui/internal/database"
 	"github.com/archellir/k8s-webui/internal/gitops"
 	"github.com/archellir/k8s-webui/internal/k8s"
+	"github.com/archellir/k8s-webui/internal/metrics"
 )
 
 func RegisterRoutes(
@@ -18,6 +19,7 @@ func RegisterRoutes(
 ) {
 	// Initialize services
 	gitopsService := gitops.NewService(db.DB)
+	metricsService := metrics.NewService(k8sClient)
 	server := NewServer(gitopsService)
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
@@ -38,6 +40,7 @@ func RegisterRoutes(
 	// Initialize handlers
 	authHandlers := NewAuthHandlers(authService, db, redis)
 	k8sHandlers := NewKubernetesHandlers(k8sClient)
+	metricsHandlers := NewMetricsHandlers(metricsService)
 
 	// Auth endpoints (no auth required)
 	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
@@ -88,21 +91,14 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleSyncApplication)))
 	mux.HandleFunc("DELETE /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleDeleteApplication)))
 
-	// Monitoring endpoints
-	mux.HandleFunc("GET /api/metrics/cluster", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement cluster metrics handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/metrics/nodes", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement node metrics handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement pod metrics handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
+	// Metrics endpoints (require authentication)
+	mux.HandleFunc("GET /api/metrics/cluster", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetClusterMetrics)))
+	mux.HandleFunc("GET /api/metrics/nodes", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetNodesMetrics)))
+	mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetPodsMetrics)))
+	mux.HandleFunc("GET /api/metrics/history", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetMetricsHistory)))
+	mux.HandleFunc("GET /api/metrics/namespaces", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetNamespacesMetrics)))
+	mux.HandleFunc("GET /api/metrics/resources", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetResourceMetrics)))
+	mux.HandleFunc("GET /api/metrics/health", corsMiddleware(metricsHandlers.GetHealthMetrics)) // No auth required for health check
 
 	// Logs endpoints
 	mux.HandleFunc("GET /api/logs/search", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
