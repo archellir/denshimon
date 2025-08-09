@@ -41,14 +41,6 @@ const GitOps = () => {
     };
   }, [fetchRepositories, fetchApplications, clearGitOps]);
 
-  const handleSort = (field) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('asc');
-    }
-  };
 
   const getTabStats = () => {
     const repoStats = {

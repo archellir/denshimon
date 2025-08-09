@@ -72,8 +72,8 @@ const CreateRepositoryModal = ({ isOpen, onClose }) => {
   };
 
   const isValidGitUrl = (url) => {
-    const gitUrlRegex = /^(https?:\/\/|git@)[\w\.-]+[\/:][\w\.-]+\/[\w\.-]+\.git$/;
-    const httpsRepoRegex = /^https:\/\/[\w\.-]+\/[\w\.-]+\/[\w\.-]+\/?$/;
+    const gitUrlRegex = /^(https?:\/\/|git@)[\w.-]+[/:][\w.-]+\/[\w.-]+\.git$/;
+    const httpsRepoRegex = /^https:\/\/[\w.-]+\/[\w.-]+\/[\w.-]+\/?$/;
     return gitUrlRegex.test(url) || httpsRepoRegex.test(url);
   };
 
