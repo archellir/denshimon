@@ -15,11 +15,11 @@ A containerized Kubernetes GitOps and monitoring platform with a black & white c
 - **RBAC**: Custom middleware with PASETO claims
 
 ### Frontend (React + TypeScript) - BLACK & WHITE CYBERPUNK THEME
-- **Runtime**: Bun v1.2.19
-- **Framework**: React 18 + TypeScript + Vite
+- **Package Manager**: pnpm
+- **Framework**: React 19 + TypeScript + Vite 7
 - **Routing**: React Router 7.8 with protected routes
 - **UI Components**: shadcn/ui (cyberpunk customized)
-- **Styling**: Tailwind CSS monochrome
+- **Styling**: Tailwind CSS 4.x with Vite plugin
 - **Charts**: Recharts 3.1.2 (black & white)
 - **State Management**: Zustand 5.0.7
 - **Auth State**: PASETO token storage with Zustand
@@ -304,8 +304,8 @@ go run cmd/server/main.go
 
 # Frontend development (separate terminal)
 cd frontend
-bun install
-bun run dev
+pnpm install
+pnpm run dev
 ```
 
 ### Building for Production

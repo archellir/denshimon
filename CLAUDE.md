@@ -4,7 +4,7 @@
 
 ### Always Use Standard CLI Tools for Initialization
 - **Go Backend**: Use `go mod init` to initialize Go modules
-- **React Frontend**: Use `bun init --react` to create React app
+- **React Frontend**: Use `npm create vite@latest my-app -- --template react` then `pnpm install`
 - **Never manually create package.json or go.mod files**
 - **Always use official scaffolding tools**
 
@@ -18,8 +18,8 @@ This is a Kubernetes GitOps and monitoring platform with:
 
 ### Technology Stack
 - **Backend**: Go 1.24.6 with standard library HTTP routing
-- **Frontend**: React 18 + TypeScript + Vite (using Bun)
-- **UI**: Tailwind CSS + shadcn/ui with cyberpunk theme
+- **Frontend**: React 18 + TypeScript + Vite + pnpm
+- **UI**: Tailwind CSS 4.x with Vite plugin + shadcn/ui with cyberpunk theme
 - **Charts**: Recharts 3.1.2
 - **State**: Zustand 5.0.7
 - **Validation**: Zod 4.x
@@ -35,19 +35,20 @@ go get k8s.io/apimachinery@latest
 go run cmd/server/main.go
 
 # Frontend
+npm create vite@latest frontend -- --template react
 cd frontend
-bun init --react
-bun add react-router@latest zustand@latest recharts@latest zod@latest
-bun add -d tailwindcss@latest autoprefixer@latest postcss@latest
-bun run dev
+pnpm install
+pnpm install tailwindcss @tailwindcss/vite
+pnpm add react-router@latest zustand@latest recharts@latest zod@latest
+pnpm run dev
 
 # Testing
 go test ./...
-bun test
+pnpm test
 
 # Linting
 go fmt ./...
-bun run lint
+pnpm run lint
 ```
 
 ### UI Design Requirements
@@ -147,10 +148,11 @@ go mod tidy
 go run cmd/server/main.go
 
 # Frontend (new terminal)
+npm create vite@latest frontend -- --template react
 cd frontend
-bun init --react
-bun install
-bun run dev
+pnpm install
+pnpm install tailwindcss @tailwindcss/vite
+pnpm run dev
 
 # Docker
 docker-compose up
