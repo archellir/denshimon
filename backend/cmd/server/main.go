@@ -41,11 +41,15 @@ func main() {
 	}
 	defer redis.Close()
 
-	// Initialize Kubernetes client
+	// Initialize Kubernetes client (optional in development)
 	k8sClient, err := k8s.NewClient(cfg.KubeConfig)
 	if err != nil {
-		slog.Error("Failed to initialize Kubernetes client", "error", err)
-		os.Exit(1)
+		if cfg.Environment == "production" {
+			slog.Error("Failed to initialize Kubernetes client", "error", err)
+			os.Exit(1)
+		}
+		slog.Warn("Kubernetes client not available - some features will be disabled", "error", err)
+		k8sClient = nil
 	}
 
 	// Initialize PASETO auth
