@@ -1,0 +1,35 @@
+FROM golang:1.24-alpine AS development
+
+# Install necessary packages
+RUN apk add --no-cache git curl
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 appgroup && \
+    adduser -u 1001 -G appgroup -s /bin/sh -D appuser
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Install air for hot reloading
+RUN go install github.com/air-verse/air@latest
+
+# Change ownership to app user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8080
+
+# Command to run with hot reloading
+CMD ["air", "-c", ".air.toml"]
