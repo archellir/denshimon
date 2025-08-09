@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick } from 'lucide-react';
+import type { FC } from 'react';
+import { Activity, Server, Database, Cpu, MemoryStick } from 'lucide-react';
 import useMetricsStore from '../stores/metricsStore';
 import ClusterOverview from './metrics/ClusterOverview';
 import ResourceCharts from './metrics/ResourceCharts';
-import NodeList from './metrics/NodeList';
-import PodMetrics from './metrics/PodMetrics';
-import NamespaceMetrics from './metrics/NamespaceMetrics';
 
-const Dashboard = () => {
+const Dashboard: FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const {
     clusterMetrics,
@@ -22,7 +20,7 @@ const Dashboard = () => {
 
   // Auto-refresh effect
   useEffect(() => {
-    let intervalId;
+    let intervalId: NodeJS.Timeout;
 
     const refresh = () => {
       fetchAllMetrics();
@@ -45,9 +43,7 @@ const Dashboard = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'nodes', label: 'Nodes', icon: Server },
-    { id: 'pods', label: 'Pods', icon: Database },
-    { id: 'namespaces', label: 'Namespaces', icon: HardDrive },
+    { id: 'resources', label: 'Resources', icon: Server },
   ];
 
   const getQuickStats = () => {
@@ -81,7 +77,7 @@ const Dashboard = () => {
     ];
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
         return 'text-green-400 border-green-400';
@@ -177,9 +173,7 @@ const Dashboard = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto p-6">
         {activeTab === 'overview' && <ClusterOverview />}
-        {activeTab === 'nodes' && <NodeList />}
-        {activeTab === 'pods' && <PodMetrics />}
-        {activeTab === 'namespaces' && <NamespaceMetrics />}
+        {activeTab === 'resources' && <ResourceCharts />}
       </div>
     </div>
   );

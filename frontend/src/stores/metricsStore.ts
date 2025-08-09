@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory } from '../types/metrics';
 
-const useMetricsStore = create(
+const useMetricsStore = create<MetricsStore>()(
   subscribeWithSelector((set, get) => ({
     // Cluster metrics
     clusterMetrics: null,
@@ -20,18 +21,18 @@ const useMetricsStore = create(
     autoRefresh: true,
     
     // Actions
-    setClusterMetrics: (metrics) => set({ clusterMetrics: metrics }),
-    setNodeMetrics: (metrics) => set({ nodeMetrics: metrics }),
-    setPodMetrics: (metrics) => set({ podMetrics: metrics }),
-    setNamespaceMetrics: (metrics) => set({ namespaceMetrics: metrics }),
-    setMetricsHistory: (history) => set({ metricsHistory: history }),
+    setClusterMetrics: (metrics: ClusterMetrics) => set({ clusterMetrics: metrics }),
+    setNodeMetrics: (metrics: NodeMetrics[]) => set({ nodeMetrics: metrics }),
+    setPodMetrics: (metrics: PodMetrics[]) => set({ podMetrics: metrics }),
+    setNamespaceMetrics: (metrics: NamespaceMetrics[]) => set({ namespaceMetrics: metrics }),
+    setMetricsHistory: (history: MetricsHistory) => set({ metricsHistory: history }),
     
-    setLoading: (isLoading) => set({ isLoading }),
-    setLoadingHistory: (isLoadingHistory) => set({ isLoadingHistory }),
-    setError: (error) => set({ error }),
+    setLoading: (isLoading: boolean) => set({ isLoading }),
+    setLoadingHistory: (isLoadingHistory: boolean) => set({ isLoadingHistory }),
+    setError: (error: string | null) => set({ error }),
     
-    setRefreshInterval: (interval) => set({ refreshInterval: interval }),
-    setAutoRefresh: (autoRefresh) => set({ autoRefresh }),
+    setRefreshInterval: (interval: number) => set({ refreshInterval: interval }),
+    setAutoRefresh: (autoRefresh: boolean) => set({ autoRefresh }),
     
     // Fetch cluster metrics
     fetchClusterMetrics: async () => {
@@ -51,21 +52,21 @@ const useMetricsStore = create(
           throw new Error(`Failed to fetch cluster metrics: ${response.statusText}`);
         }
         
-        const metrics = await response.json();
+        const metrics: ClusterMetrics = await response.json();
         set({ 
           clusterMetrics: metrics,
           isLoading: false 
         });
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isLoading: false 
         });
       }
     },
     
     // Fetch node metrics
-    fetchNodeMetrics: async (nodeName = '') => {
+    fetchNodeMetrics: async (nodeName: string = '') => {
       try {
         const url = nodeName 
           ? `/api/metrics/nodes?node=${nodeName}`
@@ -95,12 +96,12 @@ const useMetricsStore = create(
           set({ nodeMetrics: data.nodes || [] });
         }
       } catch (error) {
-        set({ error: error.message });
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
       }
     },
     
     // Fetch pod metrics
-    fetchPodMetrics: async (namespace = '', podName = '') => {
+    fetchPodMetrics: async (namespace: string = '', podName: string = '') => {
       try {
         let url = '/api/metrics/pods';
         const params = new URLSearchParams();
@@ -132,7 +133,7 @@ const useMetricsStore = create(
           set({ podMetrics: data.pods || [] });
         }
       } catch (error) {
-        set({ error: error.message });
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
       }
     },
     
@@ -152,12 +153,12 @@ const useMetricsStore = create(
         const data = await response.json();
         set({ namespaceMetrics: data.namespaces || [] });
       } catch (error) {
-        set({ error: error.message });
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
       }
     },
     
     // Fetch metrics history for charts
-    fetchMetricsHistory: async (duration = '1h') => {
+    fetchMetricsHistory: async (duration: string = '1h') => {
       const { isLoadingHistory } = get();
       if (isLoadingHistory) return;
       
@@ -181,7 +182,7 @@ const useMetricsStore = create(
         });
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isLoadingHistory: false 
         });
       }

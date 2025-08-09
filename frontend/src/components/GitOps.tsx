@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { FC } from 'react';
 import { GitBranch, Plus, Search, Filter } from 'lucide-react';
 import useGitOpsStore from '../stores/gitopsStore';
 import RepositoryList from './gitops/RepositoryList';
@@ -7,12 +8,13 @@ import CreateRepositoryModal from './gitops/CreateRepositoryModal';
 import CreateApplicationModal from './gitops/CreateApplicationModal';
 import RepositoryDetails from './gitops/RepositoryDetails';
 import ApplicationDetails from './gitops/ApplicationDetails';
+import type { DetailsState } from '../types/components';
 
-const GitOps = () => {
-  const [activeTab, setActiveTab] = useState('repositories');
-  const [showCreateRepo, setShowCreateRepo] = useState(false);
-  const [showCreateApp, setShowCreateApp] = useState(false);
-  const [showDetails, setShowDetails] = useState(null);
+const GitOps: FC = () => {
+  const [activeTab, setActiveTab] = useState<'repositories' | 'applications'>('repositories');
+  const [showCreateRepo, setShowCreateRepo] = useState<boolean>(false);
+  const [showCreateApp, setShowCreateApp] = useState<boolean>(false);
+  const [showDetails, setShowDetails] = useState<DetailsState | null>(null);
   
   const {
     repositories,

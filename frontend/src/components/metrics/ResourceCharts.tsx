@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import type { FC } from 'react';
 import {
   LineChart,
   Line,
@@ -13,7 +14,7 @@ import {
 import { format } from 'date-fns';
 import useMetricsStore from '../../stores/metricsStore';
 
-const ResourceCharts = () => {
+const ResourceCharts: FC = () => {
   const { clusterMetrics, metricsHistory, nodeMetrics } = useMetricsStore();
 
   // Historical data for line charts

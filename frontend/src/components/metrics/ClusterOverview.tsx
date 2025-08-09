@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import type { FC } from 'react';
 import {
   AreaChart,
   Area,
@@ -16,12 +17,12 @@ import { format } from 'date-fns';
 import useMetricsStore from '../../stores/metricsStore';
 import ResourceCharts from './ResourceCharts';
 
-const ClusterOverview = () => {
-  const [timeRange, setTimeRange] = useState('1h');
+const ClusterOverview: FC = () => {
+  const [timeRange, setTimeRange] = useState<string>('1h');
   const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory } = useMetricsStore();
 
   // Handle time range change
-  const handleTimeRangeChange = (newRange) => {
+  const handleTimeRangeChange = (newRange: string) => {
     setTimeRange(newRange);
     fetchMetricsHistory(newRange);
   };

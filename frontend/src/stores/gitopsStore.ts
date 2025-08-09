@@ -1,13 +1,12 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '../types/gitops';
 
-const useGitOpsStore = create(
+const useGitOpsStore = create<GitOpsStore>()(
   subscribeWithSelector((set, get) => ({
     // Repository data
     repositories: [],
     applications: [],
-    selectedRepository: null,
-    selectedApplication: null,
     
     // Loading states
     isLoading: false,
@@ -22,20 +21,18 @@ const useGitOpsStore = create(
     sortOrder: 'asc',
     
     // Actions
-    setRepositories: (repositories) => set({ repositories }),
-    setApplications: (applications) => set({ applications }),
-    setSelectedRepository: (repository) => set({ selectedRepository: repository }),
-    setSelectedApplication: (application) => set({ selectedApplication: application }),
+    setRepositories: (repositories: Repository[]) => set({ repositories }),
+    setApplications: (applications: Application[]) => set({ applications }),
     
-    setLoading: (isLoading) => set({ isLoading }),
-    setCreating: (isCreating) => set({ isCreating }),
-    setSyncing: (isSyncing) => set({ isSyncing }),
-    setError: (error) => set({ error }),
+    setLoading: (isLoading: boolean) => set({ isLoading }),
+    setCreating: (isCreating: boolean) => set({ isCreating }),
+    setSyncing: (isSyncing: boolean) => set({ isSyncing }),
+    setError: (error: string | null) => set({ error }),
     
-    setRepositoryFilter: (filter) => set({ repositoryFilter: filter }),
-    setApplicationFilter: (filter) => set({ applicationFilter: filter }),
-    setSortBy: (sortBy) => set({ sortBy }),
-    setSortOrder: (sortOrder) => set({ sortOrder }),
+    setRepositoryFilter: (filter: string) => set({ repositoryFilter: filter }),
+    setApplicationFilter: (filter: string) => set({ applicationFilter: filter }),
+    setSortBy: (sortBy: string) => set({ sortBy }),
+    setSortOrder: (sortOrder: 'asc' | 'desc') => set({ sortOrder }),
     
     // Fetch repositories
     fetchRepositories: async () => {
@@ -59,14 +56,14 @@ const useGitOpsStore = create(
         });
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isLoading: false 
         });
       }
     },
     
     // Create repository
-    createRepository: async (repositoryData) => {
+    createRepository: async (repositoryData: CreateRepositoryRequest) => {
       set({ isCreating: true, error: null });
       
       try {
@@ -93,7 +90,7 @@ const useGitOpsStore = create(
         return newRepository;
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isCreating: false 
         });
         throw error;
@@ -101,7 +98,7 @@ const useGitOpsStore = create(
     },
     
     // Delete repository
-    deleteRepository: async (repositoryId) => {
+    deleteRepository: async (repositoryId: string) => {
       try {
         const response = await fetch(`/api/gitops/repositories/${repositoryId}`, {
           method: 'DELETE',
@@ -119,13 +116,13 @@ const useGitOpsStore = create(
           repositories: repositories.filter(repo => repo.id !== repositoryId)
         });
       } catch (error) {
-        set({ error: error.message });
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
         throw error;
       }
     },
     
     // Sync repository
-    syncRepository: async (repositoryId) => {
+    syncRepository: async (repositoryId: string) => {
       set({ isSyncing: true, error: null });
       
       try {
@@ -145,7 +142,7 @@ const useGitOpsStore = create(
         set({ isSyncing: false });
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isSyncing: false 
         });
         throw error;
@@ -168,12 +165,12 @@ const useGitOpsStore = create(
         const data = await response.json();
         set({ applications: data.applications || [] });
       } catch (error) {
-        set({ error: error.message });
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
       }
     },
     
     // Create application
-    createApplication: async (applicationData) => {
+    createApplication: async (applicationData: CreateApplicationRequest) => {
       set({ isCreating: true, error: null });
       
       try {
@@ -200,7 +197,7 @@ const useGitOpsStore = create(
         return newApplication;
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isCreating: false 
         });
         throw error;
@@ -208,7 +205,7 @@ const useGitOpsStore = create(
     },
     
     // Delete application
-    deleteApplication: async (applicationId) => {
+    deleteApplication: async (applicationId: string) => {
       try {
         const response = await fetch(`/api/gitops/applications/${applicationId}`, {
           method: 'DELETE',
@@ -226,13 +223,13 @@ const useGitOpsStore = create(
           applications: applications.filter(app => app.id !== applicationId)
         });
       } catch (error) {
-        set({ error: error.message });
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
         throw error;
       }
     },
     
     // Sync application
-    syncApplication: async (applicationId) => {
+    syncApplication: async (applicationId: string) => {
       set({ isSyncing: true, error: null });
       
       try {
@@ -252,7 +249,7 @@ const useGitOpsStore = create(
         set({ isSyncing: false });
       } catch (error) {
         set({ 
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           isSyncing: false 
         });
         throw error;
@@ -273,8 +270,8 @@ const useGitOpsStore = create(
       }
       
       filtered.sort((a, b) => {
-        let aValue = a[sortBy];
-        let bValue = b[sortBy];
+        let aValue: any = (a as any)[sortBy];
+        let bValue: any = (b as any)[sortBy];
         
         if (sortBy === 'last_sync') {
           aValue = new Date(aValue || 0);
@@ -303,8 +300,8 @@ const useGitOpsStore = create(
       }
       
       filtered.sort((a, b) => {
-        let aValue = a[sortBy];
-        let bValue = b[sortBy];
+        let aValue: any = (a as any)[sortBy];
+        let bValue: any = (b as any)[sortBy];
         
         if (sortBy === 'last_sync') {
           aValue = new Date(aValue || 0);
@@ -323,8 +320,6 @@ const useGitOpsStore = create(
     clearGitOps: () => set({
       repositories: [],
       applications: [],
-      selectedRepository: null,
-      selectedApplication: null,
       error: null,
     }),
   }))
