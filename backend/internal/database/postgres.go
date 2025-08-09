@@ -8,7 +8,7 @@ import (
 )
 
 type PostgresDB struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func NewPostgresDB(connectionString string) (*PostgresDB, error) {
@@ -26,15 +26,15 @@ func NewPostgresDB(connectionString string) (*PostgresDB, error) {
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(5)
 
-	return &PostgresDB{db: db}, nil
+	return &PostgresDB{DB: db}, nil
 }
 
 func (p *PostgresDB) Close() error {
-	return p.db.Close()
+	return p.DB.Close()
 }
 
-func (p *PostgresDB) DB() *sql.DB {
-	return p.db
+func (p *PostgresDB) Database() *sql.DB {
+	return p.DB
 }
 
 // Initialize database schema
@@ -92,6 +92,6 @@ func (p *PostgresDB) InitSchema() error {
 	CREATE INDEX IF NOT EXISTS idx_applications_repository_id ON applications(repository_id);
 	`
 
-	_, err := p.db.Exec(schema)
+	_, err := p.DB.Exec(schema)
 	return err
 }
