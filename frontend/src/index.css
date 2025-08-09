@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* Cyberpunk Theme CSS Variables */
+:root {
+  --cyber-black: #000000;
+  --cyber-white: #FFFFFF;
+  --cyber-gray-100: #0A0A0A;
+  --cyber-gray-200: #111111;
+  --cyber-gray-300: #1A1A1A;
+  --cyber-gray-400: #2A2A2A;
+  --cyber-gray-500: #3A3A3A;
+  --cyber-gray-600: #E0E0E0;
+  --cyber-gray-700: #F0F0F0;
+  --cyber-gray-800: #FAFAFA;
+  --cyber-green: #00FF00;
+  
+  font-family: 'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', 'Monaco', monospace;
+  line-height: 1.4;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--cyber-white);
+  background-color: var(--cyber-black);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--cyber-black);
+  color: var(--cyber-white);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Cyberpunk Animations */
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes matrix-rain {
+  0% { transform: translateY(-100vh); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes glitch {
+  0% { 
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  20% { 
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  40% { 
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(180deg);
+  }
+  60% { 
+    transform: translate(2px, 2px);
+    filter: hue-rotate(270deg);
+  }
+  80% { 
+    transform: translate(2px, -2px);
+    filter: hue-rotate(360deg);
+  }
+  100% { 
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes typewriter {
+  0% { width: 0; }
+  100% { width: 100%; }
+}
+
+/* Terminal Cursor */
+.cursor::after {
+  content: '█';
+  animation: cursor-blink 1s infinite;
+  color: var(--cyber-green);
+}
+
+/* Glitch Effect */
+.glitch {
+  animation: glitch 0.3s ease-in-out infinite alternate;
+}
+
+/* Scan Lines */
+.scan-lines::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--cyber-green);
+  opacity: 0.1;
+  animation: scan-line 2s linear infinite;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Matrix Rain Background */
+.matrix-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 0, 0.03) 2px,
+    rgba(0, 255, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Terminal Style Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cyber-gray-200);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cyber-gray-500);
+  border: 1px solid var(--cyber-white);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-gray-600);
+}
+
+/* Selection */
+::selection {
+  background: var(--cyber-green);
+  color: var(--cyber-black);
+}
