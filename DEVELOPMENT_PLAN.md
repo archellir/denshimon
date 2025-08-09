@@ -15,15 +15,16 @@ A containerized Kubernetes GitOps and monitoring platform with a black & white c
 - **RBAC**: Custom middleware with PASETO claims
 
 ### Frontend (React + TypeScript) - BLACK & WHITE CYBERPUNK THEME
-- **Package Manager**: pnpm
-- **Framework**: React 19 + TypeScript + Vite 7
+- **Package Manager**: pnpm 10.14.0
+- **Framework**: React 19.1.1 + TypeScript 6.0.0-dev + Vite 7.1.1
 - **Routing**: React Router 7.8 with protected routes
-- **UI Components**: shadcn/ui (cyberpunk customized)
-- **Styling**: Tailwind CSS 4.x with Vite plugin
-- **Charts**: Recharts 3.1.2 (black & white)
-- **State Management**: Zustand 5.0.7
-- **Auth State**: PASETO token storage with Zustand
-- **Validation**: Zod 4.x
+- **UI Components**: Custom cyberpunk-themed components
+- **Styling**: Tailwind CSS 4.1.11 with Vite plugin
+- **Charts**: Recharts 3.1.2 (monochrome cyberpunk theme)
+- **State Management**: Zustand 5.0.7 with TypeScript
+- **Type Safety**: Full TypeScript coverage with strict mode
+- **Validation**: Zod 4.0.17 with TypeScript schemas
+- **Icons**: Lucide React 0.539.0
 
 ## Container Build Strategy
 The application will be packaged as a single container image and pushed to a Gitea registry. Kubernetes manifests will be maintained in a separate repository.

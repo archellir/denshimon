@@ -18,12 +18,14 @@ This is a Kubernetes GitOps and monitoring platform with:
 
 ### Technology Stack
 - **Backend**: Go 1.24.6 with standard library HTTP routing
-- **Frontend**: React 18 + TypeScript + Vite + pnpm
-- **UI**: Tailwind CSS 4.x with Vite plugin + shadcn/ui with cyberpunk theme
-- **Charts**: Recharts 3.1.2
-- **State**: Zustand 5.0.7
-- **Validation**: Zod 4.x
-- **Auth**: PASETO tokens
+- **Frontend**: React 19.1.1 + TypeScript 6.0.0-dev + Vite 7.1.1 + pnpm 10.14.0
+- **UI**: Tailwind CSS 4.1.11 with Vite plugin + Custom cyberpunk components
+- **Charts**: Recharts 3.1.2 (monochrome theme)
+- **State**: Zustand 5.0.7 with full TypeScript support
+- **Validation**: Zod 4.0.17 with TypeScript schemas
+- **Icons**: Lucide React 0.539.0
+- **Auth**: PASETO v4 tokens
+- **Type Safety**: Full TypeScript coverage with strict mode enabled
 
 ### Development Commands
 ```bash
@@ -35,12 +37,17 @@ go get k8s.io/apimachinery@latest
 go run cmd/server/main.go
 
 # Frontend
-npm create vite@latest frontend -- --template react
+npm create vite@latest frontend -- --template react-ts
 cd frontend
 pnpm install
+pnpm install -D typescript@next @typescript-eslint/eslint-plugin @typescript-eslint/parser
 pnpm install tailwindcss @tailwindcss/vite
-pnpm add react-router@latest zustand@latest recharts@latest zod@latest
+pnpm add react-router@latest zustand@latest recharts@latest zod@latest lucide-react@latest
 pnpm run dev
+
+# TypeScript
+pnpm run typecheck  # Type checking
+pnpm run build      # Build with TypeScript compilation
 
 # Testing
 go test ./...
@@ -117,10 +124,26 @@ VITE_API_URL=http://localhost:8080/api
 - Distributed tracing ready
 
 ### Code Style
-- Go: Follow standard Go conventions
-- TypeScript: Use strict mode
-- React: Functional components only
-- CSS: Tailwind utility classes
+- **Go**: Follow standard Go conventions with gofmt
+- **TypeScript**: Use strict mode with comprehensive typing
+  - All components must use `FC` type from React
+  - Strict null checks and type safety enabled
+  - No `any` types except for explicit dynamic content
+  - Props interfaces for all components
+  - Zustand stores must have proper TypeScript interfaces
+  - API responses must be typed with interfaces
+- **React**: Functional components only with TypeScript
+- **CSS**: Tailwind utility classes only
+
+### TypeScript Guidelines
+- **File Extensions**: Use `.tsx` for React components, `.ts` for utilities
+- **Type Definitions**: Create comprehensive type definitions in `/src/types/`
+- **Component Props**: Define props interfaces for all components
+- **Store Typing**: Zustand stores must have typed interfaces
+- **API Typing**: All API calls must return typed responses
+- **Error Handling**: Proper error typing with `instanceof Error` checks
+- **Strict Mode**: All TypeScript strict mode options enabled
+- **Import Types**: Use `import type` for type-only imports
 
 ### Build Process
 1. Run tests
