@@ -170,12 +170,30 @@ docker-compose up
 
 ### Git Commit Guidelines
 
-- Use conventional commits format: `type(scope): description`
-- Use 50/72 rule: 50-character subject line, 72-character body lines
-- Keep commit messages clean and focused on code changes only
-- NEVER add co-authors, "Generated with" tags, or other metadata
-- Use separate commits for different file types/purposes:
-  - Scripts/automation: `feat:` or `fix:`
-  - Documentation: `docs:`
-  - Configuration: `fix:` or `refactor:`
-- Focus on what changed and why, not who or how it was generated
+Follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
+
+**Format**: `type(scope): description`
+
+**Required components**:
+- `type`: feat, fix, docs, style, refactor, test, chore
+- `scope`: component/area affected (api, auth, gitops, k8s, ui, etc.)
+- `description`: concise description of changes
+
+**Commit size limits**:
+- **Maximum 1-2 files per commit** (can be more only if absolutely necessary)
+- One logical change per commit
+- Separate unrelated changes into different commits
+
+**Examples**:
+- `feat(gitops): add repository management service`
+- `fix(auth): resolve PASETO token expiration issue`
+- `docs(readme): update installation instructions`
+- `refactor(api): extract common response handlers`
+
+**Rules**:
+- Use present tense ("add feature" not "added feature")
+- Use lowercase for description
+- No period at the end of description
+- Keep description under 50 characters
+- NEVER add co-authors, "Generated with" tags, or metadata
+- Focus on what changed and why, not how or who
