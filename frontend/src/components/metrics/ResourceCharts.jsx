@@ -84,7 +84,7 @@ const ResourceCharts = () => {
     return null;
   };
 
-  const CustomNodeTooltip = ({ active, payload, label }) => {
+  const CustomNodeTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
