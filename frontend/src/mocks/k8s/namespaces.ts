@@ -1,4 +1,4 @@
-import type { NamespaceMetrics } from '../../types/metrics';
+import type { NamespaceMetrics } from '@types/metrics';
 
 export const mockNamespaces: NamespaceMetrics[] = [
   {

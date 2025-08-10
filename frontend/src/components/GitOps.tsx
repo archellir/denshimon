@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { GitBranch, Plus, Search, Filter } from 'lucide-react';
-import useGitOpsStore from '../stores/gitopsStore';
-import RepositoryList from './gitops/RepositoryList';
-import ApplicationList from './gitops/ApplicationList';
-import CreateRepositoryModal from './gitops/CreateRepositoryModal';
-import CreateApplicationModal from './gitops/CreateApplicationModal';
-import RepositoryDetails from './gitops/RepositoryDetails';
-import ApplicationDetails from './gitops/ApplicationDetails';
-import type { DetailsState } from '../types/components';
+import useGitOpsStore from '@stores/gitopsStore';
+import RepositoryList from '@components/gitops/RepositoryList';
+import ApplicationList from '@components/gitops/ApplicationList';
+import CreateRepositoryModal from '@components/gitops/CreateRepositoryModal';
+import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
+import RepositoryDetails from '@components/gitops/RepositoryDetails';
+import ApplicationDetails from '@components/gitops/ApplicationDetails';
+import type { DetailsState } from '@types/components';
 import type { Repository, Application } from '@/types/gitops';
 
 const GitOps: FC = () => {

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, MemoryStick } from 'lucide-react';
-import useMetricsStore from '../stores/metricsStore';
-import ClusterOverview from './metrics/ClusterOverview';
-import ResourceCharts from './metrics/ResourceCharts';
-import NodeList from './metrics/NodeList';
-import PodMetrics from './metrics/PodMetrics';
-import NamespaceMetrics from './metrics/NamespaceMetrics';
+import useMetricsStore from '@stores/metricsStore';
+import ClusterOverview from '@components/metrics/ClusterOverview';
+import ResourceCharts from '@components/metrics/ResourceCharts';
+import NodeList from '@components/metrics/NodeList';
+import PodMetrics from '@components/metrics/PodMetrics';
+import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
 
 const Dashboard: FC = () => {
   const [activeTab, setActiveTab] = useState('overview');

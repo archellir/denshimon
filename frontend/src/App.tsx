@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router'
 import type { FC } from 'react'
 import { Server, GitBranch, BarChart3, FileText, Settings as SettingsIcon, User, LogOut } from 'lucide-react'
-import Dashboard from './components/Dashboard'
-import GitOps from './components/GitOps'
-import PodsView from './components/PodsView'
-import SettingsPage from './components/Settings'
-import Logs from './components/Logs'
+import Dashboard from '@components/Dashboard'
+import GitOps from '@components/GitOps'
+import PodsView from '@components/PodsView'
+import SettingsPage from '@components/Settings'
+import Logs from '@components/Logs'
 
 interface ProtectedRouteProps {
   children: React.ReactNode

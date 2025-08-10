@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import type { FC } from 'react';
 import { Database, Cpu, MemoryStick, CheckCircle, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import useMetricsStore from '../../stores/metricsStore';
+import useMetricsStore from '@stores/metricsStore';
 
 const PodMetrics: FC = () => {
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all');

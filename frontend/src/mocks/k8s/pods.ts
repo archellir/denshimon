@@ -1,4 +1,4 @@
-import type { PodMetrics } from '../../types/metrics';
+import type { PodMetrics } from '@types/metrics';
 
 export const mockPods: PodMetrics[] = [
   // System pods

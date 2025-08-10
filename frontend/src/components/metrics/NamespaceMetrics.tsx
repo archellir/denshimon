@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { FC } from 'react';
 import { HardDrive, Database, Cpu, MemoryStick } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import useMetricsStore from '../../stores/metricsStore';
+import useMetricsStore from '@stores/metricsStore';
 
 const NamespaceMetrics: FC = () => {
   const { namespaceMetrics, isLoading } = useMetricsStore();

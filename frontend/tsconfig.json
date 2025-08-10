@@ -29,7 +29,8 @@
       "@components/*": ["./src/components/*"],
       "@stores/*": ["./src/stores/*"],
       "@types/*": ["./src/types/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@utils/*": ["./src/utils/*"],
+      "@mocks/*": ["./src/mocks/*"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],

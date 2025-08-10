@@ -12,7 +12,7 @@ import {
   Legend,
 } from 'recharts';
 import { format } from 'date-fns';
-import useMetricsStore from '../../stores/metricsStore';
+import useMetricsStore from '@stores/metricsStore';
 
 const ResourceCharts: FC = () => {
   const { clusterMetrics, metricsHistory, nodeMetrics } = useMetricsStore();

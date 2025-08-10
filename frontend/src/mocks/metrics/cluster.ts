@@ -1,4 +1,4 @@
-import type { ClusterMetrics, MetricsHistory } from '../../types/metrics';
+import type { ClusterMetrics, MetricsHistory } from '@types/metrics';
 
 export const mockClusterMetrics: ClusterMetrics = {
   total_nodes: 3,

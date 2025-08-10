@@ -14,8 +14,8 @@ import {
   Tooltip,
 } from 'recharts';
 import { format } from 'date-fns';
-import useMetricsStore from '../../stores/metricsStore';
-import ResourceCharts from './ResourceCharts';
+import useMetricsStore from '@stores/metricsStore';
+import ResourceCharts from '@components/metrics/ResourceCharts';
 
 const ClusterOverview: FC = () => {
   const [timeRange, setTimeRange] = useState<string>('1h');

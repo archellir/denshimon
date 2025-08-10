@@ -1,4 +1,4 @@
-import type { NodeMetrics } from '../../types/metrics';
+import type { NodeMetrics } from '@types/metrics';
 
 export const mockNodes: NodeMetrics[] = [
   {

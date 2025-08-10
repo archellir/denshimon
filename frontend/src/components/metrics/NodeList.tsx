@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { FC } from 'react';
 import { Server, Cpu, MemoryStick, HardDrive, CheckCircle, AlertCircle } from 'lucide-react';
-import useMetricsStore from '../../stores/metricsStore';
+import useMetricsStore from '@stores/metricsStore';
 
 const NodeList: FC = () => {
   const { nodeMetrics, isLoading } = useMetricsStore();

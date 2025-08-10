@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { Save, RefreshCw, Database, Shield, Monitor, Bell, User, Key } from 'lucide-react';
-import useMetricsStore from '../stores/metricsStore';
+import useMetricsStore from '@stores/metricsStore';
 
 interface SettingsData {
   // Metrics settings

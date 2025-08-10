@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '../types/gitops';
+import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@types/gitops';
 
 const useGitOpsStore = create<GitOpsStore>()(
   subscribeWithSelector((set, get) => ({
