@@ -12,6 +12,7 @@ export interface ClusterMetrics {
   ready_nodes: number;
   total_pods: number;
   running_pods: number;
+  pending_pods: number;
   failed_pods: number;
   total_namespaces: number;
   cpu_usage: ResourceUsage;

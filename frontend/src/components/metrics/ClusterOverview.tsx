@@ -85,12 +85,12 @@ const ClusterOverview: FC = () => {
     ];
   }, [clusterMetrics]);
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white">{`Time: ${label}`}</p>
-          {payload.map((entry, index) => (
+          {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value.toFixed(1)}${
                 entry.name === 'CPU' || entry.name === 'Memory' ? '%' : ''
@@ -103,7 +103,7 @@ const ClusterOverview: FC = () => {
     return null;
   };
 
-  const CustomPieTooltip = ({ active, payload }) => {
+  const CustomPieTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
