@@ -172,6 +172,7 @@ const ClusterOverview: FC = () => {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                    tickFormatter={(value) => `${value}%`}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Area

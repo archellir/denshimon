@@ -148,6 +148,7 @@ const ResourceCharts: FC = () => {
                   tickLine={false}
                   tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
                   domain={[0, 100]}
+                  tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend 
@@ -190,6 +191,7 @@ const ResourceCharts: FC = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                  tickFormatter={(value) => `${value}`}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend 
@@ -273,6 +275,7 @@ const ResourceCharts: FC = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                  tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip content={<CustomNodeTooltip />} />
                 <Line
