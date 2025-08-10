@@ -1,8 +1,15 @@
-import { X, Package, Heart, Sync, Clock, CheckCircle, AlertCircle, Pause } from 'lucide-react';
+import type { FC } from 'react';
+import { X, Package, Heart, RotateCw, Clock, CheckCircle, AlertCircle, Pause } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import type { Application } from '@types/gitops';
 
-const ApplicationDetails = ({ application, onClose }) => {
-  const getSyncStatusIcon = (status) => {
+interface ApplicationDetailsProps {
+  application: Application;
+  onClose: () => void;
+}
+
+const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose }) => {
+  const getSyncStatusIcon = (status: string) => {
     switch (status) {
       case 'synced':
         return <CheckCircle size={20} className="text-green-400" />;
@@ -15,12 +22,12 @@ const ApplicationDetails = ({ application, onClose }) => {
     }
   };
 
-  const getHealthStatusIcon = (status) => {
+  const getHealthStatusIcon = (status: string) => {
     switch (status) {
       case 'healthy':
         return <Heart size={20} className="text-green-400" />;
       case 'progressing':
-        return <Sync size={20} className="text-blue-400" />;
+        return <RotateCw size={20} className="text-blue-400" />;
       case 'degraded':
         return <AlertCircle size={20} className="text-red-400" />;
       case 'suspended':
@@ -32,7 +39,7 @@ const ApplicationDetails = ({ application, onClose }) => {
     }
   };
 
-  const getStatusColor = (status, type = 'sync') => {
+  const getStatusColor = (status: string, type: string = 'sync') => {
     if (type === 'health') {
       switch (status) {
         case 'healthy':
@@ -61,7 +68,7 @@ const ApplicationDetails = ({ application, onClose }) => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
     return date.toLocaleString();
