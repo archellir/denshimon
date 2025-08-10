@@ -25,7 +25,7 @@ import (
 var frontendAssets embed.FS
 
 func main() {
-	// Initialize structured logger
+	// Initialize structured JSON logger for production
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
