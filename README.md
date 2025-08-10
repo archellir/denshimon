@@ -290,11 +290,6 @@ ENVIRONMENT=production              # Runtime environment
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙋 Support
-
-- **Issues**: [GitHub Issues](https://github.com/archellir/k8s-webui/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/archellir/k8s-webui/discussions)
-- **Documentation**: [Project Wiki](https://github.com/archellir/k8s-webui/wiki)
 
 ---
 
