@@ -201,15 +201,27 @@ kubectl port-forward svc/denshimon 8080:80
 
 ### Development Setup
 ```bash
-# Clone and build
-git clone <repo>
+# Clone repository
+git clone https://github.com/archellir/denshimon.git
 cd denshimon
 
-# Build single binary
-./build.sh
+# Install dependencies
+cd backend && go mod tidy
+cd ../frontend && pnpm install
 
-# Run locally
-./backend/denshimon
+# Development mode (2 terminals for hot reload)
+# Terminal 1: Backend API
+cd backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
+
+# Terminal 2: Frontend with hot reload
+cd frontend && pnpm run dev
+
+# Access at http://localhost:5173
+# Login: admin / password
+
+# Production build (single binary)
+cd frontend && pnpm run build && cp -r dist/* ../backend/cmd/server/spa/
+cd ../backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 ```
 
 ## 📊 Configuration
@@ -251,13 +263,20 @@ ENVIRONMENT=production              # Runtime environment
 ## 🎯 Roadmap
 
 ### Phase 1: Core Platform ✅
-- [x] Kubernetes management APIs
-- [x] GitOps repository integration  
-- [x] SQLite database with sessions
-- [x] React SPA with cyberpunk UI
-- [x] Single binary deployment
+- [x] React SPA with cyberpunk UI and proper routing
+- [x] PASETO v4 authentication with role-based access
+- [x] SQLite database with proper schema
+- [x] Kubernetes mock data and interfaces  
+- [x] GitOps service structure
+- [x] Development mode with hot reload
+- [x] Single binary deployment capability
+- [x] Authentication flow with proper redirects
+- [x] Protected routes and token validation
+- [x] Dashboard with metrics tabs (overview, nodes, pods, etc.)
+- [x] Comprehensive mock data for testing
 
 ### Phase 2: Enhanced Features 🚧
+- [ ] Real Kubernetes cluster integration
 - [ ] WebSocket real-time updates
 - [ ] Pod exec terminal (WebSocket)
 - [ ] Log streaming and search
