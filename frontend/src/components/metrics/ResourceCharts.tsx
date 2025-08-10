@@ -150,6 +150,9 @@ const ResourceCharts: FC = () => {
                   domain={[0, 100]}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  wrapperStyle={{ color: 'white', fontFamily: 'monospace', fontSize: '12px' }}
+                />
                 <Line
                   type="monotone"
                   dataKey="cpu"
@@ -189,6 +192,9 @@ const ResourceCharts: FC = () => {
                   tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  wrapperStyle={{ color: 'white', fontFamily: 'monospace', fontSize: '12px' }}
+                />
                 <Line
                   type="monotone"
                   dataKey="pods"
