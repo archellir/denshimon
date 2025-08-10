@@ -82,6 +82,7 @@ func (s *SQLiteDB) InitSchema() error {
 		credentials TEXT, -- JSON as text
 		last_sync DATETIME,
 		sync_status TEXT,
+		sync_error TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
@@ -97,6 +98,7 @@ func (s *SQLiteDB) InitSchema() error {
 		health_status TEXT,
 		sync_status TEXT,
 		last_sync DATETIME,
+		sync_error TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);

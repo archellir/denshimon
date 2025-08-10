@@ -172,7 +172,7 @@ func (s *Service) CreateRepository(ctx context.Context, req CreateRepositoryRequ
 
 	query := `
 		INSERT INTO git_repositories (id, name, url, branch, auth_type, credentials, sync_status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err = s.db.ExecContext(ctx, query, id, req.Name, req.URL, req.Branch, req.AuthType, encryptedCreds, "unknown", now, now)
@@ -186,7 +186,7 @@ func (s *Service) CreateRepository(ctx context.Context, req CreateRepositoryRequ
 func (s *Service) GetRepository(ctx context.Context, id string) (*Repository, error) {
 	query := `
 		SELECT id, name, url, branch, auth_type, credentials, last_sync, sync_status, sync_error, created_at, updated_at
-		FROM git_repositories WHERE id = $1
+		FROM git_repositories WHERE id = ?
 	`
 
 	var repo Repository
@@ -269,6 +269,9 @@ func (s *Service) ListRepositories(ctx context.Context) ([]*Repository, error) {
 		repositories = append(repositories, &repo)
 	}
 
+	if repositories == nil {
+		repositories = []*Repository{}
+	}
 	return repositories, nil
 }
 
@@ -343,8 +346,8 @@ func (s *Service) cloneRepository(repo *Repository, targetDir string) error {
 func (s *Service) updateRepositorySyncStatus(ctx context.Context, id, status, error string) {
 	query := `
 		UPDATE git_repositories
-		SET last_sync = $1, sync_status = $2, sync_error = $3, updated_at = $4
-		WHERE id = $5
+		SET last_sync = ?, sync_status = ?, sync_error = ?, updated_at = ?
+		WHERE id = ?
 	`
 
 	now := time.Now()
@@ -382,7 +385,7 @@ func (s *Service) CreateApplication(ctx context.Context, req CreateApplicationRe
 
 	query := `
 		INSERT INTO applications (id, name, repository_id, path, namespace, sync_policy, health_status, sync_status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err = s.db.ExecContext(ctx, query, id, req.Name, req.RepositoryID, req.Path, req.Namespace, syncPolicyJSON, "unknown", "unknown", now, now)
@@ -396,7 +399,7 @@ func (s *Service) CreateApplication(ctx context.Context, req CreateApplicationRe
 func (s *Service) GetApplication(ctx context.Context, id string) (*Application, error) {
 	query := `
 		SELECT id, name, repository_id, path, namespace, sync_policy, health_status, sync_status, last_sync, sync_error, created_at, updated_at
-		FROM applications WHERE id = $1
+		FROM applications WHERE id = ?
 	`
 
 	var app Application
@@ -473,6 +476,9 @@ func (s *Service) ListApplications(ctx context.Context) ([]*Application, error) 
 		applications = append(applications, &app)
 	}
 
+	if applications == nil {
+		applications = []*Application{}
+	}
 	return applications, nil
 }
 
@@ -539,8 +545,8 @@ func (s *Service) applyManifests(manifestPath, namespace string) error {
 func (s *Service) updateApplicationSyncStatus(ctx context.Context, id, status, error string) {
 	query := `
 		UPDATE applications
-		SET last_sync = $1, sync_status = $2, sync_error = $3, updated_at = $4
-		WHERE id = $5
+		SET last_sync = ?, sync_status = ?, sync_error = ?, updated_at = ?
+		WHERE id = ?
 	`
 
 	now := time.Now()
@@ -557,13 +563,13 @@ func (s *Service) updateApplicationSyncStatus(ctx context.Context, id, status, e
 
 func (s *Service) DeleteRepository(ctx context.Context, id string) error {
 	// First delete all applications that use this repository
-	_, err := s.db.ExecContext(ctx, "DELETE FROM applications WHERE repository_id = $1", id)
+	_, err := s.db.ExecContext(ctx, "DELETE FROM applications WHERE repository_id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete applications: %w", err)
 	}
 
 	// Then delete the repository
-	result, err := s.db.ExecContext(ctx, "DELETE FROM git_repositories WHERE id = $1", id)
+	result, err := s.db.ExecContext(ctx, "DELETE FROM git_repositories WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete repository: %w", err)
 	}
@@ -581,7 +587,7 @@ func (s *Service) DeleteRepository(ctx context.Context, id string) error {
 }
 
 func (s *Service) DeleteApplication(ctx context.Context, id string) error {
-	result, err := s.db.ExecContext(ctx, "DELETE FROM applications WHERE id = $1", id)
+	result, err := s.db.ExecContext(ctx, "DELETE FROM applications WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to delete application: %w", err)
 	}
