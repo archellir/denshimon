@@ -39,12 +39,12 @@ services:
       timeout: 3s
       retries: 3
 
-  # Backend API service (development mode)
-  backend:
+  # K8s WebUI - Single service with embedded SPA
+  k8s-webui:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    container_name: k8s-webui-backend
+      context: .
+      dockerfile: Dockerfile
+    container_name: k8s-webui
     restart: unless-stopped
     environment:
       - PORT=8080
@@ -53,10 +53,9 @@ services:
       - PASETO_SECRET_KEY=dev-32-byte-secret-key-for-prod!
       - TOKEN_DURATION=24h
       - LOG_LEVEL=debug
-      - ENVIRONMENT=development
+      - ENVIRONMENT=production
     volumes:
-      - ./backend:/app
-      - ~/.kube:/home/app/.kube:ro  # Mount kubeconfig for K8s access
+      - ~/.kube:/home/k8s-webui/.kube:ro  # Mount kubeconfig for K8s access
       - /var/run/docker.sock:/var/run/docker.sock:ro  # For Docker-in-Docker scenarios
     ports:
       - "8080:8080"
@@ -72,27 +71,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # Frontend Vite dev server
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: k8s-webui-frontend
-    restart: unless-stopped
-    environment:
-      - VITE_API_URL=http://localhost:8080/api
-      - VITE_WS_URL=ws://localhost:8080/ws
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules  # Anonymous volume for node_modules
-    ports:
-      - "5173:5173"
-    networks:
-      - k8s-webui-network
-    depends_on:
-      - backend
-    command: pnpm run dev --host 0.0.0.0
 
 volumes:
   postgres_data:

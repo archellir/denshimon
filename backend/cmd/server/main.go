@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
+	"embed"
+	"fmt"
+	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,6 +20,9 @@ import (
 	"github.com/archellir/k8s-webui/internal/k8s"
 	"github.com/archellir/k8s-webui/pkg/config"
 )
+
+//go:embed all:spa
+var frontendAssets embed.FS
 
 func main() {
 	// Initialize structured logger
@@ -67,11 +75,64 @@ func main() {
 		w.Write([]byte(`{"status":"healthy"}`))
 	})
 
-	// Serve static files (frontend)
-	if cfg.Environment == "production" {
-		fs := http.FileServer(http.Dir("./static"))
-		mux.Handle("/", fs)
+	// Serve embedded SPA assets
+	frontendFS, err := fs.Sub(frontendAssets, "spa")
+	if err != nil {
+		slog.Error("Failed to create frontend filesystem", "error", err)
+		os.Exit(1)
 	}
+	
+	// SPA handler that serves static files or index.html fallback
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Don't serve frontend for API routes
+		if strings.HasPrefix(r.URL.Path, "/api/") || strings.HasPrefix(r.URL.Path, "/health") {
+			http.NotFound(w, r)
+			return
+		}
+		
+		path := strings.TrimPrefix(r.URL.Path, "/")
+		if path == "" {
+			path = "index.html"
+		}
+		
+		// Try to serve the static file
+		file, err := frontendFS.Open(path)
+		if err != nil {
+			// File not found - serve index.html for SPA routing
+			// This allows React Router to handle client-side routes
+			file, err = frontendFS.Open("index.html")
+			if err != nil {
+				http.Error(w, "Frontend not found", http.StatusNotFound)
+				return
+			}
+			path = "index.html"
+		}
+		defer file.Close()
+		
+		// Set appropriate content type
+		if strings.HasSuffix(path, ".css") {
+			w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		} else if strings.HasSuffix(path, ".js") {
+			w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		} else if strings.HasSuffix(path, ".html") {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		} else if strings.HasSuffix(path, ".svg") {
+			w.Header().Set("Content-Type", "image/svg+xml")
+		}
+		
+		// Cache static assets (not index.html)
+		if path != "index.html" {
+			w.Header().Set("Cache-Control", "public, max-age=31536000") // 1 year
+		} else {
+			w.Header().Set("Cache-Control", "no-cache") // Don't cache SPA entry point
+		}
+		
+		// Copy file content to response
+		if stat, err := file.Stat(); err == nil {
+			w.Header().Set("Content-Length", fmt.Sprintf("%d", stat.Size()))
+		}
+		io.Copy(w, file)
+	})
 
 	// Create HTTP server
 	srv := &http.Server{
