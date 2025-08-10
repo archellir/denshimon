@@ -28,13 +28,42 @@ This is a Kubernetes GitOps and monitoring platform with:
 - **Type Safety**: Full TypeScript coverage with strict mode enabled
 
 ### Development Commands
+
+#### Development Mode (Separate Servers with Hot Reload)
+```bash
+# Backend API Server (Terminal 1)
+cd backend
+DATABASE_PATH=./test-app.db go run cmd/server/main.go
+# Runs on http://localhost:8080
+
+# Frontend Dev Server with Hot Reload (Terminal 2) 
+cd frontend
+pnpm run dev
+# Runs on http://localhost:5173 with API proxy to backend
+
+# Access the application at http://localhost:5173
+# Login: admin / password
+```
+
+#### Production Build
+```bash
+# Build frontend and embed in Go binary
+cd frontend
+pnpm run build
+cp -r dist/* ../backend/cmd/server/spa/
+
+# Run integrated server
+cd ../backend
+DATABASE_PATH=./test-app.db go run cmd/server/main.go
+```
+
+#### Setup Commands
 ```bash
 # Backend
 cd backend
 go mod init github.com/archellir/denshimon
 go get k8s.io/client-go@latest
 go get k8s.io/apimachinery@latest
-go run cmd/server/main.go
 
 # Frontend
 npm create vite@latest frontend -- --template react-ts
@@ -43,7 +72,6 @@ pnpm install
 pnpm install -D typescript@next @typescript-eslint/eslint-plugin @typescript-eslint/parser
 pnpm install tailwindcss @tailwindcss/vite
 pnpm add react-router@latest zustand@latest recharts@latest zod@latest lucide-react@latest
-pnpm run dev
 
 # TypeScript
 pnpm run typecheck  # Type checking
@@ -96,13 +124,13 @@ pnpm run lint
 ### Environment Variables
 ```env
 # Backend
-DATABASE_URL=postgres://user:pass@localhost:5432/k8s_webui
-REDIS_URL=redis://localhost:6379
+DATABASE_PATH=./test-app.db  # SQLite database path
 PASETO_SECRET_KEY=32-byte-secret-key-change-in-prod
 PORT=8080
+KUBECONFIG=/path/to/kubeconfig  # Optional for K8s integration
 
-# Frontend (build time)
-VITE_API_URL=http://localhost:8080/api
+# Frontend (development)
+# API calls automatically proxied to backend via Vite config
 ```
 
 ### Testing Requirements
@@ -160,25 +188,27 @@ VITE_API_URL=http://localhost:8080/api
 
 ### Quick Start
 ```bash
-# Clone and setup
+# Clone repository
 git clone https://github.com/archellir/denshimon.git
 cd denshimon
 
-# Backend
-cd backend
-go mod init github.com/archellir/denshimon
-go mod tidy
-go run cmd/server/main.go
+# Install dependencies
+cd backend && go mod tidy
+cd ../frontend && pnpm install
 
-# Frontend (new terminal)
-npm create vite@latest frontend -- --template react
-cd frontend
-pnpm install
-pnpm install tailwindcss @tailwindcss/vite
-pnpm run dev
+# Development mode (2 terminals)
+# Terminal 1: Backend
+cd backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 
-# Docker
-docker-compose up
+# Terminal 2: Frontend  
+cd frontend && pnpm run dev
+
+# Access application at http://localhost:5173
+# Login with: admin / password
+
+# Production build
+cd frontend && pnpm run build && cp -r dist/* ../backend/cmd/server/spa/
+cd ../backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 ```
 
 ### Important Notes
@@ -193,12 +223,14 @@ docker-compose up
 
 ### Git Commit Guidelines
 
+**Rules**:
 - NEVER add co-authors, "Generated with" tags, or metadata
 - Focus on what changed and why, not how or who
 - Use present tense ("add feature" not "added feature")
 - Use lowercase for description
 - No period at the end of description
-- Keep description under 50 characters
+- Keep commit message under 50 characters
+- Keep description line under 72 characters
 
 Follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
 
@@ -213,7 +245,7 @@ Follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0
 - **Maximum 1-2 files per commit** (can be more only if absolutely necessary)
 - One logical change per commit
 - Separate unrelated changes into different commits
-
+  
 **Examples**:
 - `feat(gitops): add repository management service`
 - `fix(auth): resolve PASETO token expiration issue`
