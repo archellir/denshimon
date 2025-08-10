@@ -9,7 +9,6 @@ import {
   Tooltip,
   RadialBarChart,
   RadialBar,
-  Legend,
 } from 'recharts';
 import { format } from 'date-fns';
 import useMetricsStore from '../../stores/metricsStore';
@@ -67,12 +66,12 @@ const ResourceCharts: FC = () => {
     }));
   }, [nodeMetrics]);
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white mb-1">{`Time: ${label}`}</p>
-          {payload.map((entry, index) => (
+          {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value.toFixed(1)}${
                 entry.name === 'CPU' || entry.name === 'Memory' ? '%' : ''
@@ -85,13 +84,13 @@ const ResourceCharts: FC = () => {
     return null;
   };
 
-  const CustomNodeTooltip = ({ active, payload }) => {
+  const CustomNodeTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white mb-1">{`Node: ${data.fullName}`}</p>
-          {payload.map((entry, index) => (
+          {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value.toFixed(1)}${
                 entry.name === 'CPU' || entry.name === 'Memory' ? '%' : entry.name === 'Pods' ? ' pods' : ''
@@ -104,7 +103,7 @@ const ResourceCharts: FC = () => {
     return null;
   };
 
-  const CustomRadialTooltip = ({ active, payload }) => {
+  const CustomRadialTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
@@ -117,7 +116,7 @@ const ResourceCharts: FC = () => {
     return null;
   };
 
-  const formatBytes = (bytes) => {
+  const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
