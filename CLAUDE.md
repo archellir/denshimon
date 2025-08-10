@@ -31,7 +31,7 @@ This is a Kubernetes GitOps and monitoring platform with:
 ```bash
 # Backend
 cd backend
-go mod init github.com/archellir/k8s-webui
+go mod init github.com/archellir/denshimon
 go get k8s.io/client-go@latest
 go get k8s.io/apimachinery@latest
 go run cmd/server/main.go
@@ -161,12 +161,12 @@ VITE_API_URL=http://localhost:8080/api
 ### Quick Start
 ```bash
 # Clone and setup
-git clone https://github.com/archellir/k8s-webui.git
-cd k8s-webui
+git clone https://github.com/archellir/denshimon.git
+cd denshimon
 
 # Backend
 cd backend
-go mod init github.com/archellir/k8s-webui
+go mod init github.com/archellir/denshimon
 go mod tidy
 go run cmd/server/main.go
 
@@ -189,7 +189,7 @@ docker-compose up
 - Performance is critical for real-time monitoring
 
 ### Repository
-- GitHub: https://github.com/archellir/k8s-webui
+- GitHub: https://github.com/archellir/denshimon
 
 ### Git Commit Guidelines
 

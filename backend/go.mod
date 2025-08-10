@@ -1,4 +1,4 @@
-module github.com/archellir/k8s-webui
+module github.com/archellir/denshimon
 
 go 1.24.0
 

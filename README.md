@@ -23,7 +23,7 @@ A comprehensive web-based platform for managing Kubernetes clusters and GitOps w
 
 ### Project Structure
 ```
-k8s-webui/
+denshimon/
 ├── backend/           # Go REST API server
 │   ├── cmd/server/    # Main application entry
 │   ├── internal/      # Business logic
@@ -184,10 +184,10 @@ Username: viewer    Password: password  # Read-only
 # Run with Docker
 docker run -d \
   -p 8080:8080 \
-  -v k8s-webui-data:/app/data \
-  -v ~/.kube:/home/k8s-webui/.kube:ro \
-  --name k8s-webui \
-  k8s-webui:latest
+  -v denshimon-data:/app/data \
+  -v ~/.kube:/home/denshimon/.kube:ro \
+  --name denshimon \
+  denshimon:latest
 ```
 
 ### Production (Kubernetes)
@@ -196,20 +196,20 @@ docker run -d \
 kubectl apply -f k8s-deployment.yaml
 
 # Access via port-forward  
-kubectl port-forward svc/k8s-webui 8080:80
+kubectl port-forward svc/denshimon 8080:80
 ```
 
 ### Development Setup
 ```bash
 # Clone and build
 git clone <repo>
-cd k8s-webui
+cd denshimon
 
 # Build single binary
 ./build.sh
 
 # Run locally
-./backend/k8s-webui
+./backend/denshimon
 ```
 
 ## 📊 Configuration
@@ -217,7 +217,7 @@ cd k8s-webui
 ### Environment Variables
 ```bash
 PORT=8080                           # Server port
-DATABASE_PATH=/app/data/k8s-webui.db # SQLite database
+DATABASE_PATH=/app/data/denshimon.db # SQLite database
 PASETO_SECRET_KEY=your-32-byte-key  # Auth signing key
 TOKEN_DURATION=24h                  # Token expiration
 LOG_LEVEL=info                      # Logging level
@@ -227,7 +227,7 @@ ENVIRONMENT=production              # Runtime environment
 ### Kubernetes Integration
 ```bash
 # Mount kubeconfig for cluster access
--v ~/.kube:/home/k8s-webui/.kube:ro
+-v ~/.kube:/home/denshimon/.kube:ro
 
 # Or use in-cluster service account
 # Automatically detected when running in K8s pod

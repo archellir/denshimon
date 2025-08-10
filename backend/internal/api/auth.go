@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/archellir/k8s-webui/internal/auth"
-	"github.com/archellir/k8s-webui/internal/database"
+	"github.com/archellir/denshimon/internal/auth"
+	"github.com/archellir/denshimon/internal/database"
 )
 
 type AuthHandlers struct {

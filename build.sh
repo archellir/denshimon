@@ -17,6 +17,6 @@ cp -r ../frontend/dist cmd/server/spa
 
 # Build Go binary with embedded SPA
 echo "Building backend with embedded SPA..."
-go build -o k8s-webui cmd/server/main.go
+go build -o denshimon cmd/server/main.go
 
-echo "Build complete! Single binary: backend/k8s-webui"
+echo "Build complete! Single binary: backend/denshimon"

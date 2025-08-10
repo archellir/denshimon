@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/archellir/k8s-webui/internal/metrics"
+	"github.com/archellir/denshimon/internal/metrics"
 )
 
 type MetricsHandlers struct {

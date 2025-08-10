@@ -8,8 +8,8 @@ on:
 
 env:
   REGISTRY: git.arcbjorn.com  # Change to docker.io for Docker Hub
-  IMAGE_NAME_BACKEND: k8s-webui-backend
-  IMAGE_NAME_FRONTEND: k8s-webui-frontend
+  IMAGE_NAME_BACKEND: denshimon-backend
+  IMAGE_NAME_FRONTEND: denshimon-frontend
 
 jobs:
   build-and-deploy:
@@ -60,17 +60,17 @@ jobs:
     - name: Update Kubernetes manifests
       run: |
         # Update image tags in deployment files
-        sed -i "s|image: k8s-webui-backend:latest|image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.meta.outputs.sha }}|g" ../base_infrastructure/k8s/k8s-webui/backend-deployment.yaml
-        sed -i "s|image: k8s-webui-frontend:latest|image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.meta.outputs.sha }}|g" ../base_infrastructure/k8s/k8s-webui/frontend-deployment.yaml
+        sed -i "s|image: denshimon-backend:latest|image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.meta.outputs.sha }}|g" ../base_infrastructure/k8s/denshimon/backend-deployment.yaml
+        sed -i "s|image: denshimon-frontend:latest|image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.meta.outputs.sha }}|g" ../base_infrastructure/k8s/denshimon/frontend-deployment.yaml
 
     - name: Deploy to Kubernetes
       run: |
-        cd ../base_infrastructure/k8s/k8s-webui
+        cd ../base_infrastructure/k8s/denshimon
         chmod +x deploy.sh
         ./deploy.sh
 
     - name: Verify deployment
       run: |
-        kubectl rollout status deployment/k8s-webui-backend -n k8s-webui --timeout=300s
-        kubectl rollout status deployment/k8s-webui-frontend -n k8s-webui --timeout=300s
-        kubectl get pods -n k8s-webui
+        kubectl rollout status deployment/denshimon-backend -n denshimon --timeout=300s
+        kubectl rollout status deployment/denshimon-frontend -n denshimon --timeout=300s
+        kubectl get pods -n denshimon

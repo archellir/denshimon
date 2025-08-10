@@ -89,7 +89,7 @@ Environment variables:
 
 ```bash
 PORT=8080                                    # Server port
-DATABASE_PATH=/app/data/k8s-webui.db        # SQLite database path
+DATABASE_PATH=/app/data/denshimon.db        # SQLite database path
 PASETO_SECRET_KEY=your-32-byte-secret-key    # PASETO signing key
 TOKEN_DURATION=24h                           # Token expiration
 LOG_LEVEL=info                               # Logging level
@@ -107,16 +107,16 @@ KUBECONFIG=/path/to/kubeconfig               # Kubernetes config (optional)
 ```bash
 cd backend
 go mod download
-go build -o k8s-webui cmd/server/main.go
+go build -o denshimon cmd/server/main.go
 ```
 
 ### Running
 ```bash
 # Development with local SQLite
-DATABASE_PATH=./dev.db ./k8s-webui
+DATABASE_PATH=./dev.db ./denshimon
 
 # Production with mounted volume
-DATABASE_PATH=/app/data/k8s-webui.db ./k8s-webui
+DATABASE_PATH=/app/data/denshimon.db ./denshimon
 ```
 
 ### Testing
@@ -151,8 +151,8 @@ Default demo users (password: "password"):
 
 ### Docker
 ```bash
-docker build -t k8s-webui:latest .
-docker run -p 8080:8080 -v data:/app/data k8s-webui:latest
+docker build -t denshimon:latest .
+docker run -p 8080:8080 -v data:/app/data denshimon:latest
 ```
 
 ### Kubernetes

@@ -1,26 +1,26 @@
 services:
   # K8s WebUI - Single service with embedded SPA and SQLite database
-  k8s-webui:
+  denshimon:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: k8s-webui
+    container_name: denshimon
     restart: unless-stopped
     environment:
       - PORT=8080
-      - DATABASE_PATH=/app/data/k8s-webui.db
+      - DATABASE_PATH=/app/data/denshimon.db
       - PASETO_SECRET_KEY=dev-32-byte-secret-key-for-prod!
       - TOKEN_DURATION=24h
       - LOG_LEVEL=debug
       - ENVIRONMENT=production
     volumes:
-      - ~/.kube:/home/k8s-webui/.kube:ro  # Mount kubeconfig for K8s access
+      - ~/.kube:/home/denshimon/.kube:ro  # Mount kubeconfig for K8s access
       - /var/run/docker.sock:/var/run/docker.sock:ro  # For Docker-in-Docker scenarios
       - k8s_webui_data:/app/data  # SQLite database storage
     ports:
       - "8080:8080"
     networks:
-      - k8s-webui-network
+      - denshimon-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -29,9 +29,9 @@ services:
 
 volumes:
   k8s_webui_data:
-    name: k8s-webui-data
+    name: denshimon-data
 
 networks:
-  k8s-webui-network:
-    name: k8s-webui-network
+  denshimon-network:
+    name: denshimon-network
     driver: bridge

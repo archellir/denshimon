@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/archellir/k8s-webui/internal/gitops"
+	"github.com/archellir/denshimon/internal/gitops"
 )
 
 func (s *Server) handleListRepositories(w http.ResponseWriter, r *http.Request) {

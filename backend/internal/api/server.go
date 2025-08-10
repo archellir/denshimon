@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/archellir/k8s-webui/internal/gitops"
+	"github.com/archellir/denshimon/internal/gitops"
 )
 
 type Server struct {

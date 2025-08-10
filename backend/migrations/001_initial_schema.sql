@@ -1,4 +1,4 @@
--- Initial database schema for k8s-webui
+-- Initial database schema for denshimon
 -- This file is automatically executed when PostgreSQL container starts
 
 -- Enable UUID extension

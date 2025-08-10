@@ -34,7 +34,7 @@ func Load() *Config {
 	return &Config{
 		Port:            getEnv("PORT", "8080"),
 		Environment:     getEnv("ENVIRONMENT", "development"),
-		DatabasePath:    getEnv("DATABASE_PATH", "/app/data/k8s-webui.db"),
+		DatabasePath:    getEnv("DATABASE_PATH", "/app/data/denshimon.db"),
 		PasetoKey:       getEnv("PASETO_SECRET_KEY", generateDefaultKey()),
 		TokenDuration:   getDuration("TOKEN_DURATION", 24*time.Hour),
 		KubeConfig:      getEnv("KUBECONFIG", ""),

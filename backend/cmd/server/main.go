@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/archellir/k8s-webui/internal/api"
-	"github.com/archellir/k8s-webui/internal/auth"
-	"github.com/archellir/k8s-webui/internal/database"
-	"github.com/archellir/k8s-webui/internal/k8s"
-	"github.com/archellir/k8s-webui/pkg/config"
+	"github.com/archellir/denshimon/internal/api"
+	"github.com/archellir/denshimon/internal/auth"
+	"github.com/archellir/denshimon/internal/database"
+	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/pkg/config"
 )
 
 //go:embed all:spa

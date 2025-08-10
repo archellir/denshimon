@@ -40,12 +40,12 @@ The application will be packaged as a single container image and pushed to a Git
 ### Gitea Registry Integration
 ```bash
 # Build and push to Gitea
-docker build -t gitea.example.com/org/k8s-webui:latest .
-docker push gitea.example.com/org/k8s-webui:latest
+docker build -t gitea.example.com/org/denshimon:latest .
+docker push gitea.example.com/org/denshimon:latest
 
 # Image will be pulled by K8s from Gitea registry
 # K8s manifests in separate repo will reference:
-# image: gitea.example.com/org/k8s-webui:latest
+# image: gitea.example.com/org/denshimon:latest
 ```
 
 ## Authentication Flow (PASETO)
@@ -312,17 +312,17 @@ pnpm run dev
 ### Building for Production
 ```bash
 # Build container
-docker build -t gitea.example.com/org/k8s-webui:v1.0.0 .
+docker build -t gitea.example.com/org/denshimon:v1.0.0 .
 
 # Test locally
 docker run -p 8080:8080 \
   -e DATABASE_URL=... \
   -e REDIS_URL=... \
   -e PASETO_SECRET_KEY=... \
-  gitea.example.com/org/k8s-webui:v1.0.0
+  gitea.example.com/org/denshimon:v1.0.0
 
 # Push to Gitea
-docker push gitea.example.com/org/k8s-webui:v1.0.0
+docker push gitea.example.com/org/denshimon:v1.0.0
 ```
 
 ### CI/CD Pipeline

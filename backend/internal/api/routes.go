@@ -3,11 +3,11 @@ package api
 import (
 	"net/http"
 
-	"github.com/archellir/k8s-webui/internal/auth"
-	"github.com/archellir/k8s-webui/internal/database"
-	"github.com/archellir/k8s-webui/internal/gitops"
-	"github.com/archellir/k8s-webui/internal/k8s"
-	"github.com/archellir/k8s-webui/internal/metrics"
+	"github.com/archellir/denshimon/internal/auth"
+	"github.com/archellir/denshimon/internal/database"
+	"github.com/archellir/denshimon/internal/gitops"
+	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/internal/metrics"
 )
 
 func RegisterRoutes(

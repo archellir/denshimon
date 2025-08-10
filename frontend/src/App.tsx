@@ -11,7 +11,7 @@ const App: FC = () => {
         <header className="border-b border-white/20 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold cursor">
-              K8S-WEBUI_INIT
+              DENSHIMON_INIT
             </h1>
             <div className="text-sm text-green-500">
               [SYSTEM_ONLINE]

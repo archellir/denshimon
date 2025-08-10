@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/archellir/k8s-webui/internal/auth"
-	"github.com/archellir/k8s-webui/internal/k8s"
+	"github.com/archellir/denshimon/internal/auth"
+	"github.com/archellir/denshimon/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -348,10 +348,10 @@ func (h *KubernetesHandlers) HealthCheck(w http.ResponseWriter, r *http.Request)
 
 	// Try to list namespaces as a health check
 	_, err := h.k8sClient.Clientset().CoreV1().Namespaces().List(ctx, metav1.ListOptions{Limit: 1})
-	
+
 	status := "healthy"
 	statusCode := http.StatusOK
-	
+
 	if err != nil {
 		status = "unhealthy"
 		statusCode = http.StatusServiceUnavailable
@@ -361,7 +361,7 @@ func (h *KubernetesHandlers) HealthCheck(w http.ResponseWriter, r *http.Request)
 		"status":    status,
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-	
+
 	if err != nil {
 		response["error"] = err.Error()
 	}
@@ -375,13 +375,13 @@ func (h *KubernetesHandlers) HealthCheck(w http.ResponseWriter, r *http.Request)
 func getPodReadyStatus(pod *corev1.Pod) string {
 	ready := 0
 	total := len(pod.Status.ContainerStatuses)
-	
+
 	for _, status := range pod.Status.ContainerStatuses {
 		if status.Ready {
 			ready++
 		}
 	}
-	
+
 	return fmt.Sprintf("%d/%d", ready, total)
 }
 
@@ -427,7 +427,7 @@ func formatAge(creationTime time.Time) string {
 	days := int(duration.Hours() / 24)
 	hours := int(duration.Hours()) % 24
 	minutes := int(duration.Minutes()) % 60
-	
+
 	if days > 0 {
 		return fmt.Sprintf("%dd", days)
 	} else if hours > 0 {

@@ -17,7 +17,7 @@ build/
 
 # Go compiled binaries
 backend/server
-backend/k8s-webui
+backend/denshimon
 backend/dist/
 *.exe
 *.dll
