@@ -9,6 +9,7 @@ import CreateApplicationModal from './gitops/CreateApplicationModal';
 import RepositoryDetails from './gitops/RepositoryDetails';
 import ApplicationDetails from './gitops/ApplicationDetails';
 import type { DetailsState } from '../types/components';
+import type { Repository, Application } from '@/types/gitops';
 
 const GitOps: FC = () => {
   const [activeTab, setActiveTab] = useState<'repositories' | 'applications'>('repositories');
@@ -226,14 +227,14 @@ const GitOps: FC = () => {
 
       {showDetails && showDetails.type === 'repository' && (
         <RepositoryDetails
-          repository={showDetails.data}
+          repository={showDetails.data as Repository}
           onClose={() => setShowDetails(null)}
         />
       )}
 
       {showDetails && showDetails.type === 'application' && (
         <ApplicationDetails
-          application={showDetails.data}
+          application={showDetails.data as Application}
           onClose={() => setShowDetails(null)}
         />
       )}

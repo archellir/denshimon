@@ -201,7 +201,7 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
                 <button
                   key={auth.id}
                   type="button"
-                  onClick={() => handleAuthTypeChange(auth.id)}
+                  onClick={() => handleAuthTypeChange(auth.id as 'none' | 'token' | 'ssh')}
                   className={`flex items-center space-x-2 px-4 py-3 border-r border-white last:border-r-0 font-mono text-sm transition-colors ${
                     activeAuthTab === auth.id
                       ? 'bg-white text-black'
@@ -250,7 +250,7 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
                     value={formData.credentials.private_key || ''}
                     onChange={(e) => handleCredentialChange('private_key', e.target.value)}
                     placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-                    rows="6"
+                    rows={6}
                     className={`w-full px-3 py-2 bg-black border font-mono text-sm focus:outline-none resize-none ${
                       errors.private_key ? 'border-red-400' : 'border-white focus:border-green-400'
                     }`}
