@@ -34,20 +34,16 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
-	// Initialize database connections
-	db, err := database.NewPostgresDB(cfg.DatabaseURL)
+	// Initialize SQLite database
+	db, err := database.NewSQLiteDB(cfg.DatabasePath)
 	if err != nil {
-		slog.Error("Failed to connect to PostgreSQL", "error", err)
+		slog.Error("Failed to initialize SQLite database", "error", err)
 		os.Exit(1)
 	}
 	defer db.Close()
-
-	redis, err := database.NewRedisClient(cfg.RedisURL)
-	if err != nil {
-		slog.Error("Failed to connect to Redis", "error", err)
-		os.Exit(1)
-	}
-	defer redis.Close()
+	
+	// Start cleanup worker for expired sessions and cache
+	db.StartCleanupWorker()
 
 	// Initialize Kubernetes client (optional in development)
 	k8sClient, err := k8s.NewClient(cfg.KubeConfig)
@@ -61,13 +57,13 @@ func main() {
 	}
 
 	// Initialize PASETO auth
-	authService := auth.NewService(cfg.PasetoKey, redis)
+	authService := auth.NewService(cfg.PasetoKey, db)
 
 	// Setup HTTP router using standard library
 	mux := http.NewServeMux()
 
 	// API routes
-	api.RegisterRoutes(mux, authService, k8sClient, db, redis)
+	api.RegisterRoutes(mux, authService, k8sClient, db)
 
 	// Health check endpoint
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
