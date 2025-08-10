@@ -11,6 +11,9 @@ RUN pnpm run build
 # Go builder stage
 FROM golang:1.24-alpine AS backend-builder
 
+# Install build dependencies for CGO (SQLite)
+RUN apk add --no-cache gcc musl-dev sqlite-dev
+
 WORKDIR /app
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
@@ -19,7 +22,7 @@ COPY backend/ .
 # Copy built frontend assets for embedding
 COPY --from=frontend-builder /app/frontend/dist ./cmd/server/spa/
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o k8s-webui cmd/server/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o k8s-webui cmd/server/main.go
 
 # Final minimal image
 FROM alpine:latest
