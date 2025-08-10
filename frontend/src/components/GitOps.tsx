@@ -9,7 +9,7 @@ import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
 import RepositoryDetails from '@components/gitops/RepositoryDetails';
 import ApplicationDetails from '@components/gitops/ApplicationDetails';
 import type { DetailsState } from '@types/components';
-import type { Repository, Application } from '@/types/gitops';
+import type { Repository, Application } from '@types/gitops';
 
 const GitOps: FC = () => {
   const [activeTab, setActiveTab] = useState<'repositories' | 'applications'>('repositories');

@@ -13,7 +13,7 @@ import {
   Pause
 } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
-import type { Application } from '@/types/gitops';
+import type { Application } from '@types/gitops';
 
 interface ApplicationListProps {
   onShowDetails: (application: Application) => void;

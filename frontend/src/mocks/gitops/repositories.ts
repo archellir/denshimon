@@ -45,7 +45,7 @@ export const mockApplications: Application[] = [
     path: 'apps/nginx',
     namespace: 'default',
     sync_policy: {
-      automated: true,
+      auto_sync: true,
       prune: true,
       self_heal: true
     },
@@ -62,7 +62,7 @@ export const mockApplications: Application[] = [
     path: 'services/api',
     namespace: 'production',
     sync_policy: {
-      automated: true,
+      auto_sync: true,
       prune: false,
       self_heal: true
     },
@@ -79,7 +79,7 @@ export const mockApplications: Application[] = [
     path: 'monitoring',
     namespace: 'monitoring',
     sync_policy: {
-      automated: false,
+      auto_sync: false,
       prune: true,
       self_heal: false
     },
@@ -96,7 +96,7 @@ export const mockApplications: Application[] = [
     path: 'apps/failing',
     namespace: 'production',
     sync_policy: {
-      automated: true,
+      auto_sync: true,
       prune: true,
       self_heal: true
     },
@@ -114,7 +114,7 @@ export const mockApplications: Application[] = [
     path: 'databases/postgresql',
     namespace: 'production',
     sync_policy: {
-      automated: false,
+      auto_sync: false,
       prune: false,
       self_heal: false
     },

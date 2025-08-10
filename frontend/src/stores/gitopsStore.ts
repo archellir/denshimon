@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@types/gitops';
+import { mockRepositories, mockApplications, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 
 const useGitOpsStore = create<GitOpsStore>()(
   subscribeWithSelector((set, get) => ({
@@ -39,6 +40,15 @@ const useGitOpsStore = create<GitOpsStore>()(
       set({ isLoading: true, error: null });
       
       try {
+        if (MOCK_ENABLED) {
+          const repositories = await mockApiResponse(mockRepositories);
+          set({ 
+            repositories,
+            isLoading: false 
+          });
+          return;
+        }
+
         const response = await fetch('/api/gitops/repositories', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -152,6 +162,12 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Fetch applications
     fetchApplications: async () => {
       try {
+        if (MOCK_ENABLED) {
+          const applications = await mockApiResponse(mockApplications);
+          set({ applications });
+          return;
+        }
+
         const response = await fetch('/api/gitops/applications', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,

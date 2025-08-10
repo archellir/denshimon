@@ -1,8 +1,9 @@
 // Central mock data exports
 export { mockNodes } from './k8s/nodes';
 export { mockPods } from './k8s/pods';
+export { mockNamespaces } from './k8s/namespaces';
 export { mockClusterMetrics, mockMetricsHistory, generateMockMetricsHistory } from './metrics/cluster';
-export { mockLogs, generateMockLogs, type LogEntry } from './logs/system';
+export { mockLogs, generateMockLogs } from './logs/system';
 export { mockRepositories, mockApplications } from './gitops/repositories';
 
 // Mock environment flag

@@ -1,17 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { FC } from 'react';
 import { Search, Filter, Download, RefreshCw, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
-
-interface LogEntry {
-  id: string;
-  timestamp: string;
-  level: 'debug' | 'info' | 'warn' | 'error';
-  source: string;
-  message: string;
-  metadata?: Record<string, any>;
-  user?: string;
-  action?: string;
-}
+import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import type { LogEntry } from '@types/logs';
 
 const Logs: FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -22,9 +13,9 @@ const Logs: FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Generate mock log data
+  // Load mock log data
   useEffect(() => {
-    generateMockLogs();
+    loadLogs();
   }, []);
 
   // Auto-refresh effect
@@ -32,60 +23,21 @@ const Logs: FC = () => {
     if (!autoRefresh) return;
 
     const interval = setInterval(() => {
-      generateMockLogs();
+      loadLogs();
     }, 5000);
 
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
-  const generateMockLogs = () => {
-    const levels: LogEntry['level'][] = ['debug', 'info', 'warn', 'error'];
-    const sources = ['auth', 'api', 'k8s', 'gitops', 'metrics', 'database'];
-    const users = ['admin', 'operator', 'viewer', 'system'];
-    const actions = ['login', 'logout', 'create', 'update', 'delete', 'sync', 'deploy'];
-    
-    const messages = [
-      'User authentication successful',
-      'Failed to connect to Kubernetes cluster',
-      'GitOps repository sync completed',
-      'High memory usage detected on node worker-1',
-      'Application deployment started',
-      'Database connection established',
-      'Token validation failed',
-      'Metrics collection updated',
-      'Pod restart triggered',
-      'Configuration updated',
-      'Backup process initiated',
-      'Alert threshold exceeded',
-      'Service health check passed',
-      'Resource quota reached',
-      'Network policy applied',
-    ];
-
-    const newLogs: LogEntry[] = Array.from({ length: 100 }, (_, i) => {
-      const level = levels[Math.floor(Math.random() * levels.length)];
-      const source = sources[Math.floor(Math.random() * sources.length)];
-      const message = messages[Math.floor(Math.random() * messages.length)];
-      const user = users[Math.floor(Math.random() * users.length)];
-      const action = actions[Math.floor(Math.random() * actions.length)];
-      
-      return {
-        id: `log-${Date.now()}-${i}`,
-        timestamp: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-        level,
-        source,
-        message,
-        user: Math.random() > 0.3 ? user : undefined,
-        action: Math.random() > 0.4 ? action : undefined,
-        metadata: {
-          ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
-          duration: Math.floor(Math.random() * 5000),
-          ...(level === 'error' && { error_code: `ERR_${Math.floor(Math.random() * 9999)}` }),
-        },
-      };
-    }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-    setLogs(newLogs);
+  const loadLogs = async () => {
+    if (MOCK_ENABLED) {
+      const mockLogs = await mockApiResponse(generateMockLogs());
+      setLogs(mockLogs);
+    } else {
+      // Real API call would go here
+      // For now, fallback to empty array
+      setLogs([]);
+    }
   };
 
   // Filter logs based on search and filters
@@ -155,7 +107,7 @@ const Logs: FC = () => {
   const refreshLogs = () => {
     setIsLoading(true);
     setTimeout(() => {
-      generateMockLogs();
+      loadLogs();
       setIsLoading(false);
     }, 1000);
   };

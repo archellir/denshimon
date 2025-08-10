@@ -9,29 +9,31 @@ export const mockClusterMetrics: ClusterMetrics = {
   failed_pods: 1,
   total_namespaces: 5,
   cpu_usage: {
+    usage: 4.08, // In cores
     used: 4080, // Total CPU usage in millicores
     total: 10000, // Total CPU capacity in millicores
     available: 5920,
     usage_percent: 40.8,
-    usage: 4.08, // In cores
-    limit: 10.0
+    unit: 'millicores'
   },
   memory_usage: {
+    usage: 6409142272, // ~6GB
     used: 6409142272, // ~6GB
     total: 21474836480, // ~20GB
     available: 15065694208,
     usage_percent: 29.9,
-    usage: 6409142272,
-    limit: 21474836480
+    unit: 'bytes'
   },
   storage_usage: {
+    usage: 120259084288, // ~112GB
     used: 120259084288, // ~112GB
     total: 268435456000, // ~250GB
     available: 148176371712,
     usage_percent: 44.8,
-    usage: 120259084288,
-    limit: 268435456000
+    unit: 'bytes'
   },
+  healthy_pods: 8,
+  unhealthy_pods: 2,
   last_updated: new Date().toISOString()
 };
 

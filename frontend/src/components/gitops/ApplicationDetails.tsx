@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { X, Package, Heart, RotateCw, Clock, CheckCircle, AlertCircle, Pause } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import type { Application } from '@/types/gitops';
+import type { Application } from '@types/gitops';
 
 interface ApplicationDetailsProps {
   application: Application;

@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory } from '@types/metrics';
+import { 
+  mockClusterMetrics, 
+  mockNodes, 
+  mockPods, 
+  mockNamespaces, 
+  generateMockMetricsHistory,
+  mockApiResponse,
+  MOCK_ENABLED 
+} from '@mocks/index';
 
 const useMetricsStore = create<MetricsStore>()(
   subscribeWithSelector((set, get) => ({
@@ -42,6 +51,15 @@ const useMetricsStore = create<MetricsStore>()(
       set({ isLoading: true, error: null });
       
       try {
+        if (MOCK_ENABLED) {
+          const metrics = await mockApiResponse(mockClusterMetrics);
+          set({ 
+            clusterMetrics: metrics,
+            isLoading: false 
+          });
+          return;
+        }
+
         const response = await fetch('/api/metrics/cluster', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -68,6 +86,25 @@ const useMetricsStore = create<MetricsStore>()(
     // Fetch node metrics
     fetchNodeMetrics: async (nodeName: string = '') => {
       try {
+        if (MOCK_ENABLED) {
+          if (nodeName) {
+            // Single node metric
+            const node = mockNodes.find(n => n.name === nodeName);
+            if (node) {
+              const { nodeMetrics } = get();
+              const updatedMetrics = nodeMetrics.map(n => 
+                n.name === nodeName ? node : n
+              );
+              set({ nodeMetrics: updatedMetrics });
+            }
+          } else {
+            // All nodes
+            const nodes = await mockApiResponse(mockNodes);
+            set({ nodeMetrics: nodes });
+          }
+          return;
+        }
+
         const url = nodeName 
           ? `/api/metrics/nodes?node=${nodeName}`
           : '/api/metrics/nodes';
@@ -103,6 +140,25 @@ const useMetricsStore = create<MetricsStore>()(
     // Fetch pod metrics
     fetchPodMetrics: async (namespace: string = '', podName: string = '') => {
       try {
+        if (MOCK_ENABLED) {
+          let filteredPods = mockPods;
+          
+          if (namespace) {
+            filteredPods = filteredPods.filter(pod => pod.namespace === namespace);
+          }
+          
+          if (podName) {
+            const pod = filteredPods.find(p => p.name === podName);
+            if (pod) {
+              set({ podMetrics: [pod] });
+            }
+          } else {
+            const pods = await mockApiResponse(filteredPods);
+            set({ podMetrics: pods });
+          }
+          return;
+        }
+
         let url = '/api/metrics/pods';
         const params = new URLSearchParams();
         
@@ -140,6 +196,12 @@ const useMetricsStore = create<MetricsStore>()(
     // Fetch namespace metrics
     fetchNamespaceMetrics: async () => {
       try {
+        if (MOCK_ENABLED) {
+          const namespaces = await mockApiResponse(mockNamespaces);
+          set({ namespaceMetrics: namespaces });
+          return;
+        }
+
         const response = await fetch('/api/metrics/namespaces', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -165,6 +227,15 @@ const useMetricsStore = create<MetricsStore>()(
       set({ isLoadingHistory: true });
       
       try {
+        if (MOCK_ENABLED) {
+          const history = await mockApiResponse(generateMockMetricsHistory(duration));
+          set({ 
+            metricsHistory: history,
+            isLoadingHistory: false 
+          });
+          return;
+        }
+
         const response = await fetch(`/api/metrics/history?duration=${duration}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
