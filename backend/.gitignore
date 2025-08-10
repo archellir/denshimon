@@ -1,0 +1,30 @@
+# Frontend build assets (embedded in Go binary)
+cmd/server/spa/assets/
+cmd/server/spa/*.css
+cmd/server/spa/*.js
+!cmd/server/spa/index.html
+
+# Database files for development
+*.db-shm
+*.db-wal
+test-app.db
+
+# Go build artifacts
+/tmp/
+server
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

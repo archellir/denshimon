@@ -7,9 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
-dist
-dist-ssr
+
+# Build outputs
+dist/
+dist-ssr/
+build/
 *.local
 
 # Editor directories and files
@@ -22,3 +26,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mock data cache (optional)
+src/mocks/.cache/
