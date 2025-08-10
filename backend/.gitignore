@@ -1,8 +1,5 @@
 # Frontend build assets (embedded in Go binary)
-cmd/server/spa/assets/
-cmd/server/spa/*.css
-cmd/server/spa/*.js
-!cmd/server/spa/index.html
+cmd/server/spa/
 
 # Database files for development
 *.db-shm

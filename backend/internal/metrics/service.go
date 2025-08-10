@@ -112,8 +112,8 @@ func NewService(k8sClient *k8s.Client) *Service {
 
 func (s *Service) GetClusterMetrics(ctx context.Context) (*ClusterMetrics, error) {
 	if s.k8sClient == nil {
-		// Return mock data for testing
-		return s.getMockClusterMetrics(), nil
+		// Frontend handles mock data
+		return nil, errors.New("kubernetes client not available - use frontend mock data")
 	}
 
 	metrics := &ClusterMetrics{
@@ -190,14 +190,8 @@ func (s *Service) GetClusterMetrics(ctx context.Context) (*ClusterMetrics, error
 
 func (s *Service) GetNodeMetrics(ctx context.Context, nodeName string) (*NodeMetrics, error) {
 	if s.k8sClient == nil {
-		// Return mock data for testing
-		mockNodes, _ := s.getMockNodeMetrics()
-		for _, node := range mockNodes {
-			if node.Name == nodeName {
-				return &node, nil
-			}
-		}
-		return nil, fmt.Errorf("node not found")
+		// Frontend handles mock data
+		return nil, errors.New("kubernetes client not available - use frontend mock data")
 	}
 
 	node, err := s.k8sClient.GetNode(ctx, nodeName)
@@ -216,28 +210,8 @@ func (s *Service) GetNodeMetrics(ctx context.Context, nodeName string) (*NodeMet
 
 func (s *Service) GetPodMetrics(ctx context.Context, namespace, podName string) (*PodMetrics, error) {
 	if s.k8sClient == nil {
-		// Return mock data for testing
-		return &PodMetrics{
-			Name:      podName,
-			Namespace: namespace,
-			Status:    "Running",
-			Node:      "worker-1",
-			CPUUsage: ResourceMetrics{
-				Used:         100,
-				Total:        500,
-				Available:    400,
-				UsagePercent: 20.0,
-			},
-			MemoryUsage: ResourceMetrics{
-				Used:         128 * 1024 * 1024,
-				Total:        512 * 1024 * 1024,
-				Available:    384 * 1024 * 1024,
-				UsagePercent: 25.0,
-			},
-			RestartCount: 0,
-			Age:          "2h",
-			IP:           "10.244.1.15",
-		}, nil
+		// Frontend handles mock data
+		return nil, errors.New("kubernetes client not available - use frontend mock data")
 	}
 
 	pod, err := s.k8sClient.GetPod(ctx, namespace, podName)
@@ -250,42 +224,9 @@ func (s *Service) GetPodMetrics(ctx context.Context, namespace, podName string) 
 }
 
 func (s *Service) GetMetricsHistory(ctx context.Context, duration time.Duration) (*MetricsHistory, error) {
-	// For now, return mock historical data
+	// Frontend handles mock data
 	// In production, this would query a metrics database like Prometheus
-	history := &MetricsHistory{
-		CPU:    make([]TimeSeriesData, 0),
-		Memory: make([]TimeSeriesData, 0),
-		Pods:   make([]TimeSeriesData, 0),
-		Nodes:  make([]TimeSeriesData, 0),
-	}
-
-	// Generate sample data points for the last hour
-	now := time.Now()
-	for i := 60; i >= 0; i-- {
-		timestamp := now.Add(-time.Duration(i) * time.Minute)
-		
-		history.CPU = append(history.CPU, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     30 + float64(i%20),
-		})
-		
-		history.Memory = append(history.Memory, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     45 + float64(i%15),
-		})
-		
-		history.Pods = append(history.Pods, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     float64(20 + i%10),
-		})
-		
-		history.Nodes = append(history.Nodes, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     float64(3 + i%2),
-		})
-	}
-
-	return history, nil
+	return nil, errors.New("metrics history not available - use frontend mock data")
 }
 
 func (s *Service) isNodeReady(node corev1.Node) bool {
@@ -457,13 +398,13 @@ func (s *Service) getNamespaceMetrics(ctx context.Context, namespace corev1.Name
 		Name:     namespace.Name,
 		PodCount: podCount,
 		CPUUsage: ResourceMetrics{
-			Used:         int64(podCount * 100), // Mock CPU usage
+			Used:         int64(podCount * 100), // Simple estimate based on pod count
 			Total:        int64(podCount * 300),
 			Available:    int64(podCount * 200),
 			UsagePercent: 33.3,
 		},
 		MemoryUsage: ResourceMetrics{
-			Used:         int64(podCount * 128 * 1024 * 1024), // Mock memory usage
+			Used:         int64(podCount * 128 * 1024 * 1024), // Simple estimate based on pod count
 			Total:        int64(podCount * 512 * 1024 * 1024),
 			Available:    int64(podCount * 384 * 1024 * 1024),
 			UsagePercent: 25.0,
@@ -487,7 +428,7 @@ func (s *Service) getPodMetrics(ctx context.Context, pod corev1.Pod) PodMetrics 
 		Status:    string(pod.Status.Phase),
 		Node:      pod.Spec.NodeName,
 		CPUUsage: ResourceMetrics{
-			Used:         100,  // Mock values - would come from metrics server
+			Used:         100,  // Would come from metrics server in production
 			Total:        500,
 			Available:    400,
 			UsagePercent: 20.0,
@@ -504,196 +445,3 @@ func (s *Service) getPodMetrics(ctx context.Context, pod corev1.Pod) PodMetrics 
 	}
 }
 
-// Mock data functions for testing without k8s cluster
-func (s *Service) getMockClusterMetrics() *ClusterMetrics {
-	mockNodes, _ := s.getMockNodeMetrics()
-	return &ClusterMetrics{
-		Timestamp:       time.Now(),
-		TotalNodes:      4,
-		ReadyNodes:      3,
-		TotalPods:       9,
-		RunningPods:     7,
-		PendingPods:     1,
-		FailedPods:      1,
-		TotalNamespaces: 3,
-		CPUUsage: ResourceMetrics{
-			Used:         2400,
-			Total:        8000,
-			Available:    5600,
-			UsagePercent: 30.0,
-		},
-		MemoryUsage: ResourceMetrics{
-			Used:         4 * 1024 * 1024 * 1024,
-			Total:        16 * 1024 * 1024 * 1024,
-			Available:    12 * 1024 * 1024 * 1024,
-			UsagePercent: 25.0,
-		},
-		StorageUsage: ResourceMetrics{
-			Used:         50 * 1024 * 1024 * 1024,
-			Total:        100 * 1024 * 1024 * 1024,
-			Available:    50 * 1024 * 1024 * 1024,
-			UsagePercent: 50.0,
-		},
-		NetworkMetrics: NetworkMetrics{
-			BytesReceived:      1024 * 1024 * 100,
-			BytesTransmitted:   1024 * 1024 * 80,
-			PacketsReceived:    10000,
-			PacketsTransmitted: 8000,
-		},
-		NodeMetrics: mockNodes,
-	}
-}
-
-func (s *Service) getMockNodeMetrics() ([]NodeMetrics, error) {
-	return []NodeMetrics{
-		{
-			Name:   "master-1",
-			Status: "Ready",
-			CPUUsage: ResourceMetrics{
-				Used:         800,
-				Total:        2000,
-				Available:    1200,
-				UsagePercent: 40.0,
-			},
-			MemoryUsage: ResourceMetrics{
-				Used:         2 * 1024 * 1024 * 1024,
-				Total:        4 * 1024 * 1024 * 1024,
-				Available:    2 * 1024 * 1024 * 1024,
-				UsagePercent: 50.0,
-			},
-			StorageUsage: ResourceMetrics{
-				Used:         20 * 1024 * 1024 * 1024,
-				Total:        30 * 1024 * 1024 * 1024,
-				Available:    10 * 1024 * 1024 * 1024,
-				UsagePercent: 66.7,
-			},
-			PodCount:     3,
-			Age:          "30d",
-			Version:      "v1.29.2",
-			OS:           "Ubuntu 22.04.4 LTS",
-			Architecture: "amd64",
-		},
-		{
-			Name:   "worker-1",
-			Status: "Ready",
-			CPUUsage: ResourceMetrics{
-				Used:         600,
-				Total:        2000,
-				Available:    1400,
-				UsagePercent: 30.0,
-			},
-			MemoryUsage: ResourceMetrics{
-				Used:         1 * 1024 * 1024 * 1024,
-				Total:        4 * 1024 * 1024 * 1024,
-				Available:    3 * 1024 * 1024 * 1024,
-				UsagePercent: 25.0,
-			},
-			StorageUsage: ResourceMetrics{
-				Used:         15 * 1024 * 1024 * 1024,
-				Total:        30 * 1024 * 1024 * 1024,
-				Available:    15 * 1024 * 1024 * 1024,
-				UsagePercent: 50.0,
-			},
-			PodCount:     2,
-			Age:          "30d",
-			Version:      "v1.29.2",
-			OS:           "Ubuntu 22.04.4 LTS",
-			Architecture: "amd64",
-		},
-		{
-			Name:   "worker-2",
-			Status: "Ready",
-			CPUUsage: ResourceMetrics{
-				Used:         500,
-				Total:        2000,
-				Available:    1500,
-				UsagePercent: 25.0,
-			},
-			MemoryUsage: ResourceMetrics{
-				Used:         512 * 1024 * 1024,
-				Total:        4 * 1024 * 1024 * 1024,
-				Available:    3584 * 1024 * 1024,
-				UsagePercent: 12.5,
-			},
-			StorageUsage: ResourceMetrics{
-				Used:         10 * 1024 * 1024 * 1024,
-				Total:        20 * 1024 * 1024 * 1024,
-				Available:    10 * 1024 * 1024 * 1024,
-				UsagePercent: 50.0,
-			},
-			PodCount:     2,
-			Age:          "30d",
-			Version:      "v1.29.2",
-			OS:           "Ubuntu 22.04.4 LTS",
-			Architecture: "amd64",
-		},
-		{
-			Name:   "worker-3",
-			Status: "NotReady",
-			CPUUsage: ResourceMetrics{
-				Used:         500,
-				Total:        2000,
-				Available:    1500,
-				UsagePercent: 25.0,
-			},
-			MemoryUsage: ResourceMetrics{
-				Used:         512 * 1024 * 1024,
-				Total:        4 * 1024 * 1024 * 1024,
-				Available:    3584 * 1024 * 1024,
-				UsagePercent: 12.5,
-			},
-			StorageUsage: ResourceMetrics{
-				Used:         5 * 1024 * 1024 * 1024,
-				Total:        20 * 1024 * 1024 * 1024,
-				Available:    15 * 1024 * 1024 * 1024,
-				UsagePercent: 25.0,
-			},
-			PodCount:     2,
-			Age:          "25d",
-			Version:      "v1.29.2",
-			OS:           "Ubuntu 22.04.4 LTS",
-			Architecture: "amd64",
-		},
-	}, nil
-}
-
-func (s *Service) getMockMetricsHistory() *MetricsHistory {
-	now := time.Now()
-	history := &MetricsHistory{
-		CPU:    []TimeSeriesData{},
-		Memory: []TimeSeriesData{},
-		Pods:   []TimeSeriesData{},
-		Nodes:  []TimeSeriesData{},
-	}
-
-	// Generate mock time series data for the last hour
-	for i := 60; i >= 0; i-- {
-		timestamp := now.Add(-time.Duration(i) * time.Minute)
-		
-		// CPU usage fluctuating between 20-40%
-		history.CPU = append(history.CPU, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     20.0 + float64(i%20),
-		})
-		
-		// Memory usage fluctuating between 40-60%
-		history.Memory = append(history.Memory, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     40.0 + float64(i%20),
-		})
-		
-		// Pod count varying between 7-10
-		history.Pods = append(history.Pods, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     float64(7 + i%4),
-		})
-		
-		// Node count stable at 4
-		history.Nodes = append(history.Nodes, TimeSeriesData{
-			Timestamp: timestamp,
-			Value:     4.0,
-		})
-	}
-
-	return history
-}
