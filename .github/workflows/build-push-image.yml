@@ -46,6 +46,15 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix={{branch}}-
 
+      - name: Clean old images
+        if: github.event_name != 'pull_request'
+        run: |
+          # Keep only 2 most recent images (current + rollback)
+          curl -X DELETE \
+            -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            "https://${{ env.REGISTRY }}/api/v1/packages/archellir/container/denshimon/versions" \
+            --data '{"keep": 2}'
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
