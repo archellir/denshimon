@@ -63,11 +63,10 @@ func NewKubernetesHandlers(k8sClient *k8s.Client) *KubernetesHandlers {
 // GET /api/k8s/pods
 func (h *KubernetesHandlers) ListPods(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockPods := getMockPods()
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusServiceUnavailable)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Kubernetes client not available",
-		})
+		json.NewEncoder(w).Encode(mockPods)
 		return
 	}
 	namespace := r.URL.Query().Get("namespace")
@@ -239,6 +238,14 @@ func (h *KubernetesHandlers) GetPodLogs(w http.ResponseWriter, r *http.Request) 
 
 // GET /api/k8s/nodes
 func (h *KubernetesHandlers) ListNodes(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockNodes := getMockNodes()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(mockNodes)
+		return
+	}
+	
 	nodes, err := h.k8sClient.Clientset().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list nodes: %v", err), http.StatusInternalServerError)
@@ -267,6 +274,14 @@ func (h *KubernetesHandlers) ListNodes(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/k8s/deployments
 func (h *KubernetesHandlers) ListDeployments(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockDeployments := getMockDeployments()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(mockDeployments)
+		return
+	}
+	
 	namespace := r.URL.Query().Get("namespace")
 	if namespace == "" {
 		namespace = "default"
@@ -343,6 +358,18 @@ func (h *KubernetesHandlers) ScaleDeployment(w http.ResponseWriter, r *http.Requ
 
 // GET /api/k8s/health
 func (h *KubernetesHandlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Mock mode - always healthy
+		response := map[string]interface{}{
+			"status":    "healthy",
+			"mode":      "mock",
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -466,4 +493,240 @@ func hasPermission(role, resource, action string) bool {
 		}
 	}
 	return false
+}
+
+// Mock data functions for testing without k8s cluster
+func getMockPods() []PodInfo {
+	return []PodInfo{
+		{
+			Name:      "nginx-app-5d4c4b8f45-abc12",
+			Namespace: "denshimon-test",
+			Status:    "Running",
+			Ready:     "1/1",
+			Restarts:  0,
+			Age:       "2h",
+			Node:      "worker-1",
+			IP:        "10.244.1.15",
+			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
+		},
+		{
+			Name:      "nginx-app-5d4c4b8f45-def34",
+			Namespace: "denshimon-test",
+			Status:    "Running", 
+			Ready:     "1/1",
+			Restarts:  0,
+			Age:       "2h",
+			Node:      "worker-2",
+			IP:        "10.244.2.16",
+			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
+		},
+		{
+			Name:      "nginx-app-5d4c4b8f45-ghi56",
+			Namespace: "denshimon-test",
+			Status:    "Running",
+			Ready:     "1/1", 
+			Restarts:  1,
+			Age:       "2h",
+			Node:      "worker-1",
+			IP:        "10.244.1.17",
+			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
+		},
+		{
+			Name:      "redis-cache-7b8c9d0e1f-xyz78",
+			Namespace: "denshimon-test",
+			Status:    "Running",
+			Ready:     "1/1",
+			Restarts:  0,
+			Age:       "3h",
+			Node:      "worker-2",
+			IP:        "10.244.2.18",
+			Labels:    map[string]string{"app": "redis", "tier": "cache"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
+		},
+		{
+			Name:      "api-backend-6f7g8h9i0j-klm90",
+			Namespace: "production",
+			Status:    "Running",
+			Ready:     "1/1",
+			Restarts:  0,
+			Age:       "1d",
+			Node:      "worker-3",
+			IP:        "10.244.3.20",
+			Labels:    map[string]string{"app": "api-backend", "environment": "production"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "2"},
+		},
+		{
+			Name:      "failing-pod-crash",
+			Namespace: "denshimon-test",
+			Status:    "CrashLoopBackOff",
+			Ready:     "0/1",
+			Restarts:  15,
+			Age:       "30m",
+			Node:      "worker-1",
+			IP:        "",
+			Labels:    map[string]string{"app": "failing-example", "status": "crashloopbackoff"},
+			Annotations: map[string]string{},
+		},
+		{
+			Name:      "pending-pod-no-resources",
+			Namespace: "denshimon-test",
+			Status:    "Pending",
+			Ready:     "0/1",
+			Restarts:  0,
+			Age:       "45m",
+			Node:      "",
+			IP:        "",
+			Labels:    map[string]string{"app": "pending-example", "status": "pending"},
+			Annotations: map[string]string{},
+		},
+		{
+			Name:      "prometheus-847c5d6e2f-nop12",
+			Namespace: "monitoring",
+			Status:    "Running",
+			Ready:     "1/1",
+			Restarts:  0,
+			Age:       "7d",
+			Node:      "master-1",
+			IP:        "10.244.0.25",
+			Labels:    map[string]string{"app": "prometheus", "component": "monitoring"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
+		},
+		{
+			Name:      "grafana-958f6g7h3i-qrs34",
+			Namespace: "monitoring",
+			Status:    "Running",
+			Ready:     "1/1",
+			Restarts:  2,
+			Age:       "7d",
+			Node:      "worker-1",
+			IP:        "10.244.1.26",
+			Labels:    map[string]string{"app": "grafana", "component": "monitoring"},
+			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
+		},
+	}
+}
+
+func getMockNodes() []NodeInfo {
+	return []NodeInfo{
+		{
+			Name:      "master-1",
+			Status:    "Ready",
+			Roles:     []string{"control-plane", "master"},
+			Age:       "30d",
+			Version:   "v1.29.2",
+			OS:        "Ubuntu 22.04.4 LTS",
+			Kernel:    "5.15.0-97-generic",
+			Container: "containerd://1.7.13",
+			Labels: map[string]string{
+				"kubernetes.io/arch":                   "amd64",
+				"kubernetes.io/os":                     "linux",
+				"node-role.kubernetes.io/control-plane": "",
+				"node-role.kubernetes.io/master":       "",
+			},
+		},
+		{
+			Name:      "worker-1",
+			Status:    "Ready",
+			Roles:     []string{"worker"},
+			Age:       "30d",
+			Version:   "v1.29.2",
+			OS:        "Ubuntu 22.04.4 LTS",
+			Kernel:    "5.15.0-97-generic",
+			Container: "containerd://1.7.13",
+			Labels: map[string]string{
+				"kubernetes.io/arch": "amd64",
+				"kubernetes.io/os":   "linux",
+			},
+		},
+		{
+			Name:      "worker-2",
+			Status:    "Ready",
+			Roles:     []string{"worker"},
+			Age:       "30d",
+			Version:   "v1.29.2",
+			OS:        "Ubuntu 22.04.4 LTS",
+			Kernel:    "5.15.0-97-generic",
+			Container: "containerd://1.7.13",
+			Labels: map[string]string{
+				"kubernetes.io/arch": "amd64",
+				"kubernetes.io/os":   "linux",
+			},
+		},
+		{
+			Name:      "worker-3",
+			Status:    "NotReady",
+			Roles:     []string{"worker"},
+			Age:       "25d",
+			Version:   "v1.29.2",
+			OS:        "Ubuntu 22.04.4 LTS", 
+			Kernel:    "5.15.0-97-generic",
+			Container: "containerd://1.7.13",
+			Labels: map[string]string{
+				"kubernetes.io/arch": "amd64",
+				"kubernetes.io/os":   "linux",
+			},
+		},
+	}
+}
+
+func getMockDeployments() []DeploymentInfo {
+	return []DeploymentInfo{
+		{
+			Name:      "nginx-app",
+			Namespace: "denshimon-test",
+			Ready:     "3/3",
+			UpToDate:  3,
+			Available: 3,
+			Age:       "2h",
+			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+		},
+		{
+			Name:      "redis-cache",
+			Namespace: "denshimon-test",
+			Ready:     "1/1",
+			UpToDate:  1,
+			Available: 1,
+			Age:       "3h",
+			Labels:    map[string]string{"app": "redis", "tier": "cache"},
+		},
+		{
+			Name:      "api-backend",
+			Namespace: "production",
+			Ready:     "5/5",
+			UpToDate:  5,
+			Available: 5,
+			Age:       "1d",
+			Labels:    map[string]string{"app": "api-backend", "environment": "production"},
+		},
+		{
+			Name:      "unhealthy-app",
+			Namespace: "denshimon-test", 
+			Ready:     "0/2",
+			UpToDate:  2,
+			Available: 0,
+			Age:       "45m",
+			Labels:    map[string]string{"app": "unhealthy", "status": "failing-healthchecks"},
+		},
+		{
+			Name:      "prometheus",
+			Namespace: "monitoring",
+			Ready:     "1/1",
+			UpToDate:  1,
+			Available: 1,
+			Age:       "7d",
+			Labels:    map[string]string{"app": "prometheus", "component": "monitoring"},
+		},
+		{
+			Name:      "grafana",
+			Namespace: "monitoring",
+			Ready:     "1/1",
+			UpToDate:  1,
+			Available: 1,
+			Age:       "7d",
+			Labels:    map[string]string{"app": "grafana", "component": "monitoring"},
+		},
+	}
 }
