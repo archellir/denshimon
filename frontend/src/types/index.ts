@@ -3,6 +3,7 @@ export * from './components';
 export * from './gitops';
 export * from './logs';
 export * from './metrics';
+export * from './network';
 
 // Common UI types
 export interface ModalProps {

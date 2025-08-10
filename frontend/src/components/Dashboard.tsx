@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network } from 'lucide-react';
 import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 import NodeList from '@components/metrics/NodeList';
 import PodMetrics from '@components/metrics/PodMetrics';
 import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
+import NetworkTraffic from '@components/network/NetworkTraffic';
 
 const Dashboard: FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -47,6 +48,7 @@ const Dashboard: FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'resources', label: 'Resources', icon: Server },
+    { id: 'network', label: 'Network', icon: Network },
     { id: 'nodes', label: 'Nodes', icon: Server },
     { id: 'pods', label: 'Pods', icon: Database },
     { id: 'namespaces', label: 'Namespaces', icon: HardDrive },
@@ -180,6 +182,7 @@ const Dashboard: FC = () => {
       <div className="max-w-7xl mx-auto p-6">
         {activeTab === 'overview' && <ClusterOverview />}
         {activeTab === 'resources' && <ResourceCharts />}
+        {activeTab === 'network' && <NetworkTraffic />}
         {activeTab === 'nodes' && <NodeList />}
         {activeTab === 'pods' && <PodMetrics />}
         {activeTab === 'namespaces' && <NamespaceMetrics />}
