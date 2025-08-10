@@ -18,6 +18,7 @@ func NewServer(gitopsService *gitops.Service) *Server {
 	}
 }
 
+// respondWithJSON writes a JSON response with the given status code and payload
 func (s *Server) respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
