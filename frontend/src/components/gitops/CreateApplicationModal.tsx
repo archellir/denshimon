@@ -1,9 +1,33 @@
 import { useState } from 'react';
+import type { FC } from 'react';
 import { X, Package } from 'lucide-react';
-import useGitOpsStore from '../../stores/gitopsStore';
+import useGitOpsStore from '@stores/gitopsStore';
+import type { Repository } from '@types/gitops';
 
-const CreateApplicationModal = ({ isOpen, onClose, repositories }) => {
-  const [formData, setFormData] = useState({
+interface CreateApplicationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  repositories: Repository[];
+}
+
+interface ApplicationFormData {
+  name: string;
+  repository_id: string;
+  path: string;
+  namespace: string;
+  sync_policy: {
+    auto_sync: boolean;
+    prune: boolean;
+    self_heal: boolean;
+  };
+}
+
+interface FormErrors {
+  [key: string]: string | null;
+}
+
+const CreateApplicationModal: FC<CreateApplicationModalProps> = ({ isOpen, onClose, repositories }) => {
+  const [formData, setFormData] = useState<ApplicationFormData>({
     name: '',
     repository_id: '',
     path: '.',
@@ -14,18 +38,18 @@ const CreateApplicationModal = ({ isOpen, onClose, repositories }) => {
       self_heal: false,
     }
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const { createApplication, isCreating } = useGitOpsStore();
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof ApplicationFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
   };
 
-  const handleSyncPolicyChange = (field, value) => {
+  const handleSyncPolicyChange = (field: keyof ApplicationFormData['sync_policy'], value: boolean) => {
     setFormData(prev => ({
       ...prev,
       sync_policy: { ...prev.sync_policy, [field]: value }
@@ -33,7 +57,7 @@ const CreateApplicationModal = ({ isOpen, onClose, repositories }) => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Application name is required';
@@ -59,7 +83,7 @@ const CreateApplicationModal = ({ isOpen, onClose, repositories }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -80,7 +104,7 @@ const CreateApplicationModal = ({ isOpen, onClose, repositories }) => {
         }
       });
     } catch (error) {
-      setErrors({ submit: error.message });
+      setErrors({ submit: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
   };
 
