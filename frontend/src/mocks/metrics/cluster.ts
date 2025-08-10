@@ -9,27 +9,27 @@ export const mockClusterMetrics: ClusterMetrics = {
   failed_pods: 1,
   total_namespaces: 5,
   cpu_usage: {
-    usage: 4.08, // In cores
-    used: 4080, // Total CPU usage in millicores
-    total: 10000, // Total CPU capacity in millicores
-    available: 5920,
-    usage_percent: 40.8,
+    usage: 7.25, // In cores
+    used: 7250, // Total CPU usage in millicores
+    total: 12000, // Total CPU capacity in millicores  
+    available: 4750,
+    usage_percent: 60.4, // High CPU usage to show red/yellow warning
     unit: 'millicores'
   },
   memory_usage: {
-    usage: 6409142272, // ~6GB
-    used: 6409142272, // ~6GB
-    total: 21474836480, // ~20GB
-    available: 15065694208,
-    usage_percent: 29.9,
+    usage: 17179869184, // ~16GB used
+    used: 17179869184, // ~16GB used
+    total: 21474836480, // ~20GB total
+    available: 4294967296, // ~4GB available
+    usage_percent: 80.0, // High memory usage
     unit: 'bytes'
   },
   storage_usage: {
-    usage: 120259084288, // ~112GB
-    used: 120259084288, // ~112GB
-    total: 268435456000, // ~250GB
-    available: 148176371712,
-    usage_percent: 44.8,
+    usage: 85899345920, // ~80GB used
+    used: 85899345920, // ~80GB used  
+    total: 268435456000, // ~250GB total
+    available: 182536110080, // ~170GB available
+    usage_percent: 32.0, // Moderate storage usage
     unit: 'bytes'
   },
   healthy_pods: 8,
@@ -41,8 +41,9 @@ export const mockClusterMetrics: ClusterMetrics = {
 export const generateMockMetricsHistory = (duration: string = '1h'): MetricsHistory => {
   const now = Date.now();
   const intervals = duration === '15m' ? 15 : duration === '1h' ? 60 : duration === '6h' ? 360 : 1440; // minutes
-  const points = 60; // Number of data points
+  const points = Math.min(60, intervals); // Adjust points based on duration
   const intervalMs = (intervals * 60 * 1000) / points;
+  
 
   const generateTimeSeries = (baseValue: number, variance: number = 10) => {
     return Array.from({ length: points }, (_, i) => {
