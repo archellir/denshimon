@@ -13,6 +13,21 @@ A comprehensive web-based platform for managing Kubernetes clusters and GitOps w
 - **Authentication**: PASETO v4 tokens, role-based access control
 - **Single Binary**: Embedded React SPA, SQLite database, zero external dependencies
 
+<img width="1678" height="966" alt="Screenshot 2025-08-10 at 19 28 49" src="https://github.com/user-attachments/assets/8a4e0abb-66bc-44a5-a952-5ffc9eb27bb8" />
+
+<details>
+  <summary>Click to expand: more Screenshots</summary>
+  <img width="1678" height="965" alt="Screenshot 2025-08-10 at 19 29 07" src="https://github.com/user-attachments/assets/f8bc5c65-52d4-4d13-baff-15e5cc2a9cdd" />
+  <img width="1675" height="965" alt="Screenshot 2025-08-10 at 19 29 18" src="https://github.com/user-attachments/assets/90585516-256f-455d-88e1-5dd084b5eb34" />
+  <img width="1675" height="965" alt="Screenshot 2025-08-10 at 19 29 28" src="https://github.com/user-attachments/assets/4b820c1a-f98d-4929-8180-e3f693be6f56" />
+  <img width="1677" height="959" alt="Screenshot 2025-08-10 at 19 29 52" src="https://github.com/user-attachments/assets/f1af8e8d-ca95-4ffc-9ef1-eb5b0703e0bc" />
+  <img width="1679" height="968" alt="Screenshot 2025-08-10 at 19 30 17" src="https://github.com/user-attachments/assets/208af2e8-2e57-442e-b807-dc366f5cf547" />
+  <img width="1677" height="966" alt="Screenshot 2025-08-10 at 19 30 25" src="https://github.com/user-attachments/assets/b6636092-0cf0-4549-ad84-08f7f1faa6c3" />
+  <img width="1676" height="965" alt="Screenshot 2025-08-10 at 19 30 47" src="https://github.com/user-attachments/assets/64044154-bf60-4f80-9c1e-ba8167cfa207" />
+  <img width="1677" height="965" alt="Screenshot 2025-08-10 at 19 30 58" src="https://github.com/user-attachments/assets/d60df044-80aa-4fea-8d38-c660f105f0d4" />
+  <img width="1678" height="965" alt="Screenshot 2025-08-10 at 19 31 14" src="https://github.com/user-attachments/assets/1495e98a-8abc-4687-b296-afb17fd2583a" />
+</details>
+
 ## 🏗️ Architecture
 
 ### Tech Stack
