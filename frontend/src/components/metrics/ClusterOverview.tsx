@@ -103,6 +103,22 @@ const ClusterOverview: FC = () => {
     return null;
   };
 
+  const CustomResourceTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-black border border-white p-2 font-mono text-xs">
+          <p className="text-white">{`Resource: ${label}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.name}: ${entry.value.toFixed(1)}%`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   const CustomPieTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       return (
@@ -203,17 +219,25 @@ const ClusterOverview: FC = () => {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={resourceData} layout="horizontal">
-                <XAxis type="number" domain={[0, 100]} hide />
+                <XAxis 
+                  type="number" 
+                  domain={[0, 100]} 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                  tickFormatter={(value) => `${value}%`}
+                />
                 <YAxis
                   type="category"
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                  width={60}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="usage" fill="#00FF00" stackId="a" />
-                <Bar dataKey="available" fill="#333333" stackId="a" />
+                <Tooltip content={<CustomResourceTooltip />} />
+                <Bar dataKey="usage" fill="#00FF00" stackId="a" name="Used" />
+                <Bar dataKey="available" fill="#333333" stackId="a" name="Available" />
               </BarChart>
             </ResponsiveContainer>
           </div>
