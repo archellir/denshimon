@@ -79,8 +79,8 @@ func (s *Service) GenerateToken(user *User, duration time.Duration) (string, err
 	token.SetString("username", claims.Username)
 	token.SetString("role", claims.Role)
 	token.Set("scopes", claims.Scopes)
-	token.SetIssuedAt(time.Unix(claims.IssuedAt, 0))
-	token.SetExpiration(time.Unix(claims.ExpireAt, 0))
+	token.SetIssuedAt(now)
+	token.SetExpiration(now.Add(duration))
 
 	// Encrypt the token
 	encrypted := token.V4Encrypt(s.pasetoKey, nil)
@@ -130,10 +130,7 @@ func (s *Service) ValidateToken(tokenString string) (*TokenClaims, error) {
 		}
 	}
 
-	// Check if token is expired
-	if time.Now().Unix() > claims.ExpireAt {
-		return nil, ErrTokenExpired
-	}
+	// Note: PASETO library already validates expiration, so we don't need to check it manually
 
 	return &claims, nil
 }

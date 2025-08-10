@@ -44,7 +44,7 @@ const useMetricsStore = create<MetricsStore>()(
       try {
         const response = await fetch('/api/metrics/cluster', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -74,7 +74,7 @@ const useMetricsStore = create<MetricsStore>()(
           
         const response = await fetch(url, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -115,7 +115,7 @@ const useMetricsStore = create<MetricsStore>()(
         
         const response = await fetch(url, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -142,7 +142,7 @@ const useMetricsStore = create<MetricsStore>()(
       try {
         const response = await fetch('/api/metrics/namespaces', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -167,7 +167,7 @@ const useMetricsStore = create<MetricsStore>()(
       try {
         const response = await fetch(`/api/metrics/history?duration=${duration}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         

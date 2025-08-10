@@ -41,7 +41,7 @@ const useGitOpsStore = create<GitOpsStore>()(
       try {
         const response = await fetch('/api/gitops/repositories', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -71,7 +71,7 @@ const useGitOpsStore = create<GitOpsStore>()(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
           body: JSON.stringify(repositoryData),
         });
@@ -103,7 +103,7 @@ const useGitOpsStore = create<GitOpsStore>()(
         const response = await fetch(`/api/gitops/repositories/${repositoryId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -129,7 +129,7 @@ const useGitOpsStore = create<GitOpsStore>()(
         const response = await fetch(`/api/gitops/repositories/${repositoryId}/sync`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -154,7 +154,7 @@ const useGitOpsStore = create<GitOpsStore>()(
       try {
         const response = await fetch('/api/gitops/applications', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -178,7 +178,7 @@ const useGitOpsStore = create<GitOpsStore>()(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
           body: JSON.stringify(applicationData),
         });
@@ -210,7 +210,7 @@ const useGitOpsStore = create<GitOpsStore>()(
         const response = await fetch(`/api/gitops/applications/${applicationId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
@@ -236,7 +236,7 @@ const useGitOpsStore = create<GitOpsStore>()(
         const response = await fetch(`/api/gitops/applications/${applicationId}/sync`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
         });
         
