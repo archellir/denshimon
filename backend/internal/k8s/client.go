@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Client wraps Kubernetes clientset and configuration for cluster operations
 type Client struct {
 	clientset kubernetes.Interface
 	config    *rest.Config
