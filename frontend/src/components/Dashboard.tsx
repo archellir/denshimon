@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Activity, Server, Database, Cpu, MemoryStick } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick } from 'lucide-react';
 import useMetricsStore from '../stores/metricsStore';
 import ClusterOverview from './metrics/ClusterOverview';
 import ResourceCharts from './metrics/ResourceCharts';
+import NodeList from './metrics/NodeList';
+import PodMetrics from './metrics/PodMetrics';
+import NamespaceMetrics from './metrics/NamespaceMetrics';
 
 const Dashboard: FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -20,7 +23,7 @@ const Dashboard: FC = () => {
 
   // Auto-refresh effect
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: number;
 
     const refresh = () => {
       fetchAllMetrics();
@@ -44,6 +47,9 @@ const Dashboard: FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'resources', label: 'Resources', icon: Server },
+    { id: 'nodes', label: 'Nodes', icon: Server },
+    { id: 'pods', label: 'Pods', icon: Database },
+    { id: 'namespaces', label: 'Namespaces', icon: HardDrive },
   ];
 
   const getQuickStats = () => {
@@ -174,6 +180,9 @@ const Dashboard: FC = () => {
       <div className="max-w-7xl mx-auto p-6">
         {activeTab === 'overview' && <ClusterOverview />}
         {activeTab === 'resources' && <ResourceCharts />}
+        {activeTab === 'nodes' && <NodeList />}
+        {activeTab === 'pods' && <PodMetrics />}
+        {activeTab === 'namespaces' && <NamespaceMetrics />}
       </div>
     </div>
   );
