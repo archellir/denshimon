@@ -9,6 +9,7 @@ import {
   Tooltip,
   RadialBarChart,
   RadialBar,
+  Legend,
 } from 'recharts';
 import { format } from 'date-fns';
 import useMetricsStore from '../../stores/metricsStore';
