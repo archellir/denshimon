@@ -1,6 +1,6 @@
 # Denshimon
 
-🚀 Enterprise-grade Kubernetes and GitOps management platform. Built for cloud-native infrastructure automation with integrated monitoring and GitOps workflows.
+🚀 Kubernetes and GitOps management platform with integrated monitoring, PASETO authentication, and single binary deployment.
 
 ## 🎯 Overview
 
