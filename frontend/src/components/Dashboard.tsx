@@ -5,9 +5,9 @@ import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 import NodeList from '@components/metrics/NodeList';
-import PodMetrics from '@components/metrics/PodMetrics';
 import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
 import NetworkTraffic from '@components/network/NetworkTraffic';
+import PodsOverview from '@components/pods/PodsOverview';
 
 const Dashboard: FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -184,7 +184,7 @@ const Dashboard: FC = () => {
         {activeTab === 'resources' && <ResourceCharts />}
         {activeTab === 'network' && <NetworkTraffic />}
         {activeTab === 'nodes' && <NodeList />}
-        {activeTab === 'pods' && <PodMetrics />}
+        {activeTab === 'pods' && <PodsOverview />}
         {activeTab === 'namespaces' && <NamespaceMetrics />}
       </div>
     </div>
