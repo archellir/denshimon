@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router'
 import type { FC } from 'react'
-import { Server, GitBranch, BarChart3, FileText, Settings, User, LogOut } from 'lucide-react'
+import { Server, GitBranch, BarChart3, FileText, Settings as SettingsIcon, User, LogOut } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import GitOps from './components/GitOps'
 import PodsView from './components/PodsView'
+import SettingsPage from './components/Settings'
+import Logs from './components/Logs'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -113,8 +115,8 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/gitops" element={<GitOps />} />
           <Route path="/pods" element={<PodsView />} />
-          <Route path="/logs" element={<div className="p-6">Logs functionality coming soon...</div>} />
-          <Route path="/settings" element={<div className="p-6">Settings functionality coming soon...</div>} />
+          <Route path="/logs" element={<Logs />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
     </div>
@@ -129,7 +131,7 @@ const NavigationBar: FC = () => {
     { path: '/gitops', icon: GitBranch, label: 'GitOps' },
     { path: '/pods', icon: Server, label: 'Pods' },
     { path: '/logs', icon: FileText, label: 'Logs' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/settings', icon: SettingsIcon, label: 'Settings' },
   ]
 
   return (
