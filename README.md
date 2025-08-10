@@ -1,10 +1,10 @@
 # K8s WebUI
 
-🚀 Modern Kubernetes and GitOps management platform with cyberpunk aesthetics. Think ArgoCD meets Grafana with a Matrix-style terminal interface.
+🚀 Enterprise-grade Kubernetes and GitOps management platform. Built for cloud-native infrastructure automation with integrated monitoring and GitOps workflows.
 
 ## 🎯 Overview
 
-A comprehensive web-based platform for managing Kubernetes clusters and GitOps workflows. Features a sleek cyberpunk UI with green/yellow/cyan accents on a black terminal-style background.
+A comprehensive web-based platform for managing Kubernetes clusters and GitOps workflows. Provides real-time cluster monitoring, automated deployments, and integrated observability with a single binary deployment model.
 
 ### Key Capabilities
 - **Kubernetes Management**: Pods, deployments, nodes, scaling, logs
