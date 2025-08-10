@@ -67,6 +67,7 @@ export interface MetricPoint {
 export interface MetricsHistory {
   cpu: MetricPoint[];
   memory: MetricPoint[];
+  storage: MetricPoint[];
   pods: MetricPoint[];
   nodes: MetricPoint[];
 }

@@ -25,8 +25,10 @@ const ClusterOverview: FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await fetchClusterMetrics();
-        await fetchMetricsHistory(timeRange);
+        await Promise.all([
+          fetchClusterMetrics(),
+          fetchMetricsHistory(timeRange)
+        ]);
       } catch (error) {
         console.error('Error fetching initial data:', error);
       }
@@ -60,6 +62,7 @@ const ClusterOverview: FC = () => {
           time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
           cpu: cpuPoint.value || 0,
           memory: metricsHistory.memory?.[index]?.value || 0,
+          storage: metricsHistory.storage?.[index]?.value || 0,
           pods: metricsHistory.pods?.[index]?.value || 0,
           nodes: metricsHistory.nodes?.[index]?.value || 0,
         };
@@ -94,24 +97,28 @@ const ClusterOverview: FC = () => {
     ];
   }, [clusterMetrics]);
 
-  // Resource utilization data for bar chart - HARDCODED FOR TESTING
-  const resourceData = [
-    {
-      name: 'CPU',
-      usage: 75,
-      available: 25,
-    },
-    {
-      name: 'Memory', 
-      usage: 60,
-      available: 40,
-    },
-    {
-      name: 'Storage',
-      usage: 30,
-      available: 70,
-    },
-  ];
+  // Resource utilization data from cluster metrics
+  const resourceData = useMemo(() => {
+    if (!clusterMetrics) return [];
+
+    return [
+      {
+        name: 'CPU',
+        usage: Math.round(clusterMetrics.cpu_usage.usage_percent),
+        available: Math.round(100 - clusterMetrics.cpu_usage.usage_percent),
+      },
+      {
+        name: 'Memory', 
+        usage: Math.round(clusterMetrics.memory_usage.usage_percent),
+        available: Math.round(100 - clusterMetrics.memory_usage.usage_percent),
+      },
+      {
+        name: 'Storage',
+        usage: Math.round(clusterMetrics.storage_usage.usage_percent),
+        available: Math.round(100 - clusterMetrics.storage_usage.usage_percent),
+      },
+    ];
+  }, [clusterMetrics]);
   
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
@@ -197,10 +204,8 @@ const ClusterOverview: FC = () => {
         </div>
       </div>
 
-      {/* Resource Usage Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Historical Metrics */}
-        <div className="border border-white p-4 h-96">
+      {/* Resource Usage Over Time */}
+      <div className="border border-white p-4 h-96">
           <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
             {isLoadingHistory ? (
@@ -243,82 +248,19 @@ const ClusterOverview: FC = () => {
                     fill="#FFFF0020"
                     strokeWidth={1}
                   />
+                  <Area
+                    type="monotone"
+                    dataKey="storage"
+                    stackId="3"
+                    stroke="#00FFFF"
+                    fill="#00FFFF20"
+                    strokeWidth={1}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
-
-        {/* Current Resource Utilization */}
-        <div className="border border-white p-4 h-96">
-          <h3 className="font-mono text-sm mb-4">CURRENT RESOURCE UTILIZATION</h3>
-          <div className="space-y-6 h-80 flex flex-col justify-center">
-            {resourceData.map((resource, index) => (
-              <div key={resource.name} className="space-y-2">
-                <div className="flex justify-between items-center font-mono text-sm">
-                  <span className="text-white">{resource.name}</span>
-                </div>
-                <div className="w-full h-8 bg-black border border-white relative overflow-hidden">
-                  {/* Background grid pattern */}
-                  <div className="absolute inset-0 opacity-20">
-                    {[...Array(10)].map((_, i) => (
-                      <div 
-                        key={i}
-                        className="absolute top-0 bottom-0 w-px bg-white"
-                        style={{ left: `${(i + 1) * 10}%` }}
-                      />
-                    ))}
-                  </div>
-                  
-                  {/* Usage bar with animation */}
-                  <div 
-                    className={`h-full transition-all duration-1000 ease-out relative ${
-                      resource.usage > 80 ? 'bg-red-400' :
-                      resource.usage > 60 ? 'bg-yellow-400' :
-                      'bg-green-400'
-                    }`}
-                    style={{ 
-                      width: `${resource.usage}%`,
-                      animationDelay: `${index * 200}ms`
-                    }}
-                  >
-                    {/* Scanning line effect */}
-                    <div className="absolute top-0 right-0 bottom-0 w-px bg-white opacity-60 animate-pulse" />
-                    
-                    {/* Percentage text inside bar */}
-                    {resource.usage > 15 && (
-                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 font-mono text-xs text-black font-bold">
-                        {resource.usage}%
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Matrix-style corner brackets */}
-                  <div className="absolute top-0 left-0 w-2 h-2 border-l-2 border-t-2 border-white" />
-                  <div className="absolute top-0 right-0 w-2 h-2 border-r-2 border-t-2 border-white" />
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-l-2 border-b-2 border-white" />
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-r-2 border-b-2 border-white" />
-                </div>
-                
-                {/* Status indicator */}
-                <div className="flex items-center space-x-2 text-xs font-mono opacity-60">
-                  <div className={`w-2 h-2 ${
-                    resource.usage > 80 ? 'bg-red-400' :
-                    resource.usage > 60 ? 'bg-yellow-400' :
-                    'bg-green-400'
-                  }`} />
-                  <span>
-                    {resource.usage > 80 ? 'CRITICAL' :
-                     resource.usage > 60 ? 'WARNING' : 'NORMAL'}
-                  </span>
-                  <span>•</span>
-                  <span>{(100 - resource.usage).toFixed(0)}% AVAILABLE</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Status Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

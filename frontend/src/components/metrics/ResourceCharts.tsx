@@ -15,7 +15,7 @@ import { format } from 'date-fns';
 import useMetricsStore from '@stores/metricsStore';
 
 const ResourceCharts: FC = () => {
-  const { clusterMetrics, metricsHistory, nodeMetrics } = useMetricsStore();
+  const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory } = useMetricsStore();
 
   // Historical data for line charts
   const historicalData = useMemo(() => {
@@ -59,7 +59,7 @@ const ResourceCharts: FC = () => {
     if (!nodeMetrics || nodeMetrics.length === 0) return [];
 
     return nodeMetrics.map((node) => ({
-      name: node.name.length > 10 ? `${node.name.substring(0, 10)}...` : node.name,
+      name: node.name, // Keep full name for display
       fullName: node.name,
       cpu: node.cpu_usage.usage_percent,
       memory: node.memory_usage.usage_percent,
@@ -135,6 +135,15 @@ const ResourceCharts: FC = () => {
         <div className="border border-white p-4">
           <h3 className="font-mono text-sm mb-4">CPU & MEMORY TRENDS</h3>
           <div className="h-64">
+            {isLoadingHistory ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="font-mono text-sm">LOADING HISTORY...</span>
+              </div>
+            ) : historicalData.length === 0 ? (
+              <div className="flex items-center justify-center h-full border border-yellow-400">
+                <span className="font-mono text-sm text-yellow-400">NO CHART DATA AVAILABLE</span>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historicalData}>
                 <XAxis
@@ -172,6 +181,7 @@ const ResourceCharts: FC = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -179,6 +189,15 @@ const ResourceCharts: FC = () => {
         <div className="border border-white p-4">
           <h3 className="font-mono text-sm mb-4">WORKLOAD TRENDS</h3>
           <div className="h-64">
+            {isLoadingHistory ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="font-mono text-sm">LOADING HISTORY...</span>
+              </div>
+            ) : historicalData.length === 0 ? (
+              <div className="flex items-center justify-center h-full border border-yellow-400">
+                <span className="font-mono text-sm text-yellow-400">NO CHART DATA AVAILABLE</span>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={historicalData}>
                 <XAxis
@@ -215,46 +234,11 @@ const ResourceCharts: FC = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Current Usage Radials */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {resourceRadialData.map((resource) => (
-          <div key={resource.name} className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">{resource.name} UTILIZATION</h3>
-            <div className="h-48 flex flex-col items-center">
-              <ResponsiveContainer width="100%" height="80%">
-                <RadialBarChart
-                  cx="50%"
-                  cy="50%"
-                  innerRadius="60%"
-                  outerRadius="90%"
-                  data={[resource]}
-                  startAngle={90}
-                  endAngle={-270}
-                >
-                  <RadialBar
-                    dataKey="usage"
-                    fill={resource.fill}
-                    stroke="white"
-                    strokeWidth={1}
-                    background={{ fill: '#333333', stroke: 'white', strokeWidth: 1 }}
-                  />
-                  <Tooltip content={<CustomRadialTooltip />} />
-                </RadialBarChart>
-              </ResponsiveContainer>
-              <div className="text-center font-mono">
-                <div className="text-lg" style={{ color: resource.fill }}>
-                  {resource.usage.toFixed(1)}%
-                </div>
-                <div className="text-xs opacity-60">USED</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Node Resource Distribution */}
       {nodeResourceData.length > 0 && (
@@ -262,14 +246,16 @@ const ResourceCharts: FC = () => {
           <h3 className="font-mono text-sm mb-4">NODE RESOURCE DISTRIBUTION</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={nodeResourceData}>
+              <LineChart data={nodeResourceData} margin={{ top: 5, right: 20, left: -20, bottom: 25 }}>
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
-                  angle={-45}
-                  textAnchor="end"
+                  tick={{ fontSize: 9, fontFamily: 'monospace', fill: 'white' }}
+                  angle={0}
+                  textAnchor="middle"
+                  height={40}
+                  interval={0}
                 />
                 <YAxis
                   axisLine={false}
