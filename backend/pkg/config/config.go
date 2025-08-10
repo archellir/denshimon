@@ -10,9 +10,8 @@ type Config struct {
 	Port        string
 	Environment string
 
-	// Database
-	DatabaseURL string
-	RedisURL    string
+	// Database (SQLite)
+	DatabasePath string
 
 	// Auth
 	PasetoKey     string
@@ -35,8 +34,7 @@ func Load() *Config {
 	return &Config{
 		Port:            getEnv("PORT", "8080"),
 		Environment:     getEnv("ENVIRONMENT", "development"),
-		DatabaseURL:     getEnv("DATABASE_URL", "postgres://user:pass@localhost:5432/k8s_webui"),
-		RedisURL:        getEnv("REDIS_URL", "redis://localhost:6379"),
+		DatabasePath:    getEnv("DATABASE_PATH", "/app/data/k8s-webui.db"),
 		PasetoKey:       getEnv("PASETO_SECRET_KEY", generateDefaultKey()),
 		TokenDuration:   getDuration("TOKEN_DURATION", 24*time.Hour),
 		KubeConfig:      getEnv("KUBECONFIG", ""),
