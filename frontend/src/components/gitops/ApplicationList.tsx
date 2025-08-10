@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import type { FC } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   Package, 
-  Sync, 
+  RotateCw, 
   Trash2, 
   AlertCircle, 
   CheckCircle, 
@@ -11,11 +12,16 @@ import {
   Heart,
   Pause
 } from 'lucide-react';
-import useGitOpsStore from '../../stores/gitopsStore';
+import useGitOpsStore from '@stores/gitopsStore';
+import type { Application } from '@types/gitops';
 
-const ApplicationList = ({ onShowDetails }) => {
-  const [deletingId, setDeletingId] = useState(null);
-  const [syncingId, setSyncingId] = useState(null);
+interface ApplicationListProps {
+  onShowDetails: (application: Application) => void;
+}
+
+const ApplicationList: FC<ApplicationListProps> = ({ onShowDetails }) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
   
   const {
     getFilteredApplications,
@@ -26,7 +32,7 @@ const ApplicationList = ({ onShowDetails }) => {
 
   const applications = getFilteredApplications();
 
-  const handleDelete = async (id, name) => {
+  const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Delete application "${name}"? This action cannot be undone.`)) {
       return;
     }
@@ -41,7 +47,7 @@ const ApplicationList = ({ onShowDetails }) => {
     }
   };
 
-  const handleSync = async (id) => {
+  const handleSync = async (id: string) => {
     setSyncingId(id);
     try {
       await syncApplication(id);
@@ -52,7 +58,7 @@ const ApplicationList = ({ onShowDetails }) => {
     }
   };
 
-  const getSyncStatusIcon = (status) => {
+  const getSyncStatusIcon = (status: string) => {
     switch (status) {
       case 'synced':
         return <CheckCircle size={16} className="text-green-400" />;
@@ -65,12 +71,12 @@ const ApplicationList = ({ onShowDetails }) => {
     }
   };
 
-  const getHealthStatusIcon = (status) => {
+  const getHealthStatusIcon = (status: string) => {
     switch (status) {
       case 'healthy':
         return <Heart size={16} className="text-green-400" />;
       case 'progressing':
-        return <Sync size={16} className="text-blue-400" />;
+        return <RotateCw size={16} className="text-blue-400" />;
       case 'degraded':
         return <AlertCircle size={16} className="text-red-400" />;
       case 'suspended':
@@ -82,7 +88,7 @@ const ApplicationList = ({ onShowDetails }) => {
     }
   };
 
-  const getStatusColor = (status, type = 'sync') => {
+  const getStatusColor = (status: string, type: string = 'sync') => {
     if (type === 'health') {
       switch (status) {
         case 'healthy':
@@ -111,7 +117,7 @@ const ApplicationList = ({ onShowDetails }) => {
     }
   };
 
-  const formatLastSync = (lastSync) => {
+  const formatLastSync = (lastSync: string | null) => {
     if (!lastSync) return 'NEVER';
     return formatDistanceToNow(new Date(lastSync), { addSuffix: true }).toUpperCase();
   };
