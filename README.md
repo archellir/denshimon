@@ -1,4 +1,4 @@
-# K8s WebUI
+# Denshimon
 
 🚀 Enterprise-grade Kubernetes and GitOps management platform. Built for cloud-native infrastructure automation with integrated monitoring and GitOps workflows.
 
