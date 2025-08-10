@@ -1,35 +1,53 @@
 import { useState } from 'react';
+import type { FC } from 'react';
 import { X, GitBranch, Lock, Key, Globe } from 'lucide-react';
-import useGitOpsStore from '../../stores/gitopsStore';
+import useGitOpsStore from '@stores/gitopsStore';
 
-const CreateRepositoryModal = ({ isOpen, onClose }) => {
-  const [formData, setFormData] = useState({
+interface CreateRepositoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface RepositoryFormData {
+  name: string;
+  url: string;
+  branch: string;
+  auth_type: 'none' | 'token' | 'ssh';
+  credentials: Record<string, string>;
+}
+
+interface FormErrors {
+  [key: string]: string | null;
+}
+
+const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose }) => {
+  const [formData, setFormData] = useState<RepositoryFormData>({
     name: '',
     url: '',
     branch: 'main',
     auth_type: 'none',
     credentials: {}
   });
-  const [activeAuthTab, setActiveAuthTab] = useState('none');
-  const [errors, setErrors] = useState({});
+  const [activeAuthTab, setActiveAuthTab] = useState<'none' | 'token' | 'ssh'>('none');
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const { createRepository, isCreating } = useGitOpsStore();
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof RepositoryFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
   };
 
-  const handleCredentialChange = (field, value) => {
+  const handleCredentialChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       credentials: { ...prev.credentials, [field]: value }
     }));
   };
 
-  const handleAuthTypeChange = (authType) => {
+  const handleAuthTypeChange = (authType: 'none' | 'token' | 'ssh') => {
     setActiveAuthTab(authType);
     setFormData(prev => ({
       ...prev,
@@ -39,7 +57,7 @@ const CreateRepositoryModal = ({ isOpen, onClose }) => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Repository name is required';
@@ -71,13 +89,13 @@ const CreateRepositoryModal = ({ isOpen, onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const isValidGitUrl = (url) => {
+  const isValidGitUrl = (url: string) => {
     const gitUrlRegex = /^(https?:\/\/|git@)[\w.-]+[/:][\w.-]+\/[\w.-]+\.git$/;
     const httpsRepoRegex = /^https:\/\/[\w.-]+\/[\w.-]+\/[\w.-]+\/?$/;
     return gitUrlRegex.test(url) || httpsRepoRegex.test(url);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -95,7 +113,7 @@ const CreateRepositoryModal = ({ isOpen, onClose }) => {
       });
       setActiveAuthTab('none');
     } catch (error) {
-      setErrors({ submit: error.message });
+      setErrors({ submit: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
   };
 
