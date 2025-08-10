@@ -17,11 +17,17 @@ build/
 
 # Go compiled binaries
 backend/server
+backend/k8s-webui
 backend/dist/
 *.exe
 *.dll
 *.so
 *.dylib
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
 
 # Logs
 npm-debug.log*
