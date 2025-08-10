@@ -1,45 +1,5 @@
 services:
-  # PostgreSQL database for audit logs and application data
-  postgres:
-    image: postgres:15-alpine
-    container_name: k8s-webui-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: k8s_webui
-      POSTGRES_USER: k8s_user
-      POSTGRES_PASSWORD: k8s_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "5432:5432"
-    networks:
-      - k8s-webui-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U k8s_user -d k8s_webui"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis for session storage and caching
-  redis:
-    image: redis:7-alpine
-    container_name: k8s-webui-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - k8s-webui-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-
-  # K8s WebUI - Single service with embedded SPA
+  # K8s WebUI - Single service with embedded SPA and SQLite database
   k8s-webui:
     build:
       context: .
@@ -48,8 +8,7 @@ services:
     restart: unless-stopped
     environment:
       - PORT=8080
-      - DATABASE_URL=postgres://k8s_user:k8s_password@postgres:5432/k8s_webui?sslmode=disable
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_PATH=/app/data/k8s-webui.db
       - PASETO_SECRET_KEY=dev-32-byte-secret-key-for-prod!
       - TOKEN_DURATION=24h
       - LOG_LEVEL=debug
@@ -57,15 +16,11 @@ services:
     volumes:
       - ~/.kube:/home/k8s-webui/.kube:ro  # Mount kubeconfig for K8s access
       - /var/run/docker.sock:/var/run/docker.sock:ro  # For Docker-in-Docker scenarios
+      - k8s_webui_data:/app/data  # SQLite database storage
     ports:
       - "8080:8080"
     networks:
       - k8s-webui-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -73,10 +28,8 @@ services:
       retries: 3
 
 volumes:
-  postgres_data:
-    name: k8s-webui-postgres-data
-  redis_data:
-    name: k8s-webui-redis-data
+  k8s_webui_data:
+    name: k8s-webui-data
 
 networks:
   k8s-webui-network:

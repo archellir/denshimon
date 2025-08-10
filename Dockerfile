@@ -27,9 +27,11 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates curl
 WORKDIR /app
 
-# Create non-root user
+# Create non-root user and data directory
 RUN addgroup -g 1001 -S k8s-webui && \
-    adduser -u 1001 -S k8s-webui -G k8s-webui
+    adduser -u 1001 -S k8s-webui -G k8s-webui && \
+    mkdir -p /app/data && \
+    chown -R k8s-webui:k8s-webui /app/data
 
 # Copy the binary
 COPY --from=backend-builder /app/k8s-webui .
