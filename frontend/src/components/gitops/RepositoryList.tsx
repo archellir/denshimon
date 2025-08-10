@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import type { FC } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   GitBranch, 
-  Sync, 
+  RotateCw, 
   Trash2, 
   ExternalLink, 
   AlertCircle, 
@@ -10,11 +11,16 @@ import {
   Clock,
   Eye 
 } from 'lucide-react';
-import useGitOpsStore from '../../stores/gitopsStore';
+import useGitOpsStore from '@stores/gitopsStore';
+import type { Repository } from '@types/gitops';
 
-const RepositoryList = ({ onShowDetails }) => {
-  const [deletingId, setDeletingId] = useState(null);
-  const [syncingId, setSyncingId] = useState(null);
+interface RepositoryListProps {
+  onShowDetails: (repository: Repository) => void;
+}
+
+const RepositoryList: FC<RepositoryListProps> = ({ onShowDetails }) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
   
   const {
     getFilteredRepositories,
@@ -25,7 +31,7 @@ const RepositoryList = ({ onShowDetails }) => {
 
   const repositories = getFilteredRepositories();
 
-  const handleDelete = async (id, name) => {
+  const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Delete repository "${name}"? This action cannot be undone.`)) {
       return;
     }
@@ -40,7 +46,7 @@ const RepositoryList = ({ onShowDetails }) => {
     }
   };
 
-  const handleSync = async (id) => {
+  const handleSync = async (id: string) => {
     setSyncingId(id);
     try {
       await syncRepository(id);
@@ -51,7 +57,7 @@ const RepositoryList = ({ onShowDetails }) => {
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'synced':
         return <CheckCircle size={16} className="text-green-400" />;
@@ -63,7 +69,7 @@ const RepositoryList = ({ onShowDetails }) => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'synced':
         return 'text-green-400 border-green-400';
@@ -75,7 +81,7 @@ const RepositoryList = ({ onShowDetails }) => {
     }
   };
 
-  const formatLastSync = (lastSync) => {
+  const formatLastSync = (lastSync: string | null) => {
     if (!lastSync) return 'NEVER';
     return formatDistanceToNow(new Date(lastSync), { addSuffix: true }).toUpperCase();
   };
