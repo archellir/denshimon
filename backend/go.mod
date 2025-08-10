@@ -5,8 +5,7 @@ go 1.24.0
 toolchain go1.24.6
 
 require (
-	github.com/lib/pq v1.10.9
-	github.com/redis/go-redis/v9 v9.12.0
+	github.com/mattn/go-sqlite3 v1.14.30
 	golang.org/x/crypto v0.36.0
 	k8s.io/apimachinery v0.33.3
 	k8s.io/client-go v0.33.3
@@ -17,9 +16,7 @@ require aidanwoods.dev/go-result v0.3.1 // indirect
 
 require (
 	aidanwoods.dev/go-paseto v1.5.4
-	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
