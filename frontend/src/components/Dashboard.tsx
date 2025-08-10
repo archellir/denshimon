@@ -35,7 +35,7 @@ const Dashboard: FC = () => {
 
     // Set up auto-refresh
     if (autoRefresh) {
-      intervalId = setInterval(refresh, refreshInterval);
+      intervalId = setInterval(refresh, refreshInterval) as unknown as number;
     }
 
     return () => {

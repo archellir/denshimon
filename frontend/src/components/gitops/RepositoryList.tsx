@@ -12,7 +12,7 @@ import {
   Eye 
 } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
-import type { Repository } from '@types/gitops';
+import type { Repository } from '@/types/gitops';
 
 interface RepositoryListProps {
   onShowDetails: (repository: Repository) => void;
@@ -135,7 +135,7 @@ const RepositoryList: FC<RepositoryListProps> = ({ onShowDetails }) => {
                   className="p-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Sync Repository"
                 >
-                  <Sync size={16} className={syncingId === repo.id ? 'animate-spin' : ''} />
+                  <RotateCw size={16} className={syncingId === repo.id ? 'animate-spin' : ''} />
                 </button>
                 
                 <button

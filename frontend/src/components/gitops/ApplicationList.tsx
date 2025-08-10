@@ -13,7 +13,7 @@ import {
   Pause
 } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
-import type { Application } from '@types/gitops';
+import type { Application } from '@/types/gitops';
 
 interface ApplicationListProps {
   onShowDetails: (application: Application) => void;
@@ -182,7 +182,7 @@ const ApplicationList: FC<ApplicationListProps> = ({ onShowDetails }) => {
                   className="p-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Sync Application"
                 >
-                  <Sync size={16} className={syncingId === app.id ? 'animate-spin' : ''} />
+                  <RotateCw size={16} className={syncingId === app.id ? 'animate-spin' : ''} />
                 </button>
                 
                 <button

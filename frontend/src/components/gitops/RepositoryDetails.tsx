@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { X, GitBranch, ExternalLink, RotateCw, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import type { Repository } from '@types/gitops';
+import type { Repository } from '@/types/gitops';
 
 interface RepositoryDetailsProps {
   repository: Repository;
