@@ -30,9 +30,13 @@ export interface NodeMetrics {
   memory_usage: ResourceUsage;
   storage_usage: ResourceUsage;
   pod_count: number;
-  allocatable_cpu: string;
-  allocatable_memory: string;
-  last_updated: string;
+  age: string;
+  version: string;
+  os: string;
+  architecture: string;
+  allocatable_cpu?: string;
+  allocatable_memory?: string;
+  last_updated?: string;
 }
 
 export interface PodMetrics {

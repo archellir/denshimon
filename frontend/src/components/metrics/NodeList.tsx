@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { FC } from 'react';
 import { Server, Cpu, MemoryStick, HardDrive, CheckCircle, AlertCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import useMetricsStore from '../../stores/metricsStore';
 
 const NodeList: FC = () => {
@@ -119,7 +118,7 @@ const NodeList: FC = () => {
                   />
                 </div>
                 <div className="mt-2 text-xs font-mono opacity-60">
-                  {node.cpu_usage.usage.toFixed(2)} / {node.cpu_usage.total.toFixed(2)} cores
+                  {(node.cpu_usage.used / 1000).toFixed(2)} / {(node.cpu_usage.total / 1000).toFixed(2)} cores
                 </div>
               </div>
 
@@ -141,7 +140,7 @@ const NodeList: FC = () => {
                   />
                 </div>
                 <div className="mt-2 text-xs font-mono opacity-60">
-                  {formatBytes(node.memory_usage.usage)} / {formatBytes(node.memory_usage.total)}
+                  {formatBytes(node.memory_usage.used)} / {formatBytes(node.memory_usage.total)}
                 </div>
               </div>
 
@@ -163,7 +162,7 @@ const NodeList: FC = () => {
                   />
                 </div>
                 <div className="mt-2 text-xs font-mono opacity-60">
-                  {formatBytes(node.storage_usage.usage)} / {formatBytes(node.storage_usage.total)}
+                  {formatBytes(node.storage_usage.used)} / {formatBytes(node.storage_usage.total)}
                 </div>
               </div>
             </div>
@@ -171,9 +170,9 @@ const NodeList: FC = () => {
             {/* Footer */}
             <div className="p-4 border-t border-white bg-gray-900/20">
               <div className="flex justify-between items-center text-xs font-mono opacity-60">
-                <span>ALLOCATABLE CPU: {node.allocatable_cpu}</span>
-                <span>ALLOCATABLE MEMORY: {node.allocatable_memory}</span>
-                <span>LAST UPDATED: {formatDistanceToNow(new Date(node.last_updated), { addSuffix: true }).toUpperCase()}</span>
+                <span>VERSION: {node.version}</span>
+                <span>OS: {node.os}</span>
+                <span>AGE: {node.age}</span>
               </div>
             </div>
           </div>
