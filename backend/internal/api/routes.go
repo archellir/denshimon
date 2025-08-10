@@ -14,8 +14,7 @@ func RegisterRoutes(
 	mux *http.ServeMux,
 	authService *auth.Service,
 	k8sClient *k8s.Client,
-	db *database.PostgresDB,
-	redis *database.RedisClient,
+	db *database.SQLiteDB,
 ) {
 	// Initialize services
 	gitopsService := gitops.NewService(db.DB)
@@ -38,7 +37,7 @@ func RegisterRoutes(
 	}
 
 	// Initialize handlers
-	authHandlers := NewAuthHandlers(authService, db, redis)
+	authHandlers := NewAuthHandlers(authService, db)
 	k8sHandlers := NewKubernetesHandlers(k8sClient)
 	metricsHandlers := NewMetricsHandlers(metricsService)
 

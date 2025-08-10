@@ -11,8 +11,7 @@ import (
 
 type AuthHandlers struct {
 	authService *auth.Service
-	db          *database.PostgresDB
-	redis       *database.RedisClient
+	db          *database.SQLiteDB
 }
 
 type LoginRequest struct {
@@ -38,11 +37,10 @@ type RefreshResponse struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func NewAuthHandlers(authService *auth.Service, db *database.PostgresDB, redis *database.RedisClient) *AuthHandlers {
+func NewAuthHandlers(authService *auth.Service, db *database.SQLiteDB) *AuthHandlers {
 	return &AuthHandlers{
 		authService: authService,
 		db:          db,
-		redis:       redis,
 	}
 }
 
@@ -74,9 +72,9 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store session in Redis
+	// Store session in database
 	sessionID := h.authService.GenerateSessionID()
-	if err := h.redis.SetSession(sessionID, user.ID, duration); err != nil {
+	if err := h.db.SetSession(sessionID, user.ID, duration); err != nil {
 		// Log error but don't fail the login
 	}
 
