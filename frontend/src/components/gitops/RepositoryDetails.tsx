@@ -1,8 +1,15 @@
-import { X, GitBranch, ExternalLink, Sync, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import type { FC } from 'react';
+import { X, GitBranch, ExternalLink, RotateCw, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import type { Repository } from '@types/gitops';
 
-const RepositoryDetails = ({ repository, onClose }) => {
-  const getStatusIcon = (status) => {
+interface RepositoryDetailsProps {
+  repository: Repository;
+  onClose: () => void;
+}
+
+const RepositoryDetails: FC<RepositoryDetailsProps> = ({ repository, onClose }) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'synced':
         return <CheckCircle size={20} className="text-green-400" />;
@@ -13,7 +20,7 @@ const RepositoryDetails = ({ repository, onClose }) => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'synced':
         return 'text-green-400';
@@ -24,7 +31,7 @@ const RepositoryDetails = ({ repository, onClose }) => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
     return date.toLocaleString();
