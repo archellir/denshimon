@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TimeRange } from '@constants';
+import { parseTimeRangeToHours } from '@utils/timeUtils';
 import { Clock, AlertTriangle, AlertCircle, Info, CheckCircle, Filter, TrendingUp, TrendingDown, Minus, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { EventTimelineData, TimelineEvent, EventSeverity, EventCategory } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@/mocks/events/timeline';
+
+interface EventTimelineProps {
+  timeRange?: string;
+}
 
 const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWENTY_FOUR_HOURS }) => {
   const [data, setData] = useState<EventTimelineData | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
   const [selectedSeverities, setSelectedSeverities] = useState<EventSeverity[]>([]);
-  const [timeRange, setTimeRange] = useState<string>('24h');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const hours = parseInt(timeRange);
+    const hours = parseTimeRangeToHours(timeRange);
     const timelineData = generateEventTimelineData(hours);
     setData(timelineData);
   }, [timeRange]);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TimeRange } from '@constants';
+import { getDataPointsForTimeRange } from '@utils/timeUtils';
 import { HardDrive, Database, Activity, TrendingUp, TrendingDown, AlertTriangle, Zap } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -140,7 +141,7 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
 
     // Generate IO history
     const history = [];
-    const points = timeRange === '1h' ? 12 : timeRange === '6h' ? 24 : timeRange === '24h' ? 48 : 84;
+    const points = getDataPointsForTimeRange(timeRange, 5);
     
     for (let i = 0; i < points; i++) {
       history.push({
