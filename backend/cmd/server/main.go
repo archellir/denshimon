@@ -194,7 +194,7 @@ func main() {
 func registerGiteaRoutes(mux *http.ServeMux, giteaHandler *gitea.Handler, authService *auth.Service) {
 	// Wrap Gitea handlers with authentication middleware
 	authMiddleware := func(handler http.HandlerFunc) http.HandlerFunc {
-		return authService.RequireAuth(handler)
+		return authService.AuthMiddleware(handler)
 	}
 	
 	// Repository endpoints
