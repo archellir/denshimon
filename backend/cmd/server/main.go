@@ -18,6 +18,8 @@ import (
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/database"
 	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/internal/metrics"
+	"github.com/archellir/denshimon/internal/websocket"
 	"github.com/archellir/denshimon/pkg/config"
 )
 
@@ -59,11 +61,20 @@ func main() {
 	// Initialize PASETO auth
 	authService := auth.NewService(cfg.PasetoKey, db)
 
+	// Initialize WebSocket hub
+	wsHub := websocket.NewHub()
+	go wsHub.Run() // Start the hub in a goroutine
+
+	// Initialize metrics service and WebSocket publisher
+	metricsService := metrics.NewService(k8sClient)
+	publisher := websocket.NewPublisher(wsHub, k8sClient, metricsService)
+	go publisher.Start() // Start real-time data publisher
+
 	// Setup HTTP router using standard library
 	mux := http.NewServeMux()
 
 	// API routes
-	api.RegisterRoutes(mux, authService, k8sClient, db)
+	api.RegisterRoutes(mux, authService, k8sClient, db, wsHub)
 
 	// Health check endpoint
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -158,6 +169,10 @@ func main() {
 	// Graceful shutdown with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	// Stop WebSocket components
+	publisher.Stop()
+	wsHub.Shutdown()
 
 	if err := srv.Shutdown(ctx); err != nil {
 		slog.Error("Server forced to shutdown", "error", err)

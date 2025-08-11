@@ -12,7 +12,10 @@ require (
 	k8s.io/metrics v0.33.3
 )
 
-require aidanwoods.dev/go-result v0.3.1 // indirect
+require (
+	aidanwoods.dev/go-result v0.3.1 // indirect
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
+)
 
 require (
 	aidanwoods.dev/go-paseto v1.5.4

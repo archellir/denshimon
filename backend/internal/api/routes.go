@@ -8,6 +8,7 @@ import (
 	"github.com/archellir/denshimon/internal/gitops"
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
+	"github.com/archellir/denshimon/internal/websocket"
 )
 
 func RegisterRoutes(
@@ -15,6 +16,7 @@ func RegisterRoutes(
 	authService *auth.Service,
 	k8sClient *k8s.Client,
 	db *database.SQLiteDB,
+	wsHub *websocket.Hub,
 ) {
 	// Initialize services
 	gitopsService := gitops.NewService(db.DB)
@@ -111,8 +113,6 @@ func RegisterRoutes(
 	}))
 
 	// WebSocket endpoint for real-time updates
-	mux.HandleFunc("GET /ws", func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement WebSocket handler
-		w.WriteHeader(http.StatusNotImplemented)
-	})
+	wsHandler := websocket.NewHandler(wsHub)
+	mux.HandleFunc("GET /ws", wsHandler.HandleWebSocket)
 }
