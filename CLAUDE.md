@@ -40,6 +40,11 @@ DATABASE_PATH=./test-app.db go run cmd/server/main.go
 cd frontend
 pnpm run dev
 # Runs on http://localhost:5173 with API proxy to backend
+# Tries real API calls, falls back to mock data on error
+
+# OR: Frontend with Mock Data Only (for development without backend)
+pnpm run dev:mock
+# Uses only mock data, no API calls
 
 # Access the application at http://localhost:5173
 # Login: admin / password
@@ -202,6 +207,7 @@ cd backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 
 # Terminal 2: Frontend  
 cd frontend && pnpm run dev
+# OR: cd frontend && pnpm run dev:mock (mock data only)
 
 # Access application at http://localhost:5173
 # Login with: admin / password
