@@ -120,9 +120,8 @@ const NetworkTraffic: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Time Range Selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-mono">NETWORK TRAFFIC MONITORING</h2>
+      {/* Time Range Selector */}
+      <div className="flex items-center justify-end">
         <div className="flex space-x-0 border border-white">
           {['15m', '1h', '6h', '24h'].map((range) => (
             <button

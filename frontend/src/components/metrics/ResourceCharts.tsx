@@ -127,8 +127,6 @@ const ResourceCharts: FC = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-mono border-b border-white pb-2">RESOURCE ANALYTICS</h2>
-
       {/* Historical Trends */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* CPU/Memory Timeline */}

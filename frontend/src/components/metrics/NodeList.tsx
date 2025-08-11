@@ -65,8 +65,7 @@ const NodeList: FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-mono">CLUSTER NODES</h2>
+      <div className="flex items-center justify-end">
         <div className="text-sm font-mono opacity-60">
           {sortedNodes.length} NODE{sortedNodes.length !== 1 ? 'S' : ''}
         </div>

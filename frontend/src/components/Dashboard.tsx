@@ -221,8 +221,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       {activePrimaryTab === 'infrastructure' && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-mono">CLUSTER OVERVIEW</h2>
+            <div className="flex justify-end items-center mb-4">
               {isConnected && (
                 <div className="flex items-center space-x-2 text-sm font-mono">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
