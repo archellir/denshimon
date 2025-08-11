@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap } from 'lucide-react';
 import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import ResourceCharts from '@components/metrics/ResourceCharts';
@@ -9,6 +9,7 @@ import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
 import NetworkTraffic from '@components/network/NetworkTraffic';
 import PodsOverview from '@components/pods/PodsOverview';
 import EventTimeline from '@components/events/EventTimeline';
+import ServiceMesh from '@components/services/ServiceMesh';
 
 const Dashboard: FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -50,6 +51,7 @@ const Dashboard: FC = () => {
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'resources', label: 'Resources', icon: Server },
     { id: 'network', label: 'Network', icon: Network },
+    { id: 'mesh', label: 'Service Mesh', icon: Zap },
     { id: 'events', label: 'Events', icon: Clock },
     { id: 'nodes', label: 'Nodes', icon: Server },
     { id: 'pods', label: 'Pods', icon: Database },
@@ -185,6 +187,7 @@ const Dashboard: FC = () => {
         {activeTab === 'overview' && <ClusterOverview />}
         {activeTab === 'resources' && <ResourceCharts />}
         {activeTab === 'network' && <NetworkTraffic />}
+        {activeTab === 'mesh' && <ServiceMesh />}
         {activeTab === 'events' && <EventTimeline />}
         {activeTab === 'nodes' && <NodeList />}
         {activeTab === 'pods' && <PodsOverview />}
