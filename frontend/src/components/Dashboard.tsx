@@ -18,6 +18,7 @@ import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
 import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
+import PipelineMonitor from '@components/cicd/PipelineMonitor';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -152,6 +153,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
     deployments: [
       { id: 'applications', label: 'Applications', icon: Package },
       { id: 'repositories', label: 'Repositories', icon: GitBranch },
+      { id: 'pipelines', label: 'CI/CD Pipelines', icon: Zap },
       { id: 'sync', label: 'Sync Status', icon: Activity },
     ],
     observability: [
@@ -262,7 +264,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {activePrimaryTab === 'mesh' && activeSecondaryTab === 'gateway' && <APIGatewayAnalytics />}
         
         {/* Deployments Tab Content */}
-        {activePrimaryTab === 'deployments' && <GitOps />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'applications' && <GitOps />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'repositories' && <GitOps />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'pipelines' && <PipelineMonitor />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'sync' && <GitOps />}
         
         {/* Observability Tab Content */}
         {activePrimaryTab === 'observability' && activeSecondaryTab === 'logs' && <Logs />}
