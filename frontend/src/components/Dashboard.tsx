@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor, normalizeStatus, type StatusType } from '@components/common/StatusIcon';
 import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
@@ -13,6 +13,9 @@ import PodsOverview from '@components/pods/PodsOverview';
 import EventTimeline from '@components/events/EventTimeline';
 import ServiceMesh from '@components/services/ServiceMesh';
 import Logs from '@components/Logs';
+import EnhancedLogs from '@components/observability/EnhancedLogs';
+import LiveStreams from '@components/observability/LiveStreams';
+import LogAnalytics from '@components/observability/LogAnalytics';
 import GitOps from '@components/GitOps';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
@@ -153,12 +156,14 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
     deployments: [
       { id: 'applications', label: 'Applications', icon: Package },
       { id: 'repositories', label: 'Repositories', icon: GitBranch },
-      { id: 'pipelines', label: 'CI/CD Pipelines', icon: Zap },
+      { id: 'gitea', label: 'Gitea Actions', icon: Zap },
       { id: 'sync', label: 'Sync Status', icon: Activity },
     ],
     observability: [
       { id: 'logs', label: 'Logs', icon: FileText },
       { id: 'events', label: 'Events', icon: Clock },
+      { id: 'streams', label: 'Live Streams', icon: Activity },
+      { id: 'analytics', label: 'Analytics', icon: TrendingUp },
     ],
   };
 
@@ -266,12 +271,14 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {/* Deployments Tab Content */}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'applications' && <GitOps />}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'repositories' && <GitOps />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'pipelines' && <GiteaActions />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'gitea' && <GiteaActions />}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'sync' && <GitOps />}
         
         {/* Observability Tab Content */}
-        {activePrimaryTab === 'observability' && activeSecondaryTab === 'logs' && <Logs />}
+        {activePrimaryTab === 'observability' && activeSecondaryTab === 'logs' && <EnhancedLogs />}
         {activePrimaryTab === 'observability' && activeSecondaryTab === 'events' && <EventTimeline />}
+        {activePrimaryTab === 'observability' && activeSecondaryTab === 'streams' && <LiveStreams />}
+        {activePrimaryTab === 'observability' && activeSecondaryTab === 'analytics' && <LogAnalytics />}
       </div>
     </div>
   );
