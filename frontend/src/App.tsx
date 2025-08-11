@@ -5,9 +5,11 @@ import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch
 import Dashboard from '@components/Dashboard'
 import WebSocketStatus from '@components/common/WebSocketStatus'
 import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
+import DashboardSettings from '@components/DashboardSettings'
 import { useKeyboardNavigation } from '@hooks/useKeyboardNavigation'
 import { initializeWebSocket } from '@services/websocket'
-import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS } from '@constants'
+import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS, DASHBOARD_SECTIONS } from '@constants'
+import useSettingsStore from '@stores/settingsStore'
 import './debug-mock' // Import debug script
 
 interface ProtectedRouteProps {
@@ -91,8 +93,10 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>(TimeRange.ONE_HOUR)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false)
+  const [showDashboardSettings, setShowDashboardSettings] = useState<boolean>(false)
   const navigate = useNavigate()
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const { isSectionVisible, isTabVisible, getVisibleTabs } = useSettingsStore()
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -184,42 +188,47 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
           <h1 className="text-xl font-bold">DENSHIMON</h1>
           <div className="flex items-center space-x-4">
             {/* Global Time Range Selector */}
-            <div className="flex items-center space-x-2">
-              <Clock size={16} />
-              <div className="flex space-x-0 border border-white">
-                {timeRanges.map((range) => (
-                  <button
-                    key={range.value}
-                    onClick={() => setSelectedTimeRange(range.value)}
-                    className={`px-3 py-1 border-r border-white last:border-r-0 font-mono text-xs transition-colors ${
-                      selectedTimeRange === range.value
-                        ? 'bg-white text-black'
-                        : 'bg-black text-white hover:bg-white hover:text-black'
-                    }`}
-                  >
-                    {range.label.toUpperCase()}
-                  </button>
-                ))}
+            {isSectionVisible(DASHBOARD_SECTIONS.TIME_RANGE_SELECTOR) && (
+              <div className="flex items-center space-x-2">
+                <Clock size={16} />
+                <div className="flex space-x-0 border border-white">
+                  {timeRanges.map((range) => (
+                    <button
+                      key={range.value}
+                      onClick={() => setSelectedTimeRange(range.value)}
+                      className={`px-3 py-1 border-r border-white last:border-r-0 font-mono text-xs transition-colors ${
+                        selectedTimeRange === range.value
+                          ? 'bg-white text-black'
+                          : 'bg-black text-white hover:bg-white hover:text-black'
+                      }`}
+                    >
+                      {range.label.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             
             {/* WebSocket Status */}
-            <WebSocketStatus />
+            {isSectionVisible(DASHBOARD_SECTIONS.WEBSOCKET_STATUS) && <WebSocketStatus />}
             
             <span className="text-sm">
               <User size={16} className="inline mr-1" />
               {currentUser}
             </span>
+            {isSectionVisible(DASHBOARD_SECTIONS.KEYBOARD_SHORTCUTS) && (
+              <button
+                onClick={() => setShowShortcutsModal(true)}
+                className="text-sm hover:text-white/70 transition-colors"
+                title="Keyboard Shortcuts (?)"
+              >
+                <HelpCircle size={16} />
+              </button>
+            )}
             <button
-              onClick={() => setShowShortcutsModal(true)}
+              onClick={() => setShowDashboardSettings(true)}
               className="text-sm hover:text-white/70 transition-colors"
-              title="Keyboard Shortcuts (?)"
-            >
-              <HelpCircle size={16} />
-            </button>
-            <button
-              className="text-sm hover:text-white/70 transition-colors"
-              title="Settings"
+              title="Dashboard Settings"
             >
               <SettingsIcon size={16} />
             </button>
@@ -237,12 +246,14 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       <NavigationBar />
 
       {/* Breadcrumb Navigation */}
-      <Breadcrumb 
-        secondaryTab={currentSecondaryTab} 
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchInputRef={searchInputRef}
-      />
+      {isSectionVisible(DASHBOARD_SECTIONS.BREADCRUMBS) && (
+        <Breadcrumb 
+          secondaryTab={currentSecondaryTab} 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchInputRef={searchInputRef}
+        />
+      )}
 
       {/* Main Content */}
       <main>
@@ -261,20 +272,29 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
         isOpen={showShortcutsModal} 
         onClose={() => setShowShortcutsModal(false)} 
       />
+      
+      {/* Dashboard Settings Modal */}
+      <DashboardSettings 
+        isOpen={showDashboardSettings} 
+        onClose={() => setShowDashboardSettings(false)} 
+      />
     </div>
   )
 }
 
 const NavigationBar: FC = () => {
   const location = useLocation()
+  const { isTabVisible } = useSettingsStore()
   
-  const navItems = [
-    { path: '/infrastructure', icon: Server, label: 'Infrastructure' },
-    { path: '/workloads', icon: Package, label: 'Workloads' },
-    { path: '/mesh', icon: Zap, label: 'Service Mesh' },
-    { path: '/deployments', icon: GitBranch, label: 'Deployments' },
-    { path: '/observability', icon: Eye, label: 'Observability' },
+  const allNavItems = [
+    { path: '/infrastructure', icon: Server, label: 'Infrastructure', tabId: 'infrastructure' },
+    { path: '/workloads', icon: Package, label: 'Workloads', tabId: 'workloads' },
+    { path: '/mesh', icon: Zap, label: 'Service Mesh', tabId: 'mesh' },
+    { path: '/deployments', icon: GitBranch, label: 'Deployments', tabId: 'deployments' },
+    { path: '/observability', icon: Eye, label: 'Observability', tabId: 'observability' },
   ]
+  
+  const navItems = allNavItems.filter(item => isTabVisible(item.tabId))
 
   return (
     <nav className="border-b border-white">
@@ -310,6 +330,7 @@ interface BreadcrumbProps {
 const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchChange, searchInputRef }) => {
   const location = useLocation()
   const [searchParams] = useSearchParams()
+  const { isSectionVisible } = useSettingsStore()
   
   const navItems = [
     { path: '/infrastructure', label: 'Infrastructure' },
@@ -379,17 +400,19 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchCh
           </div>
           
           {/* Global Search Bar */}
-          <div className="flex items-center space-x-2">
-            <Search size={14} className="text-gray-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search resources... (/ to focus)"
-              className="bg-black border border-white/30 text-white text-sm font-mono px-2 py-1 w-64 focus:outline-none focus:border-green-400 placeholder-gray-500"
-            />
-          </div>
+          {isSectionVisible(DASHBOARD_SECTIONS.SEARCH_BAR) && (
+            <div className="flex items-center space-x-2">
+              <Search size={14} className="text-gray-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search resources... (/ to focus)"
+                className="bg-black border border-white/30 text-white text-sm font-mono px-2 py-1 w-64 focus:outline-none focus:border-green-400 placeholder-gray-500"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

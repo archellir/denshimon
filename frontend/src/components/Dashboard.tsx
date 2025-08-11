@@ -4,7 +4,8 @@ import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
-import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange } from '@constants';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
+import useSettingsStore from '@stores/settingsStore';
 import { 
   generateInfrastructureStats, 
   generateWorkloadsStats, 
@@ -40,6 +41,7 @@ interface DashboardProps {
 
 const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRUCTURE, onSecondaryTabChange, timeRange = TimeRange.ONE_HOUR }) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isSectionVisible } = useSettingsStore();
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -208,11 +210,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Quick Stats - show for all major tabs */}
-      {(activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS || activePrimaryTab === PrimaryTab.OBSERVABILITY) && clusterMetrics && (
+      {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS || activePrimaryTab === PrimaryTab.OBSERVABILITY) && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-end items-center mb-4">
-              {isConnected && (
+              {isConnected && isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
                 <div className="flex items-center space-x-2 text-sm font-mono">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-green-400">{UI_MESSAGES.LIVE_UPDATES}</span>
@@ -240,7 +242,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       )}
 
       {/* Secondary Navigation - with visual separation */}
-      {secondaryTabs[activePrimaryTab] && (
+      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && secondaryTabs[activePrimaryTab] && (
         <div className="bg-black border-b border-white/20">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex space-x-1 py-2">

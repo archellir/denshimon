@@ -210,7 +210,8 @@ export const UI_MESSAGES = {
   CHECK_CONSOLE: 'Check console for details',
   AUTHENTICATING: 'AUTHENTICATING...',
   LOGIN: 'LOGIN',
-  INITIALIZING: 'INITIALIZING...'
+  INITIALIZING: 'INITIALIZING...',
+  CLOSE: 'CLOSE'
 } as const;
 
 export const LABELS = {
@@ -314,6 +315,68 @@ export const QUICK_STATS_LABELS = {
   LOG_EVENTS: 'Log Events',
   ERROR_RATE: 'Error Rate',
   SLO_HEALTH: 'SLO Health',
+} as const;
+
+// ============================================================================
+// DASHBOARD SETTINGS
+// ============================================================================
+
+export const DASHBOARD_SECTIONS = {
+  QUICK_STATS: 'quickStats',
+  SECONDARY_TABS: 'secondaryTabs',
+  BREADCRUMBS: 'breadcrumbs',
+  LIVE_UPDATES_INDICATOR: 'liveUpdatesIndicator',
+  TIME_RANGE_SELECTOR: 'timeRangeSelector',
+  SEARCH_BAR: 'searchBar',
+  KEYBOARD_SHORTCUTS: 'keyboardShortcuts',
+  WEBSOCKET_STATUS: 'websocketStatus'
+} as const;
+
+export const DASHBOARD_TABS = {
+  INFRASTRUCTURE: PrimaryTab.INFRASTRUCTURE,
+  WORKLOADS: PrimaryTab.WORKLOADS,
+  MESH: PrimaryTab.MESH,
+  DEPLOYMENTS: PrimaryTab.DEPLOYMENTS,
+  OBSERVABILITY: PrimaryTab.OBSERVABILITY
+} as const;
+
+export const DEFAULT_DASHBOARD_CONFIG = {
+  sections: {
+    [DASHBOARD_SECTIONS.QUICK_STATS]: true,
+    [DASHBOARD_SECTIONS.SECONDARY_TABS]: true,
+    [DASHBOARD_SECTIONS.BREADCRUMBS]: true,
+    [DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR]: true,
+    [DASHBOARD_SECTIONS.TIME_RANGE_SELECTOR]: true,
+    [DASHBOARD_SECTIONS.SEARCH_BAR]: true,
+    [DASHBOARD_SECTIONS.KEYBOARD_SHORTCUTS]: true,
+    [DASHBOARD_SECTIONS.WEBSOCKET_STATUS]: true,
+  },
+  tabs: {
+    [DASHBOARD_TABS.INFRASTRUCTURE]: true,
+    [DASHBOARD_TABS.WORKLOADS]: true,
+    [DASHBOARD_TABS.MESH]: true,
+    [DASHBOARD_TABS.DEPLOYMENTS]: true,
+    [DASHBOARD_TABS.OBSERVABILITY]: true,
+  }
+} as const;
+
+export const DASHBOARD_SECTION_LABELS = {
+  [DASHBOARD_SECTIONS.QUICK_STATS]: 'Quick Stats',
+  [DASHBOARD_SECTIONS.SECONDARY_TABS]: 'Secondary Navigation',
+  [DASHBOARD_SECTIONS.BREADCRUMBS]: 'Breadcrumb Navigation',
+  [DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR]: 'Live Updates Indicator',
+  [DASHBOARD_SECTIONS.TIME_RANGE_SELECTOR]: 'Time Range Selector',
+  [DASHBOARD_SECTIONS.SEARCH_BAR]: 'Global Search Bar',
+  [DASHBOARD_SECTIONS.KEYBOARD_SHORTCUTS]: 'Keyboard Shortcuts',
+  [DASHBOARD_SECTIONS.WEBSOCKET_STATUS]: 'WebSocket Status',
+} as const;
+
+export const DASHBOARD_TAB_LABELS = {
+  [DASHBOARD_TABS.INFRASTRUCTURE]: 'Infrastructure',
+  [DASHBOARD_TABS.WORKLOADS]: 'Workloads', 
+  [DASHBOARD_TABS.MESH]: 'Service Mesh',
+  [DASHBOARD_TABS.DEPLOYMENTS]: 'Deployments',
+  [DASHBOARD_TABS.OBSERVABILITY]: 'Observability',
 } as const;
 
 // ============================================================================
