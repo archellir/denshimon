@@ -25,21 +25,12 @@ interface ClusterOverviewProps {
 const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
   const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
 
-  // Fetch initial data
+  // Fetch initial cluster metrics only (history is fetched by Dashboard)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await Promise.all([
-          fetchClusterMetrics(),
-          fetchMetricsHistory(timeRange)
-        ]);
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      }
-    };
-    
-    fetchData();
-  }, [timeRange]);
+    fetchClusterMetrics().catch(error => {
+      console.error('Error fetching cluster metrics:', error);
+    });
+  }, [fetchClusterMetrics]);
 
 
   // Format chart data
@@ -194,7 +185,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} key={`chart-${timeRange}-${chartData.length}`} margin={{ top: 5, right: 0, left: -35, bottom: 5 }}>
+                <AreaChart data={chartData} key={`chart-${timeRange}`} margin={{ top: 5, right: 0, left: -35, bottom: 5 }}>
                   <XAxis
                     dataKey="time"
                     axisLine={false}

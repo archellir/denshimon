@@ -120,19 +120,23 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     cleanupWebSocketMetrics,
   } = useWebSocketMetricsStore();
 
-  // WebSocket metrics initialization
+  // WebSocket metrics initialization - only once on mount
   useEffect(() => {
     initializeWebSocketMetrics();
     
     // Initial data load for fallback
     fetchAllMetrics();
-    fetchMetricsHistory(timeRange);
 
     return () => {
       cleanupWebSocketMetrics();
       clearMetrics();
     };
-  }, [initializeWebSocketMetrics, cleanupWebSocketMetrics, fetchAllMetrics, fetchMetricsHistory, clearMetrics, timeRange]);
+  }, []); // Empty dependency array - only run once on mount
+
+  // Fetch history when timeRange changes
+  useEffect(() => {
+    fetchMetricsHistory(timeRange);
+  }, [timeRange, fetchMetricsHistory]);
 
   // Optional polling fallback when WebSocket is disconnected
   useEffect(() => {
@@ -150,7 +154,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [autoRefresh, refreshInterval, isConnected, fetchAllMetrics, fetchMetricsHistory, timeRange]);
+  }, [autoRefresh, refreshInterval, isConnected, timeRange]); // Removed fetchAllMetrics and fetchMetricsHistory from deps to avoid circular updates
 
   const primaryTabs = [
     { id: 'infrastructure', label: 'Infrastructure', icon: Server },

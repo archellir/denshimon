@@ -507,7 +507,7 @@ const App: FC = () => {
               error={error}
             />
           ) : (
-            <Navigate to="/dashboard" replace />
+            <Navigate to="/infrastructure" replace />
           )
         } />
         
