@@ -398,6 +398,56 @@ func (h *KubernetesHandlers) HealthCheck(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(response)
 }
 
+// GET /api/k8s/pods/exec - WebSocket terminal access
+func (h *KubernetesHandlers) HandlePodExec(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		return
+	}
+	
+	h.k8sClient.HandlePodExec(w, r)
+}
+
+// GET /api/k8s/pods/logs/stream - Advanced log streaming
+func (h *KubernetesHandlers) HandlePodLogs(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		return
+	}
+	
+	h.k8sClient.HandlePodLogs(w, r)
+}
+
+// POST /api/k8s/pods/portforward - Port forwarding
+func (h *KubernetesHandlers) HandlePodPortForward(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		return
+	}
+	
+	h.k8sClient.HandlePodPortForward(w, r)
+}
+
+// POST /api/k8s/pods/files/upload - File upload to pod
+func (h *KubernetesHandlers) HandleFileUpload(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		return
+	}
+	
+	h.k8sClient.HandleFileUpload(w, r)
+}
+
+// GET /api/k8s/pods/files/download - File download from pod
+func (h *KubernetesHandlers) HandleFileDownload(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		return
+	}
+	
+	h.k8sClient.HandleFileDownload(w, r)
+}
+
 // Helper functions
 func getPodReadyStatus(pod *corev1.Pod) string {
 	ready := 0
