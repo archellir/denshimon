@@ -242,6 +242,81 @@ export const LABELS = {
 } as const;
 
 // ============================================================================
+// QUICK STATS CONSTANTS
+// ============================================================================
+
+export const QUICK_STATS_MOCK_DATA = {
+  WORKLOADS: {
+    DEPLOYMENT_COUNT: 12,
+    SERVICE_COUNT: 8,
+    NAMESPACE_COUNT: 5,
+  },
+  MESH: {
+    ACTIVE_SERVICES: 15,
+    REQUEST_RATE: 2450, // requests per minute
+    SUCCESS_RATE: 99.2, // percentage
+    P99_LATENCY: 85, // milliseconds
+  },
+  DEPLOYMENTS: {
+    TOTAL_APPLICATIONS: 8,
+    REPOSITORIES: 5,
+    RECENT_DEPLOYMENTS: 12, // last 24h
+    SUCCESS_RATE: 94.5, // percentage
+  },
+  OBSERVABILITY: {
+    ACTIVE_ALERTS: 3,
+    LOG_EVENTS_PER_MIN: 1250,
+    ERROR_RATE: 2.8, // percentage
+    SLO_HEALTH: 98.5, // percentage of SLOs met
+  },
+} as const;
+
+export const QUICK_STATS_THRESHOLDS = {
+  CPU: { WARNING: 80, CRITICAL: 95 },
+  MEMORY: { WARNING: 80, CRITICAL: 95 },
+  ERROR_RATE: { HEALTHY: 1, WARNING: 5 },
+  SUCCESS_RATE: { HEALTHY: 99, WARNING: 95 },
+  DEPLOYMENT_SUCCESS_RATE: { HEALTHY: 95, WARNING: 80 },
+  LATENCY: { HEALTHY: 100, WARNING: 500 },
+  REQUEST_RATE: { HEALTHY: 1000, WARNING: 100 },
+  LOG_EVENTS: { MIN_HEALTHY: 500, MAX_HEALTHY: 5000, MIN_WARNING: 100 },
+  ALERTS: { HEALTHY: 0, WARNING: 5 },
+  SLO_HEALTH: { HEALTHY: 99, WARNING: 95 },
+  RECENT_DEPLOYMENTS: { HEALTHY: 5, WARNING: 1 },
+} as const;
+
+export const QUICK_STATS_LABELS = {
+  // Infrastructure
+  NODES: 'Nodes',
+  PODS: 'Pods',
+  CPU: 'CPU',
+  MEMORY: 'Memory',
+  
+  // Workloads
+  DEPLOYMENTS: 'Deployments',
+  RUNNING_PODS: 'Running Pods',
+  SERVICES: 'Services',
+  FAILED_PODS: 'Failed Pods',
+  
+  // Service Mesh
+  ACTIVE_SERVICES: 'Active Services',
+  REQUEST_RATE: 'Request Rate',
+  SUCCESS_RATE: 'Success Rate',
+  P99_LATENCY: 'P99 Latency',
+  
+  // Deployments
+  APPLICATIONS: 'Applications',
+  REPOSITORIES: 'Repositories',
+  RECENT_DEPLOYS: 'Recent Deploys',
+  
+  // Observability
+  ACTIVE_ALERTS: 'Active Alerts',
+  LOG_EVENTS: 'Log Events',
+  ERROR_RATE: 'Error Rate',
+  SLO_HEALTH: 'SLO Health',
+} as const;
+
+// ============================================================================
 // API ENDPOINTS
 // ============================================================================
 
