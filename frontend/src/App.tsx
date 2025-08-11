@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router'
+import { useState, useEffect, useRef } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router'
 import type { FC } from 'react'
-import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search } from 'lucide-react'
+import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
 import WebSocketStatus from '@components/common/WebSocketStatus'
+import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
+import { useKeyboardNavigation } from '@hooks/useKeyboardNavigation'
 import { initializeWebSocket } from '@services/websocket'
 import './debug-mock' // Import debug script
 
@@ -87,12 +89,90 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [currentSecondaryTab, setCurrentSecondaryTab] = useState<string>('')
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h')
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false)
+  const navigate = useNavigate()
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Initialize WebSocket connection
   useEffect(() => {
     const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws'
     initializeWebSocket(wsUrl)
   }, [])
+
+  // Handle refresh current view
+  const handleRefresh = () => {
+    // Trigger a page refresh or call specific refresh methods based on current tab
+    window.location.reload()
+  }
+
+  // Handle search focus
+  const handleSearchFocus = () => {
+    searchInputRef.current?.focus()
+  }
+
+  // Handle escape - clear search or close modals
+  const handleEscape = () => {
+    if (showShortcutsModal) {
+      setShowShortcutsModal(false)
+    } else if (searchQuery) {
+      setSearchQuery('')
+      searchInputRef.current?.blur()
+    }
+  }
+
+  // Handle enter in search
+  const handleEnterSearch = () => {
+    // Apply search/filter - this could trigger search functionality
+    console.log('Applying search:', searchQuery)
+  }
+
+  // Handle tab switching
+  const handleTabSwitch = (tabId: string) => {
+    const tabPaths = {
+      infrastructure: '/infrastructure',
+      workloads: '/workloads',
+      mesh: '/mesh',
+      deployments: '/deployments',
+      observability: '/observability'
+    }
+    
+    if (tabPaths[tabId as keyof typeof tabPaths]) {
+      navigate(tabPaths[tabId as keyof typeof tabPaths])
+    }
+  }
+
+  // Keyboard navigation setup
+  useKeyboardNavigation({
+    onTabSwitch: handleTabSwitch,
+    onRefresh: handleRefresh,
+    onSearch: handleSearchFocus,
+    onEscape: handleEscape,
+    onEnter: handleEnterSearch,
+    disabled: false
+  })
+
+  // Handle ? key for help modal
+  useEffect(() => {
+    const handleHelpKey = (e: KeyboardEvent) => {
+      if (e.key === '?' && !isInputFocused()) {
+        e.preventDefault()
+        setShowShortcutsModal(true)
+      }
+    }
+
+    document.addEventListener('keydown', handleHelpKey)
+    return () => document.removeEventListener('keydown', handleHelpKey)
+  }, [])
+
+  // Helper to check if input is focused (duplicate from hook but needed here)
+  const isInputFocused = (): boolean => {
+    const activeElement = document.activeElement
+    if (!activeElement) return false
+    
+    const tagName = activeElement.tagName.toLowerCase()
+    return ['input', 'textarea', 'select'].includes(tagName) || 
+           activeElement.getAttribute('contenteditable') === 'true'
+  }
 
   const timeRanges = [
     { value: '5m', label: '5m' },
@@ -134,6 +214,13 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
               {currentUser}
             </span>
             <button
+              onClick={() => setShowShortcutsModal(true)}
+              className="text-sm hover:text-white/70 transition-colors"
+              title="Keyboard Shortcuts (?)"
+            >
+              <HelpCircle size={16} />
+            </button>
+            <button
               className="text-sm hover:text-white/70 transition-colors"
               title="Settings"
             >
@@ -157,6 +244,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
         secondaryTab={currentSecondaryTab} 
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        searchInputRef={searchInputRef}
       />
 
       {/* Main Content */}
@@ -170,6 +258,12 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
           <Route path="/observability" element={<Dashboard activePrimaryTab="observability" onSecondaryTabChange={setCurrentSecondaryTab} />} />
         </Routes>
       </main>
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal 
+        isOpen={showShortcutsModal} 
+        onClose={() => setShowShortcutsModal(false)} 
+      />
     </div>
   )
 }
@@ -213,9 +307,10 @@ interface BreadcrumbProps {
   secondaryTab?: string
   searchQuery: string
   onSearchChange: (query: string) => void
+  searchInputRef: React.RefObject<HTMLInputElement | null>
 }
 
-const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchChange }) => {
+const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchChange, searchInputRef }) => {
   const location = useLocation()
   
   const navItems = [
@@ -283,10 +378,11 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchCh
           <div className="flex items-center space-x-2">
             <Search size={14} className="text-gray-400" />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search resources..."
+              placeholder="Search resources... (/ to focus)"
               className="bg-black border border-white/30 text-white text-sm font-mono px-2 py-1 w-64 focus:outline-none focus:border-green-400 placeholder-gray-500"
             />
           </div>
