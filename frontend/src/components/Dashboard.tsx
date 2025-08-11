@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor, normalizeStatus, type StatusType } from '@components/common/StatusIcon';
@@ -30,33 +31,45 @@ interface DashboardProps {
 }
 
 const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', onSecondaryTabChange }) => {
-  const [secondaryTabMemory, setSecondaryTabMemory] = useState<Record<string, string>>({
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Default secondary tabs for each primary tab
+  const defaultSecondaryTabs = {
     infrastructure: 'overview',
     workloads: 'overview',
     mesh: 'topology',
     deployments: 'applications',
     observability: 'logs',
-  });
+  };
 
-  // Get current secondary tab for the active primary tab
-  const activeSecondaryTab = secondaryTabMemory[activePrimaryTab] || 
+  // Get current secondary tab from URL or use default
+  const activeSecondaryTab = searchParams.get('tab') || 
+    defaultSecondaryTabs[activePrimaryTab] || 
     (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
 
-  // Update secondary tab and remember it
+  // Update secondary tab and URL
   const setActiveSecondaryTab = (tabId: string) => {
-    setSecondaryTabMemory(prev => ({
-      ...prev,
-      [activePrimaryTab]: tabId
-    }));
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', tabId);
+    setSearchParams(newSearchParams);
     onSecondaryTabChange?.(tabId);
   };
 
-  // Notify parent of current secondary tab on primary tab change
+  // Set default tab in URL if none is present
   useEffect(() => {
-    const currentSecondary = secondaryTabMemory[activePrimaryTab] || 
-      (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
-    onSecondaryTabChange?.(currentSecondary);
-  }, [activePrimaryTab, secondaryTabMemory, onSecondaryTabChange]);
+    if (!searchParams.get('tab')) {
+      const defaultTab = defaultSecondaryTabs[activePrimaryTab] || 
+        (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('tab', defaultTab);
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [activePrimaryTab, searchParams, setSearchParams]);
+
+  // Notify parent of current secondary tab
+  useEffect(() => {
+    onSecondaryTabChange?.(activeSecondaryTab);
+  }, [activeSecondaryTab, onSecondaryTabChange]);
   const {
     clusterMetrics,
     isLoading,

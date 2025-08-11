@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, useNavigate } from 'react-router'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, useNavigate, useSearchParams } from 'react-router'
 import type { FC } from 'react'
 import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
@@ -312,6 +312,7 @@ interface BreadcrumbProps {
 
 const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchChange, searchInputRef }) => {
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   
   const navItems = [
     { path: '/infrastructure', label: 'Infrastructure' },
@@ -330,6 +331,8 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchCh
       overview: 'Overview',
       nodes: 'Nodes', 
       resources: 'Resources',
+      storage: 'Storage',
+      hierarchy: 'Hierarchy',
       network: 'Network'
     },
     workloads: {
@@ -342,21 +345,25 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchCh
       topology: 'Topology',
       services: 'Services',
       endpoints: 'Endpoints',
-      flows: 'Flows'
+      flows: 'Traffic Flow',
+      gateway: 'API Gateway'
     },
     deployments: {
       applications: 'Applications',
       repositories: 'Repositories',
-      sync: 'Sync Status'
+      gitea: 'Gitea Actions'
     },
     observability: {
       logs: 'Logs',
-      events: 'Events'
+      events: 'Events',
+      streams: 'Live Streams',
+      analytics: 'Analytics'
     }
   }
 
   const primaryTab = location.pathname.replace('/', '')
-  const secondaryLabel = secondaryTab && secondaryTabLabels[primaryTab]?.[secondaryTab]
+  const currentSecondaryTab = searchParams.get('tab') || secondaryTab
+  const secondaryLabel = currentSecondaryTab && secondaryTabLabels[primaryTab]?.[currentSecondaryTab]
 
   return (
     <div className="bg-black border-b border-white/10">
