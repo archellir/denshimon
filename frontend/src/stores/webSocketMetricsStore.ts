@@ -135,7 +135,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           console.log('[FETCH DEBUG] fetchClusterMetrics - FORCE_MOCK_MODE:', FORCE_MOCK_MODE);
           if (MOCK_ENABLED || FORCE_MOCK_MODE) {
             console.log('[FETCH DEBUG] Using mock data for cluster metrics');
-            const mockData = await mockApiResponse(mockClusterMetrics());
+            const mockData = await mockApiResponse(mockClusterMetrics);
             set({ clusterMetrics: mockData });
           } else {
             console.log('[FETCH DEBUG] Making real API call for cluster metrics');
@@ -156,7 +156,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           console.warn('API call failed, falling back to mock data:', error);
           // Fallback to mock data on error
           try {
-            const mockData = await mockApiResponse(mockClusterMetrics());
+            const mockData = await mockApiResponse(mockClusterMetrics);
             set({ clusterMetrics: mockData, error: null });
           } catch (mockError) {
             set({ error: 'Failed to fetch cluster metrics' });
