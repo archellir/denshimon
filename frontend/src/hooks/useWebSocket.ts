@@ -1,0 +1,204 @@
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { getWebSocketInstance, WebSocketMessage } from '@services/websocket';
+
+export interface UseWebSocketOptions {
+  enabled?: boolean;
+  immediate?: boolean;
+}
+
+export interface WebSocketConnectionState {
+  state: 'connecting' | 'connected' | 'disconnected' | 'error';
+  reconnectAttempts: number;
+}
+
+export function useWebSocket<T = any>(
+  messageType: WebSocketMessage['type'] | 'connection',
+  options: UseWebSocketOptions = {}
+) {
+  const { enabled = true, immediate = true } = options;
+  
+  const [data, setData] = useState<T | null>(null);
+  const [connectionState, setConnectionState] = useState<WebSocketConnectionState>({
+    state: 'disconnected',
+    reconnectAttempts: 0
+  });
+  const [error, setError] = useState<Error | null>(null);
+  const subscriptionIdRef = useRef<string | null>(null);
+  const wsRef = useRef(getWebSocketInstance());
+
+  const handleMessage = useCallback((receivedData: any) => {
+    if (messageType === 'connection') {
+      setConnectionState(receivedData);
+    } else {
+      setData(receivedData);
+    }
+    setError(null);
+  }, [messageType]);
+
+  const handleError = useCallback((err: any) => {
+    setError(err instanceof Error ? err : new Error(String(err)));
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    try {
+      const ws = wsRef.current;
+      if (!ws) {
+        throw new Error('WebSocket instance not available');
+      }
+
+      if (immediate) {
+        subscriptionIdRef.current = ws.subscribe(messageType, handleMessage);
+      }
+
+      // Also subscribe to connection state changes if not already subscing to them
+      if (messageType !== 'connection') {
+        const connectionSubscriptionId = ws.subscribe('connection', setConnectionState);
+        
+        return () => {
+          if (subscriptionIdRef.current) {
+            ws.unsubscribe(subscriptionIdRef.current);
+          }
+          ws.unsubscribe(connectionSubscriptionId);
+        };
+      }
+
+      return () => {
+        if (subscriptionIdRef.current) {
+          ws.unsubscribe(subscriptionIdRef.current);
+        }
+      };
+    } catch (err) {
+      handleError(err);
+    }
+  }, [enabled, immediate, messageType, handleMessage, handleError]);
+
+  const subscribe = useCallback(() => {
+    if (subscriptionIdRef.current) return; // Already subscribed
+
+    try {
+      const ws = wsRef.current;
+      subscriptionIdRef.current = ws.subscribe(messageType, handleMessage);
+    } catch (err) {
+      handleError(err);
+    }
+  }, [messageType, handleMessage, handleError]);
+
+  const unsubscribe = useCallback(() => {
+    if (!subscriptionIdRef.current) return;
+
+    try {
+      const ws = wsRef.current;
+      ws.unsubscribe(subscriptionIdRef.current);
+      subscriptionIdRef.current = null;
+    } catch (err) {
+      handleError(err);
+    }
+  }, [handleError]);
+
+  const send = useCallback((messageData: any) => {
+    try {
+      const ws = wsRef.current;
+      ws.send({
+        type: messageType as WebSocketMessage['type'],
+        data: messageData
+      });
+    } catch (err) {
+      handleError(err);
+    }
+  }, [messageType, handleError]);
+
+  const isConnected = connectionState.state === 'connected';
+  const isConnecting = connectionState.state === 'connecting';
+  const isError = connectionState.state === 'error';
+
+  return {
+    data,
+    connectionState,
+    error,
+    isConnected,
+    isConnecting,
+    isError,
+    subscribe,
+    unsubscribe,
+    send
+  };
+}
+
+// Specialized hooks for common use cases
+export function useMetricsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('metrics', options);
+}
+
+export function useLogsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('logs', options);
+}
+
+export function useEventsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('events', options);
+}
+
+export function useWorkflowsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('workflows', options);
+}
+
+export function usePodsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('pods', options);
+}
+
+export function useDeploymentsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('deployments', options);
+}
+
+export function useAlertsWebSocket(options?: UseWebSocketOptions) {
+  return useWebSocket('alerts', options);
+}
+
+export function useConnectionState() {
+  return useWebSocket('connection');
+}
+
+// Batch subscription hook for multiple message types
+export function useMultipleWebSocket(messageTypes: WebSocketMessage['type'][]) {
+  const [data, setData] = useState<Record<string, any>>({});
+  const [connectionState, setConnectionState] = useState<WebSocketConnectionState>({
+    state: 'disconnected',
+    reconnectAttempts: 0
+  });
+  const subscriptionIdsRef = useRef<string[]>([]);
+  const wsRef = useRef(getWebSocketInstance());
+
+  useEffect(() => {
+    const ws = wsRef.current;
+    if (!ws) return;
+
+    // Subscribe to all message types
+    messageTypes.forEach(messageType => {
+      const subscriptionId = ws.subscribe(messageType, (receivedData) => {
+        setData(prev => ({
+          ...prev,
+          [messageType]: receivedData
+        }));
+      });
+      subscriptionIdsRef.current.push(subscriptionId);
+    });
+
+    // Subscribe to connection state
+    const connectionSubscriptionId = ws.subscribe('connection', setConnectionState);
+    subscriptionIdsRef.current.push(connectionSubscriptionId);
+
+    return () => {
+      subscriptionIdsRef.current.forEach(id => {
+        ws.unsubscribe(id);
+      });
+      subscriptionIdsRef.current = [];
+    };
+  }, [messageTypes]);
+
+  return {
+    data,
+    connectionState,
+    isConnected: connectionState.state === 'connected'
+  };
+}

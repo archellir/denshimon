@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } f
 import type { FC } from 'react'
 import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
+import WebSocketStatus from '@components/common/WebSocketStatus'
+import { initializeWebSocket } from '@services/websocket'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -85,6 +87,12 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8080/ws'
+    initializeWebSocket(wsUrl)
+  }, [])
+
   const timeRanges = [
     { value: '5m', label: '5m' },
     { value: '15m', label: '15m' },
@@ -116,6 +124,9 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
                 ))}
               </select>
             </div>
+            
+            {/* WebSocket Status */}
+            <WebSocketStatus />
             
             <span className="text-sm">
               <User size={16} className="inline mr-1" />

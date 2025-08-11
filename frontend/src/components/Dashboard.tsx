@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor, normalizeStatus, type StatusType } from '@components/common/StatusIcon';
 import useMetricsStore from '@stores/metricsStore';
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import HealthDashboard from '@components/metrics/HealthDashboard';
 import ResourceCharts from '@components/metrics/ResourceCharts';
@@ -62,33 +63,45 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
     error,
     autoRefresh,
     refreshInterval,
+    isConnected,
     fetchAllMetrics,
     fetchMetricsHistory,
     clearMetrics,
-  } = useMetricsStore();
+    initializeWebSocketMetrics,
+    cleanupWebSocketMetrics,
+  } = useWebSocketMetricsStore();
 
-  // Auto-refresh effect
+  // WebSocket metrics initialization
+  useEffect(() => {
+    initializeWebSocketMetrics();
+    
+    // Initial data load for fallback
+    fetchAllMetrics();
+    fetchMetricsHistory('1h');
+
+    return () => {
+      cleanupWebSocketMetrics();
+      clearMetrics();
+    };
+  }, [initializeWebSocketMetrics, cleanupWebSocketMetrics, fetchAllMetrics, fetchMetricsHistory, clearMetrics]);
+
+  // Optional polling fallback when WebSocket is disconnected
   useEffect(() => {
     let intervalId: number;
 
-    const refresh = () => {
-      fetchAllMetrics();
-      fetchMetricsHistory('1h');
-    };
+    if (autoRefresh && !isConnected) {
+      const refresh = () => {
+        fetchAllMetrics();
+        fetchMetricsHistory('1h');
+      };
 
-    // Initial load
-    refresh();
-
-    // Set up auto-refresh
-    if (autoRefresh) {
       intervalId = setInterval(refresh, refreshInterval) as unknown as number;
     }
 
     return () => {
       if (intervalId) clearInterval(intervalId);
-      clearMetrics();
     };
-  }, [autoRefresh, refreshInterval, fetchAllMetrics, fetchMetricsHistory, clearMetrics]);
+  }, [autoRefresh, refreshInterval, isConnected, fetchAllMetrics, fetchMetricsHistory]);
 
   const primaryTabs = [
     { id: 'infrastructure', label: 'Infrastructure', icon: Server },
@@ -196,6 +209,15 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       {activePrimaryTab === 'infrastructure' && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-mono">CLUSTER OVERVIEW</h2>
+              {isConnected && (
+                <div className="flex items-center space-x-2 text-sm font-mono">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-400">LIVE UPDATES</span>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {getQuickStats().map((stat) => (
                 <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-4`}>

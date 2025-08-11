@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Terminal, Package, AlertCircle, Info, AlertTriangle, Bug, Download, RefreshCw, Filter, Search, X } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@types/logs';
+import { useLogsWebSocket } from '@hooks/useWebSocket';
 
 const EnhancedLogs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -14,10 +15,20 @@ const EnhancedLogs: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(5000);
 
+  // WebSocket for real-time log updates
+  const { data: newLogEntry, isConnected } = useLogsWebSocket();
+
   // Load logs
   useEffect(() => {
     loadLogs();
   }, []);
+
+  // Handle real-time log entries
+  useEffect(() => {
+    if (newLogEntry && isConnected) {
+      setLogs(prev => [newLogEntry, ...prev.slice(0, 999)]); // Keep max 1000 logs
+    }
+  }, [newLogEntry, isConnected]);
 
   // Auto-refresh
   useEffect(() => {
@@ -124,7 +135,10 @@ const EnhancedLogs: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-mono">APPLICATION & SYSTEM LOGS</h2>
-          <p className="text-sm text-gray-400 font-mono">Centralized log aggregation and analysis</p>
+          <p className="text-sm text-gray-400 font-mono">
+            Centralized log aggregation and analysis
+            {isConnected && <span className="text-green-400 ml-2">• LIVE</span>}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 text-sm font-mono">

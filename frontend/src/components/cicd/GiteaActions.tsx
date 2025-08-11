@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GitBranch, CheckCircle, XCircle, Clock, Play, Pause, AlertTriangle, Server, User, FileText, Archive, Download, Zap, Package } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { useWorkflowsWebSocket } from '@hooks/useWebSocket';
 
 interface GiteaWorkflow {
   id: string;
@@ -92,6 +93,27 @@ const GiteaActions: React.FC = () => {
   const [artifacts, setArtifacts] = useState<GiteaArtifact[]>([]);
   const [repositories, setRepositories] = useState<GiteaRepository[]>([]);
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
+
+  // WebSocket for real-time workflow updates
+  const { data: workflowUpdate, isConnected } = useWorkflowsWebSocket();
+
+  // Handle real-time workflow updates
+  useEffect(() => {
+    if (workflowUpdate && isConnected) {
+      setWorkflows(prev => {
+        const existingIndex = prev.findIndex(w => w.id === workflowUpdate.id);
+        if (existingIndex >= 0) {
+          // Update existing workflow
+          const updated = [...prev];
+          updated[existingIndex] = { ...updated[existingIndex], ...workflowUpdate };
+          return updated;
+        } else {
+          // Add new workflow
+          return [workflowUpdate, ...prev.slice(0, 49)]; // Keep max 50 workflows
+        }
+      });
+    }
+  }, [workflowUpdate, isConnected]);
 
   // Generate mock Gitea Actions data
   useEffect(() => {
