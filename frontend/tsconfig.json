@@ -30,7 +30,9 @@
       "@stores/*": ["./src/stores/*"],
       "@types/*": ["./src/types/*"],
       "@utils/*": ["./src/utils/*"],
-      "@mocks/*": ["./src/mocks/*"]
+      "@mocks/*": ["./src/mocks/*"],
+      "@services/*": ["./src/services/*"],
+      "@hooks/*": ["./src/hooks/*"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],
