@@ -4,6 +4,8 @@ import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@types/logs';
+import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
+import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 
 const Logs: React.FC = () => {
   // Live terminal state
@@ -175,6 +177,99 @@ const Logs: React.FC = () => {
   };
 
   const uniqueSources = Array.from(new Set(staticLogs.map(log => log.source))).sort();
+
+  // Convert logs to match VirtualizedLogViewer format
+  const virtualizedLogs = useMemo(() => {
+    return staticLogs.map(log => ({
+      id: log.id,
+      timestamp: log.timestamp,
+      level: log.level as 'error' | 'warn' | 'info' | 'debug',
+      source: log.source,
+      message: log.message,
+      metadata: log.metadata
+    }));
+  }, [staticLogs]);
+
+  const liveLogs = useMemo(() => {
+    return filteredLiveLogs.map(log => ({
+      id: `live-${log.timestamp}-${Math.random()}`,
+      timestamp: log.timestamp,
+      level: log.level as 'error' | 'warn' | 'info' | 'debug',
+      source: log.source,
+      message: log.message,
+      metadata: log.metadata
+    }));
+  }, [filteredLiveLogs]);
+
+  // Pod table columns for top pods view
+  const podColumns: Column[] = [
+    {
+      key: 'name',
+      title: 'POD',
+      minWidth: 200,
+      render: (pod: any) => (
+        <span className="text-cyan-500 font-mono text-sm">{pod.name}</span>
+      ),
+    },
+    {
+      key: 'namespace',
+      title: 'NAMESPACE',
+      width: 140,
+      render: (pod: any) => (
+        <span className="font-mono text-sm">{pod.namespace}</span>
+      ),
+    },
+    {
+      key: 'cpu',
+      title: 'CPU %',
+      width: 80,
+      align: 'right' as const,
+      render: (pod: any) => (
+        <span className={`font-mono text-sm ${
+          pod.cpu > 80 ? 'text-red-500' : pod.cpu > 60 ? 'text-yellow-500' : ''
+        }`}>
+          {pod.cpu.toFixed(1)}
+        </span>
+      ),
+    },
+    {
+      key: 'cpuTrend',
+      title: 'TREND',
+      width: 60,
+      align: 'center' as const,
+      render: (pod: any) => getTrendIcon(pod.cpuTrend),
+    },
+    {
+      key: 'memory',
+      title: 'MEMORY MB',
+      width: 100,
+      align: 'right' as const,
+      render: (pod: any) => (
+        <span className={`font-mono text-sm ${
+          pod.memory > 3000 ? 'text-red-500' : pod.memory > 2000 ? 'text-yellow-500' : ''
+        }`}>
+          {pod.memory.toFixed(0)}
+        </span>
+      ),
+    },
+    {
+      key: 'memoryTrend',
+      title: 'TREND',
+      width: 60,
+      align: 'center' as const,
+      render: (pod: any) => getTrendIcon(pod.memoryTrend),
+    },
+    {
+      key: 'lastUpdate',
+      title: 'LAST UPDATE',
+      width: 120,
+      render: (pod: any) => (
+        <span className="text-gray-500 font-mono text-sm">
+          {new Date(pod.lastUpdate).toLocaleTimeString()}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -358,73 +453,21 @@ const Logs: React.FC = () => {
             })}
           </div>
 
-          {/* Log Entries Table */}
-          <div className="border border-white">
-            <div className="max-h-[500px] overflow-y-auto">
-              {filteredStaticLogs.length === 0 ? (
-                <div className="p-8 text-center">
-                  <div className="text-lg font-mono mb-2">NO LOGS FOUND</div>
-                  <div className="text-sm font-mono opacity-60">
-                    No log entries match your current filters
-                  </div>
-                </div>
-              ) : (
-                <div className="divide-y divide-white">
-                  {filteredStaticLogs.map((log) => (
-                    <div key={log.id} className="p-4 hover:bg-gray-900/20 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-3 flex-1">
-                          {getLevelIcon(log.level)}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-4 mb-1">
-                              <span className="font-mono text-xs text-gray-400">
-                                {formatTimestamp(log.timestamp)}
-                              </span>
-                              <span className={`font-mono text-xs px-2 py-1 border ${getLogLevelColor(log.level)}`}>
-                                {log.level.toUpperCase()}
-                              </span>
-                              <span className="font-mono text-xs text-blue-400">
-                                {log.source.toUpperCase()}
-                              </span>
-                              {log.user && (
-                                <span className="font-mono text-xs text-yellow-400">
-                                  {log.user}
-                                </span>
-                              )}
-                              {log.action && (
-                                <span className="font-mono text-xs text-green-400">
-                                  {log.action.toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <div className="font-mono text-sm">
-                              {log.message}
-                            </div>
-                            {log.metadata && (
-                              <div className="mt-2 font-mono text-xs text-gray-400">
-                                {Object.entries(log.metadata)
-                                  .filter(([key]) => key !== 'duration')
-                                  .map(([key, value]) => (
-                                    <span key={key} className="mr-4">
-                                      {key}: {JSON.stringify(value)}
-                                    </span>
-                                  ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {log.metadata?.duration && (
-                          <span className="font-mono text-xs text-gray-400">
-                            {log.metadata.duration}ms
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Virtualized Log Entries */}
+          <VirtualizedLogViewer
+            logs={virtualizedLogs.filter(log => {
+              const matchesSearch = searchQuery === '' || 
+                log.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                log.source.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchesLevel = selectedLevel === 'all' || log.level === selectedLevel;
+              const matchesSource = selectedSource === 'all' || log.source === selectedSource;
+              return matchesSearch && matchesLevel && matchesSource;
+            })}
+            height={500}
+            searchTerm={searchQuery}
+            filterLevel={selectedLevel === 'all' ? undefined : [selectedLevel as any]}
+            className="w-full"
+          />
         </div>
       )}
 
@@ -470,72 +513,29 @@ const Logs: React.FC = () => {
             </button>
           </div>
 
-          {/* Terminal Output */}
-          <div className="bg-black border border-white p-4 h-[500px] overflow-y-auto font-mono text-xs">
-            <div className="space-y-1">
-              {filteredLiveLogs.map((log, index) => (
-                <div key={index} className="flex items-start gap-2 hover:bg-white/5">
-                  <span className="text-gray-500 min-w-[140px]">
-                    {new Date(log.timestamp).toLocaleTimeString()}
-                  </span>
-                  {getLevelIcon(log.level)}
-                  <span className="text-cyan-500 min-w-[120px]">[{log.source}]</span>
-                  <span className="flex-1">{log.message}</span>
-                  {log.metadata && (
-                    <span className="text-gray-500 text-xs">
-                      {log.metadata.namespace}/{log.metadata.pod}
-                    </span>
-                  )}
-                </div>
-              ))}
-              <div ref={logsEndRef} />
-            </div>
-          </div>
+          {/* Live Log Stream */}
+          <VirtualizedLogViewer
+            logs={liveLogs}
+            height={500}
+            autoScroll={autoScroll}
+            searchTerm={liveFilter.search}
+            filterLevel={liveFilter.level}
+            maxLogs={liveFilter.maxLines || 100}
+            className="w-full"
+          />
         </div>
       )}
 
       {/* Top Pods View */}
       {selectedView === 'pods' && liveData && (
-        <div className="bg-black border border-white overflow-hidden">
-          <table className="w-full font-mono text-sm">
-            <thead>
-              <tr className="border-b border-white">
-                <th className="text-left p-3">POD</th>
-                <th className="text-left p-3">NAMESPACE</th>
-                <th className="text-right p-3">CPU %</th>
-                <th className="text-center p-3">TREND</th>
-                <th className="text-right p-3">MEMORY MB</th>
-                <th className="text-center p-3">TREND</th>
-                <th className="text-left p-3">LAST UPDATE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {liveData.topPods.map((pod) => (
-                <tr key={`${pod.namespace}-${pod.name}`} className="border-b border-white/20 hover:bg-white/5">
-                  <td className="p-3">
-                    <span className="text-cyan-500">{pod.name}</span>
-                  </td>
-                  <td className="p-3">{pod.namespace}</td>
-                  <td className="p-3 text-right">
-                    <span className={pod.cpu > 80 ? 'text-red-500' : pod.cpu > 60 ? 'text-yellow-500' : ''}>
-                      {pod.cpu.toFixed(1)}
-                    </span>
-                  </td>
-                  <td className="p-3 text-center">{getTrendIcon(pod.cpuTrend)}</td>
-                  <td className="p-3 text-right">
-                    <span className={pod.memory > 3000 ? 'text-red-500' : pod.memory > 2000 ? 'text-yellow-500' : ''}>
-                      {pod.memory.toFixed(0)}
-                    </span>
-                  </td>
-                  <td className="p-3 text-center">{getTrendIcon(pod.memoryTrend)}</td>
-                  <td className="p-3 text-gray-500">
-                    {new Date(pod.lastUpdate).toLocaleTimeString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <VirtualizedTable
+          data={liveData.topPods}
+          columns={podColumns}
+          containerHeight={500}
+          rowHeight={48}
+          className="w-full"
+          emptyMessage="NO PODS DATA AVAILABLE"
+        />
       )}
 
       {/* Deployments View */}

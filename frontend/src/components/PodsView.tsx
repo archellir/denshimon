@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { FC } from 'react'
 import { Server, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
+import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 
 interface Pod {
   name: string
@@ -19,6 +20,8 @@ const PodsView: FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<string>('name')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const fetchPods = async () => {
     setIsLoading(true)
@@ -80,6 +83,140 @@ const PodsView: FC = () => {
 
   const namespaces = ['all', 'denshimon-test', 'monitoring', 'production', 'default']
 
+  const filteredAndSortedPods = useMemo(() => {
+    let filtered = selectedNamespace === 'all' 
+      ? pods 
+      : pods.filter(pod => pod.namespace === selectedNamespace)
+
+    return filtered.sort((a, b) => {
+      let valueA: any, valueB: any
+      
+      switch (sortBy) {
+        case 'namespace':
+          valueA = a.namespace
+          valueB = b.namespace
+          break
+        case 'status':
+          valueA = a.status
+          valueB = b.status
+          break
+        case 'restarts':
+          valueA = a.restarts
+          valueB = b.restarts
+          break
+        case 'age':
+          valueA = a.age
+          valueB = b.age
+          break
+        case 'node':
+          valueA = a.node || ''
+          valueB = b.node || ''
+          break
+        default:
+          valueA = a.name
+          valueB = b.name
+      }
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return sortOrder === 'asc' ? valueA - valueB : valueB - valueA
+      }
+      
+      const comparison = valueA.toString().localeCompare(valueB.toString())
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+  }, [pods, selectedNamespace, sortBy, sortOrder])
+
+  const handleSort = (key: string, order: 'asc' | 'desc') => {
+    setSortBy(key)
+    setSortOrder(order)
+  }
+
+  const columns: Column<Pod>[] = [
+    {
+      key: 'status',
+      title: 'STATUS',
+      width: 120,
+      sortable: true,
+      render: (pod: Pod) => (
+        <div className="flex items-center space-x-2">
+          {getStatusIcon(pod.status)}
+          <span className={`text-xs ${getStatusColor(pod.status)}`}>
+            {pod.status}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'name',
+      title: 'NAME',
+      minWidth: 200,
+      sortable: true,
+      render: (pod: Pod) => (
+        <span className="font-mono text-sm truncate" title={pod.name}>
+          {pod.name}
+        </span>
+      ),
+    },
+    {
+      key: 'namespace',
+      title: 'NAMESPACE',
+      width: 140,
+      sortable: true,
+      render: (pod: Pod) => (
+        <span className="font-mono text-sm">{pod.namespace}</span>
+      ),
+    },
+    {
+      key: 'ready',
+      title: 'READY',
+      width: 80,
+      align: 'center' as const,
+      render: (pod: Pod) => (
+        <span className="font-mono text-sm">{pod.ready}</span>
+      ),
+    },
+    {
+      key: 'restarts',
+      title: 'RESTARTS',
+      width: 100,
+      align: 'right' as const,
+      sortable: true,
+      render: (pod: Pod) => (
+        <span className={`font-mono text-sm ${pod.restarts > 0 ? 'text-yellow-400' : ''}`}>
+          {pod.restarts}
+        </span>
+      ),
+    },
+    {
+      key: 'age',
+      title: 'AGE',
+      width: 80,
+      sortable: true,
+      render: (pod: Pod) => (
+        <span className="font-mono text-sm">{pod.age}</span>
+      ),
+    },
+    {
+      key: 'node',
+      title: 'NODE',
+      minWidth: 140,
+      sortable: true,
+      render: (pod: Pod) => (
+        <span className="font-mono text-sm truncate" title={pod.node}>
+          {pod.node || 'N/A'}
+        </span>
+      ),
+    },
+    {
+      key: 'ip',
+      title: 'IP',
+      width: 120,
+      render: (pod: Pod) => (
+        <span className="font-mono text-sm">{pod.ip || 'N/A'}</span>
+      ),
+    },
+  ]
+
   return (
     <div className="p-6 bg-black text-white min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -114,71 +251,19 @@ const PodsView: FC = () => {
           </div>
         )}
 
-        <div className="border border-white overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-white text-black">
-              <tr>
-                <th className="px-4 py-3 text-left font-mono">STATUS</th>
-                <th className="px-4 py-3 text-left font-mono">NAME</th>
-                <th className="px-4 py-3 text-left font-mono">NAMESPACE</th>
-                <th className="px-4 py-3 text-left font-mono">READY</th>
-                <th className="px-4 py-3 text-left font-mono">RESTARTS</th>
-                <th className="px-4 py-3 text-left font-mono">AGE</th>
-                <th className="px-4 py-3 text-left font-mono">NODE</th>
-                <th className="px-4 py-3 text-left font-mono">IP</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center">
-                    <div className="flex items-center justify-center space-x-2">
-                      <RefreshCw className="animate-spin" size={16} />
-                      <span className="font-mono">LOADING...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : pods.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center font-mono text-gray-400">
-                    NO PODS FOUND
-                  </td>
-                </tr>
-              ) : (
-                pods.map((pod, index) => (
-                  <tr 
-                    key={pod.name} 
-                    className={`border-t border-white/20 hover:bg-white/5 ${
-                      index % 2 === 0 ? 'bg-black' : 'bg-gray-900/50'
-                    }`}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(pod.status)}
-                        <span className={`font-mono text-sm ${getStatusColor(pod.status)}`}>
-                          {pod.status}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.name}</td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.namespace}</td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.ready}</td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.restarts}</td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.age}</td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.node || 'N/A'}</td>
-                    <td className="px-4 py-3 font-mono text-sm">{pod.ip || 'N/A'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {pods.length > 0 && (
-          <div className="mt-4 text-sm font-mono text-gray-400">
-            Total: {pods.length} pods
-          </div>
-        )}
+        <VirtualizedTable
+          data={filteredAndSortedPods}
+          columns={columns}
+          containerHeight={500}
+          rowHeight={48}
+          loading={isLoading}
+          loadingMessage="LOADING PODS..."
+          emptyMessage="NO PODS FOUND"
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          className="w-full"
+        />
       </div>
     </div>
   )

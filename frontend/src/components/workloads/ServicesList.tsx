@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ServiceType, CommonNamespace } from '@constants';
+import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 
 interface Service {
   id: string;
@@ -175,6 +176,7 @@ const ServicesList: FC = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'namespace' | 'type' | 'age' | 'endpoints'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const filteredServices = useMemo(() => {
     let services = [...mockServices];
@@ -273,13 +275,156 @@ const ServicesList: FC = () => {
     }
   };
 
+  const handleSort = (key: string, order: 'asc' | 'desc') => {
+    setSortBy(key as any);
+    setSortOrder(order);
+  };
+
+  const serviceColumns: Column<Service>[] = [
+    {
+      key: 'status',
+      title: 'STATUS',
+      width: 120,
+      render: (service: Service) => (
+        <div className="flex items-center space-x-2">
+          {getStatusIcon(service.status, service.endpoints)}
+          <span className={`text-xs px-2 py-1 border font-mono ${getStatusColor(service.status, service.endpoints)}`}>
+            {service.status.toUpperCase()}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'name',
+      title: 'NAME',
+      minWidth: 200,
+      sortable: true,
+      render: (service: Service) => (
+        <div>
+          <div className="font-mono text-sm font-bold">{service.name}</div>
+          <div className="text-xs opacity-60">{service.namespace}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      title: 'TYPE',
+      width: 140,
+      sortable: true,
+      render: (service: Service) => (
+        <div className="flex items-center space-x-2">
+          {getTypeIcon(service.type)}
+          <span className="font-mono text-xs">{service.type}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'cluster_ip',
+      title: 'CLUSTER IP',
+      width: 120,
+      render: (service: Service) => (
+        <span className="font-mono text-xs">{service.cluster_ip}</span>
+      ),
+    },
+    {
+      key: 'external_ip',
+      title: 'EXTERNAL IP',
+      width: 120,
+      render: (service: Service) => (
+        <span className={`font-mono text-xs ${service.external_ip ? 'text-blue-400' : 'opacity-40'}`}>
+          {service.external_ip || 'None'}
+        </span>
+      ),
+    },
+    {
+      key: 'ports',
+      title: 'PORTS',
+      minWidth: 150,
+      render: (service: Service) => (
+        <div className="text-xs font-mono">
+          {service.ports.slice(0, 2).map((port, idx) => (
+            <div key={idx}>
+              {port.port}:{port.target_port}/{port.protocol}
+            </div>
+          ))}
+          {service.ports.length > 2 && (
+            <div className="opacity-60">+{service.ports.length - 2} more</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'endpoints',
+      title: 'ENDPOINTS',
+      width: 100,
+      sortable: true,
+      render: (service: Service) => (
+        <div className={`font-mono text-sm ${getEndpointsStatus(service.endpoints)}`}>
+          {service.endpoints.ready}/{service.endpoints.total}
+          {service.endpoints.not_ready > 0 && (
+            <div className="text-xs opacity-60">
+              {service.endpoints.not_ready} not ready
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'age',
+      title: 'AGE',
+      width: 80,
+      sortable: true,
+      render: (service: Service) => (
+        <span className="font-mono text-xs">{service.age}</span>
+      ),
+    },
+    {
+      key: 'actions',
+      title: 'ACTIONS',
+      width: 100,
+      render: (service: Service) => (
+        <div className="flex items-center space-x-2">
+          <button className="p-1 border border-white hover:bg-white hover:text-black transition-colors">
+            <Eye size={12} />
+          </button>
+          {service.external_ip && (
+            <button className="p-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors">
+              <ExternalLink size={12} />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-mono">KUBERNETES SERVICES</h2>
-        <div className="text-sm font-mono opacity-60">
-          {filteredServices.length} SERVICE{filteredServices.length !== 1 ? 'S' : ''}
+        <div className="flex items-center space-x-4">
+          <div className="text-sm font-mono opacity-60">
+            {filteredServices.length} SERVICE{filteredServices.length !== 1 ? 'S' : ''}
+          </div>
+          {/* View Mode Toggle */}
+          <div className="flex border border-white">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`px-3 py-1 font-mono text-xs transition-colors ${
+                viewMode === 'cards' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+              }`}
+            >
+              CARDS
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`px-3 py-1 border-l border-white font-mono text-xs transition-colors ${
+                viewMode === 'table' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+              }`}
+            >
+              TABLE
+            </button>
+          </div>
         </div>
       </div>
 
@@ -336,9 +481,23 @@ const ServicesList: FC = () => {
         </div>
       </div>
 
-      {/* Services List */}
-      <div className="space-y-4">
-        {filteredServices.map((service) => (
+      {/* Services Content */}
+      {viewMode === 'table' ? (
+        <VirtualizedTable
+          data={filteredServices}
+          columns={serviceColumns}
+          containerHeight={600}
+          rowHeight={56}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          className="w-full"
+          emptyMessage="NO SERVICES FOUND"
+        />
+      ) : (
+        /* Card View */
+        <div className="space-y-4">
+          {filteredServices.map((service) => (
           <div key={service.id} className="border border-white bg-black">
             {/* Header */}
             <div className="p-4 border-b border-white">
@@ -471,16 +630,17 @@ const ServicesList: FC = () => {
               </div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {filteredServices.length === 0 && (
-        <div className="text-center py-12">
-          <Network size={48} className="mx-auto mb-4 opacity-40" />
-          <h3 className="text-lg font-mono mb-2">NO SERVICES FOUND</h3>
-          <p className="font-mono text-sm opacity-60">
-            No services match the selected filters.
-          </p>
+          ))}
+          
+          {filteredServices.length === 0 && (
+            <div className="text-center py-12">
+              <Network size={48} className="mx-auto mb-4 opacity-40" />
+              <h3 className="text-lg font-mono mb-2">NO SERVICES FOUND</h3>
+              <p className="font-mono text-sm opacity-60">
+                No services match the selected filters.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
