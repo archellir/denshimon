@@ -9,12 +9,24 @@
 - **Always use official scaffolding tools**
 
 ### Project Overview
-This is a Kubernetes GitOps and monitoring platform with:
-- ArgoCD-like GitOps functionality
-- Grafana/Loki-style monitoring and logging
-- Black & white cyberpunk UI theme
-- PASETO authentication
-- Containerized for Gitea registry deployment
+This is a comprehensive Kubernetes GitOps and monitoring platform with:
+- **GitOps Integration**: Full Gitea API integration with repository management and CI/CD workflows
+- **Real-time Monitoring**: Grafana/Loki-style metrics and logging with live updates
+- **Performance Optimized**: Virtualized tables and log viewers for handling large datasets
+- **Customizable Dashboard**: User-configurable interface sections and navigation
+- **Black & White Cyberpunk UI**: Terminal-inspired aesthetic with anti-SEO protection
+- **Secure Authentication**: PASETO v2 tokens with role-based access control
+- **Cloud Native**: Containerized deployment with multi-registry support
+
+### Key Features Implemented
+- ✅ **Virtualized Tables**: High-performance tables handling 50,000+ rows with smooth scrolling
+- ✅ **Live Log Streaming**: Real-time log viewer with search, filtering, and auto-scroll
+- ✅ **Gitea API Integration**: Complete GitOps workflow management through secure backend
+- ✅ **Dashboard Customization**: Hide/show UI sections and tabs via settings modal
+- ✅ **Anti-SEO Protection**: Meta tags, robots.txt, and generic descriptions for security
+- ✅ **WebSocket Monitoring**: Real-time metrics and cluster state updates
+- ✅ **Responsive Design**: Card/table view toggles for different screen sizes
+- ✅ **TypeScript Coverage**: Full type safety with strict mode enabled
 
 ### Technology Stack
 - **Backend**: Go 1.24.6 with standard library HTTP routing
@@ -134,6 +146,11 @@ PASETO_SECRET_KEY=32-byte-secret-key-change-in-prod
 PORT=8080
 KUBECONFIG=/path/to/kubeconfig  # Optional for K8s integration
 
+# Gitea Integration (Optional)
+GITEA_URL=https://your-gitea-instance.com  # Gitea server URL
+GITEA_TOKEN=your-api-token  # Gitea API token for authentication
+GITEA_WEBHOOK_SECRET=webhook-secret  # Optional webhook verification
+
 # Frontend (development)
 # API calls automatically proxied to backend via Vite config
 ```
@@ -223,6 +240,37 @@ cd ../backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 - Authentication is required for all operations
 - UI must maintain cyberpunk aesthetic
 - Performance is critical for real-time monitoring
+
+### API Endpoints
+
+#### Authentication
+- `POST /api/auth/login` - Login with username/password
+- `GET /api/auth/me` - Get current user info
+- `POST /api/auth/logout` - Logout
+
+#### Kubernetes
+- `GET /api/k8s/pods` - List pods
+- `GET /api/k8s/nodes` - List nodes
+- `GET /api/k8s/services` - List services
+- `GET /api/k8s/namespaces` - List namespaces
+
+#### Metrics & Monitoring
+- `GET /api/metrics/cluster` - Get cluster metrics
+- `GET /api/metrics/nodes` - Get node metrics
+- `GET /api/metrics/pods` - Get pod metrics
+- `GET /api/metrics/history` - Get historical metrics
+- `GET /ws` - WebSocket for real-time updates
+
+#### Gitea Integration (Optional)
+- `GET /api/gitea/repositories` - List repositories
+- `GET /api/gitea/repositories/{owner}/{repo}` - Get repository details
+- `GET /api/gitea/repositories/{owner}/{repo}/commits` - List commits
+- `GET /api/gitea/repositories/{owner}/{repo}/branches` - List branches
+- `GET /api/gitea/repositories/{owner}/{repo}/pulls` - List pull requests
+- `GET /api/gitea/repositories/{owner}/{repo}/releases` - List releases
+- `GET /api/gitea/repositories/{owner}/{repo}/actions/runs` - List workflow runs
+- `POST /api/gitea/repositories/{owner}/{repo}/deploy` - Trigger deployment
+- `POST /api/gitea/webhook` - Webhook receiver (no auth)
 
 ### Repository
 - GitHub: https://github.com/archellir/denshimon

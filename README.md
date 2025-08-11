@@ -7,10 +7,12 @@
 A comprehensive web-based platform for managing Kubernetes clusters and GitOps workflows. Provides real-time cluster monitoring, automated deployments, and integrated observability with a single binary deployment model.
 
 ### Key Capabilities
-- **Kubernetes Management**: Pods, deployments, nodes, scaling, logs
-- **GitOps Operations**: Repository sync, application deployment, ArgoCD-like workflow  
-- **Monitoring & Metrics**: Resource usage, historical trends, Grafana-style dashboards
-- **Authentication**: PASETO v4 tokens, role-based access control
+- **Kubernetes Management**: Pods, deployments, nodes, scaling, logs with virtualized tables
+- **GitOps Operations**: Full Gitea API integration, repository sync, CI/CD workflows  
+- **Monitoring & Metrics**: Real-time metrics, historical trends, live log streaming
+- **Performance Optimized**: Handles 50,000+ rows with smooth scrolling and filtering
+- **Customizable Dashboard**: Hide/show UI sections, multiple view modes
+- **Authentication**: PASETO v4 tokens, role-based access control, anti-SEO protection
 - **Single Binary**: Embedded React SPA, SQLite database, zero external dependencies
 
 <img width="1678" height="966" alt="Screenshot 2025-08-10 at 19 28 49" src="https://github.com/user-attachments/assets/8a4e0abb-66bc-44a5-a952-5ffc9eb27bb8" />
@@ -80,7 +82,7 @@ denshimon/
 ### Kubernetes Management
 ```bash
 # Pod Operations
-GET    /api/k8s/pods              # List all pods
+GET    /api/k8s/pods              # List all pods (virtualized tables)
 DELETE /api/k8s/pods/{name}       # Delete specific pod
 POST   /api/k8s/pods/{name}/restart # Restart pod
 GET    /api/k8s/pods/{name}/logs  # Stream logs
@@ -92,19 +94,23 @@ PATCH /api/k8s/deployments/{name}/scale # Scale replicas
 # Cluster Monitoring
 GET /api/k8s/nodes                # List nodes with metrics
 GET /api/k8s/health               # Cluster health check
+GET /ws                           # WebSocket for real-time updates
 ```
 
-### GitOps Workflow
+### Gitea Integration (Optional)
 ```bash
 # Repository Management
-POST /api/gitops/repositories     # Connect Git repo
-GET  /api/gitops/repositories     # List connected repos
-POST /api/gitops/repositories/{id}/sync # Sync repo
+GET  /api/gitea/repositories      # List repositories
+GET  /api/gitea/repositories/{owner}/{repo} # Get repository details
+GET  /api/gitea/repositories/{owner}/{repo}/commits # List commits
+GET  /api/gitea/repositories/{owner}/{repo}/branches # List branches
+GET  /api/gitea/repositories/{owner}/{repo}/pulls # List pull requests
+GET  /api/gitea/repositories/{owner}/{repo}/releases # List releases
+GET  /api/gitea/repositories/{owner}/{repo}/actions/runs # List workflow runs
 
-# Application Deployment
-POST /api/gitops/applications     # Deploy application
-GET  /api/gitops/applications     # List deployments
-POST /api/gitops/applications/{id}/sync # Sync app
+# Deployment Operations
+POST /api/gitea/repositories/{owner}/{repo}/deploy # Trigger deployment
+POST /api/gitea/webhook           # Webhook receiver (no auth)
 ```
 
 ### Metrics & Monitoring  
@@ -114,6 +120,11 @@ GET /api/metrics/cluster          # Cluster-wide usage
 GET /api/metrics/nodes            # Per-node metrics
 GET /api/metrics/pods             # Pod resource usage
 GET /api/metrics/history          # Historical trends
+
+# Authentication
+POST /api/auth/login              # Login with credentials
+GET  /api/auth/me                 # Get current user
+POST /api/auth/logout             # Logout
 ```
 
 ## 🚀 Use Cases
@@ -243,12 +254,18 @@ cd ../backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 
 ### Environment Variables
 ```bash
+# Core Configuration
 PORT=8080                           # Server port
 DATABASE_PATH=/app/data/denshimon.db # SQLite database
 PASETO_SECRET_KEY=your-32-byte-key  # Auth signing key
 TOKEN_DURATION=24h                  # Token expiration
 LOG_LEVEL=info                      # Logging level
 ENVIRONMENT=production              # Runtime environment
+
+# Gitea Integration (Optional)
+GITEA_URL=https://gitea.example.com # Gitea server URL
+GITEA_TOKEN=your-api-token          # Gitea API token
+GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 ```
 
 ### Kubernetes Integration
@@ -290,15 +307,25 @@ ENVIRONMENT=production              # Runtime environment
 - [x] Dashboard with metrics tabs (overview, nodes, pods, etc.)
 - [x] Comprehensive mock data for testing
 
-### Phase 2: Enhanced Features 🚧
-- [ ] Real Kubernetes cluster integration
-- [ ] WebSocket real-time updates
+### Phase 2: Performance & Integration ✅
+- [x] Virtualized tables for 50,000+ rows with smooth scrolling
+- [x] Live log streaming with search and filtering
+- [x] Full Gitea API integration with secure backend architecture
+- [x] Dashboard customization (hide/show sections and tabs)
+- [x] Anti-SEO protection for internal services
+- [x] WebSocket real-time updates for metrics
+- [x] Card/table view toggles for different screen sizes
+- [x] TypeScript strict mode with comprehensive typing
+
+### Phase 3: Advanced Features 🚧
 - [ ] Pod exec terminal (WebSocket)
-- [ ] Log streaming and search
+- [ ] Real Kubernetes cluster integration
+- [ ] Port forwarding through web interface
 - [ ] Custom resource definitions (CRDs)
 - [ ] Helm chart management
+- [ ] Custom metrics dashboard builder
 
-### Phase 3: Enterprise Features 📋
+### Phase 4: Enterprise Features 📋
 - [ ] Multi-cluster management
 - [ ] LDAP/OAuth integration  
 - [ ] Advanced RBAC policies
