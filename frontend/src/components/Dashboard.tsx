@@ -22,6 +22,7 @@ import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
 import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
 import GiteaActions from '@components/cicd/GiteaActions';
+import ServicesList from '@components/workloads/ServicesList';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -278,7 +279,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {/* Workloads Tab Content */}
         {activePrimaryTab === 'workloads' && activeSecondaryTab === 'overview' && <ClusterOverview />}
         {activePrimaryTab === 'workloads' && activeSecondaryTab === 'pods' && <PodsView />}
-        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'services' && <div className="p-6"><div className="text-center text-gray-500">Services view coming soon</div></div>}
+        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'services' && <ServicesList />}
         {activePrimaryTab === 'workloads' && activeSecondaryTab === 'namespaces' && <NamespaceMetrics />}
         
         {/* Service Mesh Tab Content */}
