@@ -13,6 +13,7 @@ import {
   Zap
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { ServiceType, CommonNamespace } from '@constants';
 
 interface Service {
   id: string;
