@@ -18,7 +18,6 @@ import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
 import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
-import PipelineMonitor from '@components/cicd/PipelineMonitor';
 import GiteaActions from '@components/cicd/GiteaActions';
 
 interface DashboardProps {
@@ -155,7 +154,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       { id: 'applications', label: 'Applications', icon: Package },
       { id: 'repositories', label: 'Repositories', icon: GitBranch },
       { id: 'pipelines', label: 'CI/CD Pipelines', icon: Zap },
-      { id: 'gitea', label: 'Gitea Actions', icon: GitBranch },
       { id: 'sync', label: 'Sync Status', icon: Activity },
     ],
     observability: [
@@ -268,8 +266,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {/* Deployments Tab Content */}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'applications' && <GitOps />}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'repositories' && <GitOps />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'pipelines' && <PipelineMonitor />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'gitea' && <GiteaActions />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'pipelines' && <GiteaActions />}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'sync' && <GitOps />}
         
         {/* Observability Tab Content */}
