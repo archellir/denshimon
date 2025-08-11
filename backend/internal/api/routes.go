@@ -66,11 +66,12 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/k8s/nodes", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListNodes)))
 	mux.HandleFunc("GET /api/k8s/health", corsMiddleware(k8sHandlers.HealthCheck)) // No auth required for health check
 
-	// TODO: Implement remaining endpoints
-	mux.HandleFunc("POST /api/k8s/pods/{name}/exec", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement pod exec handler (WebSocket)
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
+	// Pod debugging endpoints
+	mux.HandleFunc("GET /api/k8s/pods/exec", k8sHandlers.HandlePodExec) // WebSocket - no CORS middleware needed
+	mux.HandleFunc("GET /api/k8s/pods/logs/stream", corsMiddleware(authService.AuthMiddleware(k8sHandlers.HandlePodLogs)))
+	mux.HandleFunc("POST /api/k8s/pods/portforward", corsMiddleware(authService.AuthMiddleware(k8sHandlers.HandlePodPortForward)))
+	mux.HandleFunc("POST /api/k8s/pods/files/upload", corsMiddleware(authService.AuthMiddleware(k8sHandlers.HandleFileUpload)))
+	mux.HandleFunc("GET /api/k8s/pods/files/download", corsMiddleware(authService.AuthMiddleware(k8sHandlers.HandleFileDownload)))
 
 	mux.HandleFunc("GET /api/k8s/events", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		// TODO: Implement events stream handler
