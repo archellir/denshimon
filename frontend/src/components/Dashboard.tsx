@@ -4,6 +4,7 @@ import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock
 import StatusIcon, { getStatusColor, normalizeStatus, type StatusType } from '@components/common/StatusIcon';
 import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
+import HealthDashboard from '@components/metrics/HealthDashboard';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 import NodeList from '@components/metrics/NodeList';
 import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
@@ -231,7 +232,12 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       {/* Content */}
       <div className="max-w-7xl mx-auto p-6">
         {/* Infrastructure Tab Content */}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'overview' && <ClusterOverview />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'overview' && (
+          <div className="space-y-6">
+            <HealthDashboard compact />
+            <ClusterOverview />
+          </div>
+        )}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'nodes' && <NodeList />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'resources' && <ResourceCharts />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'hierarchy' && <ResourceTree />}

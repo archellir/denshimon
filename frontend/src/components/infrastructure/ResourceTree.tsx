@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import ResourceHierarchy, { type HierarchyNode, buildResourceHierarchy } from '@components/common/ResourceHierarchy';
 import ManifestViewer, { generateSampleManifest } from '@components/common/ManifestViewer';
+import ResourceActions, { handleResourceAction } from '@components/common/ResourceActions';
 
 // Mock Kubernetes resources for demonstration
 const generateMockResources = (): any[] => {
@@ -205,6 +206,17 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
     setSelectedNode(selectedNode?.id === node.id ? null : node);
   };
 
+  const handleAction = (action: string) => {
+    if (selectedNode) {
+      handleResourceAction(action, selectedNode.kind, selectedNode.name, selectedNode.namespace);
+      
+      // Handle UI-specific actions
+      if (action === 'edit' || action === 'describe') {
+        setShowManifest(true);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -285,24 +297,13 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
 
                 {/* Actions */}
                 <div className="pt-4 border-t border-white/20">
-                  <div className="flex flex-col space-y-2">
-                    <button 
-                      onClick={() => setShowManifest(!showManifest)}
-                      className={`px-3 py-1 border text-xs font-mono transition-colors ${
-                        showManifest ? 'bg-white text-black border-white' : 'border-white/30 hover:bg-white/10'
-                      }`}
-                    >
-                      {showManifest ? 'HIDE MANIFEST' : 'VIEW MANIFEST'}
-                    </button>
-                    <button className="px-3 py-1 border border-white/30 text-xs font-mono hover:bg-white/10 transition-colors">
-                      DESCRIBE
-                    </button>
-                    {selectedNode.kind === 'Pod' && (
-                      <button className="px-3 py-1 border border-white/30 text-xs font-mono hover:bg-white/10 transition-colors">
-                        VIEW LOGS
-                      </button>
-                    )}
-                  </div>
+                  <ResourceActions
+                    resourceKind={selectedNode.kind}
+                    resourceName={selectedNode.name}
+                    namespace={selectedNode.namespace}
+                    onAction={handleAction}
+                    variant="buttons"
+                  />
                 </div>
               </div>
             ) : (
