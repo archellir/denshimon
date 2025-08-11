@@ -190,20 +190,24 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-bold">DENSHIMON</h1>
           <div className="flex items-center space-x-4">
-            {/* Time Range Selector */}
+            {/* Global Time Range Selector */}
             <div className="flex items-center space-x-2">
               <Clock size={16} />
-              <select
-                value={selectedTimeRange}
-                onChange={(e) => setSelectedTimeRange(e.target.value)}
-                className="bg-black border border-white text-white text-sm font-mono px-2 py-1 focus:outline-none focus:border-green-400"
-              >
+              <div className="flex space-x-0 border border-white">
                 {timeRanges.map((range) => (
-                  <option key={range.value} value={range.value}>
-                    {range.label}
-                  </option>
+                  <button
+                    key={range.value}
+                    onClick={() => setSelectedTimeRange(range.value)}
+                    className={`px-3 py-1 border-r border-white last:border-r-0 font-mono text-xs transition-colors ${
+                      selectedTimeRange === range.value
+                        ? 'bg-white text-black'
+                        : 'bg-black text-white hover:bg-white hover:text-black'
+                    }`}
+                  >
+                    {range.label.toUpperCase()}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
             
             {/* WebSocket Status */}
@@ -251,11 +255,11 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/infrastructure" replace />} />
-          <Route path="/infrastructure" element={<Dashboard activePrimaryTab="infrastructure" onSecondaryTabChange={setCurrentSecondaryTab} />} />
-          <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" onSecondaryTabChange={setCurrentSecondaryTab} />} />
-          <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" onSecondaryTabChange={setCurrentSecondaryTab} />} />
-          <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" onSecondaryTabChange={setCurrentSecondaryTab} />} />
-          <Route path="/observability" element={<Dashboard activePrimaryTab="observability" onSecondaryTabChange={setCurrentSecondaryTab} />} />
+          <Route path="/infrastructure" element={<Dashboard activePrimaryTab="infrastructure" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/observability" element={<Dashboard activePrimaryTab="observability" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
         </Routes>
       </main>
 

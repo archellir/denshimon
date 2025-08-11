@@ -17,8 +17,11 @@ import { format } from 'date-fns';
 import { generateNetworkMetrics } from '@mocks/network/traffic';
 import type { NetworkMetrics } from '@types/network';
 
-const NetworkTraffic: FC = () => {
-  const [timeRange, setTimeRange] = useState<string>('1h');
+interface NetworkTrafficProps {
+  timeRange?: string;
+}
+
+const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = '1h' }) => {
   const [networkData, setNetworkData] = useState<NetworkMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,10 +71,6 @@ const NetworkTraffic: FC = () => {
     return formatBytes(bytesPerSecond) + '/s';
   };
 
-  // Handle time range change
-  const handleTimeRangeChange = (newRange: string) => {
-    setTimeRange(newRange);
-  };
 
   // Custom tooltip for traffic chart
   const CustomTrafficTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
@@ -120,25 +119,6 @@ const NetworkTraffic: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-end">
-        <div className="flex space-x-0 border border-white">
-          {['15m', '1h', '6h', '24h'].map((range) => (
-            <button
-              key={range}
-              onClick={() => handleTimeRangeChange(range)}
-              disabled={isLoading}
-              className={`px-3 py-1 border-r border-white last:border-r-0 font-mono text-xs transition-colors disabled:opacity-50 ${
-                timeRange === range
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white hover:bg-white hover:text-black'
-              }`}
-            >
-              {range.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Current Bandwidth Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

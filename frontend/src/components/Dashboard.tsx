@@ -28,9 +28,10 @@ import ServicesList from '@components/workloads/ServicesList';
 interface DashboardProps {
   activePrimaryTab?: string;
   onSecondaryTabChange?: (tabId: string) => void;
+  timeRange?: string;
 }
 
-const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', onSecondaryTabChange }) => {
+const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', onSecondaryTabChange, timeRange = '1h' }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Default secondary tabs for each primary tab
@@ -90,13 +91,13 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
     
     // Initial data load for fallback
     fetchAllMetrics();
-    fetchMetricsHistory('1h');
+    fetchMetricsHistory(timeRange);
 
     return () => {
       cleanupWebSocketMetrics();
       clearMetrics();
     };
-  }, [initializeWebSocketMetrics, cleanupWebSocketMetrics, fetchAllMetrics, fetchMetricsHistory, clearMetrics]);
+  }, [initializeWebSocketMetrics, cleanupWebSocketMetrics, fetchAllMetrics, fetchMetricsHistory, clearMetrics, timeRange]);
 
   // Optional polling fallback when WebSocket is disconnected
   useEffect(() => {
@@ -105,7 +106,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
     if (autoRefresh && !isConnected) {
       const refresh = () => {
         fetchAllMetrics();
-        fetchMetricsHistory('1h');
+        fetchMetricsHistory(timeRange);
       };
 
       intervalId = setInterval(refresh, refreshInterval) as unknown as number;
@@ -114,7 +115,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [autoRefresh, refreshInterval, isConnected, fetchAllMetrics, fetchMetricsHistory]);
+  }, [autoRefresh, refreshInterval, isConnected, fetchAllMetrics, fetchMetricsHistory, timeRange]);
 
   const primaryTabs = [
     { id: 'infrastructure', label: 'Infrastructure', icon: Server },
@@ -286,7 +287,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'resources' && <ResourceCharts />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'storage' && <StorageIOMetrics />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'hierarchy' && <ResourceTree />}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'network' && <NetworkTraffic />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'network' && <NetworkTraffic timeRange={timeRange} />}
         
         {/* Workloads Tab Content */}
         {activePrimaryTab === 'workloads' && activeSecondaryTab === 'overview' && <ClusterOverview />}
