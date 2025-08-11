@@ -162,7 +162,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       { id: 'topology', label: 'Topology', icon: Network },
       { id: 'services', label: 'Services', icon: Server },
       { id: 'endpoints', label: 'Endpoints', icon: Activity },
-      { id: 'flows', label: 'Flows', icon: Zap },
+      { id: 'flows', label: 'Traffic Flow', icon: Zap },
       { id: 'gateway', label: 'API Gateway', icon: Eye },
     ],
     deployments: [
