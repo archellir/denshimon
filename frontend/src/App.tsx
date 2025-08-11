@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router'
 import type { FC } from 'react'
-import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye } from 'lucide-react'
+import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
 
 interface ProtectedRouteProps {
@@ -81,6 +81,19 @@ interface MainAppProps {
 }
 
 const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
+  const [currentSecondaryTab, setCurrentSecondaryTab] = useState<string>('')
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+
+  const timeRanges = [
+    { value: '5m', label: '5m' },
+    { value: '15m', label: '15m' },
+    { value: '1h', label: '1h' },
+    { value: '6h', label: '6h' },
+    { value: '24h', label: '24h' },
+    { value: '7d', label: '7d' },
+    { value: '30d', label: '30d' },
+  ]
   return (
     <div className="min-h-screen bg-black text-white font-mono">
       {/* Header */}
@@ -88,6 +101,22 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-bold">DENSHIMON</h1>
           <div className="flex items-center space-x-4">
+            {/* Time Range Selector */}
+            <div className="flex items-center space-x-2">
+              <Clock size={16} />
+              <select
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+                className="bg-black border border-white text-white text-sm font-mono px-2 py-1 focus:outline-none focus:border-green-400"
+              >
+                {timeRanges.map((range) => (
+                  <option key={range.value} value={range.value}>
+                    {range.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
             <span className="text-sm">
               <User size={16} className="inline mr-1" />
               {currentUser}
@@ -111,15 +140,22 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       {/* Primary Navigation */}
       <NavigationBar />
 
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb 
+        secondaryTab={currentSecondaryTab} 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
       {/* Main Content */}
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/infrastructure" replace />} />
-          <Route path="/infrastructure" element={<Dashboard activePrimaryTab="infrastructure" />} />
-          <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" />} />
-          <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" />} />
-          <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" />} />
-          <Route path="/observability" element={<Dashboard activePrimaryTab="observability" />} />
+          <Route path="/infrastructure" element={<Dashboard activePrimaryTab="infrastructure" onSecondaryTabChange={setCurrentSecondaryTab} />} />
+          <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" onSecondaryTabChange={setCurrentSecondaryTab} />} />
+          <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" onSecondaryTabChange={setCurrentSecondaryTab} />} />
+          <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" onSecondaryTabChange={setCurrentSecondaryTab} />} />
+          <Route path="/observability" element={<Dashboard activePrimaryTab="observability" onSecondaryTabChange={setCurrentSecondaryTab} />} />
         </Routes>
       </main>
     </div>
@@ -158,6 +194,93 @@ const NavigationBar: FC = () => {
         ))}
       </div>
     </nav>
+  )
+}
+
+interface BreadcrumbProps {
+  secondaryTab?: string
+  searchQuery: string
+  onSearchChange: (query: string) => void
+}
+
+const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchChange }) => {
+  const location = useLocation()
+  
+  const navItems = [
+    { path: '/infrastructure', label: 'Infrastructure' },
+    { path: '/workloads', label: 'Workloads' },
+    { path: '/mesh', label: 'Service Mesh' },
+    { path: '/deployments', label: 'Deployments' },
+    { path: '/observability', label: 'Observability' },
+  ]
+
+  const currentItem = navItems.find(item => item.path === location.pathname)
+  
+  if (!currentItem) return null
+
+  const secondaryTabLabels: Record<string, Record<string, string>> = {
+    infrastructure: {
+      overview: 'Overview',
+      nodes: 'Nodes', 
+      resources: 'Resources',
+      network: 'Network'
+    },
+    workloads: {
+      overview: 'Overview',
+      pods: 'Pods',
+      services: 'Services', 
+      namespaces: 'Namespaces'
+    },
+    mesh: {
+      topology: 'Topology',
+      services: 'Services',
+      endpoints: 'Endpoints',
+      flows: 'Flows'
+    },
+    deployments: {
+      applications: 'Applications',
+      repositories: 'Repositories',
+      sync: 'Sync Status'
+    },
+    observability: {
+      logs: 'Logs',
+      events: 'Events'
+    }
+  }
+
+  const primaryTab = location.pathname.replace('/', '')
+  const secondaryLabel = secondaryTab && secondaryTabLabels[primaryTab]?.[secondaryTab]
+
+  return (
+    <div className="bg-black border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-6 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
+            <span>DENSHIMON</span>
+            <ChevronRight size={14} />
+            <span className="text-white">{currentItem.label}</span>
+            {secondaryLabel && (
+              <>
+                <ChevronRight size={14} />
+                <span className="text-gray-300">{secondaryLabel}</span>
+              </>
+            )}
+          </div>
+          
+          {/* Global Search Bar */}
+          <div className="flex items-center space-x-2">
+            <Search size={14} className="text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search resources..."
+              className="bg-black border border-white/30 text-white text-sm font-mono px-2 py-1 w-64 focus:outline-none focus:border-green-400 placeholder-gray-500"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

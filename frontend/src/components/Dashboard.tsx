@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine } from 'lucide-react';
+import StatusIcon, { getStatusColor, normalizeStatus, type StatusType } from '@components/common/StatusIcon';
 import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import ResourceCharts from '@components/metrics/ResourceCharts';
@@ -13,12 +14,14 @@ import ServiceMesh from '@components/services/ServiceMesh';
 import Logs from '@components/Logs';
 import GitOps from '@components/GitOps';
 import PodsView from '@components/PodsView';
+import ResourceTree from '@components/infrastructure/ResourceTree';
 
 interface DashboardProps {
   activePrimaryTab?: string;
+  onSecondaryTabChange?: (tabId: string) => void;
 }
 
-const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) => {
+const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', onSecondaryTabChange }) => {
   const [secondaryTabMemory, setSecondaryTabMemory] = useState<Record<string, string>>({
     infrastructure: 'overview',
     workloads: 'overview',
@@ -37,7 +40,15 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) 
       ...prev,
       [activePrimaryTab]: tabId
     }));
+    onSecondaryTabChange?.(tabId);
   };
+
+  // Notify parent of current secondary tab on primary tab change
+  useEffect(() => {
+    const currentSecondary = secondaryTabMemory[activePrimaryTab] || 
+      (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
+    onSecondaryTabChange?.(currentSecondary);
+  }, [activePrimaryTab, secondaryTabMemory, onSecondaryTabChange]);
   const {
     clusterMetrics,
     isLoading,
@@ -88,40 +99,29 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) 
         label: 'Nodes',
         value: `${clusterMetrics.ready_nodes}/${clusterMetrics.total_nodes}`,
         icon: Server,
-        status: clusterMetrics.ready_nodes === clusterMetrics.total_nodes ? 'healthy' : 'warning',
+        status: clusterMetrics.ready_nodes === clusterMetrics.total_nodes ? 'healthy' as StatusType : 'warning' as StatusType,
       },
       {
         label: 'Pods',
         value: `${clusterMetrics.running_pods}/${clusterMetrics.total_pods}`,
         icon: Database,
-        status: clusterMetrics.running_pods > 0 ? 'healthy' : 'error',
+        status: clusterMetrics.running_pods > 0 ? 'healthy' as StatusType : 'error' as StatusType,
       },
       {
         label: 'CPU',
         value: `${clusterMetrics.cpu_usage.usage_percent.toFixed(1)}%`,
         icon: Cpu,
-        status: clusterMetrics.cpu_usage.usage_percent < 80 ? 'healthy' : 'warning',
+        status: clusterMetrics.cpu_usage.usage_percent < 80 ? 'healthy' as StatusType : 
+                clusterMetrics.cpu_usage.usage_percent < 95 ? 'warning' as StatusType : 'critical' as StatusType,
       },
       {
         label: 'Memory',
         value: `${clusterMetrics.memory_usage.usage_percent.toFixed(1)}%`,
         icon: MemoryStick,
-        status: clusterMetrics.memory_usage.usage_percent < 80 ? 'healthy' : 'warning',
+        status: clusterMetrics.memory_usage.usage_percent < 80 ? 'healthy' as StatusType : 
+                clusterMetrics.memory_usage.usage_percent < 95 ? 'warning' as StatusType : 'critical' as StatusType,
       },
     ];
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return 'text-green-400 border-green-400';
-      case 'warning':
-        return 'text-yellow-400 border-yellow-400';
-      case 'error':
-        return 'text-red-400 border-red-400';
-      default:
-        return 'text-white border-white';
-    }
   };
 
   const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: any }>> = {
@@ -129,6 +129,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) 
       { id: 'overview', label: 'Overview', icon: Activity },
       { id: 'nodes', label: 'Nodes', icon: Server },
       { id: 'resources', label: 'Resources', icon: Cpu },
+      { id: 'hierarchy', label: 'Hierarchy', icon: TreePine },
       { id: 'network', label: 'Network', icon: Network },
     ],
     workloads: [
@@ -191,7 +192,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) 
                       <p className="text-xs font-mono opacity-60">{stat.label}</p>
                       <p className="text-lg font-mono">{stat.value}</p>
                     </div>
-                    <stat.icon size={24} className={getStatusColor(stat.status).split(' ')[0]} />
+                    <div className="flex items-center space-x-2">
+                      <stat.icon size={20} className="text-white" />
+                      <StatusIcon status={stat.status} size={16} />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -230,6 +234,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) 
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'overview' && <ClusterOverview />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'nodes' && <NodeList />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'resources' && <ResourceCharts />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'hierarchy' && <ResourceTree />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'network' && <NetworkTraffic />}
         
         {/* Workloads Tab Content */}

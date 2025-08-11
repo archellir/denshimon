@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, TrendingUp, TrendingDown, Minus, Globe, Database, Server, Layers } from 'lucide-react';
+import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 
@@ -208,8 +209,9 @@ const ServiceMesh: React.FC = () => {
                         {getCircuitBreakerIcon(service.circuitBreaker.status)}
                         <span className="text-xs">{service.instances}</span>
                       </div>
-                      <div className={`text-xs ${getStatusColor(service.status).split(' ')[0]}`}>
-                        {service.status.toUpperCase()}
+                      <div className="flex items-center gap-1">
+                        <StatusIcon status={normalizeStatus(service.status)} size={12} />
+                        <span className="text-xs">{service.status.toUpperCase()}</span>
                       </div>
                     </div>
                   </button>
@@ -348,8 +350,11 @@ const ServiceMesh: React.FC = () => {
                   <td className="p-3 text-center">
                     {getCircuitBreakerIcon(service.circuitBreaker.status)}
                   </td>
-                  <td className={`p-3 text-center ${getStatusColor(service.status).split(' ')[0]}`}>
-                    {service.status.toUpperCase()}
+                  <td className="p-3 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <StatusIcon status={normalizeStatus(service.status)} size={14} />
+                      <span>{service.status.toUpperCase()}</span>
+                    </div>
                   </td>
                 </tr>
               ))}
