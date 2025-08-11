@@ -33,7 +33,7 @@ const LoginPage: FC<LoginPageProps> = ({ loginForm, setLoginForm, handleLogin, i
   return (
     <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center">
       <div className="border border-white p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-6 text-center">DENSHIMON LOGIN</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">SYSTEM LOGIN</h1>
         
         {error && (
           <div className="border border-red-400 bg-red-900/20 p-3 mb-4">
@@ -388,7 +388,7 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchCh
       <div className="max-w-7xl mx-auto px-6 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
-            <span>DENSHIMON</span>
+            <span>SYSTEM</span>
             <ChevronRight size={14} />
             <span className="text-white">{currentItem.label}</span>
             {secondaryLabel && (
@@ -509,7 +509,7 @@ const App: FC = () => {
       <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center">
         <div className="text-center">
           <div className="border border-white p-8">
-            <h1 className="text-xl font-bold mb-4">DENSHIMON</h1>
+            <h1 className="text-xl font-bold mb-4">SYSTEM</h1>
             <p className="text-green-400">{UI_MESSAGES.INITIALIZING}</p>
           </div>
         </div>

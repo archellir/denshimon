@@ -55,7 +55,7 @@ const DashboardSettings: FC<DashboardSettingsProps> = ({ isOpen, onClose }) => {
       <div className="bg-black border border-white max-w-3xl w-full mx-4 max-h-[80vh] overflow-hidden">
         {/* Header */}
         <div className="border-b border-white p-4 flex items-center justify-between">
-          <h2 className="text-xl font-mono font-bold">DASHBOARD CONFIGURATION</h2>
+          <h2 className="text-xl font-mono font-bold">SYSTEM CONFIGURATION</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-white hover:text-black transition-colors"
@@ -105,9 +105,9 @@ const DashboardSettings: FC<DashboardSettingsProps> = ({ isOpen, onClose }) => {
               {activeCategory === 'sections' && (
                 <div>
                   <div className="mb-6">
-                    <h3 className="text-lg font-mono mb-2">Dashboard Sections</h3>
+                    <h3 className="text-lg font-mono mb-2">Interface Sections</h3>
                     <p className="text-sm font-mono opacity-60">
-                      Control which UI sections are visible in the dashboard.
+                      Control which UI sections are visible in the interface.
                     </p>
                   </div>
 
@@ -220,7 +220,7 @@ const DashboardSettings: FC<DashboardSettingsProps> = ({ isOpen, onClose }) => {
         {/* Footer */}
         <div className="border-t border-white p-4 flex justify-between items-center">
           <div className="text-xs font-mono opacity-60">
-            Settings are automatically saved to localStorage
+            Configuration saved locally
           </div>
           <button
             onClick={onClose}
