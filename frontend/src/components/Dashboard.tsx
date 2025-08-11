@@ -16,6 +16,7 @@ import Logs from '@components/Logs';
 import GitOps from '@components/GitOps';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
+import StorageIOMetrics from '@components/storage/StorageIOMetrics';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -130,6 +131,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       { id: 'overview', label: 'Overview', icon: Activity },
       { id: 'nodes', label: 'Nodes', icon: Server },
       { id: 'resources', label: 'Resources', icon: Cpu },
+      { id: 'storage', label: 'Storage', icon: HardDrive },
       { id: 'hierarchy', label: 'Hierarchy', icon: TreePine },
       { id: 'network', label: 'Network', icon: Network },
     ],
@@ -240,6 +242,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         )}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'nodes' && <NodeList />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'resources' && <ResourceCharts />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'storage' && <StorageIOMetrics />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'hierarchy' && <ResourceTree />}
         {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'network' && <NetworkTraffic />}
         
