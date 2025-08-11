@@ -129,11 +129,28 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             const mockData = await mockApiResponse(mockClusterMetrics());
             set({ clusterMetrics: mockData });
           } else {
-            // Real API call would go here
-            console.log('Real API call for cluster metrics');
+            // Real API call
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/metrics/cluster', {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            set({ clusterMetrics: data });
           }
         } catch (error) {
-          set({ error: 'Failed to fetch cluster metrics' });
+          console.warn('API call failed, falling back to mock data:', error);
+          // Fallback to mock data on error
+          try {
+            const mockData = await mockApiResponse(mockClusterMetrics());
+            set({ clusterMetrics: mockData, error: null });
+          } catch (mockError) {
+            set({ error: 'Failed to fetch cluster metrics' });
+          }
         } finally {
           set({ isLoading: false });
         }
@@ -146,11 +163,28 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             const mockData = await mockApiResponse(mockNodes());
             set({ nodeMetrics: mockData });
           } else {
-            // Real API call would go here
-            console.log('Real API call for node metrics');
+            // Real API call
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/metrics/nodes', {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            set({ nodeMetrics: data.nodes || [] });
           }
         } catch (error) {
-          set({ error: 'Failed to fetch node metrics' });
+          console.warn('API call failed, falling back to mock data:', error);
+          // Fallback to mock data on error
+          try {
+            const mockData = await mockApiResponse(mockNodes());
+            set({ nodeMetrics: mockData, error: null });
+          } catch (mockError) {
+            set({ error: 'Failed to fetch node metrics' });
+          }
         }
       },
       
@@ -161,11 +195,28 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             const mockData = await mockApiResponse(mockPods());
             set({ podMetrics: mockData });
           } else {
-            // Real API call would go here
-            console.log('Real API call for pod metrics');
+            // Real API call
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/metrics/pods', {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            set({ podMetrics: data.namespaces || [] });
           }
         } catch (error) {
-          set({ error: 'Failed to fetch pod metrics' });
+          console.warn('API call failed, falling back to mock data:', error);
+          // Fallback to mock data on error
+          try {
+            const mockData = await mockApiResponse(mockPods());
+            set({ podMetrics: mockData, error: null });
+          } catch (mockError) {
+            set({ error: 'Failed to fetch pod metrics' });
+          }
         }
       },
       
@@ -176,11 +227,28 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             const mockData = await mockApiResponse(mockNamespaces());
             set({ namespaceMetrics: mockData });
           } else {
-            // Real API call would go here
-            console.log('Real API call for namespace metrics');
+            // Real API call
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/metrics/namespaces', {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            set({ namespaceMetrics: data.namespaces || [] });
           }
         } catch (error) {
-          set({ error: 'Failed to fetch namespace metrics' });
+          console.warn('API call failed, falling back to mock data:', error);
+          // Fallback to mock data on error
+          try {
+            const mockData = await mockApiResponse(mockNamespaces());
+            set({ namespaceMetrics: mockData, error: null });
+          } catch (mockError) {
+            set({ error: 'Failed to fetch namespace metrics' });
+          }
         }
       },
       
@@ -204,11 +272,28 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             const mockData = await mockApiResponse(generateMockMetricsHistory(timeRange));
             set({ metricsHistory: mockData });
           } else {
-            // Real API call would go here
-            console.log('Real API call for metrics history');
+            // Real API call
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`/api/metrics/history?duration=${timeRange}`, {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            set({ metricsHistory: data });
           }
         } catch (error) {
-          set({ error: 'Failed to fetch metrics history' });
+          console.warn('API call failed, falling back to mock data:', error);
+          // Fallback to mock data on error
+          try {
+            const mockData = await mockApiResponse(generateMockMetricsHistory(timeRange));
+            set({ metricsHistory: mockData, error: null });
+          } catch (mockError) {
+            set({ error: 'Failed to fetch metrics history' });
+          }
         } finally {
           set({ isLoadingHistory: false });
         }

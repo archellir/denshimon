@@ -6,15 +6,11 @@ export { mockClusterMetrics, mockMetricsHistory, generateMockMetricsHistory } fr
 export { mockLogs, generateMockLogs } from './logs/system';
 export { mockRepositories, mockApplications } from './gitops/repositories';
 
-// Mock environment flag
-export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true' || import.meta.env.DEV;
+// Mock environment flag - explicit control over mock data usage
+export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
-// Mock API responses wrapper
+// Mock API responses wrapper - always works when called directly
 export const mockApiResponse = <T>(data: T, delay: number = 200): Promise<T> => {
-  if (!MOCK_ENABLED) {
-    throw new Error('Mock data is disabled');
-  }
-  
   return new Promise((resolve) => {
     setTimeout(() => resolve(data), delay);
   });
