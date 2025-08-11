@@ -1,7 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { FC } from 'react'
-import { Server, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
+import { Server, AlertCircle, CheckCircle, RefreshCw, Terminal } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
+import PodDebugPanel from '@components/pods/PodDebugPanel'
+
+interface Container {
+  name: string
+  image: string
+  ready: boolean
+  restartCount: number
+  state: string
+}
 
 interface Pod {
   name: string
@@ -13,6 +22,7 @@ interface Pod {
   node: string
   ip: string
   labels: Record<string, string>
+  containers?: Container[]
 }
 
 const PodsView: FC = () => {
@@ -22,6 +32,8 @@ const PodsView: FC = () => {
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [selectedPod, setSelectedPod] = useState<Pod | null>(null)
+  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false)
 
   const fetchPods = async () => {
     setIsLoading(true)
@@ -131,6 +143,22 @@ const PodsView: FC = () => {
     setSortOrder(order)
   }
 
+  const handleDebugPod = (pod: Pod) => {
+    // Add default containers if not present (for backward compatibility)
+    const podWithContainers = {
+      ...pod,
+      containers: pod.containers || [{
+        name: 'main',
+        image: 'unknown',
+        ready: pod.status === 'Running',
+        restartCount: pod.restarts,
+        state: pod.status
+      }]
+    }
+    setSelectedPod(podWithContainers)
+    setIsDebugPanelOpen(true)
+  }
+
   const columns: Column<Pod>[] = [
     {
       key: 'status',
@@ -215,6 +243,24 @@ const PodsView: FC = () => {
         <span className="font-mono text-sm">{pod.ip || 'N/A'}</span>
       ),
     },
+    {
+      key: 'actions',
+      title: 'ACTIONS',
+      width: 100,
+      align: 'center' as const,
+      render: (pod: Pod) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDebugPod(pod)
+          }}
+          className="p-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors"
+          title="Debug Pod"
+        >
+          <Terminal size={16} />
+        </button>
+      ),
+    },
   ]
 
   return (
@@ -265,6 +311,18 @@ const PodsView: FC = () => {
           className="w-full"
         />
       </div>
+
+      {/* Debug Panel */}
+      {selectedPod && (
+        <PodDebugPanel
+          pod={selectedPod}
+          isOpen={isDebugPanelOpen}
+          onClose={() => {
+            setIsDebugPanelOpen(false)
+            setSelectedPod(null)
+          }}
+        />
+      )}
     </div>
   )
 }
