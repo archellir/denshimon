@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, AlertTriangle, CheckCircle, XCircle, Bell, BarChart3 } from 'lucide-react';
 import StatusIcon, { getStatusColor, type StatusType } from '@components/common/StatusIcon';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange, HealthStatus } from '@constants';
@@ -164,7 +164,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     { id: 'observability', label: 'Observability', icon: Eye },
   ];
 
-  const getQuickStats = () => {
+  const getInfrastructureStats = () => {
     if (!clusterMetrics) return [];
 
     return [
@@ -197,6 +197,153 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     ];
   };
 
+  const getWorkloadsStats = () => {
+    if (!clusterMetrics) return [];
+
+    const failedPods = clusterMetrics.total_pods - clusterMetrics.running_pods;
+    const deploymentCount = 12; // Mock data - would come from actual API
+    const serviceCount = 8; // Mock data
+    const namespaceCount = 5; // Mock data
+
+    return [
+      {
+        label: 'Deployments',
+        value: deploymentCount.toString(),
+        icon: Package,
+        status: deploymentCount > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.WARNING as StatusType,
+      },
+      {
+        label: 'Running Pods',
+        value: `${clusterMetrics.running_pods}/${clusterMetrics.total_pods}`,
+        icon: Database,
+        status: clusterMetrics.running_pods > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.ERROR as StatusType,
+      },
+      {
+        label: 'Services',
+        value: serviceCount.toString(),
+        icon: Network,
+        status: serviceCount > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.WARNING as StatusType,
+      },
+      {
+        label: 'Failed Pods',
+        value: failedPods.toString(),
+        icon: AlertTriangle,
+        status: failedPods === 0 ? HealthStatus.HEALTHY as StatusType : failedPods < 3 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+    ];
+  };
+
+  const getMeshStats = () => {
+    if (!clusterMetrics) return [];
+
+    // Mock service mesh data - would come from actual service mesh metrics
+    const activeServices = 15;
+    const requestRate = 2450; // requests per minute
+    const successRate = 99.2; // percentage
+    const p99Latency = 85; // milliseconds
+
+    return [
+      {
+        label: 'Active Services',
+        value: activeServices.toString(),
+        icon: Server,
+        status: activeServices > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.WARNING as StatusType,
+      },
+      {
+        label: 'Request Rate',
+        value: `${(requestRate / 1000).toFixed(1)}K/min`,
+        icon: Activity,
+        status: requestRate > 1000 ? HealthStatus.HEALTHY as StatusType : requestRate > 100 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+      {
+        label: 'Success Rate',
+        value: `${successRate.toFixed(1)}%`,
+        icon: TrendingUp,
+        status: successRate > 99 ? HealthStatus.HEALTHY as StatusType : successRate > 95 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+      {
+        label: 'P99 Latency',
+        value: `${p99Latency}ms`,
+        icon: Clock,
+        status: p99Latency < 100 ? HealthStatus.HEALTHY as StatusType : p99Latency < 500 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+    ];
+  };
+
+  const getDeploymentStats = () => {
+    if (!clusterMetrics) return [];
+
+    // Mock GitOps/deployment data - would come from actual deployment metrics
+    const totalApplications = 8;
+    const repositories = 5;
+    const recentDeployments = 12; // last 24h
+    const successRate = 94.5; // percentage
+
+    return [
+      {
+        label: 'Applications',
+        value: totalApplications.toString(),
+        icon: Package,
+        status: totalApplications > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.WARNING as StatusType,
+      },
+      {
+        label: 'Repositories',
+        value: repositories.toString(),
+        icon: GitBranch,
+        status: repositories > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.WARNING as StatusType,
+      },
+      {
+        label: 'Recent Deploys',
+        value: `${recentDeployments}/24h`,
+        icon: Activity,
+        status: recentDeployments > 5 ? HealthStatus.HEALTHY as StatusType : recentDeployments > 0 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+      {
+        label: 'Success Rate',
+        value: `${successRate.toFixed(1)}%`,
+        icon: successRate > 95 ? CheckCircle : successRate > 80 ? AlertTriangle : XCircle,
+        status: successRate > 95 ? HealthStatus.HEALTHY as StatusType : successRate > 80 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+    ];
+  };
+
+  const getObservabilityStats = () => {
+    if (!clusterMetrics) return [];
+
+    // Mock observability/monitoring data - would come from actual monitoring systems
+    const activeAlerts = 3;
+    const logEventsPerMin = 1250;
+    const errorRate = 2.8; // percentage
+    const sloHealth = 98.5; // percentage of SLOs met
+
+    return [
+      {
+        label: 'Active Alerts',
+        value: activeAlerts.toString(),
+        icon: Bell,
+        status: activeAlerts === 0 ? HealthStatus.HEALTHY as StatusType : activeAlerts < 5 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+      {
+        label: 'Log Events',
+        value: `${(logEventsPerMin / 1000).toFixed(1)}K/min`,
+        icon: FileText,
+        status: logEventsPerMin > 500 && logEventsPerMin < 5000 ? HealthStatus.HEALTHY as StatusType : logEventsPerMin < 100 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+      {
+        label: 'Error Rate',
+        value: `${errorRate.toFixed(1)}%`,
+        icon: errorRate < 1 ? CheckCircle : errorRate < 5 ? AlertTriangle : XCircle,
+        status: errorRate < 1 ? HealthStatus.HEALTHY as StatusType : errorRate < 5 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+      {
+        label: 'SLO Health',
+        value: `${sloHealth.toFixed(1)}%`,
+        icon: BarChart3,
+        status: sloHealth > 99 ? HealthStatus.HEALTHY as StatusType : sloHealth > 95 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      },
+    ];
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white p-6">
@@ -221,8 +368,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Quick Stats - only on Infrastructure tab */}
-      {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && clusterMetrics && (
+      {/* Quick Stats - show for all major tabs */}
+      {(activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS || activePrimaryTab === PrimaryTab.OBSERVABILITY) && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-end items-center mb-4">
@@ -234,7 +381,22 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
               )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {getQuickStats().map((stat) => (
+              {(() => {
+                switch (activePrimaryTab) {
+                  case PrimaryTab.INFRASTRUCTURE:
+                    return getInfrastructureStats();
+                  case PrimaryTab.WORKLOADS:
+                    return getWorkloadsStats();
+                  case PrimaryTab.MESH:
+                    return getMeshStats();
+                  case PrimaryTab.DEPLOYMENTS:
+                    return getDeploymentStats();
+                  case PrimaryTab.OBSERVABILITY:
+                    return getObservabilityStats();
+                  default:
+                    return [];
+                }
+              })().map((stat) => (
                 <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-4`}>
                   <div className="flex items-center justify-between">
                     <div>
