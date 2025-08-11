@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { TimeRange } from '@constants';
 import { Clock, AlertTriangle, AlertCircle, Info, CheckCircle, Filter, TrendingUp, TrendingDown, Minus, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { EventTimelineData, TimelineEvent, EventSeverity, EventCategory } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@/mocks/events/timeline';
 
-const EventTimeline: React.FC = () => {
+const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWENTY_FOUR_HOURS }) => {
   const [data, setData] = useState<EventTimelineData | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
   const [selectedSeverities, setSelectedSeverities] = useState<EventSeverity[]>([]);

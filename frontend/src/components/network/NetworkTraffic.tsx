@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { FC } from 'react';
+import { UI_MESSAGES, TimeRange, CommonNamespace } from '@constants';
 import {
   AreaChart,
   Area,
@@ -21,7 +22,7 @@ interface NetworkTrafficProps {
   timeRange?: string;
 }
 
-const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = '1h' }) => {
+const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
   const [networkData, setNetworkData] = useState<NetworkMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -110,7 +111,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = '1h' }) => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-2xl font-mono mb-2">LOADING...</div>
+          <div className="text-2xl font-mono mb-2">{UI_MESSAGES.LOADING}</div>
           <div className="text-sm font-mono opacity-60">Fetching network metrics</div>
         </div>
       </div>
@@ -157,11 +158,11 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = '1h' }) => {
           <div className="h-80">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
-                <span className="font-mono text-sm">LOADING HISTORY...</span>
+                <span className="font-mono text-sm">{UI_MESSAGES.LOADING_HISTORY}</span>
               </div>
             ) : trafficChartData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
-                <span className="font-mono text-sm text-yellow-400">NO TRAFFIC DATA AVAILABLE</span>
+                <span className="font-mono text-sm text-yellow-400">{UI_MESSAGES.NETWORK_NO_DATA}</span>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -247,7 +248,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = '1h' }) => {
               </>
             ) : (
               <div className="flex items-center justify-center h-full border border-yellow-400">
-                <span className="font-mono text-sm text-yellow-400">NO PROTOCOL DATA</span>
+                <span className="font-mono text-sm text-yellow-400">{UI_MESSAGES.PROTOCOL_NO_DATA}</span>
               </div>
             )}
           </div>
@@ -288,7 +289,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = '1h' }) => {
           </div>
         ) : (
           <div className="flex items-center justify-center h-32 border border-yellow-400">
-            <span className="font-mono text-sm text-yellow-400">NO TOP TALKERS DATA</span>
+            <span className="font-mono text-sm text-yellow-400">{UI_MESSAGES.TOP_TALKERS_NO_DATA}</span>
           </div>
         )}
       </div>

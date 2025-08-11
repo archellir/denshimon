@@ -46,8 +46,8 @@ const mockServices: Service[] = [
   {
     id: 'web-frontend-svc',
     name: 'web-frontend',
-    namespace: 'production',
-    type: 'LoadBalancer',
+    namespace: CommonNamespace.PRODUCTION,
+    type: ServiceType.LOAD_BALANCER,
     cluster_ip: '10.96.120.45',
     external_ip: '203.0.113.42',
     ports: [
@@ -65,8 +65,8 @@ const mockServices: Service[] = [
   {
     id: 'api-backend-svc',
     name: 'api-backend',
-    namespace: 'production',
-    type: 'ClusterIP',
+    namespace: CommonNamespace.PRODUCTION,
+    type: ServiceType.CLUSTER_IP,
     cluster_ip: '10.96.87.123',
     ports: [
       { name: 'api', port: 3000, target_port: 3000, protocol: 'TCP' },
@@ -83,8 +83,8 @@ const mockServices: Service[] = [
   {
     id: 'database-svc',
     name: 'postgres-primary',
-    namespace: 'production',
-    type: 'ClusterIP',
+    namespace: CommonNamespace.PRODUCTION,
+    type: ServiceType.CLUSTER_IP,
     cluster_ip: '10.96.45.78',
     ports: [
       { name: 'postgres', port: 5432, target_port: 5432, protocol: 'TCP' }
@@ -100,8 +100,8 @@ const mockServices: Service[] = [
   {
     id: 'redis-cache-svc',
     name: 'redis-cache',
-    namespace: 'production',
-    type: 'ClusterIP',
+    namespace: CommonNamespace.PRODUCTION,
+    type: ServiceType.CLUSTER_IP,
     cluster_ip: '10.96.92.156',
     ports: [
       { name: 'redis', port: 6379, target_port: 6379, protocol: 'TCP' }
@@ -118,7 +118,7 @@ const mockServices: Service[] = [
     id: 'ingress-controller-svc',
     name: 'ingress-nginx-controller',
     namespace: 'ingress-nginx',
-    type: 'LoadBalancer',
+    type: ServiceType.LOAD_BALANCER,
     cluster_ip: '10.96.201.34',
     external_ip: '203.0.113.10',
     ports: [
@@ -136,8 +136,8 @@ const mockServices: Service[] = [
   {
     id: 'monitoring-grafana-svc',
     name: 'grafana',
-    namespace: 'monitoring',
-    type: 'NodePort',
+    namespace: CommonNamespace.MONITORING,
+    type: ServiceType.NODE_PORT,
     cluster_ip: '10.96.150.89',
     ports: [
       { name: 'grafana', port: 3000, target_port: 3000, protocol: 'TCP', node_port: 30300 }
@@ -153,8 +153,8 @@ const mockServices: Service[] = [
   {
     id: 'worker-service-headless',
     name: 'worker-headless',
-    namespace: 'production',
-    type: 'ClusterIP',
+    namespace: CommonNamespace.PRODUCTION,
+    type: ServiceType.CLUSTER_IP,
     cluster_ip: 'None',
     ports: [
       { name: 'worker', port: 8080, target_port: 8080, protocol: 'TCP' }

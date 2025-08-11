@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { FC } from 'react';
+import { UI_MESSAGES, TimeRange } from '@constants';
 import {
   AreaChart,
   Area,
@@ -21,7 +22,7 @@ interface ClusterOverviewProps {
   timeRange?: string;
 }
 
-const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = '1h' }) => {
+const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
   const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
 
   // Fetch initial data
@@ -168,8 +169,8 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = '1h' }) => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-2xl font-mono mb-2">LOADING...</div>
-          <div className="text-sm font-mono opacity-60">Fetching cluster metrics</div>
+          <div className="text-2xl font-mono mb-2">{UI_MESSAGES.LOADING}</div>
+          <div className="text-sm font-mono opacity-60">{UI_MESSAGES.LOADING_METRICS}</div>
         </div>
       </div>
     );
@@ -185,11 +186,11 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = '1h' }) => {
           <div className="h-80">
             {isLoadingHistory ? (
               <div className="flex items-center justify-center h-full">
-                <span className="font-mono text-sm">LOADING HISTORY...</span>
+                <span className="font-mono text-sm">{UI_MESSAGES.LOADING_HISTORY}</span>
               </div>
             ) : chartData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
-                <span className="font-mono text-sm text-yellow-400">NO CHART DATA AVAILABLE</span>
+                <span className="font-mono text-sm text-yellow-400">{UI_MESSAGES.CHART_NO_DATA}</span>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -329,10 +330,10 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = '1h' }) => {
     return (
       <div className="flex items-center justify-center h-64 border border-red-400">
         <div className="text-center">
-          <div className="text-xl font-mono mb-2 text-red-400">RENDER ERROR</div>
-          <div className="text-sm font-mono opacity-60">Component failed to render</div>
+          <div className="text-xl font-mono mb-2 text-red-400">{UI_MESSAGES.RENDER_ERROR}</div>
+          <div className="text-sm font-mono opacity-60">{UI_MESSAGES.COMPONENT_FAILED}</div>
           <div className="text-xs font-mono mt-2 text-gray-400">
-            Check console for details
+            {UI_MESSAGES.CHECK_CONSOLE}
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { CheckCircle, AlertCircle, XCircle, Clock, HelpCircle, Zap } from 'lucide-react';
+import { HealthStatus, SIZES } from '@constants';
 
-export type StatusType = 'healthy' | 'warning' | 'error' | 'pending' | 'unknown' | 'critical';
+export type StatusType = HealthStatus;
 
 interface StatusIconProps {
   status: StatusType;
@@ -12,48 +13,48 @@ interface StatusIconProps {
 
 const StatusIcon: FC<StatusIconProps> = ({ 
   status, 
-  size = 16, 
+  size = SIZES.ICON.MEDIUM, 
   showLabel = false,
   className = ""
 }) => {
   const getStatusConfig = (status: StatusType) => {
     switch (status) {
-      case 'healthy':
+      case HealthStatus.HEALTHY:
         return {
           icon: CheckCircle,
           color: 'text-green-500',
           label: 'HEALTHY',
           bgColor: 'border-green-500'
         };
-      case 'warning':
+      case HealthStatus.WARNING:
         return {
           icon: AlertCircle,
           color: 'text-yellow-500',
           label: 'WARNING',
           bgColor: 'border-yellow-500'
         };
-      case 'error':
+      case HealthStatus.ERROR:
         return {
           icon: XCircle,
           color: 'text-red-500',
           label: 'ERROR',
           bgColor: 'border-red-500'
         };
-      case 'critical':
+      case HealthStatus.CRITICAL:
         return {
           icon: Zap,
           color: 'text-red-600',
           label: 'CRITICAL',
           bgColor: 'border-red-600'
         };
-      case 'pending':
+      case HealthStatus.PENDING:
         return {
           icon: Clock,
           color: 'text-blue-500',
           label: 'PENDING',
           bgColor: 'border-blue-500'
         };
-      case 'unknown':
+      case HealthStatus.UNKNOWN:
         return {
           icon: HelpCircle,
           color: 'text-gray-500',

@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor, type StatusType } from '@components/common/StatusIcon';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange, HealthStatus } from '@constants';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import HealthDashboard from '@components/metrics/HealthDashboard';
 import ResourceCharts from '@components/metrics/ResourceCharts';
@@ -29,51 +30,51 @@ interface DashboardProps {
   timeRange?: string;
 }
 
-const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', onSecondaryTabChange, timeRange = '1h' }) => {
+const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRUCTURE, onSecondaryTabChange, timeRange = TimeRange.ONE_HOUR }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
-    infrastructure: 'overview',
-    workloads: 'overview',
-    mesh: 'topology',
-    deployments: 'applications',
-    observability: 'logs',
+    [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
+    [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
+    [PrimaryTab.MESH]: MeshTab.TOPOLOGY,
+    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.APPLICATIONS,
+    [PrimaryTab.OBSERVABILITY]: ObservabilityTab.LOGS,
   };
 
   // Secondary tab definitions
   const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: any }>> = {
-    infrastructure: [
-      { id: 'overview', label: 'Overview', icon: Activity },
-      { id: 'nodes', label: 'Nodes', icon: Server },
-      { id: 'resources', label: 'Resources', icon: Cpu },
-      { id: 'storage', label: 'Storage', icon: HardDrive },
-      { id: 'hierarchy', label: 'Hierarchy', icon: TreePine },
-      { id: 'network', label: 'Network', icon: Network },
+    [PrimaryTab.INFRASTRUCTURE]: [
+      { id: InfrastructureTab.OVERVIEW, label: LABELS.OVERVIEW, icon: Activity },
+      { id: InfrastructureTab.NODES, label: LABELS.NODES, icon: Server },
+      { id: InfrastructureTab.RESOURCES, label: LABELS.RESOURCES, icon: Cpu },
+      { id: InfrastructureTab.STORAGE, label: LABELS.STORAGE, icon: HardDrive },
+      { id: InfrastructureTab.HIERARCHY, label: LABELS.HIERARCHY, icon: TreePine },
+      { id: InfrastructureTab.NETWORK, label: LABELS.NETWORK, icon: Network },
     ],
-    workloads: [
-      { id: 'overview', label: 'Overview', icon: Activity },
-      { id: 'pods', label: 'Pods', icon: Database },
-      { id: 'services', label: 'Services', icon: Network },
-      { id: 'namespaces', label: 'Namespaces', icon: HardDrive },
+    [PrimaryTab.WORKLOADS]: [
+      { id: WorkloadsTab.OVERVIEW, label: LABELS.OVERVIEW, icon: Activity },
+      { id: WorkloadsTab.PODS, label: LABELS.PODS, icon: Database },
+      { id: WorkloadsTab.SERVICES, label: LABELS.SERVICES, icon: Network },
+      { id: WorkloadsTab.NAMESPACES, label: LABELS.NAMESPACES, icon: HardDrive },
     ],
-    mesh: [
-      { id: 'topology', label: 'Topology', icon: Network },
-      { id: 'services', label: 'Services', icon: Server },
-      { id: 'endpoints', label: 'Endpoints', icon: Activity },
-      { id: 'flows', label: 'Traffic Flow', icon: Zap },
-      { id: 'gateway', label: 'API Gateway', icon: Eye },
+    [PrimaryTab.MESH]: [
+      { id: MeshTab.TOPOLOGY, label: LABELS.TOPOLOGY, icon: Network },
+      { id: MeshTab.SERVICES, label: LABELS.SERVICES, icon: Server },
+      { id: MeshTab.ENDPOINTS, label: LABELS.ENDPOINTS, icon: Activity },
+      { id: MeshTab.FLOWS, label: LABELS.TRAFFIC_FLOW, icon: Zap },
+      { id: MeshTab.GATEWAY, label: LABELS.API_GATEWAY, icon: Eye },
     ],
-    deployments: [
-      { id: 'applications', label: 'Applications', icon: Package },
-      { id: 'repositories', label: 'Repositories', icon: GitBranch },
-      { id: 'gitea', label: 'Gitea Actions', icon: Zap },
+    [PrimaryTab.DEPLOYMENTS]: [
+      { id: DeploymentsTab.APPLICATIONS, label: LABELS.APPLICATIONS, icon: Package },
+      { id: DeploymentsTab.REPOSITORIES, label: LABELS.REPOSITORIES, icon: GitBranch },
+      { id: DeploymentsTab.GITEA, label: LABELS.GITEA_ACTIONS, icon: Zap },
     ],
-    observability: [
-      { id: 'logs', label: 'Logs', icon: FileText },
-      { id: 'events', label: 'Events', icon: Clock },
-      { id: 'streams', label: 'Live Streams', icon: Activity },
-      { id: 'analytics', label: 'Analytics', icon: TrendingUp },
+    [PrimaryTab.OBSERVABILITY]: [
+      { id: ObservabilityTab.LOGS, label: LABELS.LOGS, icon: FileText },
+      { id: ObservabilityTab.EVENTS, label: LABELS.EVENTS, icon: Clock },
+      { id: ObservabilityTab.STREAMS, label: LABELS.LIVE_STREAMS, icon: Activity },
+      { id: ObservabilityTab.ANALYTICS, label: LABELS.ANALYTICS, icon: TrendingUp },
     ],
   };
 
@@ -167,27 +168,27 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         label: 'Nodes',
         value: `${clusterMetrics.ready_nodes}/${clusterMetrics.total_nodes}`,
         icon: Server,
-        status: clusterMetrics.ready_nodes === clusterMetrics.total_nodes ? 'healthy' as StatusType : 'warning' as StatusType,
+        status: clusterMetrics.ready_nodes === clusterMetrics.total_nodes ? HealthStatus.HEALTHY as StatusType : HealthStatus.WARNING as StatusType,
       },
       {
         label: 'Pods',
         value: `${clusterMetrics.running_pods}/${clusterMetrics.total_pods}`,
         icon: Database,
-        status: clusterMetrics.running_pods > 0 ? 'healthy' as StatusType : 'error' as StatusType,
+        status: clusterMetrics.running_pods > 0 ? HealthStatus.HEALTHY as StatusType : HealthStatus.ERROR as StatusType,
       },
       {
         label: 'CPU',
         value: `${clusterMetrics.cpu_usage.usage_percent.toFixed(1)}%`,
         icon: Cpu,
-        status: clusterMetrics.cpu_usage.usage_percent < 80 ? 'healthy' as StatusType : 
-                clusterMetrics.cpu_usage.usage_percent < 95 ? 'warning' as StatusType : 'critical' as StatusType,
+        status: clusterMetrics.cpu_usage.usage_percent < 80 ? HealthStatus.HEALTHY as StatusType : 
+                clusterMetrics.cpu_usage.usage_percent < 95 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
       },
       {
         label: 'Memory',
         value: `${clusterMetrics.memory_usage.usage_percent.toFixed(1)}%`,
         icon: MemoryStick,
-        status: clusterMetrics.memory_usage.usage_percent < 80 ? 'healthy' as StatusType : 
-                clusterMetrics.memory_usage.usage_percent < 95 ? 'warning' as StatusType : 'critical' as StatusType,
+        status: clusterMetrics.memory_usage.usage_percent < 80 ? HealthStatus.HEALTHY as StatusType : 
+                clusterMetrics.memory_usage.usage_percent < 95 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
       },
     ];
   };
@@ -197,7 +198,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       <div className="min-h-screen bg-black text-white p-6">
         <div className="max-w-7xl mx-auto">
           <div className="border border-red-400 bg-red-900/20 p-6 rounded-sm">
-            <h2 className="text-xl font-mono mb-2">ERROR</h2>
+            <h2 className="text-xl font-mono mb-2">{UI_MESSAGES.ERROR}</h2>
             <p className="font-mono text-red-400">{error}</p>
             <button
               onClick={() => {
@@ -206,7 +207,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
               }}
               className="mt-4 px-4 py-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono"
             >
-              RETRY
+              {UI_MESSAGES.RETRY}
             </button>
           </div>
         </div>
@@ -217,14 +218,14 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Quick Stats - only on Infrastructure tab */}
-      {activePrimaryTab === 'infrastructure' && clusterMetrics && (
+      {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-end items-center mb-4">
               {isConnected && (
                 <div className="flex items-center space-x-2 text-sm font-mono">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-green-400">LIVE UPDATES</span>
+                  <span className="text-green-400">{UI_MESSAGES.LIVE_UPDATES}</span>
                 </div>
               )}
             </div>
@@ -275,41 +276,41 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       {/* Content */}
       <div className="max-w-7xl mx-auto p-6">
         {/* Infrastructure Tab Content */}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'overview' && (
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.OVERVIEW && (
           <div className="space-y-6">
             <HealthDashboard compact />
             <ClusterOverview timeRange={timeRange} />
           </div>
         )}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'nodes' && <NodeList />}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'resources' && <ResourceCharts timeRange={timeRange} />}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'storage' && <StorageIOMetrics timeRange={timeRange} />}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'hierarchy' && <ResourceTree />}
-        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'network' && <NetworkTraffic timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NODES && <NodeList />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.RESOURCES && <ResourceCharts timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.STORAGE && <StorageIOMetrics timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.HIERARCHY && <ResourceTree />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NETWORK && <NetworkTraffic timeRange={timeRange} />}
         
         {/* Workloads Tab Content */}
-        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'overview' && <ClusterOverview timeRange={timeRange} />}
-        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'pods' && <PodsView />}
-        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'services' && <ServicesList />}
-        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'namespaces' && <NamespaceMetrics />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <ClusterOverview timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.PODS && <PodsView />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.SERVICES && <ServicesList />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.NAMESPACES && <NamespaceMetrics />}
         
         {/* Service Mesh Tab Content */}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'topology' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'services' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'endpoints' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'flows' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'gateway' && <APIGatewayAnalytics timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.MESH && activeSecondaryTab === MeshTab.TOPOLOGY && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === PrimaryTab.MESH && activeSecondaryTab === MeshTab.SERVICES && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === PrimaryTab.MESH && activeSecondaryTab === MeshTab.ENDPOINTS && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === PrimaryTab.MESH && activeSecondaryTab === MeshTab.FLOWS && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === PrimaryTab.MESH && activeSecondaryTab === MeshTab.GATEWAY && <APIGatewayAnalytics timeRange={timeRange} />}
         
         {/* Deployments Tab Content */}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'applications' && <GitOps activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'repositories' && <GitOps activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'gitea' && <GiteaActions />}
+        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.APPLICATIONS && <GitOps activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.REPOSITORIES && <GitOps activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.GITEA && <GiteaActions />}
         
         {/* Observability Tab Content */}
-        {activePrimaryTab === 'observability' && activeSecondaryTab === 'logs' && <EnhancedLogs />}
-        {activePrimaryTab === 'observability' && activeSecondaryTab === 'events' && <EventTimeline timeRange={timeRange} />}
-        {activePrimaryTab === 'observability' && activeSecondaryTab === 'streams' && <LiveStreams />}
-        {activePrimaryTab === 'observability' && activeSecondaryTab === 'analytics' && <LogAnalytics timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOGS && <EnhancedLogs />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.EVENTS && <EventTimeline timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.STREAMS && <LiveStreams />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.ANALYTICS && <LogAnalytics timeRange={timeRange} />}
       </div>
     </div>
   );

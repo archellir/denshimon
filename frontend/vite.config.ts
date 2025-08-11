@@ -16,6 +16,7 @@ export default defineConfig({
       '@mocks': fileURLToPath(new URL('./src/mocks', import.meta.url)),
       '@services': fileURLToPath(new URL('./src/services', import.meta.url)),
       '@hooks': fileURLToPath(new URL('./src/hooks', import.meta.url)),
+      '@constants': fileURLToPath(new URL('./src/constants', import.meta.url)),
     },
   },
   server: {

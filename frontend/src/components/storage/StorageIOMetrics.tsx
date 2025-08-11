@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { TimeRange } from '@constants';
 import { HardDrive, Database, Activity, TrendingUp, TrendingDown, AlertTriangle, Zap } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -37,7 +38,7 @@ interface StorageIOMetricsProps {
   timeRange?: string;
 }
 
-const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = '1h' }) => {
+const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
   const [selectedVolume, setSelectedVolume] = useState<string | null>(null);
   const [ioHistory, setIoHistory] = useState<any[]>([]);
   const [volumes, setVolumes] = useState<VolumeMetrics[]>([]);

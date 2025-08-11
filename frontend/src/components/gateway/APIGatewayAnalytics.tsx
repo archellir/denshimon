@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { TimeRange } from '@constants';
 import { Globe, Shield, Activity, AlertTriangle, TrendingUp, TrendingDown, Clock, Users, Lock, Unlock, Eye, Zap } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -40,7 +41,7 @@ interface APIGatewayAnalyticsProps {
   timeRange?: string;
 }
 
-const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = '1h' }) => {
+const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
   const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
   const [gateways, setGateways] = useState<Gateway[]>([]);

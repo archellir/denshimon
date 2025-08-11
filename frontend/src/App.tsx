@@ -7,6 +7,7 @@ import WebSocketStatus from '@components/common/WebSocketStatus'
 import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
 import { useKeyboardNavigation } from '@hooks/useKeyboardNavigation'
 import { initializeWebSocket } from '@services/websocket'
+import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS } from '@constants'
 import './debug-mock' // Import debug script
 
 interface ProtectedRouteProps {
@@ -68,7 +69,7 @@ const LoginPage: FC<LoginPageProps> = ({ loginForm, setLoginForm, handleLogin, i
             disabled={isLoading}
             className="w-full bg-black border border-white p-2 hover:bg-white hover:text-black transition-colors font-mono disabled:opacity-50"
           >
-            {isLoading ? 'AUTHENTICATING...' : 'LOGIN'}
+            {isLoading ? UI_MESSAGES.AUTHENTICATING : UI_MESSAGES.LOGIN}
           </button>
         </form>
         
@@ -87,7 +88,7 @@ interface MainAppProps {
 
 const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [currentSecondaryTab, setCurrentSecondaryTab] = useState<string>('')
-  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h')
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>(TimeRange.ONE_HOUR)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false)
   const navigate = useNavigate()
@@ -174,15 +175,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
            activeElement.getAttribute('contenteditable') === 'true'
   }
 
-  const timeRanges = [
-    { value: '5m', label: '5m' },
-    { value: '15m', label: '15m' },
-    { value: '1h', label: '1h' },
-    { value: '6h', label: '6h' },
-    { value: '24h', label: '24h' },
-    { value: '7d', label: '7d' },
-    { value: '30d', label: '30d' },
-  ]
+  const timeRanges = DEFAULT_TIME_RANGES
   return (
     <div className="min-h-screen bg-black text-white font-mono">
       {/* Header */}
@@ -416,7 +409,7 @@ const App: FC = () => {
     const token = localStorage.getItem('auth_token')
     if (token) {
       // Verify the token is still valid by making a test API call
-      fetch('/api/auth/me', {
+      fetch(API_ENDPOINTS.AUTH.ME, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -454,7 +447,7 @@ const App: FC = () => {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -494,7 +487,7 @@ const App: FC = () => {
         <div className="text-center">
           <div className="border border-white p-8">
             <h1 className="text-xl font-bold mb-4">DENSHIMON</h1>
-            <p className="text-green-400">INITIALIZING...</p>
+            <p className="text-green-400">{UI_MESSAGES.INITIALIZING}</p>
           </div>
         </div>
       </div>

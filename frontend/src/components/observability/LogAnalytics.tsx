@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { TimeRange } from '@constants';
+
+interface LogAnalyticsProps {
+  timeRange?: string;
+}
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, AlertTriangle, Activity, Clock, Database, Server } from 'lucide-react';
 
@@ -15,9 +20,8 @@ interface LogMetrics {
   errorPatterns: { pattern: string; count: number; trend: 'up' | 'down' | 'stable' }[];
 }
 
-const LogAnalytics: React.FC = () => {
+const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENTY_FOUR_HOURS }) => {
   const [metrics, setMetrics] = useState<LogMetrics | null>(null);
-  const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('24h');
   const [selectedMetric, setSelectedMetric] = useState<'volume' | 'errors' | 'performance' | 'patterns'>('volume');
 
   useEffect(() => {

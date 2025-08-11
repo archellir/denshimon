@@ -32,7 +32,8 @@
       "@utils/*": ["./src/utils/*"],
       "@mocks/*": ["./src/mocks/*"],
       "@services/*": ["./src/services/*"],
-      "@hooks/*": ["./src/hooks/*"]
+      "@hooks/*": ["./src/hooks/*"],
+      "@constants": ["./src/constants"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],
