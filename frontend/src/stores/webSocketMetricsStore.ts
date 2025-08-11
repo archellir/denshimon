@@ -125,10 +125,13 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
         set({ isLoading: true, error: null });
         
         try {
+          console.log('[FETCH DEBUG] fetchClusterMetrics - MOCK_ENABLED:', MOCK_ENABLED);
           if (MOCK_ENABLED) {
+            console.log('[FETCH DEBUG] Using mock data for cluster metrics');
             const mockData = await mockApiResponse(mockClusterMetrics());
             set({ clusterMetrics: mockData });
           } else {
+            console.log('[FETCH DEBUG] Making real API call for cluster metrics');
             // Real API call
             const token = localStorage.getItem('auth_token');
             const response = await fetch('/api/metrics/cluster', {

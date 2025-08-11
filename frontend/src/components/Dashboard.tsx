@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor, normalizeStatus, type StatusType } from '@components/common/StatusIcon';
-import useMetricsStore from '@stores/metricsStore';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import HealthDashboard from '@components/metrics/HealthDashboard';
