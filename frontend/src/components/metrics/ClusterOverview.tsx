@@ -14,12 +14,12 @@ import {
   Tooltip,
 } from 'recharts';
 import { format } from 'date-fns';
-import useMetricsStore from '@stores/metricsStore';
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 
 const ClusterOverview: FC = () => {
   const [timeRange, setTimeRange] = useState<string>('1h');
-  const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory, fetchClusterMetrics } = useMetricsStore();
+  const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
 
   // Fetch initial data
   useEffect(() => {

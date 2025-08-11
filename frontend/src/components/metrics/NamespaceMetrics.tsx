@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import type { FC } from 'react';
 import { HardDrive, Database, Cpu, MemoryStick } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import useMetricsStore from '@stores/metricsStore';
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
 const NamespaceMetrics: FC = () => {
-  const { namespaceMetrics, isLoading } = useMetricsStore();
+  const { namespaceMetrics, isLoading } = useWebSocketMetricsStore();
 
   const sortedNamespaces = useMemo(() => {
     return [...namespaceMetrics].sort((a, b) => {

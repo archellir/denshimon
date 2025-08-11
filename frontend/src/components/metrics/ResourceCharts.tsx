@@ -12,10 +12,10 @@ import {
   Legend,
 } from 'recharts';
 import { format } from 'date-fns';
-import useMetricsStore from '@stores/metricsStore';
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
 const ResourceCharts: FC = () => {
-  const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory } = useMetricsStore();
+  const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory } = useWebSocketMetricsStore();
 
   // Historical data for line charts
   const historicalData = useMemo(() => {

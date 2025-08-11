@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import type { FC } from 'react';
 import { Server, Cpu, MemoryStick, HardDrive, CheckCircle, AlertCircle } from 'lucide-react';
-import useMetricsStore from '@stores/metricsStore';
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
 const NodeList: FC = () => {
-  const { nodeMetrics, isLoading } = useMetricsStore();
+  const { nodeMetrics, isLoading } = useWebSocketMetricsStore();
 
   const sortedNodes = useMemo(() => {
     return [...nodeMetrics].sort((a, b) => a.name.localeCompare(b.name));

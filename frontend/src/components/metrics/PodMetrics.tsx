@@ -2,11 +2,11 @@ import { useState, useMemo } from 'react';
 import type { FC } from 'react';
 import { Database, Cpu, MemoryStick, CheckCircle, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import useMetricsStore from '@stores/metricsStore';
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
 const PodMetrics: FC = () => {
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
-  const { podMetrics, isLoading, fetchPodMetrics } = useMetricsStore();
+  const { podMetrics, isLoading, fetchPodMetrics } = useWebSocketMetricsStore();
 
   const filteredPods = useMemo(() => {
     let pods = [...podMetrics];
