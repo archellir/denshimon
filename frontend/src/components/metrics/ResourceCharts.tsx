@@ -14,7 +14,11 @@ import {
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
-const ResourceCharts: FC = () => {
+interface ResourceChartsProps {
+  timeRange?: string;
+}
+
+const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange = '1h' }) => {
   const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory } = useWebSocketMetricsStore();
 
   // Historical data for line charts

@@ -125,20 +125,6 @@ const LogAnalytics: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
-          {/* Time Range Selector */}
-          <div className="flex border border-white">
-            {(['1h', '6h', '24h', '7d'] as const).map(range => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                className={`px-3 py-1 text-xs font-mono transition-colors ${
-                  timeRange === range ? 'bg-white text-black' : 'hover:bg-white/10'
-                }`}
-              >
-                {range.toUpperCase()}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 

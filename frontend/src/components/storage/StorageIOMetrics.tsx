@@ -33,9 +33,12 @@ interface StorageClass {
   reclaimPolicy: 'Delete' | 'Retain' | 'Recycle';
 }
 
-const StorageIOMetrics: React.FC = () => {
+interface StorageIOMetricsProps {
+  timeRange?: string;
+}
+
+const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = '1h' }) => {
   const [selectedVolume, setSelectedVolume] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('1h');
   const [ioHistory, setIoHistory] = useState<any[]>([]);
   const [volumes, setVolumes] = useState<VolumeMetrics[]>([]);
   const [storageClasses, setStorageClasses] = useState<StorageClass[]>([]);
@@ -228,22 +231,6 @@ const StorageIOMetrics: React.FC = () => {
         </div>
       </div>
 
-      {/* Time Range Selector */}
-      <div className="flex justify-end">
-        <div className="flex border border-white">
-          {(['1h', '6h', '24h', '7d'] as const).map(range => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 text-xs font-mono transition-colors ${
-                timeRange === range ? 'bg-white text-black' : 'hover:bg-white/10'
-              }`}
-            >
-              {range}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* IO Performance Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

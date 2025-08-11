@@ -36,10 +36,13 @@ interface Gateway {
   status: 'online' | 'degraded' | 'offline';
 }
 
-const APIGatewayAnalytics: React.FC = () => {
+interface APIGatewayAnalyticsProps {
+  timeRange?: string;
+}
+
+const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = '1h' }) => {
   const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('1h');
   const [gateways, setGateways] = useState<Gateway[]>([]);
   const [endpoints, setEndpoints] = useState<APIEndpoint[]>([]);
   const [clients, setClients] = useState<ClientMetrics[]>([]);
@@ -310,22 +313,6 @@ const APIGatewayAnalytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Time Range Selector */}
-      <div className="flex justify-end">
-        <div className="flex border border-white">
-          {(['1h', '6h', '24h', '7d'] as const).map(range => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 text-xs font-mono transition-colors ${
-                timeRange === range ? 'bg-white text-black' : 'hover:bg-white/10'
-              }`}
-            >
-              {range}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Traffic Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

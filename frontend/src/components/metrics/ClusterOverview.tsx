@@ -17,8 +17,11 @@ import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 
-const ClusterOverview: FC = () => {
-  const [timeRange, setTimeRange] = useState<string>('1h');
+interface ClusterOverviewProps {
+  timeRange?: string;
+}
+
+const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = '1h' }) => {
   const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
 
   // Fetch initial data
@@ -37,14 +40,6 @@ const ClusterOverview: FC = () => {
     fetchData();
   }, [timeRange]);
 
-  // Handle time range change
-  const handleTimeRangeChange = (newRange: string) => {
-    try {
-      setTimeRange(newRange);
-    } catch (error) {
-      console.error('Error changing time range:', error);
-    }
-  };
 
   // Format chart data
   const chartData = useMemo(() => {
@@ -183,26 +178,6 @@ const ClusterOverview: FC = () => {
   try {
     return (
     <div className="space-y-6">
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-mono">CLUSTER OVERVIEW</h2>
-        <div className="flex space-x-0 border border-white">
-          {['15m', '1h', '6h', '24h'].map((range) => (
-            <button
-              key={range}
-              onClick={() => handleTimeRangeChange(range)}
-              disabled={isLoadingHistory}
-              className={`px-3 py-1 border-r border-white last:border-r-0 font-mono text-xs transition-colors disabled:opacity-50 ${
-                timeRange === range
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white hover:bg-white hover:text-black'
-              }`}
-            >
-              {range.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Resource Usage Over Time */}
       <div className="border border-white p-4 h-96">

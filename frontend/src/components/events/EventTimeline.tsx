@@ -186,19 +186,6 @@ const EventTimeline: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-black border border-white px-3 py-2 font-mono text-sm"
           />
-          <div className="flex gap-2">
-            {['6h', '12h', '24h', '48h'].map(range => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                className={`px-3 py-2 font-mono text-xs border transition-colors ${
-                  timeRange === range ? 'bg-white text-black border-white' : 'border-white hover:bg-white/10'
-                }`}
-              >
-                {range.toUpperCase()}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="flex gap-4">
