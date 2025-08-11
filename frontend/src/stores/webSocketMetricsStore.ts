@@ -10,6 +10,12 @@ import {
   mockApiResponse,
   MOCK_ENABLED 
 } from '@mocks/index';
+
+// Emergency override - force mock mode for debugging
+const FORCE_MOCK_MODE = import.meta.env.VITE_MOCK_DATA === 'true';
+console.log('[STORE DEBUG] MOCK_ENABLED from mocks:', MOCK_ENABLED);
+console.log('[STORE DEBUG] FORCE_MOCK_MODE:', FORCE_MOCK_MODE);
+console.log('[STORE DEBUG] import.meta.env.VITE_MOCK_DATA:', import.meta.env.VITE_MOCK_DATA);
 import { getWebSocketInstance } from '@services/websocket';
 
 interface WebSocketMetricsStore extends MetricsStore {
@@ -126,7 +132,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
         
         try {
           console.log('[FETCH DEBUG] fetchClusterMetrics - MOCK_ENABLED:', MOCK_ENABLED);
-          if (MOCK_ENABLED) {
+          console.log('[FETCH DEBUG] fetchClusterMetrics - FORCE_MOCK_MODE:', FORCE_MOCK_MODE);
+          if (MOCK_ENABLED || FORCE_MOCK_MODE) {
             console.log('[FETCH DEBUG] Using mock data for cluster metrics');
             const mockData = await mockApiResponse(mockClusterMetrics());
             set({ clusterMetrics: mockData });
@@ -163,7 +170,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
       fetchNodeMetrics: async () => {
         try {
           if (MOCK_ENABLED) {
-            const mockData = await mockApiResponse(mockNodes());
+            const mockData = await mockApiResponse(mockNodes);
             set({ nodeMetrics: mockData });
           } else {
             // Real API call
@@ -183,7 +190,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           console.warn('API call failed, falling back to mock data:', error);
           // Fallback to mock data on error
           try {
-            const mockData = await mockApiResponse(mockNodes());
+            const mockData = await mockApiResponse(mockNodes);
             set({ nodeMetrics: mockData, error: null });
           } catch (mockError) {
             set({ error: 'Failed to fetch node metrics' });
@@ -195,7 +202,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
       fetchPodMetrics: async () => {
         try {
           if (MOCK_ENABLED) {
-            const mockData = await mockApiResponse(mockPods());
+            const mockData = await mockApiResponse(mockPods);
             set({ podMetrics: mockData });
           } else {
             // Real API call
@@ -215,7 +222,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           console.warn('API call failed, falling back to mock data:', error);
           // Fallback to mock data on error
           try {
-            const mockData = await mockApiResponse(mockPods());
+            const mockData = await mockApiResponse(mockPods);
             set({ podMetrics: mockData, error: null });
           } catch (mockError) {
             set({ error: 'Failed to fetch pod metrics' });
@@ -227,7 +234,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
       fetchNamespaceMetrics: async () => {
         try {
           if (MOCK_ENABLED) {
-            const mockData = await mockApiResponse(mockNamespaces());
+            const mockData = await mockApiResponse(mockNamespaces);
             set({ namespaceMetrics: mockData });
           } else {
             // Real API call
@@ -247,7 +254,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           console.warn('API call failed, falling back to mock data:', error);
           // Fallback to mock data on error
           try {
-            const mockData = await mockApiResponse(mockNamespaces());
+            const mockData = await mockApiResponse(mockNamespaces);
             set({ namespaceMetrics: mockData, error: null });
           } catch (mockError) {
             set({ error: 'Failed to fetch namespace metrics' });

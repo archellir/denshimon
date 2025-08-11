@@ -5,6 +5,7 @@ import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch
 import Dashboard from '@components/Dashboard'
 import WebSocketStatus from '@components/common/WebSocketStatus'
 import { initializeWebSocket } from '@services/websocket'
+import './debug-mock' // Import debug script
 
 interface ProtectedRouteProps {
   children: React.ReactNode
