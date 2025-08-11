@@ -4,9 +4,23 @@ import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 
-const ServiceMesh: React.FC = () => {
+interface ServiceMeshProps {
+  activeSecondaryTab?: string;
+}
+
+const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const [data, setData] = useState<ServiceMeshData | null>(null);
-  const [selectedView, setSelectedView] = useState<'topology' | 'services' | 'endpoints' | 'flows'>('topology');
+  
+  // Set selectedView based on the secondary tab from Dashboard
+  const getViewFromSecondary = (secondaryTab?: string): 'topology' | 'services' | 'endpoints' | 'flows' => {
+    if (secondaryTab === 'topology') return 'topology';
+    if (secondaryTab === 'services') return 'services';
+    if (secondaryTab === 'endpoints') return 'endpoints';
+    if (secondaryTab === 'flows') return 'flows';
+    return 'topology'; // Default to topology
+  };
+
+  const selectedView = getViewFromSecondary(activeSecondaryTab);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'frontend' | 'backend' | 'database' | 'cache' | 'gateway'>('all');
 
@@ -124,26 +138,6 @@ const ServiceMesh: React.FC = () => {
         </div>
       </div>
 
-      {/* View Tabs */}
-      <div className="flex gap-2 border-b border-white pb-2">
-        {[
-          { id: 'topology', label: 'Topology', icon: Network },
-          { id: 'services', label: 'Services', icon: Server },
-          { id: 'endpoints', label: 'Endpoints', icon: Globe },
-          { id: 'flows', label: 'Traffic Flows', icon: Activity },
-        ].map(view => (
-          <button
-            key={view.id}
-            onClick={() => setSelectedView(view.id as any)}
-            className={`px-4 py-2 font-mono text-sm transition-colors flex items-center gap-2 ${
-              selectedView === view.id ? 'bg-white text-black' : 'text-white hover:bg-white/10'
-            }`}
-          >
-            <view.icon className="w-4 h-4" />
-            {view.label}
-          </button>
-        ))}
-      </div>
 
       {/* Topology View */}
       {selectedView === 'topology' && (

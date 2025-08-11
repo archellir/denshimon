@@ -282,10 +282,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {activePrimaryTab === 'workloads' && activeSecondaryTab === 'namespaces' && <NamespaceMetrics />}
         
         {/* Service Mesh Tab Content */}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'topology' && <ServiceMesh />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'services' && <ServiceMesh />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'endpoints' && <ServiceMesh />}
-        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'flows' && <ServiceMesh />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'topology' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'services' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'endpoints' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'flows' && <ServiceMesh activeSecondaryTab={activeSecondaryTab} />}
         {activePrimaryTab === 'mesh' && activeSecondaryTab === 'gateway' && <APIGatewayAnalytics />}
         
         {/* Deployments Tab Content */}
