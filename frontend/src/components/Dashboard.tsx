@@ -17,6 +17,7 @@ import GitOps from '@components/GitOps';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
+import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -146,6 +147,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       { id: 'services', label: 'Services', icon: Server },
       { id: 'endpoints', label: 'Endpoints', icon: Activity },
       { id: 'flows', label: 'Flows', icon: Zap },
+      { id: 'gateway', label: 'API Gateway', icon: Eye },
     ],
     deployments: [
       { id: 'applications', label: 'Applications', icon: Package },
@@ -253,7 +255,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {activePrimaryTab === 'workloads' && activeSecondaryTab === 'namespaces' && <NamespaceMetrics />}
         
         {/* Service Mesh Tab Content */}
-        {activePrimaryTab === 'mesh' && <ServiceMesh />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'topology' && <ServiceMesh />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'services' && <ServiceMesh />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'endpoints' && <ServiceMesh />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'flows' && <ServiceMesh />}
+        {activePrimaryTab === 'mesh' && activeSecondaryTab === 'gateway' && <APIGatewayAnalytics />}
         
         {/* Deployments Tab Content */}
         {activePrimaryTab === 'deployments' && <GitOps />}
