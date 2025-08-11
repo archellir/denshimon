@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, MemoryStick, Network, Clock, Zap, Package, Eye, FileText, GitBranch } from 'lucide-react';
 import useMetricsStore from '@stores/metricsStore';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import ResourceCharts from '@components/metrics/ResourceCharts';
@@ -10,9 +10,34 @@ import NetworkTraffic from '@components/network/NetworkTraffic';
 import PodsOverview from '@components/pods/PodsOverview';
 import EventTimeline from '@components/events/EventTimeline';
 import ServiceMesh from '@components/services/ServiceMesh';
+import Logs from '@components/Logs';
+import GitOps from '@components/GitOps';
+import PodsView from '@components/PodsView';
 
-const Dashboard: FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+interface DashboardProps {
+  activePrimaryTab?: string;
+}
+
+const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure' }) => {
+  const [secondaryTabMemory, setSecondaryTabMemory] = useState<Record<string, string>>({
+    infrastructure: 'overview',
+    workloads: 'overview',
+    mesh: 'topology',
+    deployments: 'applications',
+    observability: 'logs',
+  });
+
+  // Get current secondary tab for the active primary tab
+  const activeSecondaryTab = secondaryTabMemory[activePrimaryTab] || 
+    (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
+
+  // Update secondary tab and remember it
+  const setActiveSecondaryTab = (tabId: string) => {
+    setSecondaryTabMemory(prev => ({
+      ...prev,
+      [activePrimaryTab]: tabId
+    }));
+  };
   const {
     clusterMetrics,
     isLoading,
@@ -47,15 +72,12 @@ const Dashboard: FC = () => {
     };
   }, [autoRefresh, refreshInterval, fetchAllMetrics, fetchMetricsHistory, clearMetrics]);
 
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'resources', label: 'Resources', icon: Server },
-    { id: 'network', label: 'Network', icon: Network },
+  const primaryTabs = [
+    { id: 'infrastructure', label: 'Infrastructure', icon: Server },
+    { id: 'workloads', label: 'Workloads', icon: Package },
     { id: 'mesh', label: 'Service Mesh', icon: Zap },
-    { id: 'events', label: 'Events', icon: Clock },
-    { id: 'nodes', label: 'Nodes', icon: Server },
-    { id: 'pods', label: 'Pods', icon: Database },
-    { id: 'namespaces', label: 'Namespaces', icon: HardDrive },
+    { id: 'deployments', label: 'Deployments', icon: GitBranch },
+    { id: 'observability', label: 'Observability', icon: Eye },
   ];
 
   const getQuickStats = () => {
@@ -102,6 +124,37 @@ const Dashboard: FC = () => {
     }
   };
 
+  const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: any }>> = {
+    infrastructure: [
+      { id: 'overview', label: 'Overview', icon: Activity },
+      { id: 'nodes', label: 'Nodes', icon: Server },
+      { id: 'resources', label: 'Resources', icon: Cpu },
+      { id: 'network', label: 'Network', icon: Network },
+    ],
+    workloads: [
+      { id: 'overview', label: 'Overview', icon: Activity },
+      { id: 'pods', label: 'Pods', icon: Database },
+      { id: 'services', label: 'Services', icon: Network },
+      { id: 'namespaces', label: 'Namespaces', icon: HardDrive },
+    ],
+    mesh: [
+      { id: 'topology', label: 'Topology', icon: Network },
+      { id: 'services', label: 'Services', icon: Server },
+      { id: 'endpoints', label: 'Endpoints', icon: Activity },
+      { id: 'flows', label: 'Flows', icon: Zap },
+    ],
+    deployments: [
+      { id: 'applications', label: 'Applications', icon: Package },
+      { id: 'repositories', label: 'Repositories', icon: GitBranch },
+      { id: 'sync', label: 'Sync Status', icon: Activity },
+    ],
+    observability: [
+      { id: 'logs', label: 'Logs', icon: FileText },
+      { id: 'events', label: 'Events', icon: Clock },
+    ],
+  };
+
+
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white p-6">
@@ -126,28 +179,11 @@ const Dashboard: FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="border-b border-white">
-        <div className="max-w-7xl mx-auto p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-mono">KUBERNETES MONITORING</h1>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm font-mono">
-                {isLoading ? (
-                  <span className="text-yellow-400">LOADING...</span>
-                ) : (
-                  <span className="text-green-400">ONLINE</span>
-                )}
-              </div>
-              <div className="text-xs font-mono opacity-60">
-                AUTO-REFRESH: {autoRefresh ? 'ON' : 'OFF'}
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          {clusterMetrics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Quick Stats - only on Infrastructure tab */}
+      {activePrimaryTab === 'infrastructure' && clusterMetrics && (
+        <div className="border-b border-white">
+          <div className="max-w-7xl mx-auto p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {getQuickStats().map((stat) => (
                 <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-4`}>
                   <div className="flex items-center justify-between">
@@ -160,38 +196,57 @@ const Dashboard: FC = () => {
                 </div>
               ))}
             </div>
-          )}
-
-          {/* Navigation Tabs */}
-          <div className="flex space-x-0 border border-white">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-3 border-r border-white last:border-r-0 font-mono transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-white text-black'
-                    : 'bg-black text-white hover:bg-white hover:text-black'
-                }`}
-              >
-                <tab.icon size={16} />
-                <span>{tab.label}</span>
-              </button>
-            ))}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Secondary Navigation - with visual separation */}
+      {secondaryTabs[activePrimaryTab] && (
+        <div className="bg-black border-b border-white/20">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex space-x-1 py-2">
+              {secondaryTabs[activePrimaryTab].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSecondaryTab(tab.id)}
+                  className={`flex items-center space-x-2 px-3 py-2 font-mono text-sm transition-colors rounded-sm ${
+                    activeSecondaryTab === tab.id
+                      ? 'bg-white text-black'
+                      : 'text-white hover:bg-white/10'
+                  }`}
+                >
+                  <tab.icon size={14} />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-7xl mx-auto p-6">
-        {activeTab === 'overview' && <ClusterOverview />}
-        {activeTab === 'resources' && <ResourceCharts />}
-        {activeTab === 'network' && <NetworkTraffic />}
-        {activeTab === 'mesh' && <ServiceMesh />}
-        {activeTab === 'events' && <EventTimeline />}
-        {activeTab === 'nodes' && <NodeList />}
-        {activeTab === 'pods' && <PodsOverview />}
-        {activeTab === 'namespaces' && <NamespaceMetrics />}
+        {/* Infrastructure Tab Content */}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'overview' && <ClusterOverview />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'nodes' && <NodeList />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'resources' && <ResourceCharts />}
+        {activePrimaryTab === 'infrastructure' && activeSecondaryTab === 'network' && <NetworkTraffic />}
+        
+        {/* Workloads Tab Content */}
+        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'overview' && <ClusterOverview />}
+        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'pods' && <PodsView />}
+        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'services' && <div className="p-6"><div className="text-center text-gray-500">Services view coming soon</div></div>}
+        {activePrimaryTab === 'workloads' && activeSecondaryTab === 'namespaces' && <NamespaceMetrics />}
+        
+        {/* Service Mesh Tab Content */}
+        {activePrimaryTab === 'mesh' && <ServiceMesh />}
+        
+        {/* Deployments Tab Content */}
+        {activePrimaryTab === 'deployments' && <GitOps />}
+        
+        {/* Observability Tab Content */}
+        {activePrimaryTab === 'observability' && activeSecondaryTab === 'logs' && <Logs />}
+        {activePrimaryTab === 'observability' && activeSecondaryTab === 'events' && <EventTimeline />}
       </div>
     </div>
   );

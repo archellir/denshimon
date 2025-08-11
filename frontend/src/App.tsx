@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router'
 import type { FC } from 'react'
-import { Server, GitBranch, BarChart3, FileText, Settings as SettingsIcon, User, LogOut } from 'lucide-react'
+import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
-import GitOps from '@components/GitOps'
-import PodsView from '@components/PodsView'
-import SettingsPage from '@components/Settings'
-import Logs from '@components/Logs'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -97,6 +93,12 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
               {currentUser}
             </span>
             <button
+              className="text-sm hover:text-white/70 transition-colors"
+              title="Settings"
+            >
+              <SettingsIcon size={16} />
+            </button>
+            <button
               onClick={handleLogout}
               className="text-sm hover:text-red-400 transition-colors"
             >
@@ -106,17 +108,18 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
         </div>
       </header>
 
+      {/* Primary Navigation */}
       <NavigationBar />
 
       {/* Main Content */}
       <main>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/gitops" element={<GitOps />} />
-          <Route path="/pods" element={<PodsView />} />
-          <Route path="/logs" element={<Logs />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/" element={<Navigate to="/infrastructure" replace />} />
+          <Route path="/infrastructure" element={<Dashboard activePrimaryTab="infrastructure" />} />
+          <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" />} />
+          <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" />} />
+          <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" />} />
+          <Route path="/observability" element={<Dashboard activePrimaryTab="observability" />} />
         </Routes>
       </main>
     </div>
@@ -127,11 +130,11 @@ const NavigationBar: FC = () => {
   const location = useLocation()
   
   const navItems = [
-    { path: '/dashboard', icon: BarChart3, label: 'Dashboard' },
-    { path: '/gitops', icon: GitBranch, label: 'GitOps' },
-    { path: '/pods', icon: Server, label: 'Pods' },
-    { path: '/logs', icon: FileText, label: 'Logs' },
-    { path: '/settings', icon: SettingsIcon, label: 'Settings' },
+    { path: '/infrastructure', icon: Server, label: 'Infrastructure' },
+    { path: '/workloads', icon: Package, label: 'Workloads' },
+    { path: '/mesh', icon: Zap, label: 'Service Mesh' },
+    { path: '/deployments', icon: GitBranch, label: 'Deployments' },
+    { path: '/observability', icon: Eye, label: 'Observability' },
   ]
 
   return (
