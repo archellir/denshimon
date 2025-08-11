@@ -11,8 +11,24 @@ import ApplicationDetails from '@components/gitops/ApplicationDetails';
 import type { DetailsState } from '@types/components';
 import type { Repository, Application } from '@types/gitops';
 
-const GitOps: FC = () => {
-  const [activeTab, setActiveTab] = useState<'repositories' | 'applications'>('repositories');
+interface GitOpsProps {
+  activeSecondaryTab?: string;
+}
+
+const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
+  // Set activeTab based on the secondary tab from Dashboard
+  const getTabFromSecondary = (secondaryTab?: string): 'repositories' | 'applications' => {
+    if (secondaryTab === 'applications') return 'applications';
+    if (secondaryTab === 'repositories') return 'repositories';
+    return 'applications'; // Default to applications tab
+  };
+
+  const [activeTab, setActiveTab] = useState<'repositories' | 'applications'>(getTabFromSecondary(activeSecondaryTab));
+
+  // Update activeTab when activeSecondaryTab changes
+  useEffect(() => {
+    setActiveTab(getTabFromSecondary(activeSecondaryTab));
+  }, [activeSecondaryTab]);
   const [showCreateRepo, setShowCreateRepo] = useState<boolean>(false);
   const [showCreateApp, setShowCreateApp] = useState<boolean>(false);
   const [showDetails, setShowDetails] = useState<DetailsState | null>(null);
@@ -87,116 +103,66 @@ const GitOps: FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-white">
-        <div className="max-w-7xl mx-auto p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-mono flex items-center">
-              <GitBranch className="mr-3" size={28} />
-              GITOPS MANAGEMENT
-            </h1>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm font-mono">
-                {isLoading ? (
-                  <span className="text-yellow-400">LOADING...</span>
-                ) : (
-                  <span className="text-green-400">CONNECTED</span>
-                )}
-              </div>
-              <button
-                onClick={() => activeTab === 'repositories' ? setShowCreateRepo(true) : setShowCreateApp(true)}
-                className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono"
-              >
-                <Plus size={16} />
-                <span>CREATE {activeTab === 'repositories' ? 'REPO' : 'APP'}</span>
-              </button>
-            </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="text-sm font-mono">
+            {isLoading ? (
+              <span className="text-yellow-400">LOADING...</span>
+            ) : (
+              <span className="text-green-400">CONNECTED</span>
+            )}
           </div>
+        </div>
+        <button
+          onClick={() => activeTab === 'repositories' ? setShowCreateRepo(true) : setShowCreateApp(true)}
+          className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono"
+        >
+          <Plus size={16} />
+          <span>CREATE {activeTab === 'repositories' ? 'REPO' : 'APP'}</span>
+        </button>
+      </div>
 
-          {/* Tab Navigation with Stats */}
-          <div className="flex space-x-0 border border-white mb-6">
-            <button
-              onClick={() => setActiveTab('repositories')}
-              className={`flex items-center space-x-2 px-6 py-4 border-r border-white font-mono transition-colors ${
-                activeTab === 'repositories'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white hover:bg-white hover:text-black'
-              }`}
-            >
-              <div className="text-center">
-                <div className="flex items-center space-x-2">
-                  <span>REPOSITORIES</span>
-                  <span className="text-xs opacity-60">({repoStats.total})</span>
-                </div>
-                <div className="flex space-x-2 text-xs mt-1">
-                  <span className="text-green-400">✓{repoStats.synced}</span>
-                  {repoStats.errors > 0 && <span className="text-red-400">✗{repoStats.errors}</span>}
-                </div>
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('applications')}
-              className={`flex items-center space-x-2 px-6 py-4 font-mono transition-colors ${
-                activeTab === 'applications'
-                  ? 'bg-white text-black'
-                  : 'bg-black text-white hover:bg-white hover:text-black'
-              }`}
-            >
-              <div className="text-center">
-                <div className="flex items-center space-x-2">
-                  <span>APPLICATIONS</span>
-                  <span className="text-xs opacity-60">({appStats.total})</span>
-                </div>
-                <div className="flex space-x-2 text-xs mt-1">
-                  <span className="text-green-400">♥{appStats.healthy}</span>
-                  <span className="text-blue-400">⟲{appStats.synced}</span>
-                </div>
-              </div>
-            </button>
-          </div>
-
-          {/* Search and Filter */}
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="flex-1 relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 opacity-60" />
-              <input
-                type="text"
-                placeholder={`SEARCH ${activeTab.toUpperCase()}...`}
-                value={activeTab === 'repositories' ? repositoryFilter : applicationFilter}
-                onChange={(e) => 
-                  activeTab === 'repositories' 
-                    ? setRepositoryFilter(e.target.value) 
-                    : setApplicationFilter(e.target.value)
-                }
-                className="w-full pl-10 pr-4 py-2 bg-black border border-white text-white font-mono placeholder-gray-400 focus:outline-none focus:border-green-400"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Filter size={16} className="opacity-60" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-black border border-white text-white font-mono px-3 py-2 focus:outline-none focus:border-green-400"
-              >
-                <option value="name">NAME</option>
-                <option value="sync_status">SYNC STATUS</option>
-                <option value="last_sync">LAST SYNC</option>
-                {activeTab === 'applications' && <option value="health_status">HEALTH</option>}
-              </select>
-              <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="px-3 py-2 border border-white font-mono hover:bg-white hover:text-black transition-colors"
-              >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
-            </div>
-          </div>
+      {/* Search and Filter */}
+      <div className="flex items-center space-x-4">
+        <div className="flex-1 relative">
+          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 opacity-60" />
+          <input
+            type="text"
+            placeholder={`SEARCH ${activeTab.toUpperCase()}...`}
+            value={activeTab === 'repositories' ? repositoryFilter : applicationFilter}
+            onChange={(e) => 
+              activeTab === 'repositories' 
+                ? setRepositoryFilter(e.target.value) 
+                : setApplicationFilter(e.target.value)
+            }
+            className="w-full pl-10 pr-4 py-2 bg-black border border-white text-white font-mono placeholder-gray-400 focus:outline-none focus:border-green-400"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Filter size={16} className="opacity-60" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-black border border-white text-white font-mono px-3 py-2 focus:outline-none focus:border-green-400"
+          >
+            <option value="name">NAME</option>
+            <option value="sync_status">SYNC STATUS</option>
+            <option value="last_sync">LAST SYNC</option>
+            {activeTab === 'applications' && <option value="health_status">HEALTH</option>}
+          </select>
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="px-3 py-2 border border-white font-mono hover:bg-white hover:text-black transition-colors"
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto p-6">
+      <div>
         {activeTab === 'repositories' && (
           <RepositoryList 
             onShowDetails={(repo) => setShowDetails({ type: 'repository', data: repo })}

@@ -169,7 +169,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
       { id: 'applications', label: 'Applications', icon: Package },
       { id: 'repositories', label: 'Repositories', icon: GitBranch },
       { id: 'gitea', label: 'Gitea Actions', icon: Zap },
-      { id: 'sync', label: 'Sync Status', icon: Activity },
     ],
     observability: [
       { id: 'logs', label: 'Logs', icon: FileText },
@@ -290,10 +289,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = 'infrastructure', on
         {activePrimaryTab === 'mesh' && activeSecondaryTab === 'gateway' && <APIGatewayAnalytics />}
         
         {/* Deployments Tab Content */}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'applications' && <GitOps />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'repositories' && <GitOps />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'applications' && <GitOps activeSecondaryTab={activeSecondaryTab} />}
+        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'repositories' && <GitOps activeSecondaryTab={activeSecondaryTab} />}
         {activePrimaryTab === 'deployments' && activeSecondaryTab === 'gitea' && <GiteaActions />}
-        {activePrimaryTab === 'deployments' && activeSecondaryTab === 'sync' && <GitOps />}
         
         {/* Observability Tab Content */}
         {activePrimaryTab === 'observability' && activeSecondaryTab === 'logs' && <EnhancedLogs />}
