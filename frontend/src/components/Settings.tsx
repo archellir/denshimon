@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
-import { Save, RefreshCw, Database, Shield, Monitor, Bell, User, Key } from 'lucide-react';
+import { Save, RefreshCw, Database, Shield, Monitor, Bell } from 'lucide-react';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
 interface SettingsData {

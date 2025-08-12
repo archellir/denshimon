@@ -31,7 +31,7 @@ const PodLifecycle: FC = () => {
   const [timeRange, setTimeRange] = useState<string>('1h');
   const [activeView, setActiveView] = useState<string>('churn');
   const [lifecycleData, setLifecycleData] = useState<PodLifecycleMetrics | null>(null);
-  const [lifecycleEvents, setLifecycleEvents] = useState<PodLifecycleEvent[]>([]);
+  const [_lifecycleEvents, setLifecycleEvents] = useState<PodLifecycleEvent[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<LifecycleTimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -348,7 +348,7 @@ const PodLifecycle: FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {lifecycleData?.restartPatterns.slice(0, 10).map((pattern, index) => (
+                  {lifecycleData?.restartPatterns.slice(0, 10).map((pattern, _index) => (
                     <tr key={pattern.podName} className="border-b border-white hover:bg-white hover:bg-opacity-5">
                       <td className="p-2 text-green-400">{pattern.podName}</td>
                       <td className="p-2 text-cyan-400">{pattern.namespace}</td>
@@ -469,7 +469,7 @@ const PodLifecycle: FC = () => {
           <div className="xl:col-span-2 border border-white p-4">
             <h3 className="font-mono text-sm mb-4">FAILURE ANALYSIS</h3>
             <div className="space-y-3 max-h-80 overflow-y-auto">
-              {lifecycleData?.failureAnalysis.map((failure, index) => (
+              {lifecycleData?.failureAnalysis.map((failure, _index) => (
                 <div key={failure.reason} className="border border-white p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
@@ -517,7 +517,7 @@ const PodLifecycle: FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {lifecycleData?.imagePullMetrics.map((image, index) => (
+                {lifecycleData?.imagePullMetrics.map((image, _index) => (
                   <tr key={image.imageName} className="border-b border-white hover:bg-white hover:bg-opacity-5">
                     <td className="p-2 text-green-400">{image.imageName}</td>
                     <td className="p-2 text-cyan-400">{image.registry}</td>

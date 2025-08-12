@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { Database, RefreshCw, Activity, BarChart3 } from 'lucide-react';
+import { Database, RefreshCw } from 'lucide-react';
 import PodMetrics from '@components/metrics/PodMetrics';
 import PodLifecycle from '@components/pods/PodLifecycle';
 

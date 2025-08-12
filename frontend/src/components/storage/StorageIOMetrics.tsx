@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TimeRange } from '@constants';
 import { getDataPointsForTimeRange } from '@utils/timeUtils';
-import { HardDrive, Database, Activity, TrendingUp, TrendingDown, AlertTriangle, Zap } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { HardDrive, Database, Activity, Zap } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 interface VolumeMetrics {
   name: string;

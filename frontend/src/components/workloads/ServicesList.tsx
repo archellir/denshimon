@@ -3,14 +3,12 @@ import type { FC } from 'react';
 import { 
   Network, 
   Globe, 
-  Shield, 
   Eye, 
   ExternalLink,
   CheckCircle, 
   AlertTriangle, 
   Clock,
-  Server,
-  Zap
+  Server
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ServiceType, CommonNamespace } from '@constants';

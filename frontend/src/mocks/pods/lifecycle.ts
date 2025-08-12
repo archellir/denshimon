@@ -173,7 +173,7 @@ const generateFailureAnalysis = (): PodFailureAnalysis[] => {
     return {
       reason,
       count,
-      percentage: count / failureReasons.reduce((sum, _, idx) => sum + Math.floor(Math.random() * 20 + 1), 0) * 100,
+      percentage: count / failureReasons.reduce((sum, _) => sum + Math.floor(Math.random() * 20 + 1), 0) * 100,
       recentOccurrences: Array.from({ length: Math.min(5, count) }, () => 
         new Date(Date.now() - Math.random() * 86400000).toISOString()
       ),
@@ -195,7 +195,7 @@ const generateImagePullMetrics = (): ImagePullMetrics[] => {
 
   const registries = ['docker.io', 'gcr.io', 'ghcr.io', 'quay.io'];
 
-  return images.map((imageName, i) => ({
+  return images.map((imageName, _i) => ({
     imageName,
     pullCount: Math.floor(Math.random() * 100 + 10),
     averagePullTime: Math.random() * 120 + 15, // 15-135 seconds
@@ -211,7 +211,7 @@ const generateLifecycleEvents = (duration: string): PodLifecycleEvent[] => {
   const now = Date.now();
   const eventCount = duration === '15m' ? 20 : duration === '1h' ? 50 : duration === '6h' ? 200 : 500;
   
-  return Array.from({ length: eventCount }, (_, i) => {
+  return Array.from({ length: eventCount }, (_, _i) => {
     const timestamp = new Date(now - Math.random() * (duration === '15m' ? 900000 : 
       duration === '1h' ? 3600000 : duration === '6h' ? 21600000 : 86400000)).toISOString();
     
@@ -244,7 +244,7 @@ const generateTimelineEvents = (duration: string): LifecycleTimelineEvent[] => {
   const eventCount = duration === '15m' ? 1 : duration === '1h' ? 3 : duration === '6h' ? 8 : 15;
   const now = Date.now();
   
-  return Array.from({ length: eventCount }, (_, i) => {
+  return Array.from({ length: eventCount }, (_, _i) => {
     const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
     const severities = ['low', 'medium', 'high', 'critical'] as const;
     

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, TrendingUp, TrendingDown, Minus, Globe, Database, Server, Layers } from 'lucide-react';
+import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
-import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint } from '@/types/serviceMesh';
+import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 
 interface ServiceMeshProps {
@@ -41,11 +41,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
     return data.connections.filter(c => c.source === selectedService || c.target === selectedService);
   }, [data, selectedService]);
 
-  const serviceEndpoints = useMemo(() => {
-    if (!data || !selectedService) return [];
-    return data.endpoints.filter(e => e.serviceId === selectedService);
-  }, [data, selectedService]);
-
   const getServiceIcon = (type: string) => {
     switch (type) {
       case 'frontend': return <Globe className="w-4 h-4" />;
@@ -80,14 +75,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
     if (!encrypted) return <Unlock className="w-4 h-4 text-red-500" />;
     if (mTLS) return <Shield className="w-4 h-4 text-green-500" />;
     return <Lock className="w-4 h-4 text-yellow-500" />;
-  };
-
-  const getTrendIcon = (trend: 'increasing' | 'decreasing' | 'stable') => {
-    switch (trend) {
-      case 'increasing': return <TrendingUp className="w-4 h-4 text-red-500" />;
-      case 'decreasing': return <TrendingDown className="w-4 h-4 text-green-500" />;
-      case 'stable': return <Minus className="w-4 h-4 text-gray-500" />;
-    }
   };
 
   const getProtocolColor = (protocol: string) => {
