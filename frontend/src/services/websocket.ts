@@ -1,5 +1,7 @@
+import { WebSocketEventType, ServiceStatus, CircuitBreakerStatus, SERVICE_IDS } from '@/constants';
+
 export interface WebSocketMessage {
-  type: 'metrics' | 'logs' | 'events' | 'workflows' | 'pods' | 'deployments' | 'alerts' | 'heartbeat' | 'connection';
+  type: WebSocketEventType;
   timestamp: string;
   data: any;
 }
@@ -13,7 +15,7 @@ export interface WebSocketOptions {
 
 export interface WebSocketSubscription {
   id: string;
-  type: WebSocketMessage['type'];
+  type: WebSocketEventType;
   callback: (data: any) => void;
 }
 
@@ -390,6 +392,27 @@ export class DenshimonWebSocket {
             { type: 'Available', status: 'True' },
             { type: 'Progressing', status: Math.random() > 0.2 ? 'True' : 'False' }
           ],
+          timestamp: new Date().toISOString()
+        };
+      },
+
+      services: () => {
+        const serviceId = SERVICE_IDS[Math.floor(Math.random() * SERVICE_IDS.length)];
+        const statuses = Object.values(ServiceStatus);
+        const cbStatuses = Object.values(CircuitBreakerStatus);
+        
+        return {
+          serviceId,
+          status: Math.random() > 0.8 ? statuses[Math.floor(Math.random() * statuses.length)] : ServiceStatus.HEALTHY,
+          metrics: {
+            requestRate: Math.max(10, Math.floor(Math.random() * 500)),
+            errorRate: Math.random() * 5,
+            latency: {
+              p95: Math.max(20, Math.floor(Math.random() * 200))
+            }
+          },
+          circuitBreakerStatus: Math.random() > 0.9 ? cbStatuses[Math.floor(Math.random() * cbStatuses.length)] : CircuitBreakerStatus.CLOSED,
+          lastTripped: Math.random() > 0.95 ? new Date().toISOString() : null,
           timestamp: new Date().toISOString()
         };
       }
