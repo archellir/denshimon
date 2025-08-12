@@ -3,6 +3,8 @@
  * Communicates with backend Gitea API endpoints
  */
 
+import { API_ENDPOINTS, GiteaPullRequestState, GiteaWorkflowStatus, GiteaWorkflowConclusion } from '@/constants';
+
 export interface GiteaRepository {
   id: number;
   name: string;
@@ -112,8 +114,8 @@ export interface GiteaWorkflowRun {
   head_sha: string;
   run_number: number;
   event: string;
-  status: 'queued' | 'in_progress' | 'completed';
-  conclusion?: 'success' | 'failure' | 'cancelled' | 'skipped';
+  status: GiteaWorkflowStatus;
+  conclusion?: GiteaWorkflowConclusion;
   workflow_id: number;
   created_at: string;
   updated_at: string;
@@ -129,7 +131,7 @@ class GiteaApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `/api/gitea${endpoint}`;
+    const url = `${API_ENDPOINTS.GITEA.BASE}${endpoint}`;
     
     try {
       const response = await fetch(url, {
@@ -180,7 +182,7 @@ class GiteaApiClient {
   async listPullRequests(
     owner: string, 
     repo: string, 
-    state: 'open' | 'closed' | 'all' = 'open',
+    state: GiteaPullRequestState = GiteaPullRequestState.OPEN,
     page = 1
   ): Promise<GiteaPullRequest[]> {
     return this.request<GiteaPullRequest[]>(
@@ -226,7 +228,7 @@ class GiteaApiClient {
       this.getRepository(owner, repo),
       this.listBranches(owner, repo),
       this.listCommits(owner, repo, undefined, 1),
-      this.listPullRequests(owner, repo, 'open', 1),
+      this.listPullRequests(owner, repo, GiteaPullRequestState.OPEN, 1),
       this.listReleases(owner, repo, 1),
       this.listWorkflowRuns(owner, repo, 1),
     ]);

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { SortDirection } from '@/constants';
 import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@/types/gitops';
 import { mockRepositories, mockApplications, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 
@@ -19,7 +20,7 @@ const useGitOpsStore = create<GitOpsStore>()(
     repositoryFilter: '',
     applicationFilter: '',
     sortBy: 'name',
-    sortOrder: 'asc',
+    sortOrder: SortDirection.ASC,
     
     // Actions
     setRepositories: (repositories: Repository[]) => set({ repositories }),
@@ -33,7 +34,7 @@ const useGitOpsStore = create<GitOpsStore>()(
     setRepositoryFilter: (filter: string) => set({ repositoryFilter: filter }),
     setApplicationFilter: (filter: string) => set({ applicationFilter: filter }),
     setSortBy: (sortBy: string) => set({ sortBy }),
-    setSortOrder: (sortOrder: 'asc' | 'desc') => set({ sortOrder }),
+    setSortOrder: (sortOrder: SortDirection) => set({ sortOrder }),
     
     // Fetch repositories
     fetchRepositories: async () => {

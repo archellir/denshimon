@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory } from '@/types/metrics';
+import { API_ENDPOINTS } from '@/constants';
 import { 
   mockClusterMetrics, 
   mockNodes, 
@@ -141,7 +142,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             console.log('[FETCH DEBUG] Making real API call for cluster metrics');
             // Real API call
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/metrics/cluster', {
+            const response = await fetch(API_ENDPOINTS.METRICS.CLUSTER, {
               headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             
@@ -175,7 +176,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           } else {
             // Real API call
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/metrics/nodes', {
+            const response = await fetch(API_ENDPOINTS.METRICS.NODES, {
               headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             
@@ -207,7 +208,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           } else {
             // Real API call
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/metrics/pods', {
+            const response = await fetch(API_ENDPOINTS.METRICS.PODS, {
               headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             
@@ -239,7 +240,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           } else {
             // Real API call
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/metrics/namespaces', {
+            const response = await fetch(API_ENDPOINTS.METRICS.NAMESPACES, {
               headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             
@@ -285,7 +286,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           } else {
             // Real API call
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/metrics/history?duration=${duration}`, {
+            const response = await fetch(`${API_ENDPOINTS.METRICS.HISTORY}?duration=${duration}`, {
               headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             

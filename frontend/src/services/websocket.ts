@@ -232,16 +232,14 @@ export class DenshimonWebSocket {
     // Import master data for consistent mock data
     const { 
       MASTER_PODS, 
-      MASTER_SERVICES, 
-      MASTER_DEPLOYMENTS,
-      MASTER_NAMESPACES,
-      MASTER_NODES
+      MASTER_NODES,
+      MASTER_DEPLOYMENTS
     } = await import('@mocks/masterData');
 
     // Store base values for consistent incremental updates
     let baseCpu = 45 + Math.random() * 20;
     let baseMemory = 55 + Math.random() * 15;
-    let basePods = MASTER_PODS.length;
+    let basePods: number = MASTER_PODS.length;
 
     // Simulate real-time data updates
     const mockData = {
