@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
+import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import { SearchResult } from '@stores/globalSearchStore';
 import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
 import { 
@@ -115,6 +117,42 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     
     onSecondaryTabChange?.(tabId);
   };
+
+  // Handle global search navigation
+  useEffect(() => {
+    const handleGlobalSearchNavigate = (event: CustomEvent<SearchResult>) => {
+      const result = event.detail;
+      
+      // Navigate to the primary tab
+      const { primaryTab, secondaryTab } = result.location;
+      
+      // Navigate to primary tab (this will be handled by the parent component)
+      window.dispatchEvent(new CustomEvent('navigateToPrimaryTab', {
+        detail: { primaryTab }
+      }));
+      
+      // Set secondary tab if specified
+      if (secondaryTab) {
+        setActiveSecondaryTab(secondaryTab);
+      }
+      
+      // Set local search filter for the target component
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('setLocalSearchFilter', {
+          detail: { 
+            query: result.name,
+            type: result.type,
+            namespace: result.namespace
+          }
+        }));
+      }, 100);
+    };
+
+    window.addEventListener('globalSearchNavigate', handleGlobalSearchNavigate as EventListener);
+    return () => {
+      window.removeEventListener('globalSearchNavigate', handleGlobalSearchNavigate as EventListener);
+    };
+  }, [setActiveSecondaryTab]);
 
   // Handle primary tab changes - restore last visited secondary tab
   useEffect(() => {
@@ -330,6 +368,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.STREAMS && <LiveStreams />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.ANALYTICS && <LogAnalytics timeRange={timeRange} />}
       </div>
+      
+      {/* Global Search Component */}
+      <GlobalSearch />
     </div>
   );
 };
