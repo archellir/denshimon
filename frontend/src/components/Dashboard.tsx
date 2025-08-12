@@ -8,6 +8,9 @@ import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import { SearchResult } from '@stores/globalSearchStore';
 import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
+import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
+import CreateRepositoryModal from '@components/gitops/CreateRepositoryModal';
+import useGitOpsStore from '@stores/gitopsStore';
 import { 
   generateInfrastructureStats, 
   generateWorkloadsStats, 
@@ -55,6 +58,13 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const [serviceViewMode, setServiceViewMode] = useState<'cards' | 'table'>('cards');
   const [serviceSortBy, setServiceSortBy] = useState<string>('name');
   const [serviceSortOrder, setServiceSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Modal states
+  const [showCreateAppModal, setShowCreateAppModal] = useState(false);
+  const [showCreateRepoModal, setShowCreateRepoModal] = useState(false);
+
+  // GitOps store for repositories data
+  const { repositories } = useGitOpsStore();
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -390,10 +400,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                   8 APPLICATIONS
                 </span>
                 <button
-                  onClick={() => {}}
-                  className="flex items-center space-x-1 px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
+                  onClick={() => setShowCreateAppModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
                 >
-                  <Plus size={12} />
+                  <Plus size={16} />
                   <span>CREATE</span>
                 </button>
               </div>
@@ -405,10 +415,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                   4 REPOSITORIES
                 </span>
                 <button
-                  onClick={() => {}}
-                  className="flex items-center space-x-1 px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
+                  onClick={() => setShowCreateRepoModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
                 >
-                  <Plus size={12} />
+                  <Plus size={16} />
                   <span>CREATE</span>
                 </button>
               </div>
@@ -586,6 +596,18 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       
       {/* Global Search Component */}
       <GlobalSearch />
+
+      {/* Modals */}
+      <CreateApplicationModal 
+        isOpen={showCreateAppModal}
+        onClose={() => setShowCreateAppModal(false)}
+        repositories={repositories}
+      />
+      
+      <CreateRepositoryModal 
+        isOpen={showCreateRepoModal}
+        onClose={() => setShowCreateRepoModal(false)}
+      />
     </div>
   );
 };
