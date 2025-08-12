@@ -301,15 +301,16 @@ const PodLifecycle: FC = () => {
             <h3 className="font-mono text-sm mb-4">NET POD CHANGE</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={churnChartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                <BarChart data={churnChartData} margin={{ top: 5, right: 0, left: -20, bottom: 60 }}>
                   <XAxis
                     dataKey="time"
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 9, fontFamily: 'monospace', fill: 'white' }}
-                    angle={-45}
+                    angle={-20}
                     textAnchor="end"
-                    height={40}
+                    height={60}
+                    interval={0}
                   />
                   <YAxis
                     axisLine={false}
