@@ -4,6 +4,7 @@ import { Server, AlertCircle, CheckCircle, Terminal, X } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
+import { API_ENDPOINTS } from '@/constants'
 
 interface Container {
   name: string
@@ -62,8 +63,8 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     try {
       const token = localStorage.getItem('auth_token')
       const url = selectedNamespace === 'all' 
-        ? '/api/k8s/pods' 
-        : `/api/k8s/pods?namespace=${selectedNamespace}`
+        ? API_ENDPOINTS.KUBERNETES.PODS
+        : `${API_ENDPOINTS.KUBERNETES.PODS}?namespace=${selectedNamespace}`
 
       const response = await fetch(url, {
         headers: {

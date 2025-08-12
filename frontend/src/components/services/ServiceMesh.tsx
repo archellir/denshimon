@@ -4,6 +4,7 @@ import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
+import { NetworkProtocol, TAILWIND_COLORS } from '@/constants';
 
 interface ServiceMeshProps {
   activeSecondaryTab?: string;
@@ -126,11 +127,11 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
   const getProtocolColor = (protocol: string) => {
     switch (protocol) {
-      case 'HTTP': return 'text-blue-500';
-      case 'gRPC': return 'text-green-500';
-      case 'TCP': return 'text-yellow-500';
-      case 'UDP': return 'text-purple-500';
-      default: return 'text-gray-500';
+      case NetworkProtocol.HTTP: return TAILWIND_COLORS.PROTOCOL.HTTP;
+      case NetworkProtocol.GRPC: return TAILWIND_COLORS.PROTOCOL.GRPC;
+      case NetworkProtocol.TCP: return TAILWIND_COLORS.PROTOCOL.TCP;
+      case NetworkProtocol.UDP: return TAILWIND_COLORS.PROTOCOL.UDP;
+      default: return TAILWIND_COLORS.PROTOCOL.DEFAULT;
     }
   };
 
@@ -336,7 +337,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                           <div key={conn.id} className="flex justify-between text-xs">
                             <div className="flex items-center gap-1">
                               <span className={getProtocolColor(conn.protocol)}>{conn.protocol}</span>
-                              <span className={isOutbound ? 'text-blue-400' : 'text-green-400'}>
+                              <span className={isOutbound ? TAILWIND_COLORS.DIRECTION.OUTBOUND : TAILWIND_COLORS.DIRECTION.INBOUND}>
                                 {isOutbound ? '→' : '←'}
                               </span>
                               <span className="truncate">{targetService?.name}</span>

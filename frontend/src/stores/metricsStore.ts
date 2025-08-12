@@ -10,6 +10,7 @@ import {
   mockApiResponse,
   MOCK_ENABLED 
 } from '@mocks/index';
+import { API_ENDPOINTS } from '@/constants';
 
 const useMetricsStore = create<MetricsStore>()(
   subscribeWithSelector((set, get) => ({
@@ -60,7 +61,7 @@ const useMetricsStore = create<MetricsStore>()(
           return;
         }
 
-        const response = await fetch('/api/metrics/cluster', {
+        const response = await fetch(API_ENDPOINTS.METRICS.CLUSTER, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
@@ -106,8 +107,8 @@ const useMetricsStore = create<MetricsStore>()(
         }
 
         const url = nodeName 
-          ? `/api/metrics/nodes?node=${nodeName}`
-          : '/api/metrics/nodes';
+          ? `${API_ENDPOINTS.METRICS.NODES}?node=${nodeName}`
+          : API_ENDPOINTS.METRICS.NODES;
           
         const response = await fetch(url, {
           headers: {
@@ -159,7 +160,7 @@ const useMetricsStore = create<MetricsStore>()(
           return;
         }
 
-        let url = '/api/metrics/pods';
+        let url = API_ENDPOINTS.METRICS.PODS;
         const params = new URLSearchParams();
         
         if (namespace) params.append('namespace', namespace);
@@ -202,7 +203,7 @@ const useMetricsStore = create<MetricsStore>()(
           return;
         }
 
-        const response = await fetch('/api/metrics/namespaces', {
+        const response = await fetch(API_ENDPOINTS.METRICS.NAMESPACES, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },

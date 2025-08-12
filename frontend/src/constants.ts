@@ -50,6 +50,13 @@ export enum ConnectionStatus {
   DISCONNECTED = 'disconnected'
 }
 
+export enum NetworkProtocol {
+  HTTP = 'HTTP',
+  GRPC = 'gRPC',
+  TCP = 'TCP',
+  UDP = 'UDP'
+}
+
 export enum AlertSeverity {
   CRITICAL = 'critical',
   WARNING = 'warning',
@@ -198,6 +205,51 @@ export enum CommonNamespace {
   BACKEND = 'backend',
   INTERNAL = 'internal'
 }
+
+// ============================================================================
+// TAILWIND COLOR CONSTANTS
+// ============================================================================
+
+export const TAILWIND_COLORS = {
+  PROTOCOL: {
+    HTTP: 'text-blue-500',
+    GRPC: 'text-green-500',
+    TCP: 'text-yellow-500',
+    UDP: 'text-purple-500',
+    DEFAULT: 'text-gray-500'
+  },
+  STATUS: {
+    CRITICAL: 'text-red-500',
+    ERROR_HIGH: 'text-red-500',
+    WARNING: 'text-yellow-500',
+    SUCCESS: 'text-green-500',
+    INFO: 'text-blue-500',
+    MUTED: 'text-gray-500',
+    DANGER: 'text-red-500'
+  },
+  DIRECTION: {
+    OUTBOUND: 'text-blue-400',
+    INBOUND: 'text-green-400'
+  },
+  BORDERS: {
+    CRITICAL: 'border-red-500 text-red-500',
+    WARNING: 'border-yellow-500 text-yellow-500',
+    SUCCESS: 'border-green-500 text-green-500',
+    INFO: 'border-blue-500 text-blue-500',
+    MUTED: 'border-gray-500 text-gray-500',
+    HTTP: 'border-blue-500 text-blue-500',
+    POST: 'border-blue-500 text-blue-500',
+    PUT: 'border-yellow-500 text-yellow-500',
+    DELETE: 'border-red-500 text-red-500',
+    GET: 'border-green-500 text-green-500'
+  },
+  SEVERITY: {
+    HIGH: 'text-red-500',
+    MEDIUM: 'text-yellow-500',
+    LOW: 'text-green-500',
+    UNKNOWN: 'text-gray-500'
+  }
+} as const;
 
 // ============================================================================
 // UI MESSAGE CONSTANTS
@@ -425,8 +477,18 @@ export const API_ENDPOINTS = {
     DEPLOY: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/deploy`,
     WEBHOOK: '/api/gitea/webhook'
   },
+  GITOPS: {
+    BASE: '/api/gitops',
+    REPOSITORIES: '/api/gitops/repositories',
+    REPOSITORY: (id: string) => `/api/gitops/repositories/${id}`,
+    REPOSITORY_SYNC: (id: string) => `/api/gitops/repositories/${id}/sync`,
+    APPLICATIONS: '/api/gitops/applications',
+    APPLICATION: (id: string) => `/api/gitops/applications/${id}`,
+    APPLICATION_SYNC: (id: string) => `/api/gitops/applications/${id}/sync`
+  },
   WEBSOCKET: {
-    BASE: '/ws'
+    BASE: '/ws',
+    DEFAULT_URL: 'ws://localhost:8080/ws'
   }
 } as const;
 

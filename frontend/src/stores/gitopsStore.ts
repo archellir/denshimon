@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { SortDirection } from '@/constants';
+import { SortDirection, API_ENDPOINTS } from '@/constants';
 import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@/types/gitops';
 import { mockRepositories, mockApplications, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 
@@ -50,7 +50,7 @@ const useGitOpsStore = create<GitOpsStore>()(
           return;
         }
 
-        const response = await fetch('/api/gitops/repositories', {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
@@ -78,7 +78,7 @@ const useGitOpsStore = create<GitOpsStore>()(
       set({ isCreating: true, error: null });
       
       try {
-        const response = await fetch('/api/gitops/repositories', {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Delete repository
     deleteRepository: async (repositoryId: string) => {
       try {
-        const response = await fetch(`/api/gitops/repositories/${repositoryId}`, {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY(repositoryId), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -137,7 +137,7 @@ const useGitOpsStore = create<GitOpsStore>()(
       set({ isSyncing: true, error: null });
       
       try {
-        const response = await fetch(`/api/gitops/repositories/${repositoryId}/sync`, {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_SYNC(repositoryId), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -169,7 +169,7 @@ const useGitOpsStore = create<GitOpsStore>()(
           return;
         }
 
-        const response = await fetch('/api/gitops/applications', {
+        const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATIONS, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
@@ -191,7 +191,7 @@ const useGitOpsStore = create<GitOpsStore>()(
       set({ isCreating: true, error: null });
       
       try {
-        const response = await fetch('/api/gitops/applications', {
+        const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATIONS, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Delete application
     deleteApplication: async (applicationId: string) => {
       try {
-        const response = await fetch(`/api/gitops/applications/${applicationId}`, {
+        const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATION(applicationId), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -250,7 +250,7 @@ const useGitOpsStore = create<GitOpsStore>()(
       set({ isSyncing: true, error: null });
       
       try {
-        const response = await fetch(`/api/gitops/applications/${applicationId}/sync`, {
+        const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATION_SYNC(applicationId), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,

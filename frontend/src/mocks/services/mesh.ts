@@ -1,5 +1,6 @@
 import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint, TrafficFlow, ServiceMeshMetrics } from '@/types/serviceMesh';
 import { MASTER_SERVICES } from '@mocks/masterData';
+import { NetworkProtocol } from '@/constants';
 
 const generateServiceId = (name: string, namespace: string) => `${namespace}-${name}`;
 
@@ -150,25 +151,25 @@ const generateConnection = (sourceId: string, targetId: string, protocol: 'HTTP'
   let baseBytesTransferred = 0;
   
   switch (protocol) {
-    case 'HTTP':
+    case NetworkProtocol.HTTP:
       baseRequestRate = 50 + Math.random() * 200;
       baseErrorRate = 0.5 + Math.random() * 2;
       baseLatency = 10 + Math.random() * 40;
       baseBytesTransferred = 1000 + Math.random() * 5000; // 1-6 KB/s
       break;
-    case 'gRPC':
+    case NetworkProtocol.GRPC:
       baseRequestRate = 100 + Math.random() * 300;
       baseErrorRate = 0.2 + Math.random() * 1;
       baseLatency = 5 + Math.random() * 20;
       baseBytesTransferred = 500 + Math.random() * 2000; // 0.5-2.5 KB/s
       break;
-    case 'TCP':
+    case NetworkProtocol.TCP:
       baseRequestRate = 200 + Math.random() * 500;
       baseErrorRate = 0.1 + Math.random() * 0.5;
       baseLatency = 2 + Math.random() * 10;
       baseBytesTransferred = 2000 + Math.random() * 8000; // 2-10 KB/s
       break;
-    case 'UDP':
+    case NetworkProtocol.UDP:
       baseRequestRate = 500 + Math.random() * 1000;
       baseErrorRate = 0.05 + Math.random() * 0.3;
       baseLatency = 1 + Math.random() * 5;

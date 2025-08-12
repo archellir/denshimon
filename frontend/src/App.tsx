@@ -104,7 +104,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws'
+    const wsUrl = import.meta.env.VITE_WS_URL || API_ENDPOINTS.WEBSOCKET.DEFAULT_URL
     initializeWebSocket(wsUrl)
   }, [])
 

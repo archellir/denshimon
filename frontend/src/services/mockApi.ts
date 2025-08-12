@@ -4,6 +4,7 @@
 
 import { mockPods } from '@mocks/k8s/pods';
 import { MASTER_SERVICES, MASTER_NAMESPACES } from '@mocks/masterData';
+import { API_ENDPOINTS } from '@/constants';
 
 // Convert mockPods to the expected API format
 const convertPodMetricsToApiFormat = (pods: typeof mockPods) => {
@@ -56,7 +57,7 @@ export const setupMockApi = () => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
     // Handle pod endpoints
-    if (url.includes('/api/k8s/pods')) {
+    if (url.includes(API_ENDPOINTS.KUBERNETES.PODS)) {
       const urlObj = new URL(url, window.location.origin);
       const namespace = urlObj.searchParams.get('namespace');
       
@@ -74,7 +75,7 @@ export const setupMockApi = () => {
     }
 
     // Handle service endpoints
-    if (url.includes('/api/k8s/services')) {
+    if (url.includes(API_ENDPOINTS.KUBERNETES.SERVICES)) {
       const urlObj = new URL(url, window.location.origin);
       const namespace = urlObj.searchParams.get('namespace');
       
@@ -92,7 +93,7 @@ export const setupMockApi = () => {
     }
 
     // Handle namespace endpoints
-    if (url.includes('/api/k8s/namespaces')) {
+    if (url.includes(API_ENDPOINTS.KUBERNETES.NAMESPACES)) {
       const namespaces = MASTER_NAMESPACES.map(name => ({
         name,
         status: 'Active',
@@ -109,7 +110,7 @@ export const setupMockApi = () => {
     }
 
     // Handle auth endpoints
-    if (url.includes('/api/auth/login')) {
+    if (url.includes(API_ENDPOINTS.AUTH.LOGIN)) {
       return new Response(JSON.stringify({
         token: 'mock-jwt-token',
         user: { username: 'admin', role: 'admin' }
@@ -119,7 +120,7 @@ export const setupMockApi = () => {
       });
     }
 
-    if (url.includes('/api/auth/me')) {
+    if (url.includes(API_ENDPOINTS.AUTH.ME)) {
       return new Response(JSON.stringify({
         username: 'admin',
         role: 'admin'
