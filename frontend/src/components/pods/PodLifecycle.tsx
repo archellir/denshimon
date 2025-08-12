@@ -25,7 +25,7 @@ import type {
   PodLifecycleMetrics, 
   PodLifecycleEvent, 
   LifecycleTimelineEvent 
-} from '@types/podLifecycle';
+} from '@/types/podLifecycle';
 
 const PodLifecycle: FC = () => {
   const [timeRange, setTimeRange] = useState<string>('1h');

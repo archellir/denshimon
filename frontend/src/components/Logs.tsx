@@ -3,7 +3,7 @@ import { Terminal, Activity, Package, AlertCircle, Info, AlertTriangle, Bug, Tre
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
-import type { LogEntry } from '@types/logs';
+import type { LogEntry } from '@/types/logs';
 import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 

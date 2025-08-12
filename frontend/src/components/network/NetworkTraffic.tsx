@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { generateNetworkMetrics } from '@mocks/network/traffic';
-import type { NetworkMetrics } from '@types/network';
+import type { NetworkMetrics } from '@/types/network';
 
 interface NetworkTrafficProps {
   timeRange?: string;
