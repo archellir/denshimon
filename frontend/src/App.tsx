@@ -206,8 +206,6 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
               </div>
             )}
             
-            {/* WebSocket Status */}
-            {isSectionVisible(DASHBOARD_SECTIONS.WEBSOCKET_STATUS) && <WebSocketStatus />}
             
             <span className="text-sm">
               <User size={16} className="inline mr-1" />
