@@ -41,13 +41,20 @@ const KeyboardShortcutsModal: FC<KeyboardShortcutsModalProps> = ({ isOpen, onClo
       ]
     },
     {
+      category: 'Search & Navigation',
+      items: [
+        { keys: ['Cmd', 'K'], description: 'Open global search' },
+        { keys: ['Ctrl', 'K'], description: 'Open global search (Windows/Linux)' },
+        { keys: ['↑', '↓'], description: 'Navigate search results' },
+        { keys: ['Enter'], description: 'Select search result' },
+        { keys: ['Escape'], description: 'Close global search' },
+      ]
+    },
+    {
       category: 'Actions',
       items: [
         { keys: ['R'], description: 'Refresh current view' },
-        { keys: ['/'], description: 'Focus search input' },
-        { keys: ['Ctrl', 'F'], description: 'Focus search input (alternative)' },
-        { keys: ['Enter'], description: 'Apply search/filter' },
-        { keys: ['Escape'], description: 'Clear search/close modals' },
+        { keys: ['Escape'], description: 'Clear local search/close modals' },
       ]
     },
     {
