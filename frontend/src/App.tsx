@@ -11,7 +11,6 @@ import { initializeWebSocket } from '@services/websocket'
 import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS, DASHBOARD_SECTIONS } from '@constants'
 import useSettingsStore from '@stores/settingsStore'
 import { setupMockApi } from '@services/mockApi'
-import './debug-mock' // Import debug script
 
 // Setup mock API in development
 if (import.meta.env.DEV) {

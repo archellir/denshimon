@@ -135,7 +135,6 @@ export const setupMockApi = () => {
       return await originalFetch(input, init);
     } catch (error) {
       // If the backend is not available, return a mock error response
-      console.warn(`Backend not available for ${url}, returning mock error`);
       return new Response(JSON.stringify({ error: 'Backend not available' }), {
         status: 503,
         headers: { 'Content-Type': 'application/json' }
@@ -143,5 +142,4 @@ export const setupMockApi = () => {
     }
   };
 
-  console.log('Mock API interceptor setup complete');
 };

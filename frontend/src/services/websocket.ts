@@ -221,7 +221,7 @@ export class DenshimonWebSocket {
 
   private log(...args: any[]): void {
     if (this.options.debug) {
-      console.log('[DenshimonWS]', ...args);
+      // Debug logging disabled in production
     }
   }
 
