@@ -121,16 +121,6 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-mono">LOG ANALYTICS</h2>
-          <p className="text-sm text-gray-400 font-mono">Advanced log analysis and insights</p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-        </div>
-      </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -270,10 +260,20 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
           {/* Top Sources */}
           <div className="border border-white p-4">
             <h3 className="font-mono text-sm mb-4">TOP LOG SOURCES</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={metrics.topSources}>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={metrics.topSources} margin={{ bottom: 80, left: 20, right: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="source" stroke="#666" angle={-45} textAnchor="end" height={80} />
+                <XAxis 
+                  dataKey="source" 
+                  stroke="#666" 
+                  angle={-25} 
+                  textAnchor="end"
+                  height={80}
+                  fontSize={10}
+                  fontFamily="monospace"
+                  interval={0}
+                  tick={{ fontSize: 10, fontFamily: 'monospace', fill: '#666' }}
+                />
                 <YAxis stroke="#666" />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#000', border: '1px solid #fff' }}
