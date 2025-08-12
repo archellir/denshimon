@@ -1,6 +1,6 @@
 import type { Repository, Application } from '@/types/gitops';
 import { AuthType } from '@/types/gitops';
-import { SyncStatus, HealthStatus } from '@/constants';
+import { SyncStatus, Status } from '@/constants';
 
 export const mockRepositories: Repository[] = [
   {
@@ -53,7 +53,7 @@ export const mockApplications: Application[] = [
       prune: true,
       self_heal: true
     },
-    health_status: HealthStatus.HEALTHY,
+    health_status: Status.HEALTHY,
     sync_status: SyncStatus.SYNCED,
     sync_error: null,
     last_sync: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
@@ -71,7 +71,7 @@ export const mockApplications: Application[] = [
       prune: false,
       self_heal: true
     },
-    health_status: HealthStatus.HEALTHY,
+    health_status: Status.HEALTHY,
     sync_status: SyncStatus.SYNCED,
     sync_error: null,
     last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
@@ -89,7 +89,7 @@ export const mockApplications: Application[] = [
       prune: true,
       self_heal: false
     },
-    health_status: HealthStatus.PROGRESSING,
+    health_status: Status.PROGRESSING,
     sync_status: SyncStatus.OUT_OF_SYNC,
     sync_error: 'Sync operation timed out',
     last_sync: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
@@ -107,7 +107,7 @@ export const mockApplications: Application[] = [
       prune: true,
       self_heal: true
     },
-    health_status: HealthStatus.DEGRADED,
+    health_status: Status.DEGRADED,
     sync_status: SyncStatus.SYNCED,
     sync_error: 'Pod CrashLoopBackOff: container failed to start',
     last_sync: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
@@ -125,7 +125,7 @@ export const mockApplications: Application[] = [
       prune: false,
       self_heal: false
     },
-    health_status: HealthStatus.UNKNOWN,
+    health_status: Status.UNKNOWN,
     sync_status: SyncStatus.UNKNOWN,
     sync_error: 'Repository authentication failed',
     last_sync: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),

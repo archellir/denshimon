@@ -8,12 +8,11 @@ export * from './podLifecycle';
 
 // Re-export enums from constants
 export { 
-  HealthStatus, 
+  Status, 
   SyncStatus, 
   PodStatus, 
   NodeStatus, 
   ConnectionStatus, 
-  AlertSeverity,
   SortDirection,
   TimeRange,
   HttpMethod,

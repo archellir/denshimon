@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TimeRange, HealthStatus, ConnectionStatus, HttpMethod } from '@constants';
+import { TimeRange, Status, ConnectionStatus, HttpMethod } from '@constants';
 import { getDataPointsForTimeRange } from '@utils/timeUtils';
 import { Globe, Activity, AlertTriangle, Clock, Users, Lock, Unlock } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
@@ -13,7 +13,7 @@ interface APIEndpoint {
   p95Latency: number;
   authRequired: boolean;
   rateLimit: number;
-  status: HealthStatus;
+  status: Status;
 }
 
 interface ClientMetrics {
@@ -97,7 +97,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 120,
         authRequired: true,
         rateLimit: 1000,
-        status: HealthStatus.HEALTHY
+        status: Status.HEALTHY
       },
       {
         path: '/api/v1/users',
@@ -108,7 +108,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 250,
         authRequired: true,
         rateLimit: 100,
-        status: HealthStatus.HEALTHY
+        status: Status.HEALTHY
       },
       {
         path: '/api/v1/orders',
@@ -119,7 +119,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 180,
         authRequired: true,
         rateLimit: 2000,
-        status: HealthStatus.HEALTHY
+        status: Status.HEALTHY
       },
       {
         path: '/api/v1/orders',
@@ -130,7 +130,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 450,
         authRequired: true,
         rateLimit: 500,
-        status: HealthStatus.DEGRADED
+        status: Status.DEGRADED
       },
       {
         path: '/api/v1/payments',
@@ -141,7 +141,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 800,
         authRequired: true,
         rateLimit: 200,
-        status: HealthStatus.CRITICAL
+        status: Status.CRITICAL
       },
       {
         path: '/api/v1/health',
@@ -152,7 +152,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 35,
         authRequired: false,
         rateLimit: 5000,
-        status: HealthStatus.HEALTHY
+        status: Status.HEALTHY
       },
       {
         path: '/api/v2/analytics',
@@ -163,7 +163,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 1200,
         authRequired: true,
         rateLimit: 50,
-        status: HealthStatus.CRITICAL
+        status: Status.CRITICAL
       }
     ];
 
@@ -236,13 +236,13 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case HealthStatus.HEALTHY:
+      case Status.HEALTHY:
       case ConnectionStatus.ONLINE:
         return 'text-green-500 border-green-500';
-      case HealthStatus.DEGRADED:
+      case Status.DEGRADED:
       case ConnectionStatus.CONNECTING:
         return 'text-yellow-500 border-yellow-500';
-      case HealthStatus.CRITICAL:
+      case Status.CRITICAL:
       case ConnectionStatus.OFFLINE:
         return 'text-red-500 border-red-500';
       default:

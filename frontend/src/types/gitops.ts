@@ -1,4 +1,4 @@
-import { SyncStatus, HealthStatus, SortDirection } from '@/constants';
+import { SyncStatus, Status, SortDirection } from '@/constants';
 
 export enum AuthType {
   NONE = 'none',
@@ -44,7 +44,7 @@ export interface Application {
   path: string;
   namespace: string;
   sync_status: SyncStatus;
-  health_status: HealthStatus;
+  health_status: Status;
   sync_policy: SyncPolicy;
   last_sync: string | null;
   sync_error: string | null;
