@@ -427,7 +427,8 @@ export class DenshimonWebSocket {
         events: 3000,      // Every 3 seconds
         alerts: 10000,     // Every 10 seconds
         pods: 4000,        // Every 4 seconds
-        deployments: 8000  // Every 8 seconds
+        deployments: 8000, // Every 8 seconds
+        services: 6000     // Every 6 seconds
       }[type] || 5000;
 
       setInterval(() => {

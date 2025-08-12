@@ -11,6 +11,8 @@ import useSettingsStore from '@stores/settingsStore';
 import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
 import CreateRepositoryModal from '@components/gitops/CreateRepositoryModal';
 import useGitOpsStore from '@stores/gitopsStore';
+import NotificationContainer from '@components/common/NotificationContainer';
+import { useAlertNotifications } from '@hooks/useAlertNotifications';
 import { 
   generateInfrastructureStats, 
   generateWorkloadsStats, 
@@ -65,6 +67,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   // GitOps store for repositories data
   const { repositories } = useGitOpsStore();
+
+  // Initialize alert notifications
+  const notifications = useAlertNotifications();
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -597,6 +602,15 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       {/* Global Search Component */}
       <GlobalSearch />
 
+      {process.env.NODE_ENV === 'development' && (
+        <button
+          onClick={notifications.test}
+          className="fixed bottom-4 left-4 z-[10000] px-4 py-2 bg-red-500 text-white font-mono text-xs border border-white"
+        >
+          TEST NOTIFICATION
+        </button>
+      )}
+
       {/* Modals */}
       <CreateApplicationModal 
         isOpen={showCreateAppModal}
@@ -608,6 +622,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         isOpen={showCreateRepoModal}
         onClose={() => setShowCreateRepoModal(false)}
       />
+
+      {/* Notification Container */}
+      {isSectionVisible(DASHBOARD_SECTIONS.NOTIFICATIONS) && (
+        <NotificationContainer position="bottom-right" maxNotifications={3} />
+      )}
     </div>
   );
 };
