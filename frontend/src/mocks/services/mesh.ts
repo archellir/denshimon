@@ -6,6 +6,7 @@ const generateServiceId = (name: string, namespace: string) => `${namespace}-${n
 const generateServiceNode = (service: typeof MASTER_SERVICES[number]): ServiceNode => {
   const name = service.name;
   const namespace = service.namespace;
+  const type = service.type;
   
   // Generate realistic metrics based on service type
   let baseRequestRate = 0;
@@ -320,15 +321,8 @@ const generateTrafficFlows = (services: ServiceNode[], connections: ServiceConne
 };
 
 export const generateServiceMeshData = (): ServiceMeshData => {
-  // Generate services
-  const services: ServiceNode[] = [];
-  
-  // Create a mix of service types
-  SERVICE_NAMES.frontend.forEach((_, i) => services.push(generateServiceNode('frontend', i)));
-  SERVICE_NAMES.backend.forEach((_, i) => services.push(generateServiceNode('backend', i)));
-  SERVICE_NAMES.database.slice(0, 2).forEach((_, i) => services.push(generateServiceNode('database', i)));
-  SERVICE_NAMES.cache.forEach((_, i) => services.push(generateServiceNode('cache', i)));
-  SERVICE_NAMES.gateway.slice(0, 1).forEach((_, i) => services.push(generateServiceNode('gateway', i)));
+  // Generate services from master data
+  const services: ServiceNode[] = MASTER_SERVICES.map(service => generateServiceNode(service));
   
   const connections = generateConnections(services);
   const endpoints = generateAPIEndpoints(services);
