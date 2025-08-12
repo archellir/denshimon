@@ -81,6 +81,25 @@ export enum ConnectionStatus {
   DISCONNECTED = 'disconnected'
 }
 
+/**
+ * Service status states
+ */
+export enum ServiceStatus {
+  HEALTHY = 'healthy',
+  WARNING = 'warning',
+  ERROR = 'error',
+  DEGRADED = 'degraded'
+}
+
+/**
+ * Circuit breaker states
+ */
+export enum CircuitBreakerStatus {
+  CLOSED = 'closed',
+  OPEN = 'open',
+  HALF_OPEN = 'half-open'
+}
+
 export enum NetworkProtocol {
   HTTP = 'HTTP',
   GRPC = 'gRPC',
@@ -396,6 +415,15 @@ export const UI_LABELS = {
 // MOCK DATA AND PERFORMANCE THRESHOLDS - Consolidated
 // ============================================================================
 
+export const SERVICE_IDS = [
+  'svc-auth',
+  'svc-api', 
+  'svc-web',
+  'svc-db',
+  'svc-cache',
+  'svc-gateway'
+] as const;
+
 export const MOCK_DATA = {
   WORKLOADS: {
     DEPLOYMENT_COUNT: 12,
@@ -560,6 +588,7 @@ export enum WebSocketEventType {
   CONNECTION = 'connection',
   METRICS = 'metrics',
   PODS = 'pods',
+  SERVICES = 'services',
   LOGS = 'logs',
   EVENTS = 'events',
   WORKFLOWS = 'workflows',
