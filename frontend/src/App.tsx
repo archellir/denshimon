@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, useNavigate, useSearchParams } from 'react-router'
 import type { FC } from 'react'
 import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
@@ -91,11 +91,9 @@ interface MainAppProps {
 const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [currentSecondaryTab, setCurrentSecondaryTab] = useState<string>('')
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>(TimeRange.ONE_HOUR)
-  const [searchQuery, setSearchQuery] = useState<string>('')
   const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false)
   const [showDashboardSettings, setShowDashboardSettings] = useState<boolean>(false)
   const navigate = useNavigate()
-  const searchInputRef = useRef<HTMLInputElement>(null)
   const { isSectionVisible } = useSettingsStore()
 
   // Initialize WebSocket connection
@@ -110,25 +108,11 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
     window.location.reload()
   }
 
-  // Handle search focus
-  const handleSearchFocus = () => {
-    searchInputRef.current?.focus()
-  }
-
-  // Handle escape - clear search or close modals
+  // Handle escape - close modals
   const handleEscape = () => {
     if (showShortcutsModal) {
       setShowShortcutsModal(false)
-    } else if (searchQuery) {
-      setSearchQuery('')
-      searchInputRef.current?.blur()
     }
-  }
-
-  // Handle enter in search
-  const handleEnterSearch = () => {
-    // Apply search/filter - this could trigger search functionality
-    console.log('Applying search:', searchQuery)
   }
 
   // Handle tab switching
@@ -150,9 +134,9 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   useKeyboardNavigation({
     onTabSwitch: handleTabSwitch,
     onRefresh: handleRefresh,
-    onSearch: handleSearchFocus,
+    onSearch: () => {}, // No longer needed since we have global search
     onEscape: handleEscape,
-    onEnter: handleEnterSearch,
+    onEnter: () => {}, // No longer needed
     disabled: false
   })
 
@@ -168,6 +152,19 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
     document.addEventListener('keydown', handleHelpKey)
     return () => document.removeEventListener('keydown', handleHelpKey)
   }, [])
+
+  // Handle global search navigation
+  useEffect(() => {
+    const handleNavigateToPrimaryTab = (event: CustomEvent) => {
+      const { primaryTab } = event.detail;
+      handleTabSwitch(primaryTab);
+    };
+
+    window.addEventListener('navigateToPrimaryTab', handleNavigateToPrimaryTab as EventListener);
+    return () => {
+      window.removeEventListener('navigateToPrimaryTab', handleNavigateToPrimaryTab as EventListener);
+    };
+  }, []);
 
   // Helper to check if input is focused (duplicate from hook but needed here)
   const isInputFocused = (): boolean => {
@@ -248,10 +245,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       {/* Breadcrumb Navigation */}
       {isSectionVisible(DASHBOARD_SECTIONS.BREADCRUMBS) && (
         <Breadcrumb 
-          secondaryTab={currentSecondaryTab} 
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          searchInputRef={searchInputRef}
+          secondaryTab={currentSecondaryTab}
         />
       )}
 
@@ -322,12 +316,9 @@ const NavigationBar: FC = () => {
 
 interface BreadcrumbProps {
   secondaryTab?: string
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  searchInputRef: React.RefObject<HTMLInputElement | null>
 }
 
-const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchChange, searchInputRef }) => {
+const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const { isSectionVisible } = useSettingsStore()
@@ -399,18 +390,13 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, searchQuery, onSearchCh
             )}
           </div>
           
-          {/* Global Search Bar */}
+          {/* Global Search Indicator */}
           {isSectionVisible(DASHBOARD_SECTIONS.SEARCH_BAR) && (
-            <div className="flex items-center space-x-2">
-              <Search size={14} className="text-gray-400" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search resources... (/ to focus)"
-                className="bg-black border border-white/30 text-white text-sm font-mono px-2 py-1 w-64 focus:outline-none focus:border-green-400 placeholder-gray-500"
-              />
+            <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
+              <Search size={14} />
+              <span>Press</span>
+              <kbd className="px-1 py-0.5 bg-white/10 rounded text-xs">Cmd+K</kbd>
+              <span>to search</span>
             </div>
           )}
         </div>
