@@ -1,5 +1,66 @@
 import type { NamespaceMetrics } from '@/types/metrics';
+import { MASTER_NAMESPACES, getMasterPodsByNamespace } from '@mocks/masterData';
 
+// Generate metrics for each namespace in master data
+const generateNamespaceMetrics = (): NamespaceMetrics[] => {
+  return MASTER_NAMESPACES.map((namespaceName) => {
+    const podCount = getMasterPodsByNamespace(namespaceName).length;
+    const isSystemNamespace = namespaceName === 'kube-system';
+    const isMonitoringNamespace = namespaceName === 'monitoring';
+    const isProductionNamespace = namespaceName === 'production';
+    
+    // Resource allocation varies by namespace type and pod count
+    let baseCpuAllocation: number;
+    let baseMemoryAllocation: number;
+    
+    if (isSystemNamespace) {
+      baseCpuAllocation = 2000; // Higher for system pods
+      baseMemoryAllocation = 4294967296; // 4GB
+    } else if (isMonitoringNamespace) {
+      baseCpuAllocation = 1500;
+      baseMemoryAllocation = 3221225472; // 3GB
+    } else if (isProductionNamespace) {
+      baseCpuAllocation = 3000;
+      baseMemoryAllocation = 6442450944; // 6GB
+    } else {
+      baseCpuAllocation = 1000;
+      baseMemoryAllocation = 2147483648; // 2GB
+    }
+    
+    // Usage based on pod count and namespace type
+    const cpuUsed = Math.floor(baseCpuAllocation * (0.1 + (podCount * 0.15)));
+    const memoryUsed = Math.floor(baseMemoryAllocation * (0.1 + (podCount * 0.12)));
+    const totalCpu = 10000; // Total cluster CPU allocation
+    const totalMemory = 21474836480; // Total cluster memory allocation
+    
+    return {
+      name: namespaceName,
+      pod_count: podCount,
+      cpu_usage: {
+        usage: cpuUsed / 1000,
+        used: cpuUsed,
+        total: totalCpu,
+        available: totalCpu - cpuUsed,
+        usage_percent: (cpuUsed / totalCpu) * 100,
+        unit: 'millicores'
+      },
+      memory_usage: {
+        usage: memoryUsed,
+        used: memoryUsed,
+        total: totalMemory,
+        available: totalMemory - memoryUsed,
+        usage_percent: (memoryUsed / totalMemory) * 100,
+        unit: 'bytes'
+      },
+      last_updated: new Date().toISOString()
+    };
+  });
+};
+
+export const mockNamespaces: NamespaceMetrics[] = generateNamespaceMetrics();
+
+// Keep original static data as fallback (commented out)
+/*
 export const mockNamespaces: NamespaceMetrics[] = [
   {
     name: 'default',
@@ -86,3 +147,4 @@ export const mockNamespaces: NamespaceMetrics[] = [
     last_updated: new Date().toISOString()
   }
 ];
+*/
