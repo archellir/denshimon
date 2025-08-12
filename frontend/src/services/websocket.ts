@@ -49,13 +49,11 @@ export class DenshimonWebSocket {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
 
     this.connectionState = 'connecting';
-    this.log('Connecting to WebSocket:', this.options.url);
 
     try {
       this.ws = new WebSocket(this.options.url);
       this.setupEventListeners();
     } catch (error) {
-      this.log('WebSocket connection error:', error);
       this.connectionState = 'error';
       this.scheduleReconnect();
     }
@@ -65,7 +63,6 @@ export class DenshimonWebSocket {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      this.log('WebSocket connected');
       this.connectionState = 'connected';
       this.reconnectAttempts = 0;
       this.isReconnecting = false;
@@ -78,12 +75,10 @@ export class DenshimonWebSocket {
         const message: WebSocketMessage = JSON.parse(event.data);
         this.handleMessage(message);
       } catch (error) {
-        this.log('Error parsing WebSocket message:', error);
       }
     };
 
     this.ws.onclose = (event) => {
-      this.log('WebSocket closed:', event.code, event.reason);
       this.connectionState = 'disconnected';
       this.stopHeartbeat();
       this.notifyConnectionStateChange();
@@ -93,15 +88,13 @@ export class DenshimonWebSocket {
       }
     };
 
-    this.ws.onerror = (error) => {
-      this.log('WebSocket error:', error);
+    this.ws.onerror = () => {
       this.connectionState = 'error';
       this.notifyConnectionStateChange();
     };
   }
 
   private handleMessage(message: WebSocketMessage): void {
-    this.log('Received message:', message.type, message.data);
 
     // Update last heartbeat time
     if (message.type === 'heartbeat' || message.data?.heartbeat) {
@@ -115,7 +108,6 @@ export class DenshimonWebSocket {
         try {
           subscription.callback(message.data);
         } catch (error) {
-          this.log('Error in subscription callback:', error);
         }
       }
     });
@@ -128,13 +120,11 @@ export class DenshimonWebSocket {
     this.reconnectAttempts++;
 
     const delay = this.options.reconnectInterval * Math.pow(1.5, this.reconnectAttempts - 1);
-    this.log(`Scheduling reconnect attempt ${this.reconnectAttempts} in ${delay}ms`);
 
     setTimeout(() => {
       if (this.reconnectAttempts <= this.options.maxReconnectAttempts) {
         this.connect();
       } else {
-        this.log('Max reconnect attempts reached');
         this.isReconnecting = false;
       }
     }, delay);
@@ -147,7 +137,6 @@ export class DenshimonWebSocket {
         
         // Check if we missed heartbeats (connection might be dead)
         if (Date.now() - this.lastHeartbeat > 30000) {
-          this.log('Heartbeat timeout, reconnecting');
           this.ws.close();
         }
       }
@@ -182,13 +171,11 @@ export class DenshimonWebSocket {
       callback
     });
 
-    this.log('Added subscription:', id, type);
     return id;
   }
 
   public unsubscribe(id: string): void {
     this.subscriptions.delete(id);
-    this.log('Removed subscription:', id);
   }
 
   public send(message: Partial<WebSocketMessage>): void {
@@ -201,7 +188,6 @@ export class DenshimonWebSocket {
 
       this.ws.send(JSON.stringify(fullMessage));
     } else {
-      this.log('Cannot send message, WebSocket not connected');
     }
   }
 
@@ -219,15 +205,9 @@ export class DenshimonWebSocket {
     this.connectionState = 'disconnected';
   }
 
-  private log(...args: any[]): void {
-    if (this.options.debug) {
-      // Debug logging disabled in production
-    }
-  }
 
   // Mock WebSocket for development
   private async startMockWebSocket(): Promise<void> {
-    this.log('Starting mock WebSocket for development');
     this.connectionState = 'connected';
     this.notifyConnectionStateChange();
 
@@ -448,7 +428,6 @@ export class DenshimonWebSocket {
     // Simulate connection issues occasionally in development
     if (Math.random() < 0.1) { // 10% chance
       setTimeout(() => {
-        this.log('Simulating connection issue');
         this.connectionState = 'disconnected';
         this.notifyConnectionStateChange();
         

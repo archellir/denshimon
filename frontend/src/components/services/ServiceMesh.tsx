@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X } from 'lucide-react';
+import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import ForceGraph from './ForceGraph';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType } from '@/constants';
@@ -45,6 +46,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const selectedView = getViewFromSecondary(activeSecondaryTab);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'frontend' | 'backend' | 'database' | 'cache' | 'gateway'>('all');
+  const [viewMode, setViewMode] = useState<'graph' | 'grid'>('graph');
 
   // Initialize WebSocket connection for live updates
   useEffect(() => {
@@ -296,13 +298,44 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 </button>
               ))}
             </div>
+            
+            {/* View Mode Toggle */}
+            <div className="flex border border-white">
+              <button
+                onClick={() => setViewMode('graph')}
+                className={`px-3 py-2 font-mono text-xs flex items-center gap-2 transition-colors ${
+                  viewMode === 'graph' ? 'bg-white text-black' : 'hover:bg-white/10'
+                }`}
+              >
+                <GitBranch size={14} />
+                <span>GRAPH</span>
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-2 border-l border-white font-mono text-xs flex items-center gap-2 transition-colors ${
+                  viewMode === 'grid' ? 'bg-white text-black' : 'hover:bg-white/10'
+                }`}
+              >
+                <Grid3x3 size={14} />
+                <span>GRID</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Service Map */}
             <div className="lg:col-span-2 border border-white p-4">
             
-            <div className="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto">
+            {viewMode === 'graph' ? (
+              <ForceGraph
+                services={filteredServices}
+                connections={data ? data.connections : []}
+                selectedService={selectedService}
+                onServiceSelect={setSelectedService}
+                isLive={isConnected}
+              />
+            ) : (
+              <div className="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto">
               {filteredServices.map(service => {
                 const isSelected = selectedService === service.id;
                 return (
@@ -353,6 +386,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 );
               })}
             </div>
+            )}
           </div>
 
           {/* Service Details */}
