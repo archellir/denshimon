@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square } from 'lucide-react';
+import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
+import RealtimeLogViewer from './RealtimeLogViewer';
 
 const LiveStreams: React.FC = () => {
   const [liveData, setLiveData] = useState<LiveTerminalData | null>(null);
   const [filter, setFilter] = useState<TerminalFilter>({ maxLines: 100 });
   const [autoScroll, setAutoScroll] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [viewMode, setViewMode] = useState<'terminal' | 'pods' | 'deployments'>('pods');
+  const [viewMode, setViewMode] = useState<'pods' | 'logs' | 'deployments'>('pods');
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   // Live terminal updates
@@ -29,7 +30,7 @@ const LiveStreams: React.FC = () => {
 
   // Auto-scroll for live logs
   useEffect(() => {
-    if (autoScroll && logsEndRef.current && viewMode === 'terminal') {
+    if (autoScroll && logsEndRef.current && viewMode === 'logs') {
       logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [liveData?.logs, autoScroll, viewMode]);
@@ -92,16 +93,16 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
-            TOP PODS
+            Top Pods
           </button>
           <button
-            onClick={() => setViewMode('terminal')}
+            onClick={() => setViewMode('logs')}
             className={`px-4 py-2 font-mono text-sm transition-colors ${
-              viewMode === 'terminal' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+              viewMode === 'logs' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
             }`}
           >
-            <Terminal className="w-4 h-4 inline mr-2" />
-            TERMINAL
+            <FileText className="w-4 h-4 inline mr-2" />
+            Logs
           </button>
           <button
             onClick={() => setViewMode('deployments')}
@@ -109,8 +110,8 @@ const LiveStreams: React.FC = () => {
               viewMode === 'deployments' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
             }`}
           >
-            <Package className="w-4 h-4 inline mr-2" />
-            DEPLOYMENTS
+            <TrendingUp className="w-4 h-4 inline mr-2" />
+            Deployments
           </button>
         </div>
         
@@ -162,101 +163,6 @@ const LiveStreams: React.FC = () => {
         )}
       </div>
 
-      {/* Terminal View */}
-      {viewMode === 'terminal' && (
-        <div className="space-y-4">
-          {/* Terminal Filters */}
-          <div className="flex gap-2 items-center bg-black border border-white/20 p-3">
-            <input
-              type="text"
-              placeholder="Filter logs..."
-              className="bg-black border border-white/30 px-3 py-1 font-mono text-sm flex-1 focus:outline-none focus:border-green-400"
-              onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-            />
-            <div className="flex gap-2">
-              {['error', 'warn', 'info', 'debug'].map(level => (
-                <button
-                  key={level}
-                  onClick={() => {
-                    const currentLevels = filter.level || [];
-                    const newLevels = currentLevels.includes(level as any)
-                      ? currentLevels.filter(l => l !== level)
-                      : [...currentLevels, level as any];
-                    setFilter({ ...filter, level: newLevels.length > 0 ? newLevels : undefined });
-                  }}
-                  className={`px-3 py-1 font-mono text-xs border transition-colors ${
-                    filter.level?.includes(level as any) 
-                      ? 'bg-white text-black border-white' 
-                      : 'border-white/30 hover:border-white'
-                  }`}
-                >
-                  {level.toUpperCase()}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2 items-center">
-              <button
-                onClick={() => setAutoScroll(!autoScroll)}
-                className={`px-3 py-1 font-mono text-xs border transition-colors ${
-                  autoScroll ? 'bg-white text-black border-white' : 'border-white/30 hover:border-white'
-                }`}
-              >
-                AUTO SCROLL
-              </button>
-              <select
-                value={filter.maxLines || 100}
-                onChange={(e) => setFilter({ ...filter, maxLines: Number(e.target.value) })}
-                className="bg-black border border-white/30 px-2 py-1 text-xs font-mono focus:outline-none focus:border-green-400"
-              >
-                <option value={50}>50 lines</option>
-                <option value={100}>100 lines</option>
-                <option value={200}>200 lines</option>
-                <option value={500}>500 lines</option>
-                <option value={1000}>1000 lines</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Terminal Output */}
-          <div className="bg-black border border-white">
-            <div className="border-b border-white/20 px-4 py-2 flex items-center justify-between">
-              <span className="font-mono text-sm">LIVE TERMINAL OUTPUT</span>
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></div>
-                <span className="font-mono text-xs text-gray-400">
-                  {isPaused ? 'PAUSED' : 'STREAMING'}
-                </span>
-              </div>
-            </div>
-            <div className="p-4 h-[500px] overflow-y-auto font-mono text-xs bg-black">
-              <div className="space-y-1">
-                {filteredLogs.length === 0 ? (
-                  <div className="text-center py-20 text-gray-500">
-                    {isPaused ? 'Stream paused - click RESUME to continue' : 'Waiting for log entries...'}
-                  </div>
-                ) : (
-                  filteredLogs.map((log, index) => (
-                    <div key={index} className="flex items-start gap-2 hover:bg-white/5 px-2 py-1 rounded">
-                      <span className="text-gray-500 min-w-[140px] shrink-0">
-                        {new Date(log.timestamp).toLocaleTimeString()}
-                      </span>
-                      <span className="text-xs">{getLevelIcon(log.level)}</span>
-                      <span className="text-cyan-400 min-w-[120px] shrink-0">[{log.source}]</span>
-                      <span className="flex-1 break-all">{log.message}</span>
-                      {log.metadata && (
-                        <span className="text-gray-500 text-xs shrink-0">
-                          {log.metadata.namespace && `${log.metadata.namespace}/`}{log.metadata.pod}
-                        </span>
-                      )}
-                    </div>
-                  ))
-                )}
-                <div ref={logsEndRef} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Top Pods View */}
       {viewMode === 'pods' && liveData && (
@@ -327,11 +233,18 @@ const LiveStreams: React.FC = () => {
         </div>
       )}
 
-      {/* Live Deployments View */}
+      {/* Logs View - Combined streaming logs */}
+      {viewMode === 'logs' && (
+        <div className="h-[600px]">
+          <RealtimeLogViewer maxLogs={1000} autoScroll={true} />
+        </div>
+      )}
+
+      {/* Deployments View */}
       {viewMode === 'deployments' && liveData && (
         <div className="space-y-4">
           <div className="border border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">ACTIVE DEPLOYMENTS</h3>
+            <h3 className="font-mono text-sm font-bold">Active Deployments</h3>
           </div>
           {liveData.deployments.map((deployment) => (
             <div key={`${deployment.namespace}-${deployment.name}`} className="border border-white p-4">

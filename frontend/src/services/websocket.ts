@@ -224,39 +224,94 @@ export class DenshimonWebSocket {
   }
 
   // Mock WebSocket for development
-  private startMockWebSocket(): void {
+  private async startMockWebSocket(): Promise<void> {
     this.log('Starting mock WebSocket for development');
     this.connectionState = 'connected';
     this.notifyConnectionStateChange();
 
+    // Import master data for consistent mock data
+    const { 
+      MASTER_PODS, 
+      MASTER_SERVICES, 
+      MASTER_DEPLOYMENTS,
+      MASTER_NAMESPACES,
+      MASTER_NODES
+    } = await import('@mocks/masterData');
+
+    // Store base values for consistent incremental updates
+    let baseCpu = 45 + Math.random() * 20;
+    let baseMemory = 55 + Math.random() * 15;
+    let basePods = MASTER_PODS.length;
+
     // Simulate real-time data updates
     const mockData = {
-      metrics: () => ({
-        cpu_usage: { usage_percent: Math.random() * 100 },
-        memory_usage: { usage_percent: Math.random() * 100 },
-        ready_nodes: 3 + Math.floor(Math.random() * 2),
-        total_nodes: 5,
-        running_pods: 45 + Math.floor(Math.random() * 10),
-        total_pods: 60,
-        timestamp: new Date().toISOString()
-      }),
+      metrics: () => {
+        // Create realistic fluctuations
+        baseCpu += (Math.random() - 0.5) * 5;
+        baseCpu = Math.max(20, Math.min(90, baseCpu));
+        
+        baseMemory += (Math.random() - 0.5) * 3;
+        baseMemory = Math.max(30, Math.min(85, baseMemory));
+        
+        basePods += Math.floor((Math.random() - 0.5) * 3);
+        basePods = Math.max(40, Math.min(60, basePods));
+
+        return {
+          cluster: {
+            cpu_usage: { 
+              usage_percent: baseCpu,
+              used: baseCpu * 10,
+              total: 1000,
+              available: 1000 - (baseCpu * 10)
+            },
+            memory_usage: { 
+              usage_percent: baseMemory,
+              used: baseMemory * 100 * 1024 * 1024,
+              total: 10000 * 1024 * 1024,
+              available: (10000 - baseMemory * 100) * 1024 * 1024
+            },
+            storage_usage: {
+              usage_percent: 65 + Math.random() * 5,
+              used: 650 * 1024 * 1024 * 1024,
+              total: 1000 * 1024 * 1024 * 1024,
+              available: 350 * 1024 * 1024 * 1024
+            },
+            ready_nodes: MASTER_NODES.length - 1, // One node might be not ready
+            total_nodes: MASTER_NODES.length,
+            running_pods: basePods,
+            total_pods: MASTER_PODS.length,
+            timestamp: new Date().toISOString()
+          }
+        };
+      },
       
-      logs: () => ({
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        level: ['info', 'warn', 'error', 'debug'][Math.floor(Math.random() * 4)],
-        source: ['kubernetes-api', 'nginx-ingress', 'application'][Math.floor(Math.random() * 3)],
-        message: [
+      logs: () => {
+        const randomPod = MASTER_PODS[Math.floor(Math.random() * MASTER_PODS.length)];
+        const logMessages = [
           'Request processed successfully',
           'Database connection established',
           'Configuration reloaded',
           'Health check passed',
-          'Authentication successful'
-        ][Math.floor(Math.random() * 5)],
-        metadata: {
-          namespace: ['production', 'staging', 'default'][Math.floor(Math.random() * 3)]
-        }
-      }),
+          'Authentication successful',
+          'Cache invalidated',
+          'Metrics collected',
+          'Backup completed'
+        ];
+        
+        return {
+          id: Date.now().toString(),
+          timestamp: new Date().toISOString(),
+          level: ['info', 'warn', 'error', 'debug'][Math.floor(Math.random() * 4)],
+          source: randomPod.name,
+          namespace: randomPod.namespace,
+          message: logMessages[Math.floor(Math.random() * logMessages.length)],
+          metadata: {
+            pod: randomPod.name,
+            namespace: randomPod.namespace,
+            node: randomPod.node
+          }
+        };
+      },
 
       workflows: () => ({
         id: `workflow-${Date.now()}`,
@@ -279,25 +334,79 @@ export class DenshimonWebSocket {
         namespace: 'production'
       }),
 
-      alerts: () => ({
-        id: Date.now().toString(),
-        severity: ['critical', 'warning', 'info'][Math.floor(Math.random() * 3)],
-        title: 'High CPU usage detected',
-        description: 'CPU usage has exceeded 80% for the last 5 minutes',
-        source: 'prometheus',
-        timestamp: new Date().toISOString(),
-        resolved: false
-      })
+      alerts: () => {
+        const randomPod = MASTER_PODS[Math.floor(Math.random() * MASTER_PODS.length)];
+        const alertTypes = [
+          { title: 'High CPU usage detected', description: `Pod ${randomPod.name} CPU usage exceeded 80%` },
+          { title: 'Memory pressure', description: `Node ${randomPod.node} memory usage above threshold` },
+          { title: 'Pod restart detected', description: `Pod ${randomPod.name} restarted 3 times` },
+          { title: 'Service unavailable', description: `Service endpoints not responding` }
+        ];
+        const alert = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+        
+        return {
+          id: Date.now().toString(),
+          severity: ['critical', 'warning', 'info'][Math.floor(Math.random() * 3)],
+          title: alert.title,
+          description: alert.description,
+          source: 'prometheus',
+          namespace: randomPod.namespace,
+          timestamp: new Date().toISOString(),
+          resolved: false
+        };
+      },
+
+      pods: () => {
+        const randomPod = MASTER_PODS[Math.floor(Math.random() * MASTER_PODS.length)];
+        const statuses = ['Running', 'Pending', 'Failed', 'Succeeded', 'Terminating'];
+        const newStatus = Math.random() > 0.8 ? statuses[Math.floor(Math.random() * statuses.length)] : 'Running';
+        
+        return {
+          action: 'update',
+          pod: {
+            name: randomPod.name,
+            namespace: randomPod.namespace,
+            node: randomPod.node,
+            status: newStatus,
+            cpu: Math.floor(Math.random() * 100) + 'Mi',
+            memory: Math.floor(Math.random() * 512) + 'Mi',
+            restarts: Math.floor(Math.random() * 3),
+            age: `${Math.floor(Math.random() * 7) + 1}d`,
+            ready: newStatus === 'Running' ? '1/1' : '0/1'
+          }
+        };
+      },
+
+      deployments: () => {
+        const randomDeployment = MASTER_DEPLOYMENTS[Math.floor(Math.random() * MASTER_DEPLOYMENTS.length)];
+        return {
+          name: randomDeployment.name,
+          namespace: randomDeployment.namespace,
+          replicas: {
+            desired: 3,
+            current: 3,
+            ready: Math.floor(Math.random() * 4),
+            available: Math.floor(Math.random() * 4)
+          },
+          conditions: [
+            { type: 'Available', status: 'True' },
+            { type: 'Progressing', status: Math.random() > 0.2 ? 'True' : 'False' }
+          ],
+          timestamp: new Date().toISOString()
+        };
+      }
     };
 
     // Send mock data at different intervals
     Object.entries(mockData).forEach(([type, generator]) => {
       const interval = {
-        metrics: 2000,  // Every 2 seconds
-        logs: 1000,     // Every 1 second  
-        workflows: 5000, // Every 5 seconds
-        events: 3000,   // Every 3 seconds
-        alerts: 10000   // Every 10 seconds
+        metrics: 2000,     // Every 2 seconds
+        logs: 500,         // Every 0.5 seconds for real-time feel
+        workflows: 5000,   // Every 5 seconds
+        events: 3000,      // Every 3 seconds
+        alerts: 10000,     // Every 10 seconds
+        pods: 4000,        // Every 4 seconds
+        deployments: 8000  // Every 8 seconds
       }[type] || 5000;
 
       setInterval(() => {

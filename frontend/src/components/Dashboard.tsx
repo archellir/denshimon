@@ -133,15 +133,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       // Navigate to the primary tab
       const { primaryTab, secondaryTab } = result.location;
       
-      // Navigate to primary tab (this will be handled by the parent component)
+      // Navigate to primary tab with secondary tab info (this will be handled by the parent component)
       window.dispatchEvent(new CustomEvent('navigateToPrimaryTab', {
-        detail: { primaryTab }
+        detail: { primaryTab, secondaryTab }
       }));
-      
-      // Set secondary tab if specified
-      if (secondaryTab) {
-        setActiveSecondaryTab(secondaryTab);
-      }
       
       // Set local search filter for the target component
       setTimeout(() => {
@@ -159,16 +154,19 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     return () => {
       window.removeEventListener('globalSearchNavigate', handleGlobalSearchNavigate as EventListener);
     };
-  }, [setActiveSecondaryTab]);
+  }, []);
 
   // Handle primary tab changes - restore last visited secondary tab
   useEffect(() => {
     // If primary tab changed, restore the last visited secondary tab for the new primary tab
     if (previousPrimaryTab.current !== activePrimaryTab) {
-      const targetSecondaryTab = getSecondaryTabForPrimaryTab(activePrimaryTab);
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.set('tab', targetSecondaryTab);
-      setSearchParams(newSearchParams, { replace: true });
+      // Only set default tab if no tab is specified in URL
+      if (!searchParams.get('tab')) {
+        const targetSecondaryTab = getSecondaryTabForPrimaryTab(activePrimaryTab);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', targetSecondaryTab);
+        setSearchParams(newSearchParams, { replace: true });
+      }
       previousPrimaryTab.current = activePrimaryTab;
     }
   }, [activePrimaryTab, searchParams, setSearchParams, lastVisitedTabs]);

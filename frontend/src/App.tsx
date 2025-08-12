@@ -10,7 +10,13 @@ import { useKeyboardNavigation } from '@hooks/useKeyboardNavigation'
 import { initializeWebSocket } from '@services/websocket'
 import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS, DASHBOARD_SECTIONS } from '@constants'
 import useSettingsStore from '@stores/settingsStore'
+import { setupMockApi } from '@services/mockApi'
 import './debug-mock' // Import debug script
+
+// Setup mock API in development
+if (import.meta.env.DEV) {
+  setupMockApi();
+}
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -156,15 +162,21 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   // Handle global search navigation
   useEffect(() => {
     const handleNavigateToPrimaryTab = (event: CustomEvent) => {
-      const { primaryTab } = event.detail;
-      handleTabSwitch(primaryTab);
+      const { primaryTab, secondaryTab } = event.detail;
+      
+      // Navigate to the primary tab with secondary tab in URL if specified
+      if (secondaryTab) {
+        navigate(`/${primaryTab}?tab=${secondaryTab}`);
+      } else {
+        handleTabSwitch(primaryTab);
+      }
     };
 
     window.addEventListener('navigateToPrimaryTab', handleNavigateToPrimaryTab as EventListener);
     return () => {
       window.removeEventListener('navigateToPrimaryTab', handleNavigateToPrimaryTab as EventListener);
     };
-  }, []);
+  }, [navigate]);
 
   // Helper to check if input is focused (duplicate from hook but needed here)
   const isInputFocused = (): boolean => {
