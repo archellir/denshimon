@@ -7,42 +7,73 @@
 // STATUS ENUMS
 // ============================================================================
 
-export enum HealthStatus {
+// ============================================================================
+// CONSOLIDATED STATUS SYSTEM - Unified from multiple overlapping enums
+// ============================================================================
+
+/**
+ * Universal status enum - consolidated from HealthStatus, AlertSeverity
+ * This covers all status scenarios across the application
+ */
+export enum Status {
+  // Health states
   HEALTHY = 'healthy',
   DEGRADED = 'degraded',
+  
+  // Severity levels
   CRITICAL = 'critical',
   WARNING = 'warning',
   ERROR = 'error',
+  
+  // Informational states  
+  INFO = 'info',
+  SUCCESS = 'success',
+  
+  // Processing states
   PENDING = 'pending',
-  UNKNOWN = 'unknown',
   PROGRESSING = 'progressing',
+  
+  // Final states
+  UNKNOWN = 'unknown',
   SUSPENDED = 'suspended',
   MISSING = 'missing'
 }
 
+/**
+ * Sync-specific statuses for GitOps
+ */
 export enum SyncStatus {
   SYNCED = 'synced',
   OUT_OF_SYNC = 'out_of_sync',
-  ERROR = 'error',
-  PENDING = 'pending',
-  UNKNOWN = 'unknown'
+  ERROR = Status.ERROR,
+  PENDING = Status.PENDING,
+  UNKNOWN = Status.UNKNOWN
 }
 
+/**
+ * Pod lifecycle states
+ */
 export enum PodStatus {
   RUNNING = 'running',
-  PENDING = 'pending',
+  PENDING = Status.PENDING,
   FAILED = 'failed',
   SUCCEEDED = 'succeeded',
   TERMINATING = 'terminating',
-  UNKNOWN = 'unknown'
+  UNKNOWN = Status.UNKNOWN
 }
 
+/**
+ * Node readiness states
+ */
 export enum NodeStatus {
   READY = 'ready',
   NOT_READY = 'notready',
-  UNKNOWN = 'unknown'
+  UNKNOWN = Status.UNKNOWN
 }
 
+/**
+ * Network connection states
+ */
 export enum ConnectionStatus {
   ONLINE = 'online',
   OFFLINE = 'offline',
@@ -57,12 +88,6 @@ export enum NetworkProtocol {
   UDP = 'UDP'
 }
 
-export enum AlertSeverity {
-  CRITICAL = 'critical',
-  WARNING = 'warning',
-  INFO = 'info',
-  SUCCESS = 'success'
-}
 
 // ============================================================================
 // TIME RANGE ENUMS
@@ -210,46 +235,85 @@ export enum CommonNamespace {
 // TAILWIND COLOR CONSTANTS
 // ============================================================================
 
-export const TAILWIND_COLORS = {
-  PROTOCOL: {
-    HTTP: 'text-blue-500',
-    GRPC: 'text-green-500',
-    TCP: 'text-yellow-500',
-    UDP: 'text-purple-500',
-    DEFAULT: 'text-gray-500'
+// ============================================================================
+// UNIFIED COLOR SYSTEM - Consolidated from TAILWIND_COLORS and COLORS
+// ============================================================================
+
+/**
+ * Status-based colors using the unified Status enum
+ */
+export const STATUS_COLORS = {
+  TEXT: {
+    [Status.CRITICAL]: 'text-red-500',
+    [Status.ERROR]: 'text-red-500',
+    [Status.WARNING]: 'text-yellow-500',
+    [Status.SUCCESS]: 'text-green-500',
+    [Status.HEALTHY]: 'text-green-500',
+    [Status.INFO]: 'text-blue-500',
+    [Status.PENDING]: 'text-yellow-500',
+    [Status.UNKNOWN]: 'text-gray-500',
+    [Status.DEGRADED]: 'text-yellow-500',
+    [Status.PROGRESSING]: 'text-blue-500',
+    [Status.SUSPENDED]: 'text-gray-500',
+    [Status.MISSING]: 'text-gray-500'
   },
-  STATUS: {
-    CRITICAL: 'text-red-500',
-    ERROR_HIGH: 'text-red-500',
-    WARNING: 'text-yellow-500',
-    SUCCESS: 'text-green-500',
-    INFO: 'text-blue-500',
-    MUTED: 'text-gray-500',
-    DANGER: 'text-red-500'
-  },
-  DIRECTION: {
-    OUTBOUND: 'text-blue-400',
-    INBOUND: 'text-green-400'
-  },
-  BORDERS: {
-    CRITICAL: 'border-red-500 text-red-500',
-    WARNING: 'border-yellow-500 text-yellow-500',
-    SUCCESS: 'border-green-500 text-green-500',
-    INFO: 'border-blue-500 text-blue-500',
-    MUTED: 'border-gray-500 text-gray-500',
-    HTTP: 'border-blue-500 text-blue-500',
-    POST: 'border-blue-500 text-blue-500',
-    PUT: 'border-yellow-500 text-yellow-500',
-    DELETE: 'border-red-500 text-red-500',
-    GET: 'border-green-500 text-green-500'
-  },
-  SEVERITY: {
-    HIGH: 'text-red-500',
-    MEDIUM: 'text-yellow-500',
-    LOW: 'text-green-500',
-    UNKNOWN: 'text-gray-500'
+  BORDER: {
+    [Status.CRITICAL]: 'border-red-500 text-red-500',
+    [Status.ERROR]: 'border-red-500 text-red-500',
+    [Status.WARNING]: 'border-yellow-500 text-yellow-500',
+    [Status.SUCCESS]: 'border-green-500 text-green-500',
+    [Status.HEALTHY]: 'border-green-500 text-green-500',
+    [Status.INFO]: 'border-blue-500 text-blue-500',
+    [Status.PENDING]: 'border-yellow-500 text-yellow-500',
+    [Status.UNKNOWN]: 'border-gray-500 text-gray-500',
+    [Status.DEGRADED]: 'border-yellow-500 text-yellow-500',
+    [Status.PROGRESSING]: 'border-blue-500 text-blue-500',
+    [Status.SUSPENDED]: 'border-gray-500 text-gray-500',
+    [Status.MISSING]: 'border-gray-500 text-gray-500'
   }
 } as const;
+
+/**
+ * Protocol-specific colors
+ */
+export const PROTOCOL_COLORS = {
+  TEXT: {
+    [NetworkProtocol.HTTP]: 'text-blue-500',
+    [NetworkProtocol.GRPC]: 'text-green-500',
+    [NetworkProtocol.TCP]: 'text-yellow-500',
+    [NetworkProtocol.UDP]: 'text-purple-500',
+    DEFAULT: 'text-gray-500'
+  },
+  BORDER: {
+    [NetworkProtocol.HTTP]: 'border-blue-500 text-blue-500',
+    [NetworkProtocol.GRPC]: 'border-green-500 text-green-500',
+    [NetworkProtocol.TCP]: 'border-yellow-500 text-yellow-500',
+    [NetworkProtocol.UDP]: 'border-purple-500 text-purple-500',
+    DEFAULT: 'border-gray-500 text-gray-500'
+  }
+} as const;
+
+/**
+ * HTTP Method colors
+ */
+export const METHOD_COLORS = {
+  [HttpMethod.GET]: 'border-green-500 text-green-500',
+  [HttpMethod.POST]: 'border-blue-500 text-blue-500',
+  [HttpMethod.PUT]: 'border-yellow-500 text-yellow-500',
+  [HttpMethod.DELETE]: 'border-red-500 text-red-500',
+  [HttpMethod.PATCH]: 'border-purple-500 text-purple-500',
+  [HttpMethod.HEAD]: 'border-gray-500 text-gray-500',
+  [HttpMethod.OPTIONS]: 'border-gray-500 text-gray-500'
+} as const;
+
+/**
+ * Direction colors for traffic flow
+ */
+export const DIRECTION_COLORS = {
+  OUTBOUND: 'text-blue-400',
+  INBOUND: 'text-green-400'
+} as const;
+
 
 // ============================================================================
 // UI MESSAGE CONSTANTS
@@ -277,7 +341,19 @@ export const UI_MESSAGES = {
   CLOSE: 'CLOSE'
 } as const;
 
-export const LABELS = {
+// ============================================================================
+// CONSOLIDATED UI LABELS - Merged from LABELS, QUICK_STATS_LABELS, etc.
+// ============================================================================
+
+export const UI_LABELS = {
+  // Primary Navigation
+  INFRASTRUCTURE: 'Infrastructure',
+  WORKLOADS: 'Workloads',
+  SERVICE_MESH: 'Service Mesh',
+  DEPLOYMENTS: 'Deployments',
+  OBSERVABILITY: 'Observability',
+  
+  // Secondary Navigation
   OVERVIEW: 'Overview',
   NODES: 'Nodes',
   RESOURCES: 'Resources',
@@ -298,18 +374,29 @@ export const LABELS = {
   EVENTS: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
   ANALYTICS: 'Analytics',
-  INFRASTRUCTURE: 'Infrastructure',
-  WORKLOADS: 'Workloads',
-  SERVICE_MESH: 'Service Mesh',
-  DEPLOYMENTS: 'Deployments',
-  OBSERVABILITY: 'Observability'
+  
+  // Metrics and Stats
+  CPU: 'CPU',
+  MEMORY: 'Memory',
+  RUNNING_PODS: 'Running Pods',
+  FAILED_PODS: 'Failed Pods',
+  ACTIVE_SERVICES: 'Active Services',
+  REQUEST_RATE: 'Request Rate',
+  SUCCESS_RATE: 'Success Rate',
+  P99_LATENCY: 'P99 Latency',
+  RECENT_DEPLOYS: 'Recent Deploys',
+  ACTIVE_ALERTS: 'Active Alerts',
+  LOG_EVENTS: 'Log Events',
+  ERROR_RATE: 'Error Rate',
+  SLO_HEALTH: 'SLO Health'
 } as const;
 
+
 // ============================================================================
-// QUICK STATS CONSTANTS
+// MOCK DATA AND PERFORMANCE THRESHOLDS - Consolidated
 // ============================================================================
 
-export const QUICK_STATS_MOCK_DATA = {
+export const MOCK_DATA = {
   WORKLOADS: {
     DEPLOYMENT_COUNT: 12,
     SERVICE_COUNT: 8,
@@ -335,7 +422,7 @@ export const QUICK_STATS_MOCK_DATA = {
   },
 } as const;
 
-export const QUICK_STATS_THRESHOLDS = {
+export const THRESHOLDS = {
   CPU: { WARNING: 80, CRITICAL: 95 },
   MEMORY: { WARNING: 80, CRITICAL: 95 },
   ERROR_RATE: { HEALTHY: 1, WARNING: 5 },
@@ -349,36 +436,7 @@ export const QUICK_STATS_THRESHOLDS = {
   RECENT_DEPLOYMENTS: { HEALTHY: 5, WARNING: 1 },
 } as const;
 
-export const QUICK_STATS_LABELS = {
-  // Infrastructure
-  NODES: 'Nodes',
-  PODS: 'Pods',
-  CPU: 'CPU',
-  MEMORY: 'Memory',
-  
-  // Workloads
-  DEPLOYMENTS: 'Deployments',
-  RUNNING_PODS: 'Running Pods',
-  SERVICES: 'Services',
-  FAILED_PODS: 'Failed Pods',
-  
-  // Service Mesh
-  ACTIVE_SERVICES: 'Active Services',
-  REQUEST_RATE: 'Request Rate',
-  SUCCESS_RATE: 'Success Rate',
-  P99_LATENCY: 'P99 Latency',
-  
-  // Deployments
-  APPLICATIONS: 'Applications',
-  REPOSITORIES: 'Repositories',
-  RECENT_DEPLOYS: 'Recent Deploys',
-  
-  // Observability
-  ACTIVE_ALERTS: 'Active Alerts',
-  LOG_EVENTS: 'Log Events',
-  ERROR_RATE: 'Error Rate',
-  SLO_HEALTH: 'SLO Health',
-} as const;
+
 
 // ============================================================================
 // DASHBOARD SETTINGS
@@ -395,14 +453,6 @@ export const DASHBOARD_SECTIONS = {
   WEBSOCKET_STATUS: 'websocketStatus'
 } as const;
 
-export const DASHBOARD_TABS = {
-  INFRASTRUCTURE: PrimaryTab.INFRASTRUCTURE,
-  WORKLOADS: PrimaryTab.WORKLOADS,
-  MESH: PrimaryTab.MESH,
-  DEPLOYMENTS: PrimaryTab.DEPLOYMENTS,
-  OBSERVABILITY: PrimaryTab.OBSERVABILITY
-} as const;
-
 export const DEFAULT_DASHBOARD_CONFIG = {
   sections: {
     [DASHBOARD_SECTIONS.QUICK_STATS]: true,
@@ -415,11 +465,11 @@ export const DEFAULT_DASHBOARD_CONFIG = {
     [DASHBOARD_SECTIONS.WEBSOCKET_STATUS]: true,
   },
   tabs: {
-    [DASHBOARD_TABS.INFRASTRUCTURE]: true,
-    [DASHBOARD_TABS.WORKLOADS]: true,
-    [DASHBOARD_TABS.MESH]: true,
-    [DASHBOARD_TABS.DEPLOYMENTS]: true,
-    [DASHBOARD_TABS.OBSERVABILITY]: true,
+    [PrimaryTab.INFRASTRUCTURE]: true,
+    [PrimaryTab.WORKLOADS]: true,
+    [PrimaryTab.MESH]: true,
+    [PrimaryTab.DEPLOYMENTS]: true,
+    [PrimaryTab.OBSERVABILITY]: true,
   }
 } as const;
 
@@ -435,59 +485,68 @@ export const DASHBOARD_SECTION_LABELS = {
 } as const;
 
 export const DASHBOARD_TAB_LABELS = {
-  [DASHBOARD_TABS.INFRASTRUCTURE]: 'Infrastructure',
-  [DASHBOARD_TABS.WORKLOADS]: 'Workloads', 
-  [DASHBOARD_TABS.MESH]: 'Service Mesh',
-  [DASHBOARD_TABS.DEPLOYMENTS]: 'Deployments',
-  [DASHBOARD_TABS.OBSERVABILITY]: 'Observability',
+  [PrimaryTab.INFRASTRUCTURE]: UI_LABELS.INFRASTRUCTURE,
+  [PrimaryTab.WORKLOADS]: UI_LABELS.WORKLOADS,
+  [PrimaryTab.MESH]: UI_LABELS.SERVICE_MESH,
+  [PrimaryTab.DEPLOYMENTS]: UI_LABELS.DEPLOYMENTS,
+  [PrimaryTab.OBSERVABILITY]: UI_LABELS.OBSERVABILITY,
 } as const;
 
 // ============================================================================
-// API ENDPOINTS
+// API ENDPOINTS - Consolidated with base paths to reduce duplication
 // ============================================================================
+
+export const API_BASE_PATHS = {
+  AUTH: '/api/auth',
+  METRICS: '/api/metrics',
+  KUBERNETES: '/api/k8s',
+  GITEA: '/api/gitea',
+  GITOPS: '/api/gitops',
+  WEBSOCKET: '/ws'
+} as const;
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    ME: '/api/auth/me',
-    LOGOUT: '/api/auth/logout'
+    LOGIN: `${API_BASE_PATHS.AUTH}/login`,
+    ME: `${API_BASE_PATHS.AUTH}/me`,
+    LOGOUT: `${API_BASE_PATHS.AUTH}/logout`
   },
   METRICS: {
-    CLUSTER: '/api/metrics/cluster',
-    NODES: '/api/metrics/nodes',
-    PODS: '/api/metrics/pods',
-    NAMESPACES: '/api/metrics/namespaces',
-    HISTORY: '/api/metrics/history'
+    CLUSTER: `${API_BASE_PATHS.METRICS}/cluster`,
+    NODES: `${API_BASE_PATHS.METRICS}/nodes`,
+    PODS: `${API_BASE_PATHS.METRICS}/pods`,
+    NAMESPACES: `${API_BASE_PATHS.METRICS}/namespaces`,
+    HISTORY: `${API_BASE_PATHS.METRICS}/history`
   },
   KUBERNETES: {
-    PODS: '/api/k8s/pods',
-    SERVICES: '/api/k8s/services',
-    NODES: '/api/k8s/nodes',
-    NAMESPACES: '/api/k8s/namespaces'
+    PODS: `${API_BASE_PATHS.KUBERNETES}/pods`,
+    SERVICES: `${API_BASE_PATHS.KUBERNETES}/services`,
+    NODES: `${API_BASE_PATHS.KUBERNETES}/nodes`,
+    NAMESPACES: `${API_BASE_PATHS.KUBERNETES}/namespaces`
   },
   GITEA: {
-    BASE: '/api/gitea',
-    REPOSITORIES: '/api/gitea/repositories',
-    REPOSITORY: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}`,
-    COMMITS: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/commits`,
-    BRANCHES: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/branches`,
-    PULLS: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/pulls`,
-    RELEASES: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/releases`,
-    ACTIONS_RUNS: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/actions/runs`,
-    DEPLOY: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/deploy`,
-    WEBHOOK: '/api/gitea/webhook'
+    BASE: API_BASE_PATHS.GITEA,
+    REPOSITORIES: `${API_BASE_PATHS.GITEA}/repositories`,
+    REPOSITORY: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}`,
+    COMMITS: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/commits`,
+    BRANCHES: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/branches`,
+    PULLS: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/pulls`,
+    RELEASES: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/releases`,
+    ACTIONS_RUNS: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/actions/runs`,
+    DEPLOY: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/deploy`,
+    WEBHOOK: `${API_BASE_PATHS.GITEA}/webhook`
   },
   GITOPS: {
-    BASE: '/api/gitops',
-    REPOSITORIES: '/api/gitops/repositories',
-    REPOSITORY: (id: string) => `/api/gitops/repositories/${id}`,
-    REPOSITORY_SYNC: (id: string) => `/api/gitops/repositories/${id}/sync`,
-    APPLICATIONS: '/api/gitops/applications',
-    APPLICATION: (id: string) => `/api/gitops/applications/${id}`,
-    APPLICATION_SYNC: (id: string) => `/api/gitops/applications/${id}/sync`
+    BASE: API_BASE_PATHS.GITOPS,
+    REPOSITORIES: `${API_BASE_PATHS.GITOPS}/repositories`,
+    REPOSITORY: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}`,
+    REPOSITORY_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/sync`,
+    APPLICATIONS: `${API_BASE_PATHS.GITOPS}/applications`,
+    APPLICATION: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}`,
+    APPLICATION_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/sync`
   },
   WEBSOCKET: {
-    BASE: '/ws',
+    BASE: API_BASE_PATHS.WEBSOCKET,
     DEFAULT_URL: 'ws://localhost:8080/ws'
   }
 } as const;
@@ -525,7 +584,7 @@ export enum GiteaWorkflowStatus {
 }
 
 export enum GiteaWorkflowConclusion {
-  SUCCESS = 'success',
+  SUCCESS = Status.SUCCESS,
   FAILURE = 'failure',
   CANCELLED = 'cancelled',
   SKIPPED = 'skipped'
@@ -579,30 +638,28 @@ export enum LogLevel {
 }
 
 // ============================================================================
-// COLOR CONSTANTS
+// BASE COLOR PALETTE - Consolidated color system
 // ============================================================================
 
-export const COLORS = {
-  // Status colors
-  GREEN: '#00FF00',
-  YELLOW: '#FFFF00',
-  RED: '#FF0000',
-  CYAN: '#00FFFF',
-  WHITE: '#FFFFFF',
+export const BASE_COLORS = {
+  // Tailwind color values
+  RED: '#ef4444',    // red-500
+  YELLOW: '#eab308', // yellow-500
+  GREEN: '#22c55e',  // green-500
+  BLUE: '#3b82f6',   // blue-500
+  PURPLE: '#a855f7', // purple-500
+  GRAY: '#6b7280',   // gray-500
+  BLUE_400: '#60a5fa', // blue-400
+  GREEN_400: '#4ade80', // green-400
+  WHITE: '#ffffff',
   BLACK: '#000000',
   
-  // Chart colors
-  SUCCESS: '#00ff00',
-  WARNING: '#ffff00',
-  ERROR: '#ff0000',
-  INFO: '#00ffff',
-  
-  // Protocol colors (for network charts)
-  HTTP: '#00FF00',
-  HTTPS: '#FFFF00',
-  TCP: '#00FFFF',
-  UDP: '#FF00FF'
+  // Terminal/Matrix theme colors
+  MATRIX_GREEN: '#00FF00',
+  CYAN: '#00FFFF',
+  MAGENTA: '#FF00FF'
 } as const;
+
 
 // ============================================================================
 // SIZE CONSTANTS
