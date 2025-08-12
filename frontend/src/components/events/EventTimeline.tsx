@@ -13,7 +13,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
   const [data, setData] = useState<EventTimelineData | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
   const [selectedSeverities, setSelectedSeverities] = useState<EventSeverity[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -28,11 +27,8 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     const filteredEvents = data.events.filter(event => {
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(event.category);
       const matchesSeverity = selectedSeverities.length === 0 || selectedSeverities.includes(event.severity);
-      const matchesSearch = searchQuery === '' || 
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchQuery.toLowerCase());
       
-      return matchesCategory && matchesSeverity && matchesSearch;
+      return matchesCategory && matchesSeverity;
     });
 
     // Regroup filtered events
@@ -61,7 +57,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
       events: filteredEvents,
       groups,
     };
-  }, [data, selectedCategories, selectedSeverities, searchQuery]);
+  }, [data, selectedCategories, selectedSeverities]);
 
   const getSeverityIcon = (severity: EventSeverity) => {
     switch (severity) {
@@ -150,48 +146,9 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
 
   return (
     <div className="space-y-6">
-      {/* Header Stats */}
-      <div className="grid grid-cols-6 gap-4">
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Total Events</div>
-          <div className="text-2xl font-mono">{filteredData.statistics.total}</div>
-        </div>
-        <div className="bg-black border border-red-500 p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Critical</div>
-          <div className="text-2xl font-mono text-red-500">{filteredData.statistics.bySeverity.critical}</div>
-        </div>
-        <div className="bg-black border border-yellow-500 p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Warnings</div>
-          <div className="text-2xl font-mono text-yellow-500">{filteredData.statistics.bySeverity.warning}</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Unresolved</div>
-          <div className="text-2xl font-mono text-red-500">{filteredData.statistics.unresolvedCritical}</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Avg Resolution</div>
-          <div className="text-2xl font-mono">{filteredData.statistics.averageResolutionTime}m</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Trend</div>
-          <div className="flex items-center gap-2">
-            {getTrendIcon(filteredData.statistics.recentTrend)}
-            <span className="text-sm font-mono">{filteredData.statistics.recentTrend.toUpperCase()}</span>
-          </div>
-        </div>
-      </div>
 
       {/* Filters */}
       <div className="space-y-4">
-        <div className="flex gap-4 items-center">
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-black border border-white px-3 py-2 font-mono text-sm"
-          />
-        </div>
 
         <div className="flex gap-4">
           <div className="flex gap-2 items-center">
