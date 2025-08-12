@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TimeRange } from '@constants';
 import { parseTimeRangeToHours } from '@utils/timeUtils';
-import { AlertTriangle, AlertCircle, Info, CheckCircle, TrendingUp, TrendingDown, Minus, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { EventTimelineData, TimelineEvent, EventSeverity, EventCategory } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@/mocks/events/timeline';
 
@@ -89,13 +89,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     }
   };
 
-  const getTrendIcon = (trend: 'increasing' | 'decreasing' | 'stable') => {
-    switch (trend) {
-      case 'increasing': return <TrendingUp className="w-4 h-4 text-red-500" />;
-      case 'decreasing': return <TrendingDown className="w-4 h-4 text-green-500" />;
-      case 'stable': return <Minus className="w-4 h-4 text-gray-500" />;
-    }
-  };
 
   const formatTimeAgo = (timestamp: string) => {
     const now = Date.now();

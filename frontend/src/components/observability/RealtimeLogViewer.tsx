@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, FC } from 'react';
-import { Play, Pause, Trash2, Download, Filter, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
+import { Filter, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
 import { getWebSocketInstance } from '@services/websocket';
 
 interface LogEntry {
@@ -26,13 +26,13 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
   autoScroll = true 
 }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused] = useState(false);
   const [filter, setFilter] = useState({
     level: 'all',
     namespace: 'all',
     search: ''
   });
-  const [isConnected, setIsConnected] = useState(false);
+  const [, setIsConnected] = useState(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
   const subscriptionIdRef = useRef<string | null>(null);
 
@@ -112,23 +112,7 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
     }
   };
 
-  const handleClear = () => {
-    setLogs([]);
-  };
 
-  const handleExport = () => {
-    const logText = filteredLogs.map(log => 
-      `[${log.timestamp}] [${log.level.toUpperCase()}] [${log.namespace}] ${log.source}: ${log.message}`
-    ).join('\n');
-    
-    const blob = new Blob([logText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `logs-${new Date().toISOString()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="h-full flex flex-col">

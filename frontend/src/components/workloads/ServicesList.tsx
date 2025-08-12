@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { FC } from 'react';
 import { 
   Network, 
@@ -278,7 +278,7 @@ const ServicesList: FC<ServicesListProps> = ({
     }
   };
 
-  const handleSort = (key: string, order: 'asc' | 'desc') => {
+  const _handleSort = (_key: string, _order: 'asc' | 'desc') => {
     // Handled by Dashboard now
   };
 
@@ -411,7 +411,7 @@ const ServicesList: FC<ServicesListProps> = ({
           rowHeight={56}
           sortBy={sortBy}
           sortOrder={sortOrder}
-          onSort={handleSort}
+          onSort={_handleSort}
           className="w-full"
           emptyMessage="NO SERVICES FOUND"
         />

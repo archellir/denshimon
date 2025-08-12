@@ -34,7 +34,6 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
   
   const {
     repositories,
-    applications,
     error,
     fetchRepositories,
     fetchApplications,

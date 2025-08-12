@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText, Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
+import { Activity, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText, Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 import { getWebSocketInstance } from '@services/websocket';
@@ -7,8 +7,8 @@ import RealtimeLogViewer from './RealtimeLogViewer';
 
 const LiveStreams: React.FC = () => {
   const [liveData, setLiveData] = useState<LiveTerminalData | null>(null);
-  const [filter, setFilter] = useState<TerminalFilter>({ maxLines: 100 });
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [_filter] = useState<TerminalFilter>({ maxLines: 100 });
+  const [autoScroll] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [viewMode, setViewMode] = useState<'pods' | 'logs' | 'deployments'>('pods');
   const [connectionState, setConnectionState] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
@@ -56,22 +56,22 @@ const LiveStreams: React.FC = () => {
   }, [liveData?.logs, autoScroll, viewMode]);
 
   // Filter live logs
-  const filteredLogs = liveData ? liveData.logs.filter(log => {
-    if (filter.level && !filter.level.includes(log.level)) return false;
-    if (filter.source && !log.source.includes(filter.source)) return false;
-    if (filter.search && !log.message.toLowerCase().includes(filter.search.toLowerCase())) return false;
-    return true;
-  }).slice(0, filter.maxLines || 100) : [];
+  // const filteredLogs = liveData ? liveData.logs.filter(log => {
+  //   if (filter.level && !filter.level.includes(log.level)) return false;
+  //   if (filter.source && !log.source.includes(filter.source)) return false;
+  //   if (filter.search && !log.message.toLowerCase().includes(filter.search.toLowerCase())) return false;
+  //   return true;
+  // }).slice(0, filter.maxLines || 100) : [];
 
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case 'error': return '❌';
-      case 'warn': return '⚠️';
-      case 'info': return 'ℹ️';
-      case 'debug': return '🐛';
-      default: return '📝';
-    }
-  };
+  // const _getLevelIcon = (level: string) => {
+  //   switch (level) {
+  //     case 'error': return '❌';
+  //     case 'warn': return '⚠️';
+  //     case 'info': return 'ℹ️';
+  //     case 'debug': return '🐛';
+  //     default: return '📝';
+  //   }
+  // };
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
