@@ -111,7 +111,7 @@ const DashboardSettings: FC<DashboardSettingsProps> = ({ isOpen, onClose }) => {
                   </div>
 
                   <div className="space-y-3">
-                    {sectionEntries.map(([key, sectionId]) => {
+                    {sectionEntries.map(([_key, sectionId]) => {
                       const isVisible = isSectionVisible(sectionId);
                       return (
                         <div
@@ -160,7 +160,7 @@ const DashboardSettings: FC<DashboardSettingsProps> = ({ isOpen, onClose }) => {
                   </div>
 
                   <div className="space-y-3">
-                    {tabEntries.map(([key, tabId]) => {
+                    {tabEntries.map(([_key, tabId]) => {
                       const isVisible = isTabVisible(tabId);
                       const visibleTabsCount = Object.values(dashboardConfig.tabs).filter(Boolean).length;
                       const canDisable = visibleTabsCount > 1;

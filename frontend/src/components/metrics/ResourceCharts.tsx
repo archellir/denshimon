@@ -7,8 +7,6 @@ import {
   YAxis,
   ResponsiveContainer,
   Tooltip,
-  RadialBarChart,
-  RadialBar,
   Legend,
 } from 'recharts';
 import { format } from 'date-fns';
@@ -18,7 +16,7 @@ interface ResourceChartsProps {
   timeRange?: string;
 }
 
-const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange = '1h' }) => {
+const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' }) => {
   const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory } = useWebSocketMetricsStore();
 
   // Historical data for line charts
@@ -34,29 +32,6 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange = '1h' }) => {
       nodes: metricsHistory.nodes[index]?.value || 0,
     }));
   }, [metricsHistory]);
-
-  // Resource usage data for radial charts
-  const resourceRadialData = useMemo(() => {
-    if (!clusterMetrics) return [];
-
-    return [
-      {
-        name: 'CPU',
-        usage: clusterMetrics.cpu_usage.usage_percent,
-        fill: '#00FF00',
-      },
-      {
-        name: 'Memory',
-        usage: clusterMetrics.memory_usage.usage_percent,
-        fill: '#FFFF00',
-      },
-      {
-        name: 'Storage',
-        usage: clusterMetrics.storage_usage.usage_percent,
-        fill: '#FF0000',
-      },
-    ];
-  }, [clusterMetrics]);
 
   // Node resource distribution
   const nodeResourceData = useMemo(() => {
@@ -102,19 +77,6 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange = '1h' }) => {
               }`}
             </p>
           ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomRadialTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p style={{ color: payload[0].fill }}>
-            {`${payload[0].name}: ${payload[0].value.toFixed(1)}%`}
-          </p>
         </div>
       );
     }

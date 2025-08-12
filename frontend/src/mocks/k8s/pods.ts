@@ -15,6 +15,7 @@ export const mockPods: PodMetrics[] = [
       available: 320,
       usage_percent: 36.0,
       usage: 0.18,
+      unit: 'm'
     },
     memory_usage: {
       used: 335544320,
@@ -22,6 +23,7 @@ export const mockPods: PodMetrics[] = [
       available: 738197504,
       usage_percent: 31.25,
       usage: 335544320,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -38,6 +40,7 @@ export const mockPods: PodMetrics[] = [
       available: 80,
       usage_percent: 60.0,
       usage: 0.12,
+      unit: 'm'
     },
     memory_usage: {
       used: 134217728,
@@ -45,6 +48,7 @@ export const mockPods: PodMetrics[] = [
       available: 402653184,
       usage_percent: 25.0,
       usage: 134217728,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -61,6 +65,7 @@ export const mockPods: PodMetrics[] = [
       available: 55,
       usage_percent: 45.0,
       usage: 0.045,
+      unit: 'm'
     },
     memory_usage: {
       used: 73400320,
@@ -68,6 +73,7 @@ export const mockPods: PodMetrics[] = [
       available: 104857600,
       usage_percent: 41.2,
       usage: 73400320,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -86,6 +92,7 @@ export const mockPods: PodMetrics[] = [
       available: 580,
       usage_percent: 42.0,
       usage: 0.42,
+      unit: 'm'
     },
     memory_usage: {
       used: 1258291200,
@@ -93,6 +100,7 @@ export const mockPods: PodMetrics[] = [
       available: 889192448,
       usage_percent: 58.6,
       usage: 1258291200,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -109,6 +117,7 @@ export const mockPods: PodMetrics[] = [
       available: 120,
       usage_percent: 40.0,
       usage: 0.08,
+      unit: 'm'
     },
     memory_usage: {
       used: 268435456,
@@ -116,6 +125,7 @@ export const mockPods: PodMetrics[] = [
       available: 268435456,
       usage_percent: 50.0,
       usage: 268435456,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -134,6 +144,7 @@ export const mockPods: PodMetrics[] = [
       available: 75,
       usage_percent: 25.0,
       usage: 0.025,
+      unit: 'm'
     },
     memory_usage: {
       used: 67108864,
@@ -141,6 +152,7 @@ export const mockPods: PodMetrics[] = [
       available: 67108864,
       usage_percent: 50.0,
       usage: 67108864,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -157,6 +169,7 @@ export const mockPods: PodMetrics[] = [
       available: 70,
       usage_percent: 30.0,
       usage: 0.03,
+      unit: 'm'
     },
     memory_usage: {
       used: 75497472,
@@ -164,6 +177,7 @@ export const mockPods: PodMetrics[] = [
       available: 58720256,
       usage_percent: 56.25,
       usage: 75497472,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -180,6 +194,7 @@ export const mockPods: PodMetrics[] = [
       available: 72,
       usage_percent: 28.0,
       usage: 0.028,
+      unit: 'm'
     },
     memory_usage: {
       used: 71303168,
@@ -187,6 +202,7 @@ export const mockPods: PodMetrics[] = [
       available: 62914560,
       usage_percent: 53.125,
       usage: 71303168,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -205,6 +221,7 @@ export const mockPods: PodMetrics[] = [
       available: 200,
       usage_percent: 0.0,
       usage: 0,
+      unit: 'm'
     },
     memory_usage: {
       used: 0,
@@ -212,6 +229,7 @@ export const mockPods: PodMetrics[] = [
       available: 268435456,
       usage_percent: 0.0,
       usage: 0,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   },
@@ -228,6 +246,7 @@ export const mockPods: PodMetrics[] = [
       available: 500,
       usage_percent: 0.0,
       usage: 0,
+      unit: 'm'
     },
     memory_usage: {
       used: 0,
@@ -235,6 +254,7 @@ export const mockPods: PodMetrics[] = [
       available: 1073741824,
       usage_percent: 0.0,
       usage: 0,
+      unit: 'bytes'
     },
     last_updated: new Date().toISOString()
   }

@@ -13,6 +13,7 @@ export interface PodResourceUsage {
   memory: number;
   cpuTrend: 'up' | 'down' | 'stable';
   memoryTrend: 'up' | 'down' | 'stable';
+  status: string;
   lastUpdate: string;
 }
 
@@ -24,6 +25,7 @@ export interface DeploymentProgress {
     current: number;
     ready: number;
     updated: number;
+    available: number;
   };
   strategy: string;
   progress: number;

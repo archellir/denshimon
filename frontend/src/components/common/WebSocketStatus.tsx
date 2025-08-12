@@ -3,7 +3,7 @@ import { Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
 import { useConnectionState } from '@hooks/useWebSocket';
 
 const WebSocketStatus: React.FC = () => {
-  const { data: connectionState, isConnected } = useConnectionState();
+  const { data: connectionState } = useConnectionState();
 
   if (!connectionState) return null;
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { GitBranch, Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
 import RepositoryList from '@components/gitops/RepositoryList';
 import ApplicationList from '@components/gitops/ApplicationList';
@@ -77,7 +77,7 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
     return { repoStats, appStats };
   };
 
-  const { repoStats, appStats } = getTabStats();
+  const { repoStats: _repoStats, appStats: _appStats } = getTabStats();
 
   if (error) {
     return (

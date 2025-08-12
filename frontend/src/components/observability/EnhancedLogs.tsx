@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { Terminal, Package, AlertCircle, Info, AlertTriangle, Bug, Download, RefreshCw, Filter, Search, X } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Package, AlertCircle, Info, AlertTriangle, Bug, Download, RefreshCw, Filter, Search, X } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';

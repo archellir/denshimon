@@ -175,7 +175,7 @@ interface ResourceTreeProps {
 }
 
 const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
-  const [resources, setResources] = useState<any[]>([]);
+  const [_resources, _setResources] = useState<any[]>([]);
   const [hierarchyNodes, setHierarchyNodes] = useState<HierarchyNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<HierarchyNode | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -195,7 +195,7 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
         );
       }
       
-      setResources(mockResources);
+      _setResources(mockResources);
       const hierarchy = buildResourceHierarchy(mockResources);
       setHierarchyNodes(hierarchy);
       setIsLoading(false);

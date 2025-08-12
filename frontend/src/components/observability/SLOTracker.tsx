@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { Target, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
-import StatusIcon from '@components/common/StatusIcon';
 
 export interface SLI {
   name: string;

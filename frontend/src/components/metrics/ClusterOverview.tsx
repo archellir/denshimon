@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { FC } from 'react';
 import { UI_MESSAGES, TimeRange } from '@constants';
 import {
@@ -10,8 +10,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
   Tooltip,
 } from 'recharts';
 import { format } from 'date-fns';
@@ -23,7 +21,7 @@ interface ClusterOverviewProps {
 }
 
 const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
-  const { clusterMetrics, metricsHistory, isLoadingHistory, fetchMetricsHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
+  const { clusterMetrics, metricsHistory, isLoadingHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
 
   // Fetch initial cluster metrics only (history is fetched by Dashboard)
   useEffect(() => {
@@ -84,30 +82,6 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     ];
   }, [clusterMetrics]);
 
-  // Resource utilization data from cluster metrics
-  const resourceData = useMemo(() => {
-    if (!clusterMetrics) return [];
-
-    return [
-      {
-        name: 'CPU',
-        usage: Math.round(clusterMetrics.cpu_usage.usage_percent),
-        available: Math.round(100 - clusterMetrics.cpu_usage.usage_percent),
-      },
-      {
-        name: 'Memory', 
-        usage: Math.round(clusterMetrics.memory_usage.usage_percent),
-        available: Math.round(100 - clusterMetrics.memory_usage.usage_percent),
-      },
-      {
-        name: 'Storage',
-        usage: Math.round(clusterMetrics.storage_usage.usage_percent),
-        available: Math.round(100 - clusterMetrics.storage_usage.usage_percent),
-      },
-    ];
-  }, [clusterMetrics]);
-  
-
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
@@ -118,22 +92,6 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
               {`${entry.name}: ${entry.value.toFixed(1)}${
                 entry.name === 'CPU' || entry.name === 'Memory' ? '%' : ''
               }`}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomResourceTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p className="text-white">{`Resource: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value.toFixed(1)}%`}
             </p>
           ))}
         </div>

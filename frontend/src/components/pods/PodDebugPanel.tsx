@@ -6,7 +6,6 @@ import {
   Upload, 
   Play, 
   Square, 
-  RefreshCw,
   ExternalLink,
   FileText,
   Network,
@@ -276,7 +275,7 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
               <div className="border-b border-white/20">
                 <div className="flex">
                   {[
-                    { id: 'terminal', label: 'Terminal', icon: Terminal },
+                    { id: 'terminal', label: 'Terminal', icon: TerminalIcon },
                     { id: 'logs', label: 'Logs', icon: FileText },
                     { id: 'files', label: 'Files', icon: Upload },
                     { id: 'ports', label: 'Port Forward', icon: Network },

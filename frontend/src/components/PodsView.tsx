@@ -315,7 +315,7 @@ const PodsView: FC = () => {
       {/* Debug Panel */}
       {selectedPod && (
         <PodDebugPanel
-          pod={selectedPod}
+          pod={{ ...selectedPod, containers: selectedPod.containers || [] }}
           isOpen={isDebugPanelOpen}
           onClose={() => {
             setIsDebugPanelOpen(false)

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { FC } from 'react';
-import { UI_MESSAGES, TimeRange, CommonNamespace } from '@constants';
+import { UI_MESSAGES, TimeRange } from '@constants';
 import {
   AreaChart,
   Area,
@@ -11,8 +11,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
 } from 'recharts';
 import { format } from 'date-fns';
 import { generateNetworkMetrics } from '@mocks/network/traffic';
@@ -273,7 +271,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
                 </tr>
               </thead>
               <tbody>
-                {networkData.topTalkers.slice(0, 8).map((talker, index) => (
+                {networkData.topTalkers.slice(0, 8).map((talker, _index) => (
                   <tr key={talker.podName} className="border-b border-white hover:bg-white hover:bg-opacity-5">
                     <td className="p-2">#{talker.rank}</td>
                     <td className="p-2 text-green-400">{talker.podName}</td>

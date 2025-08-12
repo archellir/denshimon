@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { Terminal, Activity, Package, AlertCircle, Info, AlertTriangle, Bug, TrendingUp, TrendingDown, Minus, Download, RefreshCw, Table, X, Filter, Search } from 'lucide-react';
+import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Download, RefreshCw, Table, Filter, Search } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
@@ -93,16 +93,6 @@ const Logs: React.FC = () => {
     return true;
   }).slice(0, liveFilter.maxLines || 100) : [];
 
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'warn': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'info': return <Info className="w-4 h-4 text-blue-500" />;
-      case 'debug': return <Bug className="w-4 h-4 text-gray-500" />;
-      default: return null;
-    }
-  };
-
   const getLogLevelColor = (level: string) => {
     switch (level) {
       case 'error': return 'text-red-400 border-red-400';
@@ -128,18 +118,6 @@ const Logs: React.FC = () => {
       case 'failed': return 'text-red-500';
       default: return 'text-gray-500';
     }
-  };
-
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('en-US', {
-      year: '2-digit',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
   };
 
   const exportLogs = () => {

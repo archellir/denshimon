@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TimeRange } from '@constants';
 import { parseTimeRangeToHours } from '@utils/timeUtils';
-import { Clock, AlertTriangle, AlertCircle, Info, CheckCircle, Filter, TrendingUp, TrendingDown, Minus, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, TrendingUp, TrendingDown, Minus, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { EventTimelineData, TimelineEvent, EventSeverity, EventCategory } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@/mocks/events/timeline';
 

@@ -342,7 +342,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
                   dataKey="count"
                   label={({ namespace, percentage }) => `${namespace} (${percentage.toFixed(1)}%)`}
                 >
-                  {metrics.topNamespaces.map((entry, index) => (
+                  {metrics.topNamespaces.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square, Settings } from 'lucide-react';
+import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 

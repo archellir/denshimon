@@ -9,6 +9,7 @@ export const mockRepositories: Repository[] = [
     auth_type: 'ssh',
     last_sync: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 minutes ago
     sync_status: 'synced',
+    sync_error: null,
     created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
     updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString()
   },
@@ -20,6 +21,7 @@ export const mockRepositories: Repository[] = [
     auth_type: 'token',
     last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
     sync_status: 'synced',
+    sync_error: null,
     created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
     updated_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
   },
@@ -51,6 +53,7 @@ export const mockApplications: Application[] = [
     },
     health_status: 'healthy',
     sync_status: 'synced',
+    sync_error: null,
     last_sync: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString()
@@ -68,6 +71,7 @@ export const mockApplications: Application[] = [
     },
     health_status: 'healthy',
     sync_status: 'synced',
+    sync_error: null,
     last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
@@ -85,6 +89,7 @@ export const mockApplications: Application[] = [
     },
     health_status: 'progressing',
     sync_status: 'out_of_sync',
+    sync_error: 'Sync operation timed out',
     last_sync: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
     created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()

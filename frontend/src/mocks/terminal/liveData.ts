@@ -98,6 +98,7 @@ const generatePodResourceUsage = (existing?: PodResourceUsage): PodResourceUsage
   }
   
   // Generate new pod
+  const statuses = ['Running', 'Pending', 'Failed', 'Succeeded'];
   return {
     name: `${['web', 'api', 'worker', 'cache', 'db'][Math.floor(Math.random() * 5)]}-${Math.random().toString(36).substr(2, 5)}`,
     namespace: NAMESPACES[Math.floor(Math.random() * NAMESPACES.length)],
@@ -105,6 +106,7 @@ const generatePodResourceUsage = (existing?: PodResourceUsage): PodResourceUsage
     memory: Math.floor(Math.random() * 3000 + 500),
     cpuTrend: 'stable',
     memoryTrend: 'stable',
+    status: statuses[Math.floor(Math.random() * statuses.length)],
     lastUpdate: new Date().toISOString()
   };
 };
@@ -122,7 +124,8 @@ const generateDeploymentProgress = (existing?: DeploymentProgress): DeploymentPr
         ...existing.replicas,
         current: updated,
         ready: Math.max(0, updated - Math.floor(Math.random() * 2)),
-        updated
+        updated,
+        available: Math.max(0, updated - Math.floor(Math.random() * 2))
       },
       progress,
       status: progress >= 100 ? 'complete' : 'progressing',
@@ -143,7 +146,8 @@ const generateDeploymentProgress = (existing?: DeploymentProgress): DeploymentPr
       desired,
       current: updated,
       ready: Math.max(0, updated - 1),
-      updated
+      updated,
+      available: Math.max(0, updated - 1)
     },
     strategy: Math.random() > 0.3 ? 'RollingUpdate' : 'Recreate',
     progress,
