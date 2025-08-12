@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
 import RepositoryList from '@components/gitops/RepositoryList';
 import ApplicationList from '@components/gitops/ApplicationList';
@@ -36,18 +35,9 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
   const {
     repositories,
     applications,
-    isLoading,
     error,
-    repositoryFilter,
-    applicationFilter,
-    sortBy,
-    sortOrder,
     fetchRepositories,
     fetchApplications,
-    setRepositoryFilter,
-    setApplicationFilter,
-    setSortBy,
-    setSortOrder,
     clearGitOps,
   } = useGitOpsStore();
 
@@ -61,23 +51,6 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
   }, [fetchRepositories, fetchApplications, clearGitOps]);
 
 
-  const getTabStats = () => {
-    const repoStats = {
-      total: repositories.length,
-      synced: repositories.filter(r => r.sync_status === 'synced').length,
-      errors: repositories.filter(r => r.sync_status === 'error').length,
-    };
-    
-    const appStats = {
-      total: applications.length,
-      healthy: applications.filter(a => a.health_status === 'healthy').length,
-      synced: applications.filter(a => a.sync_status === 'synced').length,
-    };
-    
-    return { repoStats, appStats };
-  };
-
-  const { repoStats: _repoStats, appStats: _appStats } = getTabStats();
 
   if (error) {
     return (
@@ -104,62 +77,7 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="text-sm font-mono">
-            {isLoading ? (
-              <span className="text-yellow-400">LOADING...</span>
-            ) : (
-              <span className="text-green-400">CONNECTED</span>
-            )}
-          </div>
-        </div>
-        <button
-          onClick={() => activeTab === 'repositories' ? setShowCreateRepo(true) : setShowCreateApp(true)}
-          className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono"
-        >
-          <Plus size={16} />
-          <span>CREATE {activeTab === 'repositories' ? 'REPO' : 'APP'}</span>
-        </button>
-      </div>
 
-      {/* Search and Filter */}
-      <div className="flex items-center space-x-4">
-        <div className="flex-1 relative">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 opacity-60" />
-          <input
-            type="text"
-            placeholder={`SEARCH ${activeTab.toUpperCase()}...`}
-            value={activeTab === 'repositories' ? repositoryFilter : applicationFilter}
-            onChange={(e) => 
-              activeTab === 'repositories' 
-                ? setRepositoryFilter(e.target.value) 
-                : setApplicationFilter(e.target.value)
-            }
-            className="w-full pl-10 pr-4 py-2 bg-black border border-white text-white font-mono placeholder-gray-400 focus:outline-none focus:border-green-400"
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Filter size={16} className="opacity-60" />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="bg-black border border-white text-white font-mono px-3 py-2 focus:outline-none focus:border-green-400"
-          >
-            <option value="name">NAME</option>
-            <option value="sync_status">SYNC STATUS</option>
-            <option value="last_sync">LAST SYNC</option>
-            {activeTab === 'applications' && <option value="health_status">HEALTH</option>}
-          </select>
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-2 border border-white font-mono hover:bg-white hover:text-black transition-colors"
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </button>
-        </div>
-      </div>
 
       {/* Content */}
       <div>

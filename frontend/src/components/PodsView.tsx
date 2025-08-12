@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { FC } from 'react'
-import { Server, AlertCircle, CheckCircle, RefreshCw, Terminal } from 'lucide-react'
+import { Server, AlertCircle, CheckCircle, Terminal } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
@@ -293,59 +293,46 @@ const PodsView: FC = () => {
   ]
 
   return (
-    <div className="p-6 bg-black text-white min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-mono">KUBERNETES PODS</h1>
-          <div className="flex items-center space-x-4">
-            <select
-              value={selectedNamespace}
-              onChange={(e) => setSelectedNamespace(e.target.value)}
-              className="bg-black border border-white text-white p-2 font-mono"
-            >
-              {namespaces.map(ns => (
-                <option key={ns} value={ns}>
-                  {ns.toUpperCase()}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={fetchPods}
-              disabled={isLoading}
-              className="flex items-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono"
-            >
-              <RefreshCw className={isLoading ? 'animate-spin' : ''} size={16} />
-              <span>REFRESH</span>
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="border border-red-400 bg-red-900/20 p-4 mb-6">
-            <p className="text-red-400 font-mono">{error}</p>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="space-y-4">
-            <SkeletonLoader variant="table" count={8} />
-          </div>
-        ) : (
-          <VirtualizedTable
-            data={filteredAndSortedPods}
-            columns={columns}
-            containerHeight={500}
-            rowHeight={48}
-            loading={false}
-            loadingMessage="LOADING PODS..."
-            emptyMessage={searchQuery ? `NO PODS MATCHING "${searchQuery}"` : "NO PODS FOUND"}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            className="w-full"
-          />
-        )}
+    <div className="space-y-6">
+      <div className="flex items-center space-x-4">
+        <select
+          value={selectedNamespace}
+          onChange={(e) => setSelectedNamespace(e.target.value)}
+          className="bg-black border border-white text-white p-2 font-mono text-sm"
+        >
+          {namespaces.map(ns => (
+            <option key={ns} value={ns}>
+              {ns.toUpperCase()}
+            </option>
+          ))}
+        </select>
       </div>
+
+      {error && (
+        <div className="border border-red-400 bg-red-900/20 p-4">
+          <p className="text-red-400 font-mono">{error}</p>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="space-y-4">
+          <SkeletonLoader variant="table" count={8} />
+        </div>
+      ) : (
+        <VirtualizedTable
+          data={filteredAndSortedPods}
+          columns={columns}
+          containerHeight={500}
+          rowHeight={48}
+          loading={false}
+          loadingMessage="LOADING PODS..."
+          emptyMessage={searchQuery ? `NO PODS MATCHING "${searchQuery}"` : "NO PODS FOUND"}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          className="w-full"
+        />
+      )}
 
       {/* Debug Panel */}
       {selectedPod && (
