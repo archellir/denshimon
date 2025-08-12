@@ -478,7 +478,8 @@ export const DASHBOARD_SECTIONS = {
   TIME_RANGE_SELECTOR: 'timeRangeSelector',
   SEARCH_BAR: 'searchBar',
   KEYBOARD_SHORTCUTS: 'keyboardShortcuts',
-  WEBSOCKET_STATUS: 'websocketStatus'
+  WEBSOCKET_STATUS: 'websocketStatus',
+  NOTIFICATIONS: 'notifications'
 } as const;
 
 export const DEFAULT_DASHBOARD_CONFIG = {
@@ -491,6 +492,7 @@ export const DEFAULT_DASHBOARD_CONFIG = {
     [DASHBOARD_SECTIONS.SEARCH_BAR]: true,
     [DASHBOARD_SECTIONS.KEYBOARD_SHORTCUTS]: true,
     [DASHBOARD_SECTIONS.WEBSOCKET_STATUS]: true,
+    [DASHBOARD_SECTIONS.NOTIFICATIONS]: true,
   },
   tabs: {
     [PrimaryTab.INFRASTRUCTURE]: true,
@@ -510,6 +512,7 @@ export const DASHBOARD_SECTION_LABELS = {
   [DASHBOARD_SECTIONS.SEARCH_BAR]: 'Search Interface',
   [DASHBOARD_SECTIONS.KEYBOARD_SHORTCUTS]: 'Hotkeys',
   [DASHBOARD_SECTIONS.WEBSOCKET_STATUS]: 'Connection Status',
+  [DASHBOARD_SECTIONS.NOTIFICATIONS]: 'Alert Notifications',
 } as const;
 
 export const DASHBOARD_TAB_LABELS = {
