@@ -4,7 +4,7 @@ import { X, RotateCcw, Eye, EyeOff, Monitor, Navigation } from 'lucide-react';
 import useSettingsStore from '@stores/settingsStore';
 import { 
   DASHBOARD_SECTIONS, 
-  DASHBOARD_TABS, 
+  PrimaryTab, 
   DASHBOARD_SECTION_LABELS, 
   DASHBOARD_TAB_LABELS 
 } from '@constants';
@@ -47,7 +47,7 @@ const DashboardSettings: FC<DashboardSettingsProps> = ({ isOpen, onClose }) => {
   };
 
   const sectionEntries = Object.entries(DASHBOARD_SECTIONS);
-  const tabEntries = Object.entries(DASHBOARD_TABS);
+  const tabEntries = Object.entries(PrimaryTab);
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
