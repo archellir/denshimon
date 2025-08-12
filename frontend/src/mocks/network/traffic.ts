@@ -1,4 +1,4 @@
-import type { NetworkMetrics, NetworkTrafficData, ProtocolBreakdown, TopTalker } from '@types/network';
+import type { NetworkMetrics, NetworkTrafficData, ProtocolBreakdown, TopTalker } from '@/types/network';
 
 // Cache for consistent network data across re-renders
 const networkDataCache = new Map<string, NetworkTrafficData>();

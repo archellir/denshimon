@@ -12,7 +12,7 @@ import {
   Eye 
 } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
-import type { Repository } from '@types/gitops';
+import type { Repository } from '@/types/gitops';
 
 interface RepositoryListProps {
   onShowDetails: (repository: Repository) => void;

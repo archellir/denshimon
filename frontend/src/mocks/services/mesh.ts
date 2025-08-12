@@ -264,7 +264,6 @@ const generateAPIEndpoints = (services: ServiceNode[]): APIEndpoint[] => {
           statusCodes,
         },
         rateLimit: Math.random() > 0.7 ? {
-          limit: Math.floor(Math.random() * 1000) + 100,
           period: ['1m', '1h', '1d'][Math.floor(Math.random() * 3)],
           current: Math.floor(Math.random() * 50),
         } : undefined,

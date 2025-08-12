@@ -7,7 +7,7 @@ import type {
   ImagePullMetrics,
   PodLifecycleEvent,
   LifecycleTimelineEvent
-} from '@types/podLifecycle';
+} from '@/types/podLifecycle';
 
 // Cache for consistent pod lifecycle data
 const lifecycleDataCache = new Map<string, PodLifecycleMetrics>();

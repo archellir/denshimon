@@ -1,4 +1,4 @@
-import type { Repository, Application } from '@types/gitops';
+import type { Repository, Application } from '@/types/gitops';
 
 export const mockRepositories: Repository[] = [
   {

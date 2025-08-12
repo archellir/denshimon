@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@types/gitops';
+import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@/types/gitops';
 import { mockRepositories, mockApplications, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 
 const useGitOpsStore = create<GitOpsStore>()(

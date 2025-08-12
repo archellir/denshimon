@@ -1,4 +1,4 @@
-import type { NodeMetrics } from '@types/metrics';
+import type { NodeMetrics } from '@/types/metrics';
 
 export const mockNodes: NodeMetrics[] = [
   {
@@ -14,7 +14,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 1900,
       usage_percent: 52.5,
       usage: 2.1,
-      limit: 4.0
     },
     memory_usage: {
       used: 3435973836,
@@ -22,7 +21,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 5153960756,
       usage_percent: 40.0,
       usage: 3435973836,
-      limit: 8589934592
     },
     storage_usage: {
       used: 48318382080,
@@ -30,7 +28,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 59055800320,
       usage_percent: 45.0,
       usage: 48318382080,
-      limit: 107374182400
     },
     last_updated: new Date().toISOString()
   },
@@ -47,7 +44,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 2200,
       usage_percent: 45.0,
       usage: 1.8,
-      limit: 4.0
     },
     memory_usage: {
       used: 3113851289,
@@ -55,7 +51,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 5476083303,
       usage_percent: 36.2,
       usage: 3113851289,
-      limit: 8589934592
     },
     storage_usage: {
       used: 55834574848,
@@ -63,7 +58,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 51539607552,
       usage_percent: 52.0,
       usage: 55834574848,
-      limit: 107374182400
     },
     last_updated: new Date().toISOString()
   },
@@ -80,7 +74,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 1200,
       usage_percent: 40.0,
       usage: 0.8,
-      limit: 2.0
     },
     memory_usage: {
       used: 1610612736,
@@ -88,7 +81,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 2684354560,
       usage_percent: 37.5,
       usage: 1610612736,
-      limit: 4294967296
     },
     storage_usage: {
       used: 16106127360,
@@ -96,7 +88,6 @@ export const mockNodes: NodeMetrics[] = [
       available: 37580963840,
       usage_percent: 30.0,
       usage: 16106127360,
-      limit: 53687091200
     },
     last_updated: new Date().toISOString()
   }

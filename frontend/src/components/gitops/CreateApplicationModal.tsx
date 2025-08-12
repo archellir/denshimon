@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FC } from 'react';
 import { X, Package } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
-import type { Repository } from '@types/gitops';
+import type { Repository } from '@/types/gitops';
 
 interface CreateApplicationModalProps {
   isOpen: boolean;
