@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
-import StatusIcon, { type StatusType, normalizeStatus } from './StatusIcon';
+import StatusIcon, { normalizeStatus } from './StatusIcon';
 import { useState } from 'react';
 
 export interface HierarchyNode {

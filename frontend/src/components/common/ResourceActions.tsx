@@ -9,8 +9,7 @@ import {
   Play,
   RotateCw,
   Scale,
-  Copy,
-  Download
+  Copy
 } from 'lucide-react';
 
 export interface ResourceAction {
@@ -33,8 +32,8 @@ interface ResourceActionsProps {
 
 const ResourceActions: FC<ResourceActionsProps> = ({
   resourceKind,
-  resourceName,
-  namespace,
+  resourceName: _resourceName,
+  namespace: _namespace,
   onAction,
   variant = 'buttons',
   className = ''

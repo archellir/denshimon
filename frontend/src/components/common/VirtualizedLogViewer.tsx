@@ -45,7 +45,7 @@ const VirtualizedLogViewer: FC<VirtualizedLogViewerProps> = ({
   const [scrollTop, setScrollTop] = useState(0);
   const scrollElementRef = useRef<HTMLDivElement>(null);
   const isUserScrolling = useRef(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter and limit logs
   const filteredLogs = useMemo(() => {
@@ -117,16 +117,6 @@ const VirtualizedLogViewer: FC<VirtualizedLogViewerProps> = ({
       case 'info': return <Info className="w-3 h-3 text-blue-400 flex-shrink-0" />;
       case 'debug': return <Bug className="w-3 h-3 text-gray-400 flex-shrink-0" />;
       default: return <div className="w-3 h-3 flex-shrink-0" />;
-    }
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'error': return 'text-red-400';
-      case 'warn': return 'text-yellow-400';
-      case 'info': return 'text-blue-400';
-      case 'debug': return 'text-gray-400';
-      default: return 'text-white';
     }
   };
 

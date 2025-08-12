@@ -94,11 +94,12 @@ export const AlertSeverityIcon: FC<AlertSeverityIconProps> = ({
   }
 
   return (
-    <Icon
-      size={size}
-      className={`${config.color} ${className}`}
-      title={config.label}
-    />
+    <span title={config.label}>
+      <Icon
+        size={size}
+        className={`${config.color} ${className}`}
+      />
+    </span>
   );
 };
 

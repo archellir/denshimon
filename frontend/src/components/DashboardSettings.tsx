@@ -6,8 +6,7 @@ import {
   DASHBOARD_SECTIONS, 
   DASHBOARD_TABS, 
   DASHBOARD_SECTION_LABELS, 
-  DASHBOARD_TAB_LABELS,
-  UI_MESSAGES 
+  DASHBOARD_TAB_LABELS 
 } from '@constants';
 
 interface DashboardSettingsProps {

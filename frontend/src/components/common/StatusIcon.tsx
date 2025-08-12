@@ -86,11 +86,12 @@ const StatusIcon: FC<StatusIconProps> = ({
   }
 
   return (
-    <Icon 
-      size={size} 
-      className={`${config.color} ${className}`}
-      title={config.label}
-    />
+    <span title={config.label}>
+      <Icon 
+        size={size} 
+        className={`${config.color} ${className}`}
+      />
+    </span>
   );
 };
 
@@ -122,24 +123,24 @@ export const normalizeStatus = (status: string): StatusType => {
   
   // Map common status variations to our standard types
   if (['running', 'active', 'ready', 'succeeded', 'bound', 'available'].includes(lowercased)) {
-    return 'healthy';
+    return HealthStatus.HEALTHY;
   }
   
   if (['degraded', 'progressing', 'replicafailure', 'warning'].includes(lowercased)) {
-    return 'warning';
+    return HealthStatus.WARNING;
   }
   
   if (['failed', 'error', 'crashloopbackoff', 'imagepullbackoff', 'terminating'].includes(lowercased)) {
-    return 'error';
+    return HealthStatus.ERROR;
   }
   
   if (['pending', 'creating', 'terminating', 'updating'].includes(lowercased)) {
-    return 'pending';
+    return HealthStatus.PENDING;
   }
   
   if (['outofmemory', 'killed', 'oomkilled'].includes(lowercased)) {
-    return 'critical';
+    return HealthStatus.CRITICAL;
   }
   
-  return 'unknown';
+  return HealthStatus.UNKNOWN;
 };

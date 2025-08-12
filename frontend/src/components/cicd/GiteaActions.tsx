@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { GitBranch, CheckCircle, XCircle, Clock, Play, Pause, AlertTriangle, Server, User, FileText, Archive, Download, Zap, Package } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { GitBranch, CheckCircle, XCircle, Clock, Play, Pause, AlertTriangle, Server, Archive, Download, Package } from 'lucide-react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { useWorkflowsWebSocket } from '@hooks/useWebSocket';
 
 interface GiteaWorkflow {
@@ -32,7 +32,7 @@ interface GiteaJob {
   id: string;
   name: string;
   status: 'queued' | 'in_progress' | 'completed';
-  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped';
+  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | 'neutral';
   duration: number;
   runner_name: string;
   runner_labels: string[];
@@ -45,7 +45,7 @@ interface GiteaJob {
 interface GiteaStep {
   name: string;
   status: 'queued' | 'in_progress' | 'completed';
-  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped';
+  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | 'neutral';
   duration: number;
   output?: string;
   number: number;
