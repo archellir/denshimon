@@ -1,19 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Package, AlertCircle, Info, AlertTriangle, Bug, Download, RefreshCw, Filter, Search, X } from 'lucide-react';
+import { Package, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';
 
 const EnhancedLogs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedSource, setSelectedSource] = useState<string>('all');
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState(5000);
 
   // WebSocket for real-time log updates
   const { data: newLogEntry, isConnected } = useLogsWebSocket();
@@ -30,36 +25,19 @@ const EnhancedLogs: React.FC = () => {
     }
   }, [newLogEntry, isConnected]);
 
-  // Auto-refresh
-  useEffect(() => {
-    let intervalId: number;
-    if (autoRefresh) {
-      intervalId = setInterval(loadLogs, refreshInterval) as unknown as number;
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [autoRefresh, refreshInterval]);
 
   const loadLogs = async () => {
-    setIsLoading(true);
     if (MOCK_ENABLED) {
       const mockLogs = await mockApiResponse(generateMockLogs(200));
       setLogs(mockLogs);
     } else {
       setLogs([]);
     }
-    setIsLoading(false);
   };
 
   // Filter logs
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
-      const matchesSearch = searchQuery === '' || 
-        log.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.source.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        log.user?.toLowerCase().includes(searchQuery.toLowerCase());
-        
       const matchesLevel = selectedLevel === 'all' || log.level === selectedLevel;
       const matchesSource = selectedSource === 'all' || log.source === selectedSource;
       
@@ -67,9 +45,9 @@ const EnhancedLogs: React.FC = () => {
       const logNamespace = log.metadata?.namespace || 'default';
       const matchesNamespace = selectedNamespace === 'all' || logNamespace === selectedNamespace;
       
-      return matchesSearch && matchesLevel && matchesSource && matchesNamespace;
+      return matchesLevel && matchesSource && matchesNamespace;
     });
-  }, [logs, searchQuery, selectedLevel, selectedSource, selectedNamespace]);
+  }, [logs, selectedLevel, selectedSource, selectedNamespace]);
 
   const getLevelIcon = (level: string) => {
     switch (level) {
@@ -102,25 +80,8 @@ const EnhancedLogs: React.FC = () => {
     });
   };
 
-  const exportLogs = () => {
-    const csvContent = [
-      'Timestamp,Level,Source,Namespace,User,Action,Message',
-      ...filteredLogs.map(log => 
-        `"${log.timestamp}","${log.level}","${log.source}","${log.metadata?.namespace || 'default'}","${log.user || ''}","${log.action || ''}","${log.message}"`
-      )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `logs-${new Date().toISOString().split('T')[0]}.csv`);
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   const clearFilters = () => {
-    setSearchQuery('');
     setSelectedLevel('all');
     setSelectedSource('all');
     setSelectedNamespace('all');
@@ -131,68 +92,6 @@ const EnhancedLogs: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-mono">APPLICATION & SYSTEM LOGS</h2>
-          <p className="text-sm text-gray-400 font-mono">
-            Centralized log aggregation and analysis
-            {isConnected && <span className="text-green-400 ml-2">• LIVE</span>}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 text-sm font-mono">
-            <span className="text-gray-500">Auto Refresh:</span>
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`px-2 py-1 border text-xs transition-colors ${
-                autoRefresh ? 'bg-green-500 text-black border-green-500' : 'border-white/30 hover:border-white'
-              }`}
-            >
-              {autoRefresh ? 'ON' : 'OFF'}
-            </button>
-            {autoRefresh && (
-              <select
-                value={refreshInterval}
-                onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                className="bg-black border border-white/30 px-2 py-1 text-xs font-mono"
-              >
-                <option value={2000}>2s</option>
-                <option value={5000}>5s</option>
-                <option value={10000}>10s</option>
-                <option value={30000}>30s</option>
-              </select>
-            )}
-          </div>
-          
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center space-x-2 px-3 py-1 border font-mono text-sm transition-colors ${
-              showFilters ? 'bg-white text-black border-white' : 'text-white border-white hover:bg-white hover:text-black'
-            }`}
-          >
-            <Filter size={14} />
-            <span>FILTERS</span>
-          </button>
-          
-          <button
-            onClick={loadLogs}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-3 py-1 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono text-sm disabled:opacity-50"
-          >
-            <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-            <span>REFRESH</span>
-          </button>
-          
-          <button
-            onClick={exportLogs}
-            className="flex items-center space-x-2 px-3 py-1 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
-          >
-            <Download size={14} />
-            <span>EXPORT</span>
-          </button>
-        </div>
-      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -217,29 +116,9 @@ const EnhancedLogs: React.FC = () => {
         </div>
       </div>
 
-      {/* Search and Filters */}
+      {/* Filters */}
       <div className="space-y-4">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search logs, sources, users, actions..."
-            className="w-full pl-10 pr-4 py-2 bg-black border border-white font-mono text-sm focus:outline-none focus:border-green-400"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-3 text-gray-400 hover:text-white"
-            >
-              <X size={16} />
-            </button>
-          )}
-        </div>
-        
-        {showFilters && (
-          <div className="border border-white p-4">
+        <div className="border border-white p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-xs font-mono mb-2 text-gray-400">LOG LEVEL</label>
@@ -294,7 +173,6 @@ const EnhancedLogs: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
       </div>
 
       {/* Log Entries */}
@@ -305,7 +183,7 @@ const EnhancedLogs: React.FC = () => {
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-500" />
               <div className="text-lg font-mono mb-2">NO LOGS FOUND</div>
               <div className="text-sm font-mono opacity-60">
-                {searchQuery || selectedLevel !== 'all' || selectedSource !== 'all' || selectedNamespace !== 'all' 
+                {selectedLevel !== 'all' || selectedSource !== 'all' || selectedNamespace !== 'all' 
                   ? 'No log entries match your current filters'
                   : 'No log entries available'
                 }

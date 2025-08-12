@@ -96,11 +96,6 @@ const NodeList: FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <div className="text-sm font-mono opacity-60">
-          {filteredAndSortedNodes.length} NODE{filteredAndSortedNodes.length !== 1 ? 'S' : ''}
-        </div>
-      </div>
 
       <div className="grid gap-4">
         {filteredAndSortedNodes.map((node) => (
