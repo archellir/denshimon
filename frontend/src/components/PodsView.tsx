@@ -26,11 +26,14 @@ interface Pod {
   containers?: Container[]
 }
 
-const PodsView: FC = () => {
+interface PodsViewProps {
+  selectedNamespace: string;
+}
+
+const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
   const [pods, setPods] = useState<Pod[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedNamespace, setSelectedNamespace] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [selectedPod, setSelectedPod] = useState<Pod | null>(null)
@@ -110,7 +113,6 @@ const PodsView: FC = () => {
     }
   }
 
-  const namespaces = ['all', 'denshimon-test', 'monitoring', 'production', 'default']
 
   const filteredAndSortedPods = useMemo(() => {
     let filtered = selectedNamespace === 'all' 
@@ -294,37 +296,21 @@ const PodsView: FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <select
-            value={selectedNamespace}
-            onChange={(e) => setSelectedNamespace(e.target.value)}
-            className="bg-black border border-white text-white p-2 font-mono text-sm"
+      {/* Clear Filter Button */}
+      {searchQuery && (
+        <div className="flex items-center justify-between border border-white/20 p-3">
+          <span className="text-sm font-mono opacity-60">
+            Filtered by: "{searchQuery}"
+          </span>
+          <button
+            onClick={() => setSearchQuery('')}
+            className="flex items-center space-x-1 px-2 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-xs"
           >
-            {namespaces.map(ns => (
-              <option key={ns} value={ns}>
-                {ns.toUpperCase()}
-              </option>
-            ))}
-          </select>
+            <X size={12} />
+            <span>CLEAR</span>
+          </button>
         </div>
-        
-        {/* Clear Filter Button */}
-        {searchQuery && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-mono opacity-60">
-              Filtered by: "{searchQuery}"
-            </span>
-            <button
-              onClick={() => setSearchQuery('')}
-              className="flex items-center space-x-1 px-2 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-xs"
-            >
-              <X size={12} />
-              <span>CLEAR</span>
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
       {error && (
         <div className="border border-red-400 bg-red-900/20 p-4">

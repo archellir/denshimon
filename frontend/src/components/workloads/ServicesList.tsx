@@ -169,12 +169,21 @@ const mockServices: Service[] = [
   }
 ];
 
-const ServicesList: FC = () => {
-  const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'namespace' | 'type' | 'age' | 'endpoints'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+interface ServicesListProps {
+  selectedNamespace: string;
+  selectedType: string;
+  viewMode: 'cards' | 'table';
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+const ServicesList: FC<ServicesListProps> = ({ 
+  selectedNamespace, 
+  selectedType, 
+  viewMode, 
+  sortBy, 
+  sortOrder 
+}) => {
 
   const filteredServices = useMemo(() => {
     let services = [...mockServices];
@@ -223,10 +232,6 @@ const ServicesList: FC = () => {
     return services;
   }, [selectedNamespace, selectedType, sortBy, sortOrder]);
 
-  const namespaces = useMemo(() => {
-    const ns = Array.from(new Set(mockServices.map(s => s.namespace)));
-    return ns.sort();
-  }, []);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -274,8 +279,7 @@ const ServicesList: FC = () => {
   };
 
   const handleSort = (key: string, order: 'asc' | 'desc') => {
-    setSortBy(key as any);
-    setSortOrder(order);
+    // Handled by Dashboard now
   };
 
   const serviceColumns: Column<Service>[] = [
@@ -397,80 +401,6 @@ const ServicesList: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* View Mode Toggle */}
-      <div className="flex items-center space-x-4">
-        <div className="flex border border-white">
-          <button
-            onClick={() => setViewMode('cards')}
-            className={`px-3 py-1 font-mono text-xs transition-colors ${
-              viewMode === 'cards' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
-            }`}
-          >
-            CARDS
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={`px-3 py-1 border-l border-white font-mono text-xs transition-colors ${
-              viewMode === 'table' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
-            }`}
-          >
-            TABLE
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center space-x-4 pb-4 border-b border-white/10">
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-mono opacity-60">NAMESPACE:</label>
-          <select
-            value={selectedNamespace}
-            onChange={(e) => setSelectedNamespace(e.target.value)}
-            className="bg-black border border-white text-white text-sm font-mono px-2 py-1 focus:outline-none focus:border-green-400"
-          >
-            <option value="all">ALL</option>
-            {namespaces.map(ns => (
-              <option key={ns} value={ns}>{ns.toUpperCase()}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-mono opacity-60">TYPE:</label>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-black border border-white text-white text-sm font-mono px-2 py-1 focus:outline-none focus:border-green-400"
-          >
-            <option value="all">ALL</option>
-            <option value="ClusterIP">CLUSTER IP</option>
-            <option value="NodePort">NODE PORT</option>
-            <option value="LoadBalancer">LOAD BALANCER</option>
-            <option value="ExternalName">EXTERNAL NAME</option>
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-mono opacity-60">SORT:</label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-black border border-white text-white text-sm font-mono px-2 py-1 focus:outline-none focus:border-green-400"
-          >
-            <option value="name">NAME</option>
-            <option value="namespace">NAMESPACE</option>
-            <option value="type">TYPE</option>
-            <option value="age">AGE</option>
-            <option value="endpoints">ENDPOINTS</option>
-          </select>
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-1 border border-white font-mono hover:bg-white hover:text-black transition-colors"
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </button>
-        </div>
-      </div>
 
       {/* Services Content */}
       {viewMode === 'table' ? (

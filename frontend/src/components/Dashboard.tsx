@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, Filter, Download } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, Filter, Download, Grid, List } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -48,6 +48,13 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   // Store last visited secondary tab for each primary tab
   const [lastVisitedTabs, setLastVisitedTabs] = useState<Record<string, string>>({});
   const previousPrimaryTab = useRef<string>(activePrimaryTab);
+
+  // Workload controls state
+  const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
+  const [serviceViewMode, setServiceViewMode] = useState<'cards' | 'table'>('cards');
+  const [serviceSortBy, setServiceSortBy] = useState<string>('name');
+  const [serviceSortOrder, setServiceSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -280,15 +287,84 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         switch (secondaryTab) {
           case WorkloadsTab.PODS:
             return (
-              <span className="text-sm font-mono opacity-60">
-                {clusterMetrics ? `${clusterMetrics.total_pods} PODS` : 'CONNECTING...'}
-              </span>
+              <>
+                <span className="text-sm font-mono opacity-60">
+                  {clusterMetrics ? `${clusterMetrics.total_pods} PODS` : 'CONNECTING...'}
+                </span>
+                <select
+                  value={selectedNamespace}
+                  onChange={(e) => setSelectedNamespace(e.target.value)}
+                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
+                >
+                  <option value="all">ALL NAMESPACES</option>
+                  <option value="default">DEFAULT</option>
+                  <option value="denshimon-test">DENSHIMON-TEST</option>
+                  <option value="monitoring">MONITORING</option>
+                  <option value="production">PRODUCTION</option>
+                </select>
+              </>
             );
           case WorkloadsTab.SERVICES:
             return (
-              <span className="text-sm font-mono opacity-60">
-                SERVICES
-              </span>
+              <>
+                <span className="text-sm font-mono opacity-60">SERVICES</span>
+                <select
+                  value={selectedNamespace}
+                  onChange={(e) => setSelectedNamespace(e.target.value)}
+                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
+                >
+                  <option value="all">ALL NAMESPACES</option>
+                  <option value="default">DEFAULT</option>
+                  <option value="monitoring">MONITORING</option>
+                  <option value="production">PRODUCTION</option>
+                </select>
+                <select
+                  value={selectedServiceType}
+                  onChange={(e) => setSelectedServiceType(e.target.value)}
+                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
+                >
+                  <option value="all">ALL TYPES</option>
+                  <option value="ClusterIP">CLUSTER IP</option>
+                  <option value="NodePort">NODE PORT</option>
+                  <option value="LoadBalancer">LOAD BALANCER</option>
+                  <option value="ExternalName">EXTERNAL NAME</option>
+                </select>
+                <div className="flex border border-white">
+                  <button
+                    onClick={() => setServiceViewMode('cards')}
+                    className={`px-2 py-1 font-mono text-xs transition-colors ${
+                      serviceViewMode === 'cards' ? 'bg-white text-black' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <Grid size={12} />
+                  </button>
+                  <button
+                    onClick={() => setServiceViewMode('table')}
+                    className={`px-2 py-1 border-l border-white font-mono text-xs transition-colors ${
+                      serviceViewMode === 'table' ? 'bg-white text-black' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <List size={12} />
+                  </button>
+                </div>
+                <select
+                  value={serviceSortBy}
+                  onChange={(e) => setServiceSortBy(e.target.value)}
+                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
+                >
+                  <option value="name">SORT: NAME</option>
+                  <option value="namespace">SORT: NAMESPACE</option>
+                  <option value="type">SORT: TYPE</option>
+                  <option value="age">SORT: AGE</option>
+                  <option value="endpoints">SORT: ENDPOINTS</option>
+                </select>
+                <button
+                  onClick={() => setServiceSortOrder(serviceSortOrder === 'asc' ? 'desc' : 'asc')}
+                  className="px-2 py-1 border border-white font-mono text-xs hover:bg-white hover:text-black transition-colors"
+                >
+                  {serviceSortOrder === 'asc' ? '↑' : '↓'}
+                </button>
+              </>
             );
           case WorkloadsTab.NAMESPACES:
             return (
@@ -515,8 +591,14 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         
         {/* Workloads Tab Content */}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <ClusterOverview timeRange={timeRange} />}
-        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.PODS && <PodsView />}
-        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.SERVICES && <ServicesList />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.PODS && <PodsView selectedNamespace={selectedNamespace} />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.SERVICES && <ServicesList 
+          selectedNamespace={selectedNamespace} 
+          selectedType={selectedServiceType}
+          viewMode={serviceViewMode}
+          sortBy={serviceSortBy}
+          sortOrder={serviceSortOrder}
+        />}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.NAMESPACES && <NamespaceMetrics />}
         
         {/* Service Mesh Tab Content */}
