@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import type { FC } from 'react';
-import { Server, Cpu, MemoryStick, HardDrive, CheckCircle, AlertCircle } from 'lucide-react';
+import { Server, Cpu, MemoryStick, HardDrive, CheckCircle, AlertCircle, X } from 'lucide-react';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 
@@ -96,6 +96,21 @@ const NodeList: FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Clear Filter Button */}
+      {searchQuery && (
+        <div className="flex items-center justify-between border border-white/20 p-3">
+          <span className="text-sm font-mono opacity-60">
+            Filtered by: "{searchQuery}"
+          </span>
+          <button
+            onClick={() => setSearchQuery('')}
+            className="flex items-center space-x-1 px-2 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-xs"
+          >
+            <X size={12} />
+            <span>CLEAR</span>
+          </button>
+        </div>
+      )}
 
       <div className="grid gap-4">
         {filteredAndSortedNodes.map((node) => (
