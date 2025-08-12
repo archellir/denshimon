@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
-import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS } from '@/constants';
+import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType } from '@/constants';
+import { getWebSocketInstance } from '@services/websocket';
 
 interface ServiceMeshProps {
   activeSecondaryTab?: string;
@@ -14,6 +15,8 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const [data, setData] = useState<ServiceMeshData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [connectionState, setConnectionState] = useState<ConnectionStatus>(ConnectionStatus.OFFLINE);
+  const subscriptionIdRef = useRef<string | null>(null);
 
   // Listen for global search navigation
   useEffect(() => {
@@ -43,14 +46,84 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'frontend' | 'backend' | 'database' | 'cache' | 'gateway'>('all');
 
+  // Initialize WebSocket connection for live updates
   useEffect(() => {
+    const ws = getWebSocketInstance();
+    if (!ws) return;
+
     setIsLoading(true);
-    // Simulate loading delay
+    
+    // Subscribe to connection status
+    const connectionSubId = ws.subscribe(WebSocketEventType.CONNECTION, (state) => {
+      setConnectionState(state.state);
+    });
+    
+    // Initial connection state
+    setConnectionState(ws.getConnectionState() as ConnectionStatus);
+
+    // Subscribe to service mesh updates
+    subscriptionIdRef.current = ws.subscribe(WebSocketEventType.SERVICES, (serviceUpdate) => {
+      setData(prevData => {
+        if (!prevData) {
+          // Initial data load
+          const initialData = generateServiceMeshData();
+          return initialData;
+        }
+
+        // Update existing service data
+        const updatedServices = prevData.services.map(service => {
+          if (service.id === serviceUpdate.serviceId) {
+            return {
+              ...service,
+              status: serviceUpdate.status,
+              metrics: {
+                ...service.metrics,
+                requestRate: serviceUpdate.metrics?.requestRate ?? service.metrics.requestRate,
+                errorRate: serviceUpdate.metrics?.errorRate ?? service.metrics.errorRate,
+                latency: {
+                  ...service.metrics.latency,
+                  p95: serviceUpdate.metrics?.latency?.p95 ?? service.metrics.latency.p95
+                }
+              },
+              circuitBreaker: {
+                ...service.circuitBreaker,
+                status: serviceUpdate.circuitBreakerStatus ?? service.circuitBreaker.status,
+                lastTripped: serviceUpdate.lastTripped ?? service.circuitBreaker.lastTripped
+              }
+            };
+          }
+          return service;
+        });
+
+        return {
+          ...prevData,
+          services: updatedServices,
+          metrics: {
+            ...prevData.metrics,
+            overview: {
+              ...prevData.metrics.overview,
+              totalRequestRate: updatedServices.reduce((sum, s) => sum + s.metrics.requestRate, 0),
+              errorRate: updatedServices.reduce((sum, s, _, arr) => sum + s.metrics.errorRate / arr.length, 0),
+              avgLatency: updatedServices.reduce((sum, s, _, arr) => sum + s.metrics.latency.p95 / arr.length, 0)
+            }
+          }
+        };
+      });
+    });
+
+    // Initial data load with delay
     setTimeout(() => {
       const meshData = generateServiceMeshData();
       setData(meshData);
       setIsLoading(false);
     }, 1000);
+
+    return () => {
+      if (subscriptionIdRef.current) {
+        ws.unsubscribe(subscriptionIdRef.current);
+      }
+      ws.unsubscribe(connectionSubId);
+    };
   }, []);
 
   const filteredServices = useMemo(() => {
@@ -135,6 +208,8 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
     }
   };
 
+  const isConnected = connectionState === ConnectionStatus.ONLINE;
+
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
@@ -172,8 +247,18 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
           <div className="text-2xl font-mono text-green-500">{data.metrics.overview.mTLSCoverage.toFixed(0)}%</div>
         </div>
         <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Connections</div>
-          <div className="text-2xl font-mono">{data.metrics.overview.totalConnections}</div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-gray-500 uppercase mb-1">Connections</div>
+              <div className="text-2xl font-mono">{data.metrics.overview.totalConnections}</div>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+              <span className="text-xs font-mono text-gray-500">
+                {isConnected ? 'LIVE' : 'OFFLINE'}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
