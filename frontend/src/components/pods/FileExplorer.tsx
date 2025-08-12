@@ -222,7 +222,8 @@ const FileExplorer: FC<FileExplorerProps> = ({
             onClick={() => {
               const parts = currentPath.split('/').filter(Boolean);
               parts.pop();
-              setCurrentPath('/' + parts.join('/'));
+              const newPath = parts.length === 0 ? '/' : '/' + parts.join('/');
+              setCurrentPath(newPath);
             }}
             disabled={currentPath === '/'}
             className="p-1 hover:bg-white/10 transition-colors disabled:opacity-30"
@@ -260,7 +261,8 @@ const FileExplorer: FC<FileExplorerProps> = ({
             <span className="mx-1 opacity-60">/</span>
             <button
               onClick={() => {
-                const newPath = '/' + pathParts.slice(0, index + 1).join('/');
+                const pathSegments = pathParts.slice(0, index + 1);
+                const newPath = pathSegments.length === 0 ? '/' : '/' + pathSegments.join('/');
                 setCurrentPath(newPath);
               }}
               className="hover:text-green-400 transition-colors"
