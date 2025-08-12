@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 
@@ -10,6 +11,23 @@ interface ServiceMeshProps {
 
 const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const [data, setData] = useState<ServiceMeshData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Listen for global search navigation
+  useEffect(() => {
+    const handleLocalSearchFilter = (event: CustomEvent) => {
+      const { query, type } = event.detail;
+      if (type === 'service' || type === 'endpoint') {
+        setSearchQuery(query);
+      }
+    };
+
+    window.addEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    return () => {
+      window.removeEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    };
+  }, []);
   
   // Set selectedView based on the secondary tab from Dashboard
   const getViewFromSecondary = (secondaryTab?: string): 'topology' | 'services' | 'endpoints' | 'flows' => {
@@ -25,21 +43,50 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const [filterType, setFilterType] = useState<'all' | 'frontend' | 'backend' | 'database' | 'cache' | 'gateway'>('all');
 
   useEffect(() => {
-    const meshData = generateServiceMeshData();
-    setData(meshData);
+    setIsLoading(true);
+    // Simulate loading delay
+    setTimeout(() => {
+      const meshData = generateServiceMeshData();
+      setData(meshData);
+      setIsLoading(false);
+    }, 1000);
   }, []);
 
   const filteredServices = useMemo(() => {
     if (!data) return [];
-    return filterType === 'all' 
+    let services = filterType === 'all' 
       ? data.services 
       : data.services.filter(s => s.type === filterType);
-  }, [data, filterType]);
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      services = services.filter(s => 
+        s.name.toLowerCase().includes(query) ||
+        s.namespace.toLowerCase().includes(query) ||
+        s.type.toLowerCase().includes(query)
+      );
+    }
+    
+    return services;
+  }, [data, filterType, searchQuery]);
 
   const serviceConnections = useMemo(() => {
     if (!data || !selectedService) return [];
     return data.connections.filter(c => c.source === selectedService || c.target === selectedService);
   }, [data, selectedService]);
+
+  const filteredEndpoints = useMemo(() => {
+    if (!data) return [];
+    if (!searchQuery) return data.endpoints;
+    
+    const query = searchQuery.toLowerCase();
+    return data.endpoints.filter(endpoint =>
+      endpoint.path.toLowerCase().includes(query) ||
+      endpoint.method.toLowerCase().includes(query) ||
+      data.services.find(s => s.id === endpoint.serviceId)?.name.toLowerCase().includes(query)
+    );
+  }, [data, searchQuery]);
 
   const getServiceIcon = (type: string) => {
     switch (type) {
@@ -87,10 +134,14 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
     }
   };
 
-  if (!data) {
-    return <div className="flex items-center justify-center h-64">
-      <div className="text-gray-500">Loading service mesh...</div>
-    </div>;
+  if (isLoading || !data) {
+    return (
+      <div className="space-y-6">
+        <SkeletonLoader variant="card" count={6} />
+        <SkeletonLoader variant="chart" count={1} />
+        <SkeletonLoader variant="table" count={8} />
+      </div>
+    );
   }
 
   const selectedServiceData = selectedService ? data.services.find(s => s.id === selectedService) : null;
@@ -298,8 +349,15 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
       {/* Services View */}
       {selectedView === 'services' && (
-        <div className="border border-white overflow-hidden">
-          <table className="w-full font-mono text-sm">
+        <div className="space-y-4">
+          <div className="flex items-center justify-end">
+            <div className="text-sm font-mono opacity-60">
+              {filteredServices.length} SERVICE{filteredServices.length !== 1 ? 'S' : ''}
+            </div>
+          </div>
+          
+          <div className="border border-white overflow-hidden">
+            <table className="w-full font-mono text-sm">
             <thead>
               <tr className="border-b border-white">
                 <th className="text-left p-3">SERVICE</th>
@@ -313,7 +371,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
               </tr>
             </thead>
             <tbody>
-              {data.services.map(service => (
+              {filteredServices.map(service => (
                 <tr key={service.id} className="border-b border-white/20 hover:bg-white/5">
                   <td className="p-3">
                     <div className="flex items-center gap-2">
@@ -342,15 +400,16 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
             </tbody>
           </table>
         </div>
+        </div>
       )}
 
       {/* Endpoints View */}
       {selectedView === 'endpoints' && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <h3 className="font-mono text-sm">API ENDPOINTS</h3>
             <div className="text-xs font-mono text-gray-500">
-              {data.endpoints.length} endpoints across {data.services.length} services
+              {filteredEndpoints.length} endpoints across {data.services.length} services
             </div>
           </div>
           
@@ -369,7 +428,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 </tr>
               </thead>
               <tbody>
-                {data.endpoints.slice(0, 20).map(endpoint => {
+                {filteredEndpoints.slice(0, 20).map(endpoint => {
                   const service = data.services.find(s => s.id === endpoint.serviceId);
                   return (
                     <tr key={endpoint.id} className="border-b border-white/20 hover:bg-white/5">
@@ -421,9 +480,9 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 })}
               </tbody>
             </table>
-            {data.endpoints.length > 20 && (
+            {filteredEndpoints.length > 20 && (
               <div className="p-3 text-center text-xs font-mono text-gray-500 border-t border-white/20">
-                Showing 20 of {data.endpoints.length} endpoints
+                Showing 20 of {filteredEndpoints.length} endpoints
               </div>
             )}
           </div>

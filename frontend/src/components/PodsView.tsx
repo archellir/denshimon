@@ -3,7 +3,6 @@ import type { FC } from 'react'
 import { Server, AlertCircle, CheckCircle, RefreshCw, Terminal } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
-import SearchBar from '@components/common/SearchBar'
 import SkeletonLoader from '@components/common/SkeletonLoader'
 
 interface Container {
@@ -37,6 +36,21 @@ const PodsView: FC = () => {
   const [selectedPod, setSelectedPod] = useState<Pod | null>(null)
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Listen for global search navigation
+  useEffect(() => {
+    const handleLocalSearchFilter = (event: CustomEvent) => {
+      const { query, type } = event.detail;
+      if (type === 'pod') {
+        setSearchQuery(query);
+      }
+    };
+
+    window.addEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    return () => {
+      window.removeEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    };
+  }, []);
 
   const fetchPods = async () => {
     setIsLoading(true)
@@ -284,12 +298,6 @@ const PodsView: FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-mono">KUBERNETES PODS</h1>
           <div className="flex items-center space-x-4">
-            <SearchBar
-              placeholder="Search pods..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-64"
-            />
             <select
               value={selectedNamespace}
               onChange={(e) => setSelectedNamespace(e.target.value)}

@@ -1,21 +1,48 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { HardDrive, Database, Cpu, MemoryStick } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 const NamespaceMetrics: FC = () => {
   const { namespaceMetrics, isLoading } = useWebSocketMetricsStore();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const sortedNamespaces = useMemo(() => {
-    return [...namespaceMetrics].sort((a, b) => {
+  // Listen for global search navigation
+  useEffect(() => {
+    const handleLocalSearchFilter = (event: CustomEvent) => {
+      const { query, type } = event.detail;
+      if (type === 'namespace') {
+        setSearchQuery(query);
+      }
+    };
+
+    window.addEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    return () => {
+      window.removeEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    };
+  }, []);
+
+  const filteredAndSortedNamespaces = useMemo(() => {
+    let filtered = namespaceMetrics;
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(ns => 
+        ns.name.toLowerCase().includes(query)
+      );
+    }
+    
+    return [...filtered].sort((a, b) => {
       // Sort by pod count (descending), then by name
       if (b.pod_count !== a.pod_count) {
         return b.pod_count - a.pod_count;
       }
       return a.name.localeCompare(b.name);
     });
-  }, [namespaceMetrics]);
+  }, [namespaceMetrics, searchQuery]);
 
   const totalStats = useMemo(() => {
     return namespaceMetrics.reduce(
@@ -53,20 +80,28 @@ const NamespaceMetrics: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-green-400 font-mono">LOADING NAMESPACES...</div>
+      <div className="space-y-6">
+        <SkeletonLoader variant="card" count={4} />
+        <SkeletonLoader variant="table" count={8} />
       </div>
     );
   }
 
-  if (sortedNamespaces.length === 0) {
+  if (filteredAndSortedNamespaces.length === 0) {
     return (
-      <div className="text-center py-12">
-        <HardDrive size={48} className="mx-auto mb-4 opacity-40" />
-        <h3 className="text-lg font-mono mb-2">NO NAMESPACES FOUND</h3>
-        <p className="font-mono text-sm opacity-60">
-          No Kubernetes namespaces are available.
-        </p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-mono">NAMESPACE METRICS</h2>
+        </div>
+        <div className="text-center py-12">
+          <HardDrive size={48} className="mx-auto mb-4 opacity-40" />
+          <h3 className="text-lg font-mono mb-2">
+            {searchQuery ? `NO NAMESPACES MATCHING "${searchQuery}"` : 'NO NAMESPACES FOUND'}
+          </h3>
+          <p className="font-mono text-sm opacity-60">
+            {searchQuery ? 'Use global search (Cmd+K) to find namespaces.' : 'No Kubernetes namespaces are available.'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -77,15 +112,15 @@ const NamespaceMetrics: FC = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-mono">NAMESPACE METRICS</h2>
         <div className="text-sm font-mono opacity-60">
-          {sortedNamespaces.length} NAMESPACE{sortedNamespaces.length !== 1 ? 'S' : ''}
+          {filteredAndSortedNamespaces.length} NAMESPACE{filteredAndSortedNamespaces.length !== 1 ? 'S' : ''}
         </div>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="border border-white p-4">
-          <div className="text-2xl font-mono">{sortedNamespaces.length}</div>
-          <div className="text-xs font-mono opacity-60">TOTAL NAMESPACES</div>
+          <div className="text-2xl font-mono">{filteredAndSortedNamespaces.length}</div>
+          <div className="text-xs font-mono opacity-60">FILTERED NAMESPACES</div>
         </div>
         <div className="border border-white p-4">
           <div className="text-2xl font-mono text-blue-400">{totalStats.totalPods}</div>
@@ -107,7 +142,7 @@ const NamespaceMetrics: FC = () => {
 
       {/* Namespace List */}
       <div className="space-y-4">
-        {sortedNamespaces.map((namespace) => {
+        {filteredAndSortedNamespaces.map((namespace) => {
           const nsType = getNamespaceType(namespace.name);
           return (
             <div key={namespace.name} className="border border-white bg-black">

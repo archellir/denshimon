@@ -1,14 +1,43 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { Server, Cpu, MemoryStick, HardDrive, CheckCircle, AlertCircle } from 'lucide-react';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 const NodeList: FC = () => {
   const { nodeMetrics, isLoading } = useWebSocketMetricsStore();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const sortedNodes = useMemo(() => {
-    return [...nodeMetrics].sort((a, b) => a.name.localeCompare(b.name));
-  }, [nodeMetrics]);
+  // Listen for global search navigation
+  useEffect(() => {
+    const handleLocalSearchFilter = (event: CustomEvent) => {
+      const { query, type } = event.detail;
+      if (type === 'node') {
+        setSearchQuery(query);
+      }
+    };
+
+    window.addEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    return () => {
+      window.removeEventListener('setLocalSearchFilter', handleLocalSearchFilter as EventListener);
+    };
+  }, []);
+
+  const filteredAndSortedNodes = useMemo(() => {
+    let filtered = nodeMetrics;
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(node => 
+        node.name.toLowerCase().includes(query) ||
+        node.status.toLowerCase().includes(query) ||
+        node.architecture?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }, [nodeMetrics, searchQuery]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -45,19 +74,21 @@ const NodeList: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-green-400 font-mono">LOADING NODES...</div>
+      <div className="space-y-4">
+        <SkeletonLoader variant="table" count={6} />
       </div>
     );
   }
 
-  if (sortedNodes.length === 0) {
+  if (filteredAndSortedNodes.length === 0) {
     return (
       <div className="text-center py-12">
         <Server size={48} className="mx-auto mb-4 opacity-40" />
-        <h3 className="text-lg font-mono mb-2">NO NODES FOUND</h3>
+        <h3 className="text-lg font-mono mb-2">
+          {searchQuery ? `NO NODES MATCHING "${searchQuery}"` : 'NO NODES FOUND'}
+        </h3>
         <p className="font-mono text-sm opacity-60">
-          No Kubernetes nodes are available.
+          {searchQuery ? 'Use global search (Cmd+K) to find nodes.' : 'No Kubernetes nodes are available.'}
         </p>
       </div>
     );
@@ -67,12 +98,12 @@ const NodeList: FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-end">
         <div className="text-sm font-mono opacity-60">
-          {sortedNodes.length} NODE{sortedNodes.length !== 1 ? 'S' : ''}
+          {filteredAndSortedNodes.length} NODE{filteredAndSortedNodes.length !== 1 ? 'S' : ''}
         </div>
       </div>
 
       <div className="grid gap-4">
-        {sortedNodes.map((node) => (
+        {filteredAndSortedNodes.map((node) => (
           <div key={node.name} className="border border-white bg-black">
             {/* Header */}
             <div className="p-4 border-b border-white">
