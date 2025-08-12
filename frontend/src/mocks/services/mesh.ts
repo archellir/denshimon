@@ -1,5 +1,5 @@
 import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint, TrafficFlow, ServiceMeshMetrics } from '@/types/serviceMesh';
-import { MASTER_SERVICES, MASTER_ENDPOINTS, MASTER_NAMESPACES } from '@mocks/masterData';
+import { MASTER_SERVICES } from '@mocks/masterData';
 
 const generateServiceId = (name: string, namespace: string) => `${namespace}-${name}`;
 
@@ -38,11 +38,6 @@ const generateServiceNode = (service: typeof MASTER_SERVICES[number]): ServiceNo
       baseRequestRate = 300 + Math.random() * 700; // 300-1000 RPS
       baseErrorRate = 1 + Math.random() * 3; // 1-4%
       baseLatency = { p50: 5 + Math.random() * 15, p95: 30 + Math.random() * 50, p99: 100 + Math.random() * 100 };
-      break;
-    case 'sidecar':
-      baseRequestRate = 50 + Math.random() * 150; // 50-200 RPS
-      baseErrorRate = 0.1 + Math.random() * 0.3; // 0.1-0.4%
-      baseLatency = { p50: 0.5 + Math.random() * 2, p95: 3 + Math.random() * 7, p99: 10 + Math.random() * 10 };
       break;
   }
   

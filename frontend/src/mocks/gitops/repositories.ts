@@ -1,4 +1,6 @@
 import type { Repository, Application } from '@/types/gitops';
+import { AuthType } from '@/types/gitops';
+import { SyncStatus, HealthStatus } from '@/constants';
 
 export const mockRepositories: Repository[] = [
   {
@@ -6,9 +8,9 @@ export const mockRepositories: Repository[] = [
     name: 'k8s-configs',
     url: 'https://github.com/company/k8s-configs.git',
     branch: 'main',
-    auth_type: 'ssh',
+    auth_type: AuthType.SSH,
     last_sync: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 minutes ago
-    sync_status: 'synced',
+    sync_status: SyncStatus.SYNCED,
     sync_error: null,
     created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
     updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString()
@@ -18,9 +20,9 @@ export const mockRepositories: Repository[] = [
     name: 'app-manifests',
     url: 'https://github.com/company/app-manifests.git',
     branch: 'production',
-    auth_type: 'token',
+    auth_type: AuthType.TOKEN,
     last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
-    sync_status: 'synced',
+    sync_status: SyncStatus.SYNCED,
     sync_error: null,
     created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
     updated_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
@@ -30,9 +32,9 @@ export const mockRepositories: Repository[] = [
     name: 'infrastructure',
     url: 'https://github.com/company/infrastructure.git', 
     branch: 'main',
-    auth_type: 'ssh',
+    auth_type: AuthType.SSH,
     last_sync: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-    sync_status: 'out_of_sync',
+    sync_status: SyncStatus.OUT_OF_SYNC,
     sync_error: 'Authentication failed: SSH key expired',
     created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
     updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
@@ -51,8 +53,8 @@ export const mockApplications: Application[] = [
       prune: true,
       self_heal: true
     },
-    health_status: 'healthy',
-    sync_status: 'synced',
+    health_status: HealthStatus.HEALTHY,
+    sync_status: SyncStatus.SYNCED,
     sync_error: null,
     last_sync: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -69,8 +71,8 @@ export const mockApplications: Application[] = [
       prune: false,
       self_heal: true
     },
-    health_status: 'healthy',
-    sync_status: 'synced',
+    health_status: HealthStatus.HEALTHY,
+    sync_status: SyncStatus.SYNCED,
     sync_error: null,
     last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -87,8 +89,8 @@ export const mockApplications: Application[] = [
       prune: true,
       self_heal: false
     },
-    health_status: 'progressing',
-    sync_status: 'out_of_sync',
+    health_status: HealthStatus.PROGRESSING,
+    sync_status: SyncStatus.OUT_OF_SYNC,
     sync_error: 'Sync operation timed out',
     last_sync: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
     created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
@@ -105,8 +107,8 @@ export const mockApplications: Application[] = [
       prune: true,
       self_heal: true
     },
-    health_status: 'degraded',
-    sync_status: 'synced',
+    health_status: HealthStatus.DEGRADED,
+    sync_status: SyncStatus.SYNCED,
     sync_error: 'Pod CrashLoopBackOff: container failed to start',
     last_sync: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
@@ -123,8 +125,8 @@ export const mockApplications: Application[] = [
       prune: false,
       self_heal: false
     },
-    health_status: 'unknown',
-    sync_status: 'unknown',
+    health_status: HealthStatus.UNKNOWN,
+    sync_status: SyncStatus.UNKNOWN,
     sync_error: 'Repository authentication failed',
     last_sync: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
