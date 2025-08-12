@@ -363,8 +363,8 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
       gitea: 'Gitea Actions'
     },
     observability: {
-      logs: 'Logs',
-      events: 'Events',
+      logs: 'Log Data',
+      events: 'System Changes',
       streams: 'Live Streams',
       analytics: 'Analytics'
     }
