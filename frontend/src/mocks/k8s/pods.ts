@@ -1,5 +1,94 @@
 import type { PodMetrics } from '@/types/metrics';
+import { MASTER_PODS } from '@mocks/masterData';
 
+// Generate metrics for each pod in master data
+const generatePodMetrics = (): PodMetrics[] => {
+  return MASTER_PODS.map((masterPod) => {
+    // Generate different metrics based on pod type
+    const isSystemPod = masterPod.namespace === 'kube-system';
+    const isMonitoringPod = masterPod.namespace === 'monitoring';
+    const isFailedPod = masterPod.name.includes('failing');
+    const isPendingPod = masterPod.name.includes('pending');
+    
+    let status: 'Running' | 'Failed' | 'Pending' | 'Succeeded' | 'Terminating' | 'Unknown';
+    let restartCount: number;
+    let age: string;
+    let cpuUsed: number;
+    let cpuTotal: number;
+    let memoryUsed: number;
+    let memoryTotal: number;
+
+    if (isFailedPod) {
+      status = 'Failed';
+      restartCount = 5;
+      age = '1h';
+      cpuUsed = 0;
+      cpuTotal = 200;
+      memoryUsed = 0;
+      memoryTotal = 268435456;
+    } else if (isPendingPod) {
+      status = 'Pending';
+      restartCount = 0;
+      age = '30m';
+      cpuUsed = 0;
+      cpuTotal = 500;
+      memoryUsed = 0;
+      memoryTotal = 1073741824;
+    } else {
+      status = 'Running';
+      restartCount = isSystemPod ? 0 : Math.floor(Math.random() * 2);
+      age = isSystemPod ? '7d' : ['1d', '2d', '3d', '5d'][Math.floor(Math.random() * 4)];
+      
+      if (isSystemPod) {
+        cpuUsed = Math.floor(Math.random() * 200) + 50;
+        cpuTotal = Math.floor(Math.random() * 300) + 200;
+        memoryUsed = Math.floor(Math.random() * 500000000) + 100000000;
+        memoryTotal = Math.floor(Math.random() * 1000000000) + 500000000;
+      } else if (isMonitoringPod) {
+        cpuUsed = Math.floor(Math.random() * 500) + 100;
+        cpuTotal = Math.floor(Math.random() * 500) + 500;
+        memoryUsed = Math.floor(Math.random() * 1000000000) + 250000000;
+        memoryTotal = Math.floor(Math.random() * 1000000000) + 1000000000;
+      } else {
+        cpuUsed = Math.floor(Math.random() * 50) + 20;
+        cpuTotal = Math.floor(Math.random() * 50) + 100;
+        memoryUsed = Math.floor(Math.random() * 100000000) + 50000000;
+        memoryTotal = Math.floor(Math.random() * 100000000) + 100000000;
+      }
+    }
+
+    return {
+      name: masterPod.name,
+      namespace: masterPod.namespace,
+      node: masterPod.node,
+      status,
+      restart_count: restartCount,
+      age,
+      cpu_usage: {
+        used: cpuUsed,
+        total: cpuTotal,
+        available: cpuTotal - cpuUsed,
+        usage_percent: (cpuUsed / cpuTotal) * 100,
+        usage: cpuUsed / 1000,
+        unit: 'm'
+      },
+      memory_usage: {
+        used: memoryUsed,
+        total: memoryTotal,
+        available: memoryTotal - memoryUsed,
+        usage_percent: (memoryUsed / memoryTotal) * 100,
+        usage: memoryUsed,
+        unit: 'bytes'
+      },
+      last_updated: new Date().toISOString()
+    };
+  });
+};
+
+export const mockPods: PodMetrics[] = generatePodMetrics();
+
+// Keep original static data as fallback (commented out)
+/*
 export const mockPods: PodMetrics[] = [
   // System pods
   {
@@ -259,3 +348,4 @@ export const mockPods: PodMetrics[] = [
     last_updated: new Date().toISOString()
   }
 ];
+*/
