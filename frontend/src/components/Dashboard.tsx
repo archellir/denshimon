@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, RefreshCw, Filter, Download } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -249,6 +249,167 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     }
   };
 
+  // Render action buttons and counts for secondary tabs
+  const renderSecondaryTabActions = (primaryTab: string, secondaryTab: string) => {
+    switch (primaryTab) {
+      case PrimaryTab.INFRASTRUCTURE:
+        switch (secondaryTab) {
+          case InfrastructureTab.NODES:
+            return (
+              <>
+                <span className="text-sm font-mono opacity-60">
+                  {clusterMetrics ? `${clusterMetrics.total_nodes} NODES` : 'LOADING...'}
+                </span>
+                <button
+                  onClick={() => fetchAllMetrics()}
+                  className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
+                >
+                  <RefreshCw size={12} />
+                  <span>REFRESH</span>
+                </button>
+              </>
+            );
+          case InfrastructureTab.RESOURCES:
+            return (
+              <span className="text-sm font-mono opacity-60">
+                {clusterMetrics ? `${(clusterMetrics.cpu_usage.usage_percent).toFixed(1)}% CPU • ${(clusterMetrics.memory_usage.usage_percent).toFixed(1)}% MEM` : 'LOADING...'}
+              </span>
+            );
+          case InfrastructureTab.STORAGE:
+            return (
+              <span className="text-sm font-mono opacity-60">
+                {clusterMetrics ? `${(clusterMetrics.storage_usage.usage_percent).toFixed(1)}% STORAGE` : 'LOADING...'}
+              </span>
+            );
+          default:
+            return null;
+        }
+      
+      case PrimaryTab.WORKLOADS:
+        switch (secondaryTab) {
+          case WorkloadsTab.PODS:
+            return (
+              <>
+                <span className="text-sm font-mono opacity-60">
+                  {clusterMetrics ? `${clusterMetrics.total_pods} PODS` : 'LOADING...'}
+                </span>
+                <button
+                  onClick={() => fetchAllMetrics()}
+                  className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
+                >
+                  <RefreshCw size={12} />
+                  <span>REFRESH</span>
+                </button>
+              </>
+            );
+          case WorkloadsTab.SERVICES:
+            return (
+              <span className="text-sm font-mono opacity-60">
+                SERVICES
+              </span>
+            );
+          case WorkloadsTab.NAMESPACES:
+            return (
+              <span className="text-sm font-mono opacity-60">
+                {clusterMetrics ? `${clusterMetrics.total_namespaces} NAMESPACES` : 'LOADING...'}
+              </span>
+            );
+          default:
+            return null;
+        }
+      
+      case PrimaryTab.MESH:
+        return (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-mono opacity-60">
+              12 SERVICES • 89.2% mTLS
+            </span>
+            <button
+              onClick={() => {}}
+              className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
+            >
+              <RefreshCw size={12} />
+              <span>REFRESH</span>
+            </button>
+          </div>
+        );
+      
+      case PrimaryTab.DEPLOYMENTS:
+        switch (secondaryTab) {
+          case DeploymentsTab.APPLICATIONS:
+            return (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-mono opacity-60">
+                  8 APPLICATIONS
+                </span>
+                <button
+                  onClick={() => {}}
+                  className="flex items-center space-x-1 px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
+                >
+                  <Plus size={12} />
+                  <span>CREATE</span>
+                </button>
+              </div>
+            );
+          case DeploymentsTab.REPOSITORIES:
+            return (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-mono opacity-60">
+                  4 REPOSITORIES
+                </span>
+                <button
+                  onClick={() => {}}
+                  className="flex items-center space-x-1 px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
+                >
+                  <Plus size={12} />
+                  <span>CREATE</span>
+                </button>
+              </div>
+            );
+          default:
+            return null;
+        }
+      
+      case PrimaryTab.OBSERVABILITY:
+        switch (secondaryTab) {
+          case ObservabilityTab.LOGS:
+            return (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-mono opacity-60">
+                  1.2K ENTRIES
+                </span>
+                <button
+                  onClick={() => {}}
+                  className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
+                >
+                  <Download size={12} />
+                  <span>EXPORT</span>
+                </button>
+              </div>
+            );
+          case ObservabilityTab.EVENTS:
+            return (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-mono opacity-60">
+                  45 EVENTS
+                </span>
+                <span className="text-sm font-mono opacity-60">
+                  8 WARNINGS
+                </span>
+                <span className="text-sm font-mono opacity-60">
+                  2 ERRORS
+                </span>
+              </div>
+            );
+          default:
+            return null;
+        }
+      
+      default:
+        return null;
+    }
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white p-6">
@@ -273,10 +434,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Quick Stats - show for all major tabs */}
-      {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS || activePrimaryTab === PrimaryTab.OBSERVABILITY) && clusterMetrics && (
+      {/* Quick Stats - show for major tabs except observability */}
+      {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS) && clusterMetrics && (
         <div className="border-b border-white">
-          <div className="max-w-7xl mx-auto p-6">
+          <div className="max-w-7xl mx-auto px-6 pt-2 pb-6">
             <div className="flex justify-end items-center mb-4">
               {isConnected && isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
                 <div className="flex items-center space-x-2 text-sm font-mono">
@@ -287,15 +448,15 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {getQuickStatsForTab(activePrimaryTab).map((stat) => (
-                <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-4`}>
+                <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-mono opacity-60">{stat.label}</p>
-                      <p className="text-lg font-mono">{stat.value}</p>
+                      <p className="text-base font-mono">{stat.value}</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <stat.icon size={20} className="text-white" />
-                      <StatusIcon status={stat.status} size={16} />
+                      <stat.icon size={16} className="text-white" />
+                      <StatusIcon status={stat.status} size={14} />
                     </div>
                   </div>
                 </div>
@@ -305,25 +466,34 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         </div>
       )}
 
-      {/* Secondary Navigation - with visual separation */}
+      {/* Secondary Navigation - with visual separation and right-side actions */}
       {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && secondaryTabs[activePrimaryTab] && (
         <div className="bg-black border-b border-white/20">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex space-x-1 py-2">
-              {secondaryTabs[activePrimaryTab].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveSecondaryTab(tab.id)}
-                  className={`flex items-center space-x-2 px-3 py-2 font-mono text-sm transition-colors rounded-sm ${
-                    activeSecondaryTab === tab.id
-                      ? 'bg-white text-black'
-                      : 'text-white hover:bg-white/10'
-                  }`}
-                >
-                  <tab.icon size={14} />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+            <div className="flex items-center justify-between py-2">
+              {/* Tab Navigation */}
+              <div className="flex space-x-1">
+                {secondaryTabs[activePrimaryTab].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveSecondaryTab(tab.id)}
+                    className={`flex items-center space-x-2 px-3 py-2 font-mono text-sm transition-colors rounded-sm ${
+                      activeSecondaryTab === tab.id
+                        ? 'bg-white text-black'
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <tab.icon size={14} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {/* Right-side Actions and Counts */}
+              <div className="flex items-center space-x-4">
+                {/* Item counts and action buttons will be rendered here per tab */}
+                {renderSecondaryTabActions(activePrimaryTab, activeSecondaryTab)}
+              </div>
             </div>
           </div>
         </div>
