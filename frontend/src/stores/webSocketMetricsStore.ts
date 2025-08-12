@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory } from '@/types/metrics';
-import { API_ENDPOINTS } from '@/constants';
+import { API_ENDPOINTS, WebSocketEventType } from '@/constants';
 import { 
   mockClusterMetrics, 
   mockNodes, 
@@ -79,7 +79,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           }
 
           // Subscribe to metrics updates
-          metricsSubscriptionId = ws.subscribe('metrics', (data) => {
+          metricsSubscriptionId = ws.subscribe(WebSocketEventType.METRICS, (data) => {
             set({ 
               clusterMetrics: data.cluster,
               nodeMetrics: data.nodes || [],
@@ -90,7 +90,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           });
 
           // Subscribe to connection state
-          connectionSubscriptionId = ws.subscribe('connection', (connectionState) => {
+          connectionSubscriptionId = ws.subscribe(WebSocketEventType.CONNECTION, (connectionState) => {
             set({ 
               isConnected: connectionState.state === 'connected',
               connectionError: connectionState.state === 'error' ? 'Connection error' : null

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getWebSocketInstance, WebSocketMessage } from '@services/websocket';
+import { WebSocketEventType } from '@/constants';
 
 export interface UseWebSocketOptions {
   enabled?: boolean;
@@ -12,7 +13,7 @@ export interface WebSocketConnectionState {
 }
 
 export function useWebSocket<T = any>(
-  messageType: WebSocketMessage['type'] | 'connection',
+  messageType: WebSocketEventType | 'connection',
   options: UseWebSocketOptions = {}
 ) {
   const { enabled = true, immediate = true } = options;
@@ -128,31 +129,31 @@ export function useWebSocket<T = any>(
 
 // Specialized hooks for common use cases
 export function useMetricsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('metrics', options);
+  return useWebSocket(WebSocketEventType.METRICS, options);
 }
 
 export function useLogsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('logs', options);
+  return useWebSocket(WebSocketEventType.LOGS, options);
 }
 
 export function useEventsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('events', options);
+  return useWebSocket(WebSocketEventType.EVENTS, options);
 }
 
 export function useWorkflowsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('workflows', options);
+  return useWebSocket(WebSocketEventType.WORKFLOWS, options);
 }
 
 export function usePodsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('pods', options);
+  return useWebSocket(WebSocketEventType.PODS, options);
 }
 
 export function useDeploymentsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('deployments', options);
+  return useWebSocket(WebSocketEventType.DEPLOYMENTS, options);
 }
 
 export function useAlertsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket('alerts', options);
+  return useWebSocket(WebSocketEventType.ALERTS, options);
 }
 
 export function useConnectionState() {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, FC } from 'react';
 import { Filter, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
 import { getWebSocketInstance } from '@services/websocket';
+import { WebSocketEventType } from '@/constants';
 
 interface LogEntry {
   id: string;
@@ -42,13 +43,13 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
     if (!ws) return;
 
     // Subscribe to connection status
-    const connectionSubId = ws.subscribe('connection', (state) => {
+    const connectionSubId = ws.subscribe(WebSocketEventType.CONNECTION, (state) => {
       setIsConnected(state.state === 'connected');
     });
 
     // Subscribe to logs
     if (!isPaused) {
-      subscriptionIdRef.current = ws.subscribe('logs', (logData) => {
+      subscriptionIdRef.current = ws.subscribe(WebSocketEventType.LOGS, (logData) => {
         const newLog: LogEntry = {
           id: logData.id || Date.now().toString(),
           timestamp: logData.timestamp,
