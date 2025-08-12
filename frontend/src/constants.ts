@@ -14,6 +14,17 @@ export enum HealthStatus {
   WARNING = 'warning',
   ERROR = 'error',
   PENDING = 'pending',
+  UNKNOWN = 'unknown',
+  PROGRESSING = 'progressing',
+  SUSPENDED = 'suspended',
+  MISSING = 'missing'
+}
+
+export enum SyncStatus {
+  SYNCED = 'synced',
+  OUT_OF_SYNC = 'out_of_sync',
+  ERROR = 'error',
+  PENDING = 'pending',
   UNKNOWN = 'unknown'
 }
 
@@ -393,6 +404,7 @@ export const API_ENDPOINTS = {
     CLUSTER: '/api/metrics/cluster',
     NODES: '/api/metrics/nodes',
     PODS: '/api/metrics/pods',
+    NAMESPACES: '/api/metrics/namespaces',
     HISTORY: '/api/metrics/history'
   },
   KUBERNETES: {
@@ -400,6 +412,21 @@ export const API_ENDPOINTS = {
     SERVICES: '/api/k8s/services',
     NODES: '/api/k8s/nodes',
     NAMESPACES: '/api/k8s/namespaces'
+  },
+  GITEA: {
+    BASE: '/api/gitea',
+    REPOSITORIES: '/api/gitea/repositories',
+    REPOSITORY: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}`,
+    COMMITS: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/commits`,
+    BRANCHES: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/branches`,
+    PULLS: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/pulls`,
+    RELEASES: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/releases`,
+    ACTIONS_RUNS: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/actions/runs`,
+    DEPLOY: (owner: string, repo: string) => `/api/gitea/repositories/${owner}/${repo}/deploy`,
+    WEBHOOK: '/api/gitea/webhook'
+  },
+  WEBSOCKET: {
+    BASE: '/ws'
   }
 } as const;
 
@@ -417,6 +444,76 @@ export enum WebSocketEventType {
   WORKFLOWS = 'workflows',
   DEPLOYMENTS = 'deployments',
   ALERTS = 'alerts'
+}
+
+// ============================================================================
+// GITEA ENUMS
+// ============================================================================
+
+export enum GiteaPullRequestState {
+  OPEN = 'open',
+  CLOSED = 'closed',
+  ALL = 'all'
+}
+
+export enum GiteaWorkflowStatus {
+  QUEUED = 'queued',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed'
+}
+
+export enum GiteaWorkflowConclusion {
+  SUCCESS = 'success',
+  FAILURE = 'failure',
+  CANCELLED = 'cancelled',
+  SKIPPED = 'skipped'
+}
+
+// ============================================================================
+// CHART TYPES
+// ============================================================================
+
+export enum ChartType {
+  LINE = 'line',
+  BAR = 'bar',
+  AREA = 'area',
+  PIE = 'pie',
+  DONUT = 'donut',
+  SCATTER = 'scatter',
+  MONOTONE = 'monotone'
+}
+
+// ============================================================================
+// VIEW TYPES
+// ============================================================================
+
+export enum ViewType {
+  TABLE = 'table',
+  CARD = 'card',
+  LIST = 'list',
+  GRID = 'grid'
+}
+
+// ============================================================================
+// SORT DIRECTIONS
+// ============================================================================
+
+export enum SortDirection {
+  ASC = 'asc',
+  DESC = 'desc'
+}
+
+// ============================================================================
+// LOG LEVELS
+// ============================================================================
+
+export enum LogLevel {
+  TRACE = 'trace',
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+  FATAL = 'fatal'
 }
 
 // ============================================================================
