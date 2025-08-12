@@ -8,7 +8,7 @@ const LiveStreams: React.FC = () => {
   const [filter, setFilter] = useState<TerminalFilter>({ maxLines: 100 });
   const [autoScroll, setAutoScroll] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [viewMode, setViewMode] = useState<'terminal' | 'pods' | 'deployments'>('terminal');
+  const [viewMode, setViewMode] = useState<'terminal' | 'pods' | 'deployments'>('pods');
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   // Live terminal updates
@@ -81,11 +81,37 @@ const LiveStreams: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with integrated tabs and controls */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-mono">LIVE STREAMS</h2>
-          <p className="text-sm text-gray-400 font-mono">Real-time monitoring and log streaming</p>
+        {/* View Mode Tabs */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setViewMode('pods')}
+            className={`px-4 py-2 font-mono text-sm transition-colors ${
+              viewMode === 'pods' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <Activity className="w-4 h-4 inline mr-2" />
+            TOP PODS
+          </button>
+          <button
+            onClick={() => setViewMode('terminal')}
+            className={`px-4 py-2 font-mono text-sm transition-colors ${
+              viewMode === 'terminal' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <Terminal className="w-4 h-4 inline mr-2" />
+            TERMINAL
+          </button>
+          <button
+            onClick={() => setViewMode('deployments')}
+            className={`px-4 py-2 font-mono text-sm transition-colors ${
+              viewMode === 'deployments' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <Package className="w-4 h-4 inline mr-2" />
+            DEPLOYMENTS
+          </button>
         </div>
         
         {liveData && (
@@ -134,37 +160,6 @@ const LiveStreams: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-
-      {/* View Mode Tabs */}
-      <div className="flex gap-2 border-b border-white pb-2">
-        <button
-          onClick={() => setViewMode('terminal')}
-          className={`px-4 py-2 font-mono text-sm transition-colors ${
-            viewMode === 'terminal' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
-          }`}
-        >
-          <Terminal className="w-4 h-4 inline mr-2" />
-          TERMINAL
-        </button>
-        <button
-          onClick={() => setViewMode('pods')}
-          className={`px-4 py-2 font-mono text-sm transition-colors ${
-            viewMode === 'pods' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
-          }`}
-        >
-          <Activity className="w-4 h-4 inline mr-2" />
-          TOP PODS
-        </button>
-        <button
-          onClick={() => setViewMode('deployments')}
-          className={`px-4 py-2 font-mono text-sm transition-colors ${
-            viewMode === 'deployments' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
-          }`}
-        >
-          <Package className="w-4 h-4 inline mr-2" />
-          DEPLOYMENTS
-        </button>
       </div>
 
       {/* Terminal View */}
