@@ -12,7 +12,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import Terminal from '@components/common/Terminal';
-import { TerminalOptions } from '@hooks/useTerminal';
 
 interface Pod {
   name: string;
@@ -50,8 +49,6 @@ interface PodDebugPanelProps {
 const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'terminal' | 'logs' | 'files' | 'ports'>('terminal');
   const [selectedContainer, setSelectedContainer] = useState<string>('');
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [terminalOptions, setTerminalOptions] = useState<TerminalOptions | undefined>();
   const [portForwards, setPortForwards] = useState<PortForward[]>([]);
   const [logs, _setLogs] = useState<string>('');
   const [isFollowingLogs, setIsFollowingLogs] = useState(false);
@@ -63,17 +60,6 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
     }
   }, [pod.containers, selectedContainer]);
 
-  const handleOpenTerminal = (command: string = '/bin/bash') => {
-    if (!selectedContainer) return;
-    
-    setTerminalOptions({
-      namespace: pod.namespace,
-      pod: pod.name,
-      container: selectedContainer,
-      command
-    });
-    setIsTerminalOpen(true);
-  };
 
   const handlePortForward = (remotePort: number) => {
     // Generate local port (8000-9000 range)
@@ -172,18 +158,11 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
                 <h3 className="text-sm font-mono mb-3 opacity-60">QUICK ACTIONS</h3>
                 <div className="space-y-2">
                   <button
-                    onClick={() => handleOpenTerminal('/bin/bash')}
+                    onClick={() => setActiveTab('terminal')}
                     className="w-full flex items-center space-x-2 px-3 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
                   >
                     <TerminalIcon size={16} />
-                    <span>Open Shell</span>
-                  </button>
-                  <button
-                    onClick={() => handleOpenTerminal('/bin/sh')}
-                    className="w-full flex items-center space-x-2 px-3 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
-                  >
-                    <TerminalIcon size={16} />
-                    <span>Open Shell (sh)</span>
+                    <span>Open Terminal</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('logs')}
@@ -299,29 +278,26 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
               {/* Tab Content */}
               <div className="flex-1 p-4">
                 {activeTab === 'terminal' && (
-                  <div className="h-full flex flex-col items-center justify-center space-y-4">
-                    <TerminalIcon size={48} className="opacity-40" />
-                    <div className="text-center">
-                      <h3 className="font-mono text-lg mb-2">TERMINAL ACCESS</h3>
-                      <p className="font-mono text-sm opacity-60 mb-4">
-                        Execute commands directly inside the container
-                      </p>
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => handleOpenTerminal('/bin/bash')}
-                          className="flex items-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono"
-                        >
-                          <TerminalIcon size={16} />
-                          <span>Open Bash Terminal</span>
-                        </button>
-                        <button
-                          onClick={() => handleOpenTerminal('/bin/sh')}
-                          className="flex items-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono"
-                        >
-                          <TerminalIcon size={16} />
-                          <span>Open Shell Terminal</span>
-                        </button>
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-mono">TERMINAL</h3>
+                      <div className="flex items-center space-x-2 text-xs font-mono opacity-60">
+                        <span>Pod: {pod.name}</span>
+                        <span>•</span>
+                        <span>Shell: /bin/bash</span>
                       </div>
+                    </div>
+                    <div className="flex-1 border border-white bg-black">
+                      <Terminal
+                        isOpen={true}
+                        onClose={() => {}} // No close functionality for embedded terminal
+                        initialOptions={{
+                          pod: pod.name,
+                          namespace: pod.namespace,
+                          container: pod.containers[0]?.name || 'main',
+                          command: '/bin/bash'
+                        }}
+                      />
                     </div>
                   </div>
                 )}
@@ -457,12 +433,6 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
         </div>
       </div>
 
-      {/* Terminal Modal */}
-      <Terminal
-        isOpen={isTerminalOpen}
-        onClose={() => setIsTerminalOpen(false)}
-        initialOptions={terminalOptions}
-      />
     </>
   );
 };
