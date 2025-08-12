@@ -179,8 +179,8 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         namespace: service.namespace,
         description: `Service in ${service.namespace} namespace`,
         location: {
-          primaryTab: 'services',
-          secondaryTab: 'mesh'
+          primaryTab: 'workloads',
+          secondaryTab: 'services'
         },
         matchedFields: getMatchedFields(lowerQuery, service.name, service.namespace),
         relevanceScore: relevance
@@ -198,7 +198,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: ns.name,
         description: 'Kubernetes namespace',
         location: {
-          primaryTab: 'infrastructure',
+          primaryTab: 'workloads',
           secondaryTab: 'namespaces'
         },
         matchedFields: getMatchedFields(lowerQuery, ns.name),
@@ -218,8 +218,8 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         namespace: deployment.namespace,
         description: `Deployment in ${deployment.namespace} namespace`,
         location: {
-          primaryTab: 'workloads',
-          secondaryTab: 'deployments'
+          primaryTab: 'deployments',
+          secondaryTab: 'applications'
         },
         matchedFields: getMatchedFields(lowerQuery, deployment.name, deployment.namespace),
         relevanceScore: relevance
@@ -237,7 +237,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: endpoint.name,
         description: `API endpoint for ${endpoint.service}`,
         location: {
-          primaryTab: 'services',
+          primaryTab: 'mesh',
           secondaryTab: 'endpoints'
         },
         matchedFields: getMatchedFields(lowerQuery, endpoint.name, endpoint.service),
