@@ -15,6 +15,7 @@ import {
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ResourceCharts from '@components/metrics/ResourceCharts';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 interface ClusterOverviewProps {
   timeRange?: string;
@@ -116,10 +117,11 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
   // Error boundary fallback
   if (!clusterMetrics) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-2xl font-mono mb-2">{UI_MESSAGES.LOADING}</div>
-          <div className="text-sm font-mono opacity-60">{UI_MESSAGES.LOADING_METRICS}</div>
+      <div className="space-y-6">
+        <SkeletonLoader variant="chart" count={1} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonLoader variant="chart" count={1} />
+          <SkeletonLoader variant="chart" count={1} />
         </div>
       </div>
     );
@@ -134,8 +136,8 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
             {isLoadingHistory ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="font-mono text-sm">{UI_MESSAGES.LOADING_HISTORY}</span>
+              <div className="h-full">
+                <SkeletonLoader variant="chart" count={1} />
               </div>
             ) : chartData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">

@@ -15,6 +15,7 @@ import {
 import { format } from 'date-fns';
 import { generateNetworkMetrics } from '@mocks/network/traffic';
 import type { NetworkMetrics } from '@/types/network';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 interface NetworkTrafficProps {
   timeRange?: string;
@@ -107,10 +108,13 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 
   if (isLoading && !networkData) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-2xl font-mono mb-2">{UI_MESSAGES.LOADING}</div>
-          <div className="text-sm font-mono opacity-60">Fetching network metrics</div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <SkeletonLoader variant="chart" count={2} />
+          <SkeletonLoader variant="chart" count={1} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonLoader variant="card" count={2} />
         </div>
       </div>
     );
@@ -155,8 +159,8 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
           <h3 className="font-mono text-sm mb-4">BANDWIDTH OVER TIME</h3>
           <div className="h-80">
             {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="font-mono text-sm">{UI_MESSAGES.LOADING_HISTORY}</span>
+              <div className="h-full">
+                <SkeletonLoader variant="chart" count={1} />
               </div>
             ) : trafficChartData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">

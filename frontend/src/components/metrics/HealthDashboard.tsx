@@ -7,6 +7,7 @@ import HealthSummaryCard, {
   createNetworkHealthCard,
   createStorageHealthCard
 } from '@components/common/HealthSummaryCard';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 // Generate mock health data
 const generateHealthData = () => {
@@ -87,8 +88,8 @@ const HealthDashboard: FC<HealthDashboardProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 font-mono">Loading health metrics...</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <SkeletonLoader variant="card" count={4} />
       </div>
     );
   }

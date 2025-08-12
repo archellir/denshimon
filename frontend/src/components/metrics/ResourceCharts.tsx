@@ -111,8 +111,8 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
           <h3 className="font-mono text-sm mb-4">CPU & MEMORY TRENDS</h3>
           <div className="h-64">
             {isLoadingHistory ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="font-mono text-sm">LOADING HISTORY...</span>
+              <div className="h-full">
+                <SkeletonLoader variant="chart" count={1} />
               </div>
             ) : historicalData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
@@ -165,8 +165,8 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
           <h3 className="font-mono text-sm mb-4">WORKLOAD TRENDS</h3>
           <div className="h-64">
             {isLoadingHistory ? (
-              <div className="flex items-center justify-center h-full">
-                <span className="font-mono text-sm">LOADING HISTORY...</span>
+              <div className="h-full">
+                <SkeletonLoader variant="chart" count={1} />
               </div>
             ) : historicalData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">

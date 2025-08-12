@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import ResourceHierarchy, { type HierarchyNode, buildResourceHierarchy } from '@components/common/ResourceHierarchy';
 import ManifestViewer, { generateSampleManifest } from '@components/common/ManifestViewer';
 import ResourceActions, { handleResourceAction } from '@components/common/ResourceActions';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 // Mock Kubernetes resources for demonstration
 const generateMockResources = (): any[] => {
@@ -219,8 +220,15 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500 font-mono">Loading resource tree...</div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <SkeletonLoader variant="table" count={8} />
+          </div>
+          <div>
+            <SkeletonLoader variant="card" count={3} />
+          </div>
+        </div>
       </div>
     );
   }
