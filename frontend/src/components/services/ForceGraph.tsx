@@ -47,6 +47,8 @@ const ForceGraph: FC<ForceGraphProps> = ({
   const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [showTraffic, setShowTraffic] = useState(true);
+  const [animationFrame, setAnimationFrame] = useState(0);
 
   // Calculate node size based on request rate
   const getNodeSize = (service: ServiceNode): number => {
@@ -222,7 +224,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     }
   }, [selectedService, hoveredNode]);
 
-  // Custom link rendering
+  // Custom link rendering with animated traffic
   const linkCanvasObject = useCallback((link: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const start = link.source;
     const end = link.target;
@@ -254,6 +256,44 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     ctx.setLineDash([]);
     
+    // Animated traffic particles when traffic is shown
+    if (showTraffic && isLive) {
+      const particleCount = Math.ceil(link.value / 2);
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const offset = ((animationFrame + i * (100 / particleCount)) % 100) / 100;
+        const x = start.x + dx * offset;
+        const y = start.y + dy * offset;
+        
+        // Particle glow
+        const particleSize = 2 / globalScale;
+        const glowSize = 4 / globalScale;
+        
+        // Outer glow
+        ctx.beginPath();
+        ctx.arc(x, y, glowSize, 0, 2 * Math.PI);
+        let particleColor = '#00ff00';
+        if (link.errorRate > 5) {
+          particleColor = '#ff0000';
+        } else if (link.errorRate > 2) {
+          particleColor = '#ffff00';
+        } else if (link.mTLS) {
+          particleColor = '#00ffff';
+        }
+        
+        ctx.fillStyle = particleColor + '33';
+        ctx.fill();
+        
+        // Core particle
+        ctx.beginPath();
+        ctx.arc(x, y, particleSize, 0, 2 * Math.PI);
+        ctx.fillStyle = particleColor;
+        ctx.fill();
+      }
+    }
+    
     // Draw arrow for direction
     const angle = Math.atan2(end.y - start.y, end.x - start.x);
     const arrowLength = 10 / globalScale;
@@ -275,7 +315,18 @@ const ForceGraph: FC<ForceGraphProps> = ({
       arrowY - arrowLength * Math.sin(angle + arrowAngle)
     );
     ctx.stroke();
-  }, []);
+  }, [showTraffic, isLive, animationFrame]);
+
+  // Animation frame counter for traffic flow
+  useEffect(() => {
+    if (showTraffic && isLive) {
+      const interval = setInterval(() => {
+        setAnimationFrame(prev => (prev + 1) % 100);
+      }, 50); // Update every 50ms for smooth animation
+      
+      return () => clearInterval(interval);
+    }
+  }, [showTraffic, isLive]);
 
   // Auto-rotate animation for live mode
   useEffect(() => {
@@ -292,8 +343,9 @@ const ForceGraph: FC<ForceGraphProps> = ({
 
   return (
     <div id="force-graph-container" className="w-full h-full relative bg-black border border-white">
-      <div className="absolute top-2 left-2 z-10 bg-black/80 border border-white p-2">
+      <div className="absolute top-2 left-2 z-20 bg-black/80 border border-white p-2">
         <div className="text-xs font-mono space-y-1">
+          <div className="text-white/60 font-bold mb-1">SERVICE TYPES</div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full" />
             <span>Frontend</span>
@@ -314,15 +366,51 @@ const ForceGraph: FC<ForceGraphProps> = ({
             <div className="w-3 h-3 bg-cyan-500 rounded-full" />
             <span>Gateway</span>
           </div>
+          
+          {showTraffic && (
+            <>
+              <div className="text-white/60 font-bold mt-2 mb-1">TRAFFIC</div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span>Healthy</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                <span>mTLS</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                <span>Warning</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                <span>Errors</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
       
-      {isLive && (
-        <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="text-xs font-mono text-green-400">LIVE</span>
-        </div>
-      )}
+      <div className="absolute top-2 right-2 z-20 flex items-center gap-4">
+        {/* Traffic Toggle */}
+        <button
+          onClick={() => setShowTraffic(!showTraffic)}
+          className={`px-3 py-1 border font-mono text-xs transition-colors ${
+            showTraffic 
+              ? 'border-green-400 text-green-400 bg-green-400/10' 
+              : 'border-white/50 text-white/50 hover:border-white hover:text-white'
+          }`}
+        >
+          {showTraffic ? '● TRAFFIC ON' : '○ TRAFFIC OFF'}
+        </button>
+        
+        {isLive && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-xs font-mono text-green-400">LIVE</span>
+          </div>
+        )}
+      </div>
       
       <ForceGraph2D
         ref={graphRef}
