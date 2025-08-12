@@ -1,5 +1,5 @@
 export interface WebSocketMessage {
-  type: 'metrics' | 'logs' | 'events' | 'workflows' | 'pods' | 'deployments' | 'alerts';
+  type: 'metrics' | 'logs' | 'events' | 'workflows' | 'pods' | 'deployments' | 'alerts' | 'heartbeat' | 'connection';
   timestamp: string;
   data: any;
 }

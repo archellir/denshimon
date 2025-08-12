@@ -215,7 +215,7 @@ class GiteaApiClient {
 
   // Helper methods for common operations
   async getRepositoryOverview(owner: string, repo: string): Promise<{
-    repository: GiteaRepository;
+    repository: GiteaRepository | null;
     branches: GiteaBranch[];
     recentCommits: GiteaCommit[];
     openPullRequests: GiteaPullRequest[];

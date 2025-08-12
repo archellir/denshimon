@@ -274,17 +274,18 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
       },
       
       // Fetch metrics history
-      fetchMetricsHistory: async (timeRange: string) => {
+      fetchMetricsHistory: async (timeRange?: string) => {
+        const duration = timeRange || '1h';
         set({ isLoadingHistory: true });
         
         try {
           if (MOCK_ENABLED) {
-            const mockData = await mockApiResponse(generateMockMetricsHistory(timeRange));
+            const mockData = await mockApiResponse(generateMockMetricsHistory(duration));
             set({ metricsHistory: mockData });
           } else {
             // Real API call
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/metrics/history?duration=${timeRange}`, {
+            const response = await fetch(`/api/metrics/history?duration=${duration}`, {
               headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             

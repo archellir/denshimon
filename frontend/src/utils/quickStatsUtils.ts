@@ -229,7 +229,7 @@ export const generateObservabilityStats = (): QuickStat[] => {
       label: QUICK_STATS_LABELS.ACTIVE_ALERTS,
       value: ACTIVE_ALERTS.toString(),
       icon: Bell,
-      status: ACTIVE_ALERTS === QUICK_STATS_THRESHOLDS.ALERTS.HEALTHY 
+      status: ACTIVE_ALERTS <= QUICK_STATS_THRESHOLDS.ALERTS.HEALTHY 
         ? HealthStatus.HEALTHY as StatusType 
         : ACTIVE_ALERTS < QUICK_STATS_THRESHOLDS.ALERTS.WARNING 
         ? HealthStatus.WARNING as StatusType 

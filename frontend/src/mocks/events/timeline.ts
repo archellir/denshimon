@@ -148,7 +148,7 @@ const generateEvent = (hoursAgo: number): TimelineEvent => {
   
   const severities = Object.keys(categoryTemplates) as EventSeverity[];
   const severity = severities[Math.floor(Math.random() * severities.length)];
-  const templates = categoryTemplates[severity];
+  const templates = categoryTemplates[severity as keyof typeof categoryTemplates];
   
   if (!templates || templates.length === 0) {
     // Fallback event

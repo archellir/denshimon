@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_DASHBOARD_CONFIG, DASHBOARD_SECTIONS, DASHBOARD_TABS } from '@constants';
+import { DEFAULT_DASHBOARD_CONFIG } from '@constants';
 
 export interface DashboardConfig {
   sections: Record<string, boolean>;
