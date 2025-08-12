@@ -12,6 +12,7 @@ import {
   Heart,
   Pause
 } from 'lucide-react';
+import { HealthStatus, SyncStatus } from '@/constants';
 import useGitOpsStore from '@stores/gitopsStore';
 import type { Application } from '@/types/gitops';
 
@@ -60,11 +61,11 @@ const ApplicationList: FC<ApplicationListProps> = ({ onShowDetails }) => {
 
   const getSyncStatusIcon = (status: string) => {
     switch (status) {
-      case 'synced':
+      case SyncStatus.SYNCED:
         return <CheckCircle size={16} className="text-green-400" />;
-      case 'out_of_sync':
+      case SyncStatus.OUT_OF_SYNC:
         return <AlertCircle size={16} className="text-yellow-400" />;
-      case 'error':
+      case SyncStatus.ERROR:
         return <AlertCircle size={16} className="text-red-400" />;
       default:
         return <Clock size={16} className="text-gray-400" />;
@@ -73,15 +74,15 @@ const ApplicationList: FC<ApplicationListProps> = ({ onShowDetails }) => {
 
   const getHealthStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy':
+      case HealthStatus.HEALTHY:
         return <Heart size={16} className="text-green-400" />;
-      case 'progressing':
+      case HealthStatus.PROGRESSING:
         return <RotateCw size={16} className="text-blue-400" />;
-      case 'degraded':
+      case HealthStatus.DEGRADED:
         return <AlertCircle size={16} className="text-red-400" />;
-      case 'suspended':
+      case HealthStatus.SUSPENDED:
         return <Pause size={16} className="text-gray-400" />;
-      case 'missing':
+      case HealthStatus.MISSING:
         return <AlertCircle size={16} className="text-red-400" />;
       default:
         return <Clock size={16} className="text-gray-400" />;
@@ -91,14 +92,14 @@ const ApplicationList: FC<ApplicationListProps> = ({ onShowDetails }) => {
   const getStatusColor = (status: string, type: string = 'sync') => {
     if (type === 'health') {
       switch (status) {
-        case 'healthy':
+        case HealthStatus.HEALTHY:
           return 'text-green-400 border-green-400';
-        case 'progressing':
+        case HealthStatus.PROGRESSING:
           return 'text-blue-400 border-blue-400';
-        case 'degraded':
-        case 'missing':
+        case HealthStatus.DEGRADED:
+        case HealthStatus.MISSING:
           return 'text-red-400 border-red-400';
-        case 'suspended':
+        case HealthStatus.SUSPENDED:
           return 'text-gray-400 border-gray-400';
         default:
           return 'text-yellow-400 border-yellow-400';
@@ -106,11 +107,11 @@ const ApplicationList: FC<ApplicationListProps> = ({ onShowDetails }) => {
     }
 
     switch (status) {
-      case 'synced':
+      case SyncStatus.SYNCED:
         return 'text-green-400 border-green-400';
-      case 'out_of_sync':
+      case SyncStatus.OUT_OF_SYNC:
         return 'text-yellow-400 border-yellow-400';
-      case 'error':
+      case SyncStatus.ERROR:
         return 'text-red-400 border-red-400';
       default:
         return 'text-gray-400 border-gray-400';

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FC } from 'react';
 import { X, GitBranch, Lock, Key, Globe } from 'lucide-react';
+import { AuthType } from '@/types/gitops';
 import useGitOpsStore from '@stores/gitopsStore';
 
 interface CreateRepositoryModalProps {
@@ -12,7 +13,7 @@ interface RepositoryFormData {
   name: string;
   url: string;
   branch: string;
-  auth_type: 'none' | 'token' | 'ssh';
+  auth_type: AuthType;
   credentials: Record<string, string>;
 }
 
@@ -25,10 +26,10 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
     name: '',
     url: '',
     branch: 'main',
-    auth_type: 'none',
+    auth_type: AuthType.NONE,
     credentials: {}
   });
-  const [activeAuthTab, setActiveAuthTab] = useState<'none' | 'token' | 'ssh'>('none');
+  const [activeAuthTab, setActiveAuthTab] = useState<AuthType>(AuthType.NONE);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const { createRepository, isCreating } = useGitOpsStore();
@@ -47,7 +48,7 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
     }));
   };
 
-  const handleAuthTypeChange = (authType: 'none' | 'token' | 'ssh') => {
+  const handleAuthTypeChange = (authType: AuthType) => {
     setActiveAuthTab(authType);
     setFormData(prev => ({
       ...prev,
@@ -75,11 +76,11 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
       newErrors.branch = 'Branch name is required';
     }
 
-    if (formData.auth_type === 'token' && !formData.credentials.token?.trim()) {
+    if (formData.auth_type === AuthType.TOKEN && !formData.credentials.token?.trim()) {
       newErrors.token = 'Access token is required';
     }
 
-    if (formData.auth_type === 'ssh') {
+    if (formData.auth_type === AuthType.SSH) {
       if (!formData.credentials.private_key?.trim()) {
         newErrors.private_key = 'SSH private key is required';
       }
@@ -108,10 +109,10 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
         name: '',
         url: '',
         branch: 'main',
-        auth_type: 'none',
+        auth_type: AuthType.NONE,
         credentials: {}
       });
-      setActiveAuthTab('none');
+      setActiveAuthTab(AuthType.NONE);
     } catch (error) {
       setErrors({ submit: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
@@ -201,7 +202,7 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
                 <button
                   key={auth.id}
                   type="button"
-                  onClick={() => handleAuthTypeChange(auth.id as 'none' | 'token' | 'ssh')}
+                  onClick={() => handleAuthTypeChange(auth.id as AuthType)}
                   className={`flex items-center space-x-2 px-4 py-3 border-r border-white last:border-r-0 font-mono text-sm transition-colors ${
                     activeAuthTab === auth.id
                       ? 'bg-white text-black'
@@ -222,7 +223,7 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
             </div>
 
             {/* Token Authentication */}
-            {activeAuthTab === 'token' && (
+            {activeAuthTab === AuthType.TOKEN && (
               <div>
                 <label className="block text-xs font-mono opacity-60 mb-2">ACCESS TOKEN *</label>
                 <input
@@ -242,7 +243,7 @@ const CreateRepositoryModal: FC<CreateRepositoryModalProps> = ({ isOpen, onClose
             )}
 
             {/* SSH Authentication */}
-            {activeAuthTab === 'ssh' && (
+            {activeAuthTab === AuthType.SSH && (
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-mono opacity-60 mb-2">SSH PRIVATE KEY *</label>

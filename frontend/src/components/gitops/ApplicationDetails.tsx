@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { X, Package, Heart, RotateCw, Clock, CheckCircle, AlertCircle, Pause } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { HealthStatus, SyncStatus } from '@/constants';
 import type { Application } from '@/types/gitops';
 
 interface ApplicationDetailsProps {
@@ -11,11 +12,11 @@ interface ApplicationDetailsProps {
 const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose }) => {
   const getSyncStatusIcon = (status: string) => {
     switch (status) {
-      case 'synced':
+      case SyncStatus.SYNCED:
         return <CheckCircle size={20} className="text-green-400" />;
-      case 'out_of_sync':
+      case SyncStatus.OUT_OF_SYNC:
         return <AlertCircle size={20} className="text-yellow-400" />;
-      case 'error':
+      case SyncStatus.ERROR:
         return <AlertCircle size={20} className="text-red-400" />;
       default:
         return <Clock size={20} className="text-gray-400" />;
@@ -24,15 +25,15 @@ const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose 
 
   const getHealthStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy':
+      case HealthStatus.HEALTHY:
         return <Heart size={20} className="text-green-400" />;
-      case 'progressing':
+      case HealthStatus.PROGRESSING:
         return <RotateCw size={20} className="text-blue-400" />;
-      case 'degraded':
+      case HealthStatus.DEGRADED:
         return <AlertCircle size={20} className="text-red-400" />;
-      case 'suspended':
+      case HealthStatus.SUSPENDED:
         return <Pause size={20} className="text-gray-400" />;
-      case 'missing':
+      case HealthStatus.MISSING:
         return <AlertCircle size={20} className="text-red-400" />;
       default:
         return <Clock size={20} className="text-gray-400" />;
@@ -42,14 +43,14 @@ const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose 
   const getStatusColor = (status: string, type: string = 'sync') => {
     if (type === 'health') {
       switch (status) {
-        case 'healthy':
+        case HealthStatus.HEALTHY:
           return 'text-green-400';
-        case 'progressing':
+        case HealthStatus.PROGRESSING:
           return 'text-blue-400';
-        case 'degraded':
-        case 'missing':
+        case HealthStatus.DEGRADED:
+        case HealthStatus.MISSING:
           return 'text-red-400';
-        case 'suspended':
+        case HealthStatus.SUSPENDED:
           return 'text-gray-400';
         default:
           return 'text-yellow-400';
@@ -57,11 +58,11 @@ const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose 
     }
 
     switch (status) {
-      case 'synced':
+      case SyncStatus.SYNCED:
         return 'text-green-400';
-      case 'out_of_sync':
+      case SyncStatus.OUT_OF_SYNC:
         return 'text-yellow-400';
-      case 'error':
+      case SyncStatus.ERROR:
         return 'text-red-400';
       default:
         return 'text-gray-400';
@@ -247,9 +248,9 @@ const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose 
               
               <div className="p-4">
                 <div className="text-xs font-mono opacity-60">
-                  {application.sync_status === 'synced' 
+                  {application.sync_status === SyncStatus.SYNCED 
                     ? 'Application is synchronized and deployed successfully.' 
-                    : application.sync_status === 'out_of_sync'
+                    : application.sync_status === SyncStatus.OUT_OF_SYNC
                     ? 'Application has changes that need to be synchronized.'
                     : 'Application sync status unknown.'}
                 </div>
