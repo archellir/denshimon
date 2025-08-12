@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers } from 'lucide-react';
+import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import { ServiceMeshData } from '@/types/serviceMesh';
@@ -176,6 +176,21 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         </div>
       </div>
 
+      {/* Clear Filter Button */}
+      {searchQuery && (
+        <div className="flex items-center justify-between border border-white/20 p-3">
+          <span className="text-sm font-mono opacity-60">
+            Filtered by: "{searchQuery}"
+          </span>
+          <button
+            onClick={() => setSearchQuery('')}
+            className="flex items-center space-x-1 px-2 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-xs"
+          >
+            <X size={12} />
+            <span>CLEAR</span>
+          </button>
+        </div>
+      )}
 
       {/* Topology View */}
       {selectedView === 'topology' && (
