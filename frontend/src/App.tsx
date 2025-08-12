@@ -96,7 +96,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [showDashboardSettings, setShowDashboardSettings] = useState<boolean>(false)
   const navigate = useNavigate()
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const { isSectionVisible, isTabVisible, getVisibleTabs } = useSettingsStore()
+  const { isSectionVisible } = useSettingsStore()
 
   // Initialize WebSocket connection
   useEffect(() => {

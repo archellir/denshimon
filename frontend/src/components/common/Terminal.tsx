@@ -27,7 +27,6 @@ const Terminal: FC<TerminalProps> = ({ isOpen, onClose, initialOptions, classNam
     output,
     error,
     connect,
-    disconnect,
     sendInput,
     resize,
     clear
