@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, RefreshCw, Filter, Download } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, Filter, Download } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -256,29 +256,20 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         switch (secondaryTab) {
           case InfrastructureTab.NODES:
             return (
-              <>
-                <span className="text-sm font-mono opacity-60">
-                  {clusterMetrics ? `${clusterMetrics.total_nodes} NODES` : 'LOADING...'}
-                </span>
-                <button
-                  onClick={() => fetchAllMetrics()}
-                  className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
-                >
-                  <RefreshCw size={12} />
-                  <span>REFRESH</span>
-                </button>
-              </>
+              <span className="text-sm font-mono opacity-60">
+                {clusterMetrics ? `${clusterMetrics.total_nodes} NODES` : 'CONNECTING...'}
+              </span>
             );
           case InfrastructureTab.RESOURCES:
             return (
               <span className="text-sm font-mono opacity-60">
-                {clusterMetrics ? `${(clusterMetrics.cpu_usage.usage_percent).toFixed(1)}% CPU • ${(clusterMetrics.memory_usage.usage_percent).toFixed(1)}% MEM` : 'LOADING...'}
+                {clusterMetrics ? `${(clusterMetrics.cpu_usage.usage_percent).toFixed(1)}% CPU • ${(clusterMetrics.memory_usage.usage_percent).toFixed(1)}% MEM` : 'CONNECTING...'}
               </span>
             );
           case InfrastructureTab.STORAGE:
             return (
               <span className="text-sm font-mono opacity-60">
-                {clusterMetrics ? `${(clusterMetrics.storage_usage.usage_percent).toFixed(1)}% STORAGE` : 'LOADING...'}
+                {clusterMetrics ? `${(clusterMetrics.storage_usage.usage_percent).toFixed(1)}% STORAGE` : 'CONNECTING...'}
               </span>
             );
           default:
@@ -289,18 +280,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         switch (secondaryTab) {
           case WorkloadsTab.PODS:
             return (
-              <>
-                <span className="text-sm font-mono opacity-60">
-                  {clusterMetrics ? `${clusterMetrics.total_pods} PODS` : 'LOADING...'}
-                </span>
-                <button
-                  onClick={() => fetchAllMetrics()}
-                  className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
-                >
-                  <RefreshCw size={12} />
-                  <span>REFRESH</span>
-                </button>
-              </>
+              <span className="text-sm font-mono opacity-60">
+                {clusterMetrics ? `${clusterMetrics.total_pods} PODS` : 'CONNECTING...'}
+              </span>
             );
           case WorkloadsTab.SERVICES:
             return (
@@ -311,7 +293,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           case WorkloadsTab.NAMESPACES:
             return (
               <span className="text-sm font-mono opacity-60">
-                {clusterMetrics ? `${clusterMetrics.total_namespaces} NAMESPACES` : 'LOADING...'}
+                {clusterMetrics ? `${clusterMetrics.total_namespaces} NAMESPACES` : 'CONNECTING...'}
               </span>
             );
           default:
@@ -320,18 +302,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       
       case PrimaryTab.MESH:
         return (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-mono opacity-60">
-              12 SERVICES • 89.2% mTLS
-            </span>
-            <button
-              onClick={() => {}}
-              className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
-            >
-              <RefreshCw size={12} />
-              <span>REFRESH</span>
-            </button>
-          </div>
+          <span className="text-sm font-mono opacity-60">
+            12 SERVICES • 89.2% mTLS
+          </span>
         );
       
       case PrimaryTab.DEPLOYMENTS:
@@ -439,10 +412,19 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto px-6 pt-2 pb-6">
             <div className="flex justify-end items-center mb-4">
-              {isConnected && isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
+              {isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
                 <div className="flex items-center space-x-2 text-sm font-mono">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-green-400">{UI_MESSAGES.LIVE_UPDATES}</span>
+                  {isConnected ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-green-400">{UI_MESSAGES.LIVE_UPDATES}</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span className="text-red-400">RECONNECTING...</span>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -493,6 +475,23 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
               <div className="flex items-center space-x-4">
                 {/* Item counts and action buttons will be rendered here per tab */}
                 {renderSecondaryTabActions(activePrimaryTab, activeSecondaryTab)}
+                
+                {/* Global WebSocket Status Indicator */}
+                {isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
+                  <div className="flex items-center space-x-2 text-xs font-mono border-l border-white/20 pl-4">
+                    {isConnected ? (
+                      <>
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-green-400">LIVE</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="text-red-400">OFFLINE</span>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
