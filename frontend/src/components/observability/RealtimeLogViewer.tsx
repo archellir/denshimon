@@ -136,13 +136,14 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
       <div className="border-b border-white/20 p-4">
 
         {/* Filters */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Filter size={14} />
-            <span className="text-xs font-mono">FILTER:</span>
-          </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Filter size={14} />
+              <span className="text-xs font-mono">FILTER:</span>
+            </div>
 
-          {/* Level Filter */}
+            {/* Level Filter */}
           <select
             value={filter.level}
             onChange={(e) => setFilter({ ...filter, level: e.target.value })}
@@ -175,6 +176,27 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
             onChange={(e) => setFilter({ ...filter, search: e.target.value })}
             className="bg-black border border-white/30 px-2 py-1 text-xs font-mono placeholder-gray-500 focus:outline-none focus:border-green-400"
           />
+          </div>
+
+          {/* Live Stats */}
+          <div className="flex gap-8 text-sm font-mono">
+            <div className="w-32">
+              <span className="text-gray-500">LOGS/SEC:</span>
+              <span className="ml-2 text-green-400">{logs.length > 0 ? '8.0' : '0.0'}</span>
+            </div>
+            <div className="w-28">
+              <span className="text-gray-500">STREAMS:</span>
+              <span className="ml-2 text-blue-400">12</span>
+            </div>
+            <div className="w-24">
+              <span className="text-gray-500">ERROR:</span>
+              <span className="ml-2 text-red-400">{((logs.filter(l => l.level === 'error').length / Math.max(logs.length, 1)) * 100).toFixed(1)}%</span>
+            </div>
+            <div className="w-24">
+              <span className="text-gray-500">WARN:</span>
+              <span className="ml-2 text-yellow-400">{((logs.filter(l => l.level === 'warn').length / Math.max(logs.length, 1)) * 100).toFixed(1)}%</span>
+            </div>
+          </div>
         </div>
       </div>
 

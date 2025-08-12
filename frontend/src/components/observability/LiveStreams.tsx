@@ -184,35 +184,13 @@ const LiveStreams: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
-          {/* Live Stats - Only show on logs tab */}
-          {liveData && viewMode === 'logs' && (
-            <div className="flex gap-6 text-sm font-mono">
-              <div className="w-28">
-                <span className="text-gray-500">LOGS/SEC:</span>
-                <span className="ml-2 text-green-400">{liveData.stats.logsPerSecond.toFixed(1)}</span>
-              </div>
-              <div className="w-24">
-                <span className="text-gray-500">STREAMS:</span>
-                <span className="ml-2 text-blue-400">{liveData.stats.activeStreams}</span>
-              </div>
-              <div className="w-20">
-                <span className="text-gray-500">ERROR:</span>
-                <span className="ml-2 text-red-400">{liveData.stats.errorRate.toFixed(1)}%</span>
-              </div>
-              <div className="w-20">
-                <span className="text-gray-500">WARN:</span>
-                <span className="ml-2 text-yellow-400">{liveData.stats.warningRate.toFixed(1)}%</span>
-              </div>
-            </div>
-          )}
-          
           {/* Stream Controls - Only show on logs tab */}
           {liveData && viewMode === 'logs' && (
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleStream}
                 disabled={!isConnected}
-                className={`flex items-center space-x-1 px-3 py-1 border font-mono text-sm transition-colors w-20 justify-center ${
+                className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${
                   !isConnected
                     ? 'border-gray-500 text-gray-500 cursor-not-allowed opacity-50'
                     : isPaused 
@@ -220,15 +198,15 @@ const LiveStreams: React.FC = () => {
                       : 'border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black'
                 }`}
               >
-                {isPaused ? <Play size={14} /> : <Pause size={14} />}
+                {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
                 <span>{isPaused ? 'RESUME' : 'PAUSE'}</span>
               </button>
               
               <button
                 onClick={clearTerminal}
-                className="flex items-center space-x-1 px-3 py-1 border border-red-500 text-red-400 hover:bg-red-500 hover:text-black transition-colors font-mono text-sm w-16 justify-center"
+                className="flex items-center space-x-2 px-4 py-2 border border-red-500 text-red-400 hover:bg-red-500 hover:text-black transition-all font-mono text-xs w-28 justify-center"
               >
-                <Square size={14} />
+                <Square size={16} />
                 <span>CLEAR</span>
               </button>
             </div>
@@ -236,7 +214,7 @@ const LiveStreams: React.FC = () => {
 
           {/* Connection Status - Far Right */}
           <div className="relative group ml-auto">
-            <div className={`flex items-center space-x-2 px-3 py-1 border font-mono text-xs transition-all w-24 justify-center ${getConnectionColor()}`}>
+            <div className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${getConnectionColor()}`}>
               {getStatusIcon()}
               <span>{getStatusText()}</span>
             </div>
