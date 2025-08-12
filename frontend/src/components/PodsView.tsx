@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { FC } from 'react'
-import { Server, AlertCircle, CheckCircle, Terminal } from 'lucide-react'
+import { Server, AlertCircle, CheckCircle, Terminal, X } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
@@ -294,18 +294,36 @@ const PodsView: FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <select
-          value={selectedNamespace}
-          onChange={(e) => setSelectedNamespace(e.target.value)}
-          className="bg-black border border-white text-white p-2 font-mono text-sm"
-        >
-          {namespaces.map(ns => (
-            <option key={ns} value={ns}>
-              {ns.toUpperCase()}
-            </option>
-          ))}
-        </select>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <select
+            value={selectedNamespace}
+            onChange={(e) => setSelectedNamespace(e.target.value)}
+            className="bg-black border border-white text-white p-2 font-mono text-sm"
+          >
+            {namespaces.map(ns => (
+              <option key={ns} value={ns}>
+                {ns.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {/* Clear Filter Button */}
+        {searchQuery && (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-mono opacity-60">
+              Filtered by: "{searchQuery}"
+            </span>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="flex items-center space-x-1 px-2 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-xs"
+            >
+              <X size={12} />
+              <span>CLEAR</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
