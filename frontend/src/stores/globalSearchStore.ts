@@ -109,46 +109,24 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
   const lowerQuery = query.toLowerCase();
   const results: SearchResult[] = [];
 
-  // Mock data for different resource types
+  // Import master data for consistency
+  const { 
+    MASTER_PODS, 
+    MASTER_NODES, 
+    MASTER_SERVICES, 
+    MASTER_NAMESPACES, 
+    MASTER_DEPLOYMENTS, 
+    MASTER_ENDPOINTS 
+  } = await import('@mocks/masterData');
+
+  // Convert master data to search format
   const mockResources = {
-    pods: [
-      { name: 'nginx-deployment-7d46c7c4d-abc123', namespace: 'default' },
-      { name: 'api-server-deployment-5f7b8c9d-def456', namespace: 'kube-system' },
-      { name: 'redis-cache-6a8b9c0d-ghi789', namespace: 'production' },
-      { name: 'postgres-database-1a2b3c4d-jkl012', namespace: 'production' },
-      { name: 'frontend-app-8e9f0a1b-mno345', namespace: 'default' },
-    ],
-    nodes: [
-      { name: 'master-node-1' },
-      { name: 'worker-node-1' },
-      { name: 'worker-node-2' },
-      { name: 'gpu-node-1' },
-    ],
-    services: [
-      { name: 'nginx-service', namespace: 'default' },
-      { name: 'api-gateway', namespace: 'production' },
-      { name: 'redis-service', namespace: 'production' },
-      { name: 'postgres-service', namespace: 'production' },
-      { name: 'frontend-service', namespace: 'default' },
-    ],
-    namespaces: [
-      { name: 'default' },
-      { name: 'kube-system' },
-      { name: 'production' },
-      { name: 'staging' },
-      { name: 'monitoring' },
-    ],
-    deployments: [
-      { name: 'nginx-deployment', namespace: 'default' },
-      { name: 'api-server-deployment', namespace: 'production' },
-      { name: 'frontend-deployment', namespace: 'default' },
-    ],
-    endpoints: [
-      { name: '/api/v1/users', service: 'api-gateway' },
-      { name: '/api/v1/auth', service: 'api-gateway' },
-      { name: '/health', service: 'nginx-service' },
-      { name: '/metrics', service: 'api-gateway' },
-    ],
+    pods: MASTER_PODS.map(pod => ({ name: pod.name, namespace: pod.namespace })),
+    nodes: MASTER_NODES.map(name => ({ name })),
+    services: MASTER_SERVICES.map(service => ({ name: service.name, namespace: service.namespace })),
+    namespaces: MASTER_NAMESPACES.map(name => ({ name })),
+    deployments: MASTER_DEPLOYMENTS.map(deployment => ({ name: deployment.name, namespace: deployment.namespace })),
+    endpoints: MASTER_ENDPOINTS.map(endpoint => ({ name: endpoint.name, service: endpoint.service })),
   };
 
   // Search pods
