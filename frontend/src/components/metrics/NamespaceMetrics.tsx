@@ -90,9 +90,6 @@ const NamespaceMetrics: FC = () => {
   if (filteredAndSortedNamespaces.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-mono">NAMESPACE METRICS</h2>
-        </div>
         <div className="text-center py-12">
           <HardDrive size={48} className="mx-auto mb-4 opacity-40" />
           <h3 className="text-lg font-mono mb-2">
@@ -108,13 +105,6 @@ const NamespaceMetrics: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-mono">NAMESPACE METRICS</h2>
-        <div className="text-sm font-mono opacity-60">
-          {filteredAndSortedNamespaces.length} NAMESPACE{filteredAndSortedNamespaces.length !== 1 ? 'S' : ''}
-        </div>
-      </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

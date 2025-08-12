@@ -179,25 +179,27 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
       {/* Topology View */}
       {selectedView === 'topology' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Service Map */}
-          <div className="lg:col-span-2 border border-white p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-mono text-sm">SERVICE TOPOLOGY</h3>
-              <div className="flex gap-2">
-                {['all', 'frontend', 'backend', 'database', 'cache', 'gateway'].map(type => (
-                  <button
-                    key={type}
-                    onClick={() => setFilterType(type as any)}
-                    className={`px-2 py-1 font-mono text-xs border transition-colors ${
-                      filterType === type ? 'bg-white text-black border-white' : 'border-white/30 hover:border-white'
-                    }`}
-                  >
-                    {type.toUpperCase()}
-                  </button>
-                ))}
-              </div>
+        <div className="space-y-4">
+          {/* Filter Controls */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              {['all', 'frontend', 'backend', 'database', 'cache', 'gateway'].map(type => (
+                <button
+                  key={type}
+                  onClick={() => setFilterType(type as any)}
+                  className={`px-3 py-2 font-mono text-xs border transition-colors ${
+                    filterType === type ? 'bg-white text-black border-white' : 'border-white/30 hover:border-white'
+                  }`}
+                >
+                  {type.toUpperCase()}
+                </button>
+              ))}
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Service Map */}
+            <div className="lg:col-span-2 border border-white p-4">
             
             <div className="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto">
               {filteredServices.map(service => {
@@ -344,17 +346,13 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
               </div>
             )}
           </div>
+          </div>
         </div>
       )}
 
       {/* Services View */}
       {selectedView === 'services' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-end">
-            <div className="text-sm font-mono opacity-60">
-              {filteredServices.length} SERVICE{filteredServices.length !== 1 ? 'S' : ''}
-            </div>
-          </div>
           
           <div className="border border-white overflow-hidden">
             <table className="w-full font-mono text-sm">
@@ -406,12 +404,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
       {/* Endpoints View */}
       {selectedView === 'endpoints' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-mono text-sm">API ENDPOINTS</h3>
-            <div className="text-xs font-mono text-gray-500">
-              {filteredEndpoints.length} endpoints across {data.services.length} services
-            </div>
-          </div>
           
           <div className="border border-white overflow-hidden">
             <table className="w-full font-mono text-sm">
@@ -494,7 +486,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Critical Flows */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">CRITICAL BUSINESS FLOWS</h3>
             <div className="space-y-3">
               {data.flows.filter(f => f.criticalPath).map(flow => (
                 <div key={flow.id} className="border border-yellow-500 p-3">
@@ -527,7 +518,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
           {/* All Flows */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">ALL TRAFFIC FLOWS</h3>
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {data.flows.map(flow => (
                 <div key={flow.id} className={`border p-2 ${

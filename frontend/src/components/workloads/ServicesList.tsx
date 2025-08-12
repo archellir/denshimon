@@ -397,32 +397,25 @@ const ServicesList: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-mono">KUBERNETES SERVICES</h2>
-        <div className="flex items-center space-x-4">
-          <div className="text-sm font-mono opacity-60">
-            {filteredServices.length} SERVICE{filteredServices.length !== 1 ? 'S' : ''}
-          </div>
-          {/* View Mode Toggle */}
-          <div className="flex border border-white">
-            <button
-              onClick={() => setViewMode('cards')}
-              className={`px-3 py-1 font-mono text-xs transition-colors ${
-                viewMode === 'cards' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
-              }`}
-            >
-              CARDS
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`px-3 py-1 border-l border-white font-mono text-xs transition-colors ${
-                viewMode === 'table' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
-              }`}
-            >
-              TABLE
-            </button>
-          </div>
+      {/* View Mode Toggle */}
+      <div className="flex items-center space-x-4">
+        <div className="flex border border-white">
+          <button
+            onClick={() => setViewMode('cards')}
+            className={`px-3 py-1 font-mono text-xs transition-colors ${
+              viewMode === 'cards' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+            }`}
+          >
+            CARDS
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={`px-3 py-1 border-l border-white font-mono text-xs transition-colors ${
+              viewMode === 'table' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+            }`}
+          >
+            TABLE
+          </button>
         </div>
       </div>
 
