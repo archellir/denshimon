@@ -3,6 +3,8 @@ import type { FC } from 'react'
 import { Server, AlertCircle, CheckCircle, RefreshCw, Terminal } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
+import SearchBar from '@components/common/SearchBar'
+import SkeletonLoader from '@components/common/SkeletonLoader'
 
 interface Container {
   name: string
@@ -34,6 +36,7 @@ const PodsView: FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [selectedPod, setSelectedPod] = useState<Pod | null>(null)
   const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const fetchPods = async () => {
     setIsLoading(true)
@@ -100,6 +103,18 @@ const PodsView: FC = () => {
       ? pods 
       : pods.filter(pod => pod.namespace === selectedNamespace)
 
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(pod => 
+        pod.name.toLowerCase().includes(query) ||
+        pod.namespace.toLowerCase().includes(query) ||
+        pod.status.toLowerCase().includes(query) ||
+        pod.node?.toLowerCase().includes(query) ||
+        pod.ip?.toLowerCase().includes(query)
+      )
+    }
+
     return filtered.sort((a, b) => {
       let valueA: any, valueB: any
       
@@ -136,7 +151,7 @@ const PodsView: FC = () => {
       const comparison = valueA.toString().localeCompare(valueB.toString())
       return sortOrder === 'asc' ? comparison : -comparison
     })
-  }, [pods, selectedNamespace, sortBy, sortOrder])
+  }, [pods, selectedNamespace, sortBy, sortOrder, searchQuery])
 
   const handleSort = (key: string, order: 'asc' | 'desc') => {
     setSortBy(key)
@@ -269,6 +284,12 @@ const PodsView: FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-mono">KUBERNETES PODS</h1>
           <div className="flex items-center space-x-4">
+            <SearchBar
+              placeholder="Search pods..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-64"
+            />
             <select
               value={selectedNamespace}
               onChange={(e) => setSelectedNamespace(e.target.value)}
@@ -297,19 +318,25 @@ const PodsView: FC = () => {
           </div>
         )}
 
-        <VirtualizedTable
-          data={filteredAndSortedPods}
-          columns={columns}
-          containerHeight={500}
-          rowHeight={48}
-          loading={isLoading}
-          loadingMessage="LOADING PODS..."
-          emptyMessage="NO PODS FOUND"
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
-          className="w-full"
-        />
+        {isLoading ? (
+          <div className="space-y-4">
+            <SkeletonLoader variant="table" count={8} />
+          </div>
+        ) : (
+          <VirtualizedTable
+            data={filteredAndSortedPods}
+            columns={columns}
+            containerHeight={500}
+            rowHeight={48}
+            loading={false}
+            loadingMessage="LOADING PODS..."
+            emptyMessage={searchQuery ? `NO PODS MATCHING "${searchQuery}"` : "NO PODS FOUND"}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            className="w-full"
+          />
+        )}
       </div>
 
       {/* Debug Panel */}
