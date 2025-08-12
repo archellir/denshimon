@@ -487,23 +487,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS) && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto px-6 pt-2 pb-6">
-            <div className="flex justify-end items-center mb-4">
-              {isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
-                <div className="flex items-center space-x-2 text-sm font-mono">
-                  {isConnected ? (
-                    <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-400">{UI_MESSAGES.LIVE_UPDATES}</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                      <span className="text-red-400">RECONNECTING...</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {getQuickStatsForTab(activePrimaryTab).map((stat) => (
                 <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
@@ -551,23 +534,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
               <div className="flex items-center space-x-4">
                 {/* Item counts and action buttons will be rendered here per tab */}
                 {renderSecondaryTabActions(activePrimaryTab, activeSecondaryTab)}
-                
-                {/* Global WebSocket Status Indicator */}
-                {isSectionVisible(DASHBOARD_SECTIONS.LIVE_UPDATES_INDICATOR) && (
-                  <div className="flex items-center space-x-2 text-xs font-mono border-l border-white/20 pl-4">
-                    {isConnected ? (
-                      <>
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-green-400">LIVE</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="text-red-400">OFFLINE</span>
-                      </>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>

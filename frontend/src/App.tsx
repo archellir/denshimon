@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, us
 import type { FC } from 'react'
 import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
-import WebSocketStatus from '@components/common/WebSocketStatus'
+import useWebSocketMetricsStore from '@stores/webSocketMetricsStore'
 import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
 import DashboardSettings from '@components/DashboardSettings'
 import { useKeyboardNavigation } from '@hooks/useKeyboardNavigation'
@@ -279,6 +279,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
 const NavigationBar: FC = () => {
   const location = useLocation()
   const { isTabVisible } = useSettingsStore()
+  const { isConnected } = useWebSocketMetricsStore()
   
   const allNavItems = [
     { path: '/infrastructure', icon: Server, label: 'Infrastructure', tabId: 'infrastructure' },
@@ -292,23 +293,42 @@ const NavigationBar: FC = () => {
 
   return (
     <nav className="border-b border-white">
-      <div className="flex">
-        {navItems.map((item, index) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center space-x-2 px-6 py-4 ${
-              index < navItems.length - 1 ? 'border-r border-white' : ''
-            } transition-colors font-mono ${
-              location.pathname === item.path
-                ? 'bg-white text-black'
-                : 'hover:bg-white hover:text-black'
-            }`}
-          >
-            <item.icon size={16} />
-            <span>{item.label}</span>
-          </Link>
-        ))}
+      <div className="flex items-center justify-between">
+        <div className="flex">
+          {navItems.map((item, index) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex items-center space-x-2 px-6 py-4 ${
+                index < navItems.length - 1 ? 'border-r border-white' : ''
+              } transition-colors font-mono ${
+                location.pathname === item.path
+                  ? 'bg-white text-black'
+                  : 'hover:bg-white hover:text-black'
+              }`}
+            >
+              <item.icon size={16} />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+        
+        {/* Global WebSocket Status Indicator */}
+        <div className="px-6 py-4 border-l border-white">
+          <div className="flex items-center space-x-2 text-xs font-mono">
+            {isConnected ? (
+              <>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-400">LIVE</span>
+              </>
+            ) : (
+              <>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-red-400">OFFLINE</span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </nav>
   )
