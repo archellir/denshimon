@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { X, Package, Heart, RotateCw, Clock, CheckCircle, AlertCircle, Pause } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { HealthStatus, SyncStatus } from '@/constants';
+import { Status, SyncStatus } from '@/constants';
 import type { Application } from '@/types/gitops';
 
 interface ApplicationDetailsProps {
@@ -25,15 +25,15 @@ const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose 
 
   const getHealthStatusIcon = (status: string) => {
     switch (status) {
-      case HealthStatus.HEALTHY:
+      case Status.HEALTHY:
         return <Heart size={20} className="text-green-400" />;
-      case HealthStatus.PROGRESSING:
+      case Status.PROGRESSING:
         return <RotateCw size={20} className="text-blue-400" />;
-      case HealthStatus.DEGRADED:
+      case Status.DEGRADED:
         return <AlertCircle size={20} className="text-red-400" />;
-      case HealthStatus.SUSPENDED:
+      case Status.SUSPENDED:
         return <Pause size={20} className="text-gray-400" />;
-      case HealthStatus.MISSING:
+      case Status.MISSING:
         return <AlertCircle size={20} className="text-red-400" />;
       default:
         return <Clock size={20} className="text-gray-400" />;
@@ -43,14 +43,14 @@ const ApplicationDetails: FC<ApplicationDetailsProps> = ({ application, onClose 
   const getStatusColor = (status: string, type: string = 'sync') => {
     if (type === 'health') {
       switch (status) {
-        case HealthStatus.HEALTHY:
+        case Status.HEALTHY:
           return 'text-green-400';
-        case HealthStatus.PROGRESSING:
+        case Status.PROGRESSING:
           return 'text-blue-400';
-        case HealthStatus.DEGRADED:
-        case HealthStatus.MISSING:
+        case Status.DEGRADED:
+        case Status.MISSING:
           return 'text-red-400';
-        case HealthStatus.SUSPENDED:
+        case Status.SUSPENDED:
           return 'text-gray-400';
         default:
           return 'text-yellow-400';
