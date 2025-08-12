@@ -8,10 +8,10 @@ import {
   X, 
   ExternalLink,
   FileText,
-  Network,
-  AlertTriangle
+  Network
 } from 'lucide-react';
 import EmbeddedTerminal from '@components/common/EmbeddedTerminal';
+import FileExplorer from '@components/pods/FileExplorer';
 
 interface Pod {
   name: string;
@@ -105,13 +105,6 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    // TODO: Implement file upload to pod
-    console.log('Uploading file to pod:', file.name);
-  };
 
   if (!isOpen) return null;
 
@@ -324,29 +317,19 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
                 )}
 
                 {activeTab === 'files' && (
-                  <div className="h-full flex flex-col items-center justify-center space-y-6">
-                    <Upload size={48} className="opacity-40" />
-                    <div className="w-64 space-y-3">
-                      <label className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono cursor-pointer">
-                        <Upload size={16} />
-                        <span>Upload File</span>
-                        <input
-                          type="file"
-                          className="hidden"
-                          onChange={handleFileUpload}
-                        />
-                      </label>
-                      <button
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono"
-                      >
-                        <Download size={16} />
-                        <span>Browse & Download</span>
-                      </button>
-                    </div>
-                    <div className="text-xs font-mono opacity-60 text-center">
-                      <AlertTriangle size={12} className="inline mr-1" />
-                      File transfer functionality is under development
-                    </div>
+                  <div className="h-full">
+                    <FileExplorer
+                      pod={pod}
+                      selectedContainer={selectedContainer}
+                      onFileDownload={(file) => {
+                        console.log('Download file:', file);
+                        // TODO: Implement actual file download via API
+                      }}
+                      onFileUpload={(path, file) => {
+                        console.log('Upload file to:', path, file);
+                        // TODO: Implement actual file upload via API
+                      }}
+                    />
                   </div>
                 )}
 
