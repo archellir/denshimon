@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TimeRange } from '@constants';
+import { TimeRange, HealthStatus, ConnectionStatus, HttpMethod } from '@constants';
 import { getDataPointsForTimeRange } from '@utils/timeUtils';
 import { Globe, Activity, AlertTriangle, Clock, Users, Lock, Unlock } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
@@ -13,7 +13,7 @@ interface APIEndpoint {
   p95Latency: number;
   authRequired: boolean;
   rateLimit: number;
-  status: 'healthy' | 'degraded' | 'critical';
+  status: HealthStatus;
 }
 
 interface ClientMetrics {
@@ -35,7 +35,7 @@ interface Gateway {
   errorRate: number;
   avgLatency: number;
   uptime: number;
-  status: 'online' | 'degraded' | 'offline';
+  status: ConnectionStatus;
 }
 
 interface APIGatewayAnalyticsProps {
@@ -62,7 +62,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         errorRate: 2.1,
         avgLatency: 85,
         uptime: 99.95,
-        status: 'online'
+        status: ConnectionStatus.ONLINE
       },
       {
         name: 'api-gateway-staging',
@@ -72,7 +72,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         errorRate: 4.2,
         avgLatency: 120,
         uptime: 98.5,
-        status: 'degraded'
+        status: ConnectionStatus.CONNECTING
       },
       {
         name: 'internal-api-gateway',
@@ -82,7 +82,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         errorRate: 1.5,
         avgLatency: 45,
         uptime: 99.99,
-        status: 'online'
+        status: ConnectionStatus.ONLINE
       }
     ];
 
@@ -97,7 +97,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 120,
         authRequired: true,
         rateLimit: 1000,
-        status: 'healthy'
+        status: HealthStatus.HEALTHY
       },
       {
         path: '/api/v1/users',
@@ -108,7 +108,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 250,
         authRequired: true,
         rateLimit: 100,
-        status: 'healthy'
+        status: HealthStatus.HEALTHY
       },
       {
         path: '/api/v1/orders',
@@ -119,7 +119,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 180,
         authRequired: true,
         rateLimit: 2000,
-        status: 'healthy'
+        status: HealthStatus.HEALTHY
       },
       {
         path: '/api/v1/orders',
@@ -130,7 +130,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 450,
         authRequired: true,
         rateLimit: 500,
-        status: 'degraded'
+        status: HealthStatus.DEGRADED
       },
       {
         path: '/api/v1/payments',
@@ -141,7 +141,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 800,
         authRequired: true,
         rateLimit: 200,
-        status: 'critical'
+        status: HealthStatus.CRITICAL
       },
       {
         path: '/api/v1/health',
@@ -152,7 +152,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 35,
         authRequired: false,
         rateLimit: 5000,
-        status: 'healthy'
+        status: HealthStatus.HEALTHY
       },
       {
         path: '/api/v2/analytics',
@@ -163,7 +163,7 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
         p95Latency: 1200,
         authRequired: true,
         rateLimit: 50,
-        status: 'critical'
+        status: HealthStatus.CRITICAL
       }
     ];
 
@@ -236,13 +236,14 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy':
-      case 'online':
+      case HealthStatus.HEALTHY:
+      case ConnectionStatus.ONLINE:
         return 'text-green-500 border-green-500';
-      case 'degraded':
+      case HealthStatus.DEGRADED:
+      case ConnectionStatus.CONNECTING:
         return 'text-yellow-500 border-yellow-500';
-      case 'critical':
-      case 'offline':
+      case HealthStatus.CRITICAL:
+      case ConnectionStatus.OFFLINE:
         return 'text-red-500 border-red-500';
       default:
         return 'text-gray-500 border-gray-500';
@@ -251,10 +252,10 @@ const APIGatewayAnalytics: React.FC<APIGatewayAnalyticsProps> = ({ timeRange = T
 
   const getMethodColor = (method: string) => {
     switch (method) {
-      case 'GET': return 'text-green-500 border-green-500';
-      case 'POST': return 'text-blue-500 border-blue-500';
-      case 'PUT': return 'text-yellow-500 border-yellow-500';
-      case 'DELETE': return 'text-red-500 border-red-500';
+      case HttpMethod.GET: return 'text-green-500 border-green-500';
+      case HttpMethod.POST: return 'text-blue-500 border-blue-500';
+      case HttpMethod.PUT: return 'text-yellow-500 border-yellow-500';
+      case HttpMethod.DELETE: return 'text-red-500 border-red-500';
       default: return 'text-gray-500 border-gray-500';
     }
   };

@@ -142,7 +142,17 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
     ];
 
     // Generate IO history
-    const history = [];
+    interface HistoryDataPoint {
+      time: number;
+      readIOPS: number;
+      writeIOPS: number;
+      readThroughput: number;
+      writeThroughput: number;
+      readLatency: number;
+      writeLatency: number;
+    }
+    
+    const history: HistoryDataPoint[] = [];
     const points = getDataPointsForTimeRange(timeRange, 5);
     
     for (let i = 0; i < points; i++) {
