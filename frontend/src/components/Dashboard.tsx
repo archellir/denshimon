@@ -6,7 +6,7 @@ import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import { SearchResult } from '@stores/globalSearchStore';
-import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
 import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
 import CreateRepositoryModal from '@components/gitops/CreateRepositoryModal';
@@ -78,36 +78,36 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   // Secondary tab definitions
   const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: any }>> = {
     [PrimaryTab.INFRASTRUCTURE]: [
-      { id: InfrastructureTab.OVERVIEW, label: LABELS.OVERVIEW, icon: Activity },
-      { id: InfrastructureTab.NODES, label: LABELS.NODES, icon: Server },
-      { id: InfrastructureTab.RESOURCES, label: LABELS.RESOURCES, icon: Cpu },
-      { id: InfrastructureTab.STORAGE, label: LABELS.STORAGE, icon: HardDrive },
-      { id: InfrastructureTab.HIERARCHY, label: LABELS.HIERARCHY, icon: TreePine },
-      { id: InfrastructureTab.NETWORK, label: LABELS.NETWORK, icon: Network },
+      { id: InfrastructureTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
+      { id: InfrastructureTab.NODES, label: UI_LABELS.NODES, icon: Server },
+      { id: InfrastructureTab.RESOURCES, label: UI_LABELS.RESOURCES, icon: Cpu },
+      { id: InfrastructureTab.STORAGE, label: UI_LABELS.STORAGE, icon: HardDrive },
+      { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
+      { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
     ],
     [PrimaryTab.WORKLOADS]: [
-      { id: WorkloadsTab.OVERVIEW, label: LABELS.OVERVIEW, icon: Activity },
-      { id: WorkloadsTab.PODS, label: LABELS.PODS, icon: Database },
-      { id: WorkloadsTab.SERVICES, label: LABELS.SERVICES, icon: Network },
-      { id: WorkloadsTab.NAMESPACES, label: LABELS.NAMESPACES, icon: HardDrive },
+      { id: WorkloadsTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
+      { id: WorkloadsTab.PODS, label: UI_LABELS.PODS, icon: Database },
+      { id: WorkloadsTab.SERVICES, label: UI_LABELS.SERVICES, icon: Network },
+      { id: WorkloadsTab.NAMESPACES, label: UI_LABELS.NAMESPACES, icon: HardDrive },
     ],
     [PrimaryTab.MESH]: [
-      { id: MeshTab.TOPOLOGY, label: LABELS.TOPOLOGY, icon: Network },
-      { id: MeshTab.SERVICES, label: LABELS.SERVICES, icon: Server },
-      { id: MeshTab.ENDPOINTS, label: LABELS.ENDPOINTS, icon: Activity },
-      { id: MeshTab.FLOWS, label: LABELS.TRAFFIC_FLOW, icon: Zap },
-      { id: MeshTab.GATEWAY, label: LABELS.API_GATEWAY, icon: Eye },
+      { id: MeshTab.TOPOLOGY, label: UI_LABELS.TOPOLOGY, icon: Network },
+      { id: MeshTab.SERVICES, label: UI_LABELS.SERVICES, icon: Server },
+      { id: MeshTab.ENDPOINTS, label: UI_LABELS.ENDPOINTS, icon: Activity },
+      { id: MeshTab.FLOWS, label: UI_LABELS.TRAFFIC_FLOW, icon: Zap },
+      { id: MeshTab.GATEWAY, label: UI_LABELS.API_GATEWAY, icon: Eye },
     ],
     [PrimaryTab.DEPLOYMENTS]: [
-      { id: DeploymentsTab.APPLICATIONS, label: LABELS.APPLICATIONS, icon: Package },
-      { id: DeploymentsTab.REPOSITORIES, label: LABELS.REPOSITORIES, icon: GitBranch },
-      { id: DeploymentsTab.GITEA, label: LABELS.GITEA_ACTIONS, icon: Zap },
+      { id: DeploymentsTab.APPLICATIONS, label: UI_LABELS.APPLICATIONS, icon: Package },
+      { id: DeploymentsTab.REPOSITORIES, label: UI_LABELS.REPOSITORIES, icon: GitBranch },
+      { id: DeploymentsTab.GITEA, label: UI_LABELS.GITEA_ACTIONS, icon: Zap },
     ],
     [PrimaryTab.OBSERVABILITY]: [
-      { id: ObservabilityTab.LOGS, label: LABELS.LOGS, icon: FileText },
-      { id: ObservabilityTab.EVENTS, label: LABELS.EVENTS, icon: Clock },
-      { id: ObservabilityTab.STREAMS, label: LABELS.LIVE_STREAMS, icon: Activity },
-      { id: ObservabilityTab.ANALYTICS, label: LABELS.ANALYTICS, icon: TrendingUp },
+      { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
+      { id: ObservabilityTab.EVENTS, label: UI_LABELS.EVENTS, icon: Clock },
+      { id: ObservabilityTab.STREAMS, label: UI_LABELS.LIVE_STREAMS, icon: Activity },
+      { id: ObservabilityTab.ANALYTICS, label: UI_LABELS.ANALYTICS, icon: TrendingUp },
     ],
   };
 
