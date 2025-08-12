@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { CheckCircle, AlertCircle, XCircle, Clock, HelpCircle, Zap } from 'lucide-react';
-import { HealthStatus, SIZES } from '@constants';
+import { Status, SIZES } from '@constants';
 
-export type StatusType = HealthStatus;
+export type StatusType = Status;
 
 interface StatusIconProps {
   status: StatusType;
@@ -19,42 +19,42 @@ const StatusIcon: FC<StatusIconProps> = ({
 }) => {
   const getStatusConfig = (status: StatusType) => {
     switch (status) {
-      case HealthStatus.HEALTHY:
+      case Status.HEALTHY:
         return {
           icon: CheckCircle,
           color: 'text-green-500',
           label: 'HEALTHY',
           bgColor: 'border-green-500'
         };
-      case HealthStatus.WARNING:
+      case Status.WARNING:
         return {
           icon: AlertCircle,
           color: 'text-yellow-500',
           label: 'WARNING',
           bgColor: 'border-yellow-500'
         };
-      case HealthStatus.ERROR:
+      case Status.ERROR:
         return {
           icon: XCircle,
           color: 'text-red-500',
           label: 'ERROR',
           bgColor: 'border-red-500'
         };
-      case HealthStatus.CRITICAL:
+      case Status.CRITICAL:
         return {
           icon: Zap,
           color: 'text-red-600',
           label: 'CRITICAL',
           bgColor: 'border-red-600'
         };
-      case HealthStatus.PENDING:
+      case Status.PENDING:
         return {
           icon: Clock,
           color: 'text-blue-500',
           label: 'PENDING',
           bgColor: 'border-blue-500'
         };
-      case HealthStatus.UNKNOWN:
+      case Status.UNKNOWN:
         return {
           icon: HelpCircle,
           color: 'text-gray-500',
@@ -123,24 +123,24 @@ export const normalizeStatus = (status: string): StatusType => {
   
   // Map common status variations to our standard types
   if (['running', 'active', 'ready', 'succeeded', 'bound', 'available'].includes(lowercased)) {
-    return HealthStatus.HEALTHY;
+    return Status.HEALTHY;
   }
   
   if (['degraded', 'progressing', 'replicafailure', 'warning'].includes(lowercased)) {
-    return HealthStatus.WARNING;
+    return Status.WARNING;
   }
   
   if (['failed', 'error', 'crashloopbackoff', 'imagepullbackoff', 'terminating'].includes(lowercased)) {
-    return HealthStatus.ERROR;
+    return Status.ERROR;
   }
   
   if (['pending', 'creating', 'terminating', 'updating'].includes(lowercased)) {
-    return HealthStatus.PENDING;
+    return Status.PENDING;
   }
   
   if (['outofmemory', 'killed', 'oomkilled'].includes(lowercased)) {
-    return HealthStatus.CRITICAL;
+    return Status.CRITICAL;
   }
   
-  return HealthStatus.UNKNOWN;
+  return Status.UNKNOWN;
 };

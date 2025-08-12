@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react';
 import StatusIcon, { type StatusType } from './StatusIcon';
-import { HealthStatus } from '@constants';
+import { Status } from '@constants';
 
 export interface HealthMetric {
   label: string;
@@ -141,7 +141,7 @@ const HealthSummaryCard: FC<HealthSummaryCardProps> = ({
       </div>
 
       {/* Footer Alert if critical */}
-      {calculatedStatus === HealthStatus.CRITICAL && (
+      {calculatedStatus === Status.CRITICAL && (
         <div className="border-t border-red-500 px-4 py-2 bg-red-500/10">
           <div className="flex items-center space-x-2">
             <AlertCircle size={14} className="text-red-500" />
@@ -155,12 +155,12 @@ const HealthSummaryCard: FC<HealthSummaryCardProps> = ({
 
 // Utility function to calculate overall status from metrics
 const calculateOverallStatus = (metrics: HealthMetric[]): StatusType => {
-  if (metrics.some(m => m.status === HealthStatus.CRITICAL)) return HealthStatus.CRITICAL;
-  if (metrics.some(m => m.status === HealthStatus.ERROR)) return HealthStatus.ERROR;
-  if (metrics.some(m => m.status === HealthStatus.WARNING)) return HealthStatus.WARNING;
-  if (metrics.some(m => m.status === HealthStatus.PENDING)) return HealthStatus.PENDING;
-  if (metrics.every(m => m.status === HealthStatus.HEALTHY)) return HealthStatus.HEALTHY;
-  return HealthStatus.UNKNOWN;
+  if (metrics.some(m => m.status === Status.CRITICAL)) return Status.CRITICAL;
+  if (metrics.some(m => m.status === Status.ERROR)) return Status.ERROR;
+  if (metrics.some(m => m.status === Status.WARNING)) return Status.WARNING;
+  if (metrics.some(m => m.status === Status.PENDING)) return Status.PENDING;
+  if (metrics.every(m => m.status === Status.HEALTHY)) return Status.HEALTHY;
+  return Status.UNKNOWN;
 };
 
 export default HealthSummaryCard;
@@ -185,7 +185,7 @@ export const createClusterHealthCard = (data: any) => ({
       label: 'CPU Utilization',
       value: data.cpuUsage.toFixed(1),
       unit: '%',
-      status: data.cpuUsage < 70 ? HealthStatus.HEALTHY as StatusType : data.cpuUsage < 85 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      status: data.cpuUsage < 70 ? Status.HEALTHY as StatusType : data.cpuUsage < 85 ? Status.WARNING as StatusType : Status.CRITICAL as StatusType,
       trend: data.cpuTrend,
       trendValue: data.cpuTrendValue,
       threshold: { warning: 70, critical: 85 },
@@ -194,7 +194,7 @@ export const createClusterHealthCard = (data: any) => ({
       label: 'Memory Utilization',
       value: data.memoryUsage.toFixed(1),
       unit: '%',
-      status: data.memoryUsage < 70 ? HealthStatus.HEALTHY as StatusType : data.memoryUsage < 85 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      status: data.memoryUsage < 70 ? Status.HEALTHY as StatusType : data.memoryUsage < 85 ? Status.WARNING as StatusType : Status.CRITICAL as StatusType,
       trend: data.memoryTrend,
       trendValue: data.memoryTrendValue,
       threshold: { warning: 70, critical: 85 },
@@ -273,7 +273,7 @@ export const createStorageHealthCard = (data: any) => ({
       label: 'Volume Usage',
       value: data.volumeUsage.toFixed(1),
       unit: '%',
-      status: data.volumeUsage < 70 ? HealthStatus.HEALTHY as StatusType : data.volumeUsage < 85 ? HealthStatus.WARNING as StatusType : HealthStatus.CRITICAL as StatusType,
+      status: data.volumeUsage < 70 ? Status.HEALTHY as StatusType : data.volumeUsage < 85 ? Status.WARNING as StatusType : Status.CRITICAL as StatusType,
       trend: data.volumeTrend,
       threshold: { warning: 70, critical: 85 },
     },
