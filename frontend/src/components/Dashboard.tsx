@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp } from 'lucide-react';
@@ -42,6 +42,10 @@ interface DashboardProps {
 const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRUCTURE, onSecondaryTabChange, timeRange = TimeRange.ONE_HOUR }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isSectionVisible } = useSettingsStore();
+
+  // Store last visited secondary tab for each primary tab
+  const [lastVisitedTabs, setLastVisitedTabs] = useState<Record<string, string>>({});
+  const previousPrimaryTab = useRef<string>(activePrimaryTab);
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -88,29 +92,51 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     ],
   };
 
-  // Get current secondary tab from URL or use default
-  const activeSecondaryTab = searchParams.get('tab') || 
-    defaultSecondaryTabs[activePrimaryTab as keyof typeof defaultSecondaryTabs] || 
-    (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
+  // Get current secondary tab from URL, last visited, or use default
+  const getSecondaryTabForPrimaryTab = (primaryTab: string) => {
+    return lastVisitedTabs[primaryTab] || 
+           defaultSecondaryTabs[primaryTab as keyof typeof defaultSecondaryTabs] || 
+           (secondaryTabs[primaryTab] ? secondaryTabs[primaryTab][0].id : '');
+  };
+
+  const activeSecondaryTab = searchParams.get('tab') || getSecondaryTabForPrimaryTab(activePrimaryTab);
 
   // Update secondary tab and URL
   const setActiveSecondaryTab = (tabId: string) => {
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set('tab', tabId);
     setSearchParams(newSearchParams);
+    
+    // Store this as the last visited tab for the current primary tab
+    setLastVisitedTabs(prev => ({
+      ...prev,
+      [activePrimaryTab]: tabId
+    }));
+    
     onSecondaryTabChange?.(tabId);
   };
 
-  // Set default tab in URL if none is present
+  // Handle primary tab changes - restore last visited secondary tab
+  useEffect(() => {
+    // If primary tab changed, restore the last visited secondary tab for the new primary tab
+    if (previousPrimaryTab.current !== activePrimaryTab) {
+      const targetSecondaryTab = getSecondaryTabForPrimaryTab(activePrimaryTab);
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('tab', targetSecondaryTab);
+      setSearchParams(newSearchParams, { replace: true });
+      previousPrimaryTab.current = activePrimaryTab;
+    }
+  }, [activePrimaryTab, searchParams, setSearchParams, lastVisitedTabs]);
+
+  // Set default tab in URL if none is present (initial load)
   useEffect(() => {
     if (!searchParams.get('tab')) {
-      const defaultTab = defaultSecondaryTabs[activePrimaryTab as keyof typeof defaultSecondaryTabs] || 
-        (secondaryTabs[activePrimaryTab] ? secondaryTabs[activePrimaryTab][0].id : '');
+      const defaultTab = getSecondaryTabForPrimaryTab(activePrimaryTab);
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set('tab', defaultTab);
       setSearchParams(newSearchParams, { replace: true });
     }
-  }, [activePrimaryTab, searchParams, setSearchParams, defaultSecondaryTabs, secondaryTabs]);
+  }, [activePrimaryTab, searchParams, setSearchParams, lastVisitedTabs]);
 
   // Notify parent of current secondary tab
   useEffect(() => {
