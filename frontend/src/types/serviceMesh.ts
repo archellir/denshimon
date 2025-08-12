@@ -3,7 +3,7 @@ export interface ServiceNode {
   name: string;
   namespace: string;
   version: string;
-  type: 'frontend' | 'backend' | 'database' | 'cache' | 'gateway' | 'sidecar';
+  type: 'frontend' | 'backend' | 'database' | 'cache' | 'gateway';
   status: 'healthy' | 'warning' | 'error' | 'unknown';
   instances: number;
   metrics: {

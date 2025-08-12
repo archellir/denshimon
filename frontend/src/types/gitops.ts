@@ -1,10 +1,18 @@
+import { SyncStatus, HealthStatus, SortDirection } from '@/constants';
+
+export enum AuthType {
+  NONE = 'none',
+  TOKEN = 'token',
+  SSH = 'ssh'
+}
+
 export interface Repository {
   id: string;
   name: string;
   url: string;
   branch: string;
-  auth_type: 'none' | 'token' | 'ssh';
-  sync_status: 'synced' | 'out_of_sync' | 'error' | 'unknown';
+  auth_type: AuthType;
+  sync_status: SyncStatus;
   last_sync: string | null;
   sync_error: string | null;
   created_at: string;
@@ -15,7 +23,7 @@ export interface CreateRepositoryRequest {
   name: string;
   url: string;
   branch: string;
-  auth_type: 'none' | 'token' | 'ssh';
+  auth_type: AuthType;
   credentials: {
     token?: string;
     private_key?: string;
@@ -35,8 +43,8 @@ export interface Application {
   repository_id: string;
   path: string;
   namespace: string;
-  sync_status: 'synced' | 'out_of_sync' | 'error' | 'unknown';
-  health_status: 'healthy' | 'progressing' | 'degraded' | 'suspended' | 'missing' | 'unknown';
+  sync_status: SyncStatus;
+  health_status: HealthStatus;
   sync_policy: SyncPolicy;
   last_sync: string | null;
   sync_error: string | null;
@@ -67,7 +75,7 @@ export interface GitOpsStore {
   repositoryFilter: string;
   applicationFilter: string;
   sortBy: string;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: SortDirection;
   
   // Setters
   setRepositories: (repositories: Repository[]) => void;
@@ -79,7 +87,7 @@ export interface GitOpsStore {
   setRepositoryFilter: (filter: string) => void;
   setApplicationFilter: (filter: string) => void;
   setSortBy: (sortBy: string) => void;
-  setSortOrder: (sortOrder: 'asc' | 'desc') => void;
+  setSortOrder: (sortOrder: SortDirection) => void;
   
   // Actions
   fetchRepositories: () => Promise<void>;

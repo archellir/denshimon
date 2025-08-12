@@ -6,6 +6,23 @@ export * from './metrics';
 export * from './network';
 export * from './podLifecycle';
 
+// Re-export enums from constants
+export { 
+  HealthStatus, 
+  SyncStatus, 
+  PodStatus, 
+  NodeStatus, 
+  ConnectionStatus, 
+  AlertSeverity,
+  SortDirection,
+  TimeRange,
+  HttpMethod,
+  WebSocketEventType,
+  ChartType,
+  ViewType,
+  LogLevel
+} from '@/constants';
+
 // Common UI types
 export interface ModalProps {
   isOpen: boolean;
@@ -17,10 +34,12 @@ export interface SelectOption {
   label: string;
 }
 
+import { SortDirection } from '@/constants';
+
 export interface FilterState {
   search: string;
   sortBy: string;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: SortDirection;
 }
 
 // API response types
