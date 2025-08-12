@@ -134,18 +134,6 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
     <div className="h-full flex flex-col">
       {/* Controls */}
       <div className="border-b border-white/20 p-4">
-        <div className="flex items-center justify-between mb-4">
-          {/* Connection Status */}
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-            <span className="text-xs font-mono">
-              {isConnected ? 'STREAMING' : 'DISCONNECTED'}
-            </span>
-            <span className="text-xs font-mono opacity-60">
-              {filteredLogs.length}/{logs.length} LOGS
-            </span>
-          </div>
-        </div>
 
         {/* Filters */}
         <div className="flex items-center space-x-4">

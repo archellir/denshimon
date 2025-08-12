@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText } from 'lucide-react';
+import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText, Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
+import { getWebSocketInstance } from '@services/websocket';
 import RealtimeLogViewer from './RealtimeLogViewer';
 
 const LiveStreams: React.FC = () => {
@@ -10,7 +11,26 @@ const LiveStreams: React.FC = () => {
   const [autoScroll, setAutoScroll] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [viewMode, setViewMode] = useState<'pods' | 'logs' | 'deployments'>('pods');
+  const [connectionState, setConnectionState] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
   const logsEndRef = useRef<HTMLDivElement>(null);
+
+  // WebSocket connection status
+  useEffect(() => {
+    const ws = getWebSocketInstance();
+    if (!ws) return;
+
+    // Subscribe to connection status
+    const connectionSubId = ws.subscribe('connection', (state) => {
+      setConnectionState(state.state);
+    });
+
+    // Initial connection state
+    setConnectionState(ws.getConnectionState() as 'connected' | 'connecting' | 'disconnected' | 'error');
+
+    return () => {
+      ws.unsubscribe(connectionSubId);
+    };
+  }, []);
 
   // Live terminal updates
   useEffect(() => {
@@ -80,6 +100,54 @@ const LiveStreams: React.FC = () => {
     }
   };
 
+  // Connection status helpers (matching WebSocketStatus component)
+  const getStatusIcon = () => {
+    switch (connectionState) {
+      case 'connected':
+        return <Wifi size={16} className="text-green-500" />;
+      case 'connecting':
+        return <RotateCcw size={16} className="text-yellow-500 animate-spin" />;
+      case 'disconnected':
+        return <WifiOff size={16} className="text-gray-500" />;
+      case 'error':
+        return <AlertCircle size={16} className="text-red-500" />;
+      default:
+        return <WifiOff size={16} className="text-gray-500" />;
+    }
+  };
+
+  const getConnectionColor = () => {
+    switch (connectionState) {
+      case 'connected':
+        return 'border-green-500 text-green-500';
+      case 'connecting':
+        return 'border-yellow-500 text-yellow-500';
+      case 'disconnected':
+        return 'border-gray-500 text-gray-500';
+      case 'error':
+        return 'border-red-500 text-red-500';
+      default:
+        return 'border-gray-500 text-gray-500';
+    }
+  };
+
+  const getStatusText = () => {
+    switch (connectionState) {
+      case 'connected':
+        return 'LIVE';
+      case 'connecting':
+        return 'CONNECTING';
+      case 'disconnected':
+        return 'OFFLINE';
+      case 'error':
+        return 'ERROR';
+      default:
+        return 'UNKNOWN';
+    }
+  };
+
+  const isConnected = connectionState === 'connected';
+
   return (
     <div className="space-y-6">
       {/* Header with integrated tabs and controls */}
@@ -115,36 +183,41 @@ const LiveStreams: React.FC = () => {
           </button>
         </div>
         
-        {liveData && (
-          <div className="flex items-center gap-4">
-            {/* Live Stats */}
-            <div className="flex gap-4 text-sm font-mono">
-              <div>
+        <div className="flex items-center gap-4">
+          {/* Live Stats - Only show on logs tab */}
+          {liveData && viewMode === 'logs' && (
+            <div className="flex gap-6 text-sm font-mono">
+              <div className="w-28">
                 <span className="text-gray-500">LOGS/SEC:</span>
                 <span className="ml-2 text-green-400">{liveData.stats.logsPerSecond.toFixed(1)}</span>
               </div>
-              <div>
+              <div className="w-24">
                 <span className="text-gray-500">STREAMS:</span>
                 <span className="ml-2 text-blue-400">{liveData.stats.activeStreams}</span>
               </div>
-              <div>
+              <div className="w-20">
                 <span className="text-gray-500">ERROR:</span>
                 <span className="ml-2 text-red-400">{liveData.stats.errorRate.toFixed(1)}%</span>
               </div>
-              <div>
+              <div className="w-20">
                 <span className="text-gray-500">WARN:</span>
                 <span className="ml-2 text-yellow-400">{liveData.stats.warningRate.toFixed(1)}%</span>
               </div>
             </div>
-            
-            {/* Stream Controls */}
+          )}
+          
+          {/* Stream Controls - Only show on logs tab */}
+          {liveData && viewMode === 'logs' && (
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleStream}
-                className={`flex items-center space-x-1 px-3 py-1 border font-mono text-sm transition-colors ${
-                  isPaused 
-                    ? 'border-green-500 text-green-400 hover:bg-green-500 hover:text-black' 
-                    : 'border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black'
+                disabled={!isConnected}
+                className={`flex items-center space-x-1 px-3 py-1 border font-mono text-sm transition-colors w-20 justify-center ${
+                  !isConnected
+                    ? 'border-gray-500 text-gray-500 cursor-not-allowed opacity-50'
+                    : isPaused 
+                      ? 'border-green-500 text-green-400 hover:bg-green-500 hover:text-black' 
+                      : 'border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black'
                 }`}
               >
                 {isPaused ? <Play size={14} /> : <Pause size={14} />}
@@ -153,14 +226,33 @@ const LiveStreams: React.FC = () => {
               
               <button
                 onClick={clearTerminal}
-                className="flex items-center space-x-1 px-3 py-1 border border-red-500 text-red-400 hover:bg-red-500 hover:text-black transition-colors font-mono text-sm"
+                className="flex items-center space-x-1 px-3 py-1 border border-red-500 text-red-400 hover:bg-red-500 hover:text-black transition-colors font-mono text-sm w-16 justify-center"
               >
                 <Square size={14} />
                 <span>CLEAR</span>
               </button>
             </div>
+          )}
+
+          {/* Connection Status - Far Right */}
+          <div className="relative group ml-auto">
+            <div className={`flex items-center space-x-2 px-3 py-1 border font-mono text-xs transition-all w-24 justify-center ${getConnectionColor()}`}>
+              {getStatusIcon()}
+              <span>{getStatusText()}</span>
+            </div>
+            
+            {/* Tooltip */}
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black border border-white text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              Real-time updates {connectionState}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+            </div>
+
+            {/* Pulse effect when connecting */}
+            {connectionState === 'connecting' && (
+              <div className="absolute inset-0 border border-yellow-500 animate-pulse pointer-events-none"></div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
 
