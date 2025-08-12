@@ -1,22 +1,11 @@
 import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint, TrafficFlow, ServiceMeshMetrics } from '@/types/serviceMesh';
-
-const SERVICE_NAMES = {
-  frontend: ['web-ui', 'mobile-app', 'admin-portal'],
-  backend: ['user-service', 'order-service', 'payment-service', 'inventory-service', 'notification-service'],
-  database: ['postgres-primary', 'postgres-replica', 'mongodb-cluster'],
-  cache: ['redis-cache', 'memcached'],
-  gateway: ['api-gateway', 'ingress-controller'],
-  sidecar: ['istio-proxy', 'envoy-proxy'],
-};
-
-const NAMESPACES = ['production', 'staging', 'default', 'istio-system'];
+import { MASTER_SERVICES, MASTER_ENDPOINTS, MASTER_NAMESPACES } from '@mocks/masterData';
 
 const generateServiceId = (name: string, namespace: string) => `${namespace}-${name}`;
 
-const generateServiceNode = (type: keyof typeof SERVICE_NAMES, index: number): ServiceNode => {
-  const names = SERVICE_NAMES[type];
-  const name = names[index % names.length] + (index >= names.length ? `-${Math.floor(index / names.length) + 1}` : '');
-  const namespace = NAMESPACES[Math.floor(Math.random() * NAMESPACES.length)];
+const generateServiceNode = (service: typeof MASTER_SERVICES[number]): ServiceNode => {
+  const name = service.name;
+  const namespace = service.namespace;
   
   // Generate realistic metrics based on service type
   let baseRequestRate = 0;
