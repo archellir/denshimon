@@ -6,7 +6,7 @@ const generateServiceId = (name: string, namespace: string) => `${namespace}-${n
 const generateServiceNode = (service: typeof MASTER_SERVICES[number]): ServiceNode => {
   const name = service.name;
   const namespace = service.namespace;
-  const type = service.type;
+  const type = service.serviceType;
   
   // Generate realistic metrics based on service type
   let baseRequestRate = 0;

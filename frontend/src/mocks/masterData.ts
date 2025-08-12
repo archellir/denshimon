@@ -104,15 +104,15 @@ export const MASTER_PODS = [
 
 // Services
 export const MASTER_SERVICES = [
-  { name: 'kubernetes', namespace: 'default', type: 'ClusterIP' },
-  { name: 'kube-dns', namespace: 'kube-system', type: 'ClusterIP' },
-  { name: 'nginx-service', namespace: 'default', type: 'LoadBalancer' },
-  { name: 'api-gateway', namespace: 'production', type: 'ClusterIP' },
-  { name: 'redis-service', namespace: 'production', type: 'ClusterIP' },
-  { name: 'postgres-service', namespace: 'production', type: 'ClusterIP' },
-  { name: 'frontend-service', namespace: 'default', type: 'NodePort' },
-  { name: 'grafana-service', namespace: 'monitoring', type: 'ClusterIP' },
-  { name: 'prometheus-service', namespace: 'monitoring', type: 'ClusterIP' },
+  { name: 'kubernetes', namespace: 'default', type: 'ClusterIP', serviceType: 'gateway' },
+  { name: 'kube-dns', namespace: 'kube-system', type: 'ClusterIP', serviceType: 'backend' },
+  { name: 'nginx-service', namespace: 'default', type: 'LoadBalancer', serviceType: 'frontend' },
+  { name: 'api-gateway', namespace: 'production', type: 'ClusterIP', serviceType: 'gateway' },
+  { name: 'redis-service', namespace: 'production', type: 'ClusterIP', serviceType: 'cache' },
+  { name: 'postgres-service', namespace: 'production', type: 'ClusterIP', serviceType: 'database' },
+  { name: 'frontend-service', namespace: 'default', type: 'NodePort', serviceType: 'frontend' },
+  { name: 'grafana-service', namespace: 'monitoring', type: 'ClusterIP', serviceType: 'frontend' },
+  { name: 'prometheus-service', namespace: 'monitoring', type: 'ClusterIP', serviceType: 'backend' },
 ] as const;
 
 // Deployments
