@@ -11,13 +11,14 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 interface ResourceChartsProps {
   timeRange?: string;
 }
 
 const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' }) => {
-  const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory } = useWebSocketMetricsStore();
+  const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory, isLoading } = useWebSocketMetricsStore();
 
   // Historical data for line charts
   const historicalData = useMemo(() => {
@@ -90,6 +91,16 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <SkeletonLoader variant="chart" count={2} />
+        <SkeletonLoader variant="chart" count={1} />
+        <SkeletonLoader variant="table" count={3} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
