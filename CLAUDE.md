@@ -19,14 +19,14 @@ This is a comprehensive Kubernetes GitOps and monitoring platform with:
 - **Cloud Native**: Containerized deployment with multi-registry support
 
 ### Key Features Implemented
-- ✅ **Virtualized Tables**: High-performance tables handling 50,000+ rows with smooth scrolling
-- ✅ **Live Log Streaming**: Real-time log viewer with search, filtering, and auto-scroll
-- ✅ **Gitea API Integration**: Complete GitOps workflow management through secure backend
-- ✅ **Dashboard Customization**: Hide/show UI sections and tabs via settings modal
-- ✅ **Anti-SEO Protection**: Meta tags, robots.txt, and generic descriptions for security
-- ✅ **WebSocket Monitoring**: Real-time metrics and cluster state updates
-- ✅ **Responsive Design**: Card/table view toggles for different screen sizes
-- ✅ **TypeScript Coverage**: Full type safety with strict mode enabled
+- **Virtualized Tables**: High-performance tables handling 50,000+ rows with smooth scrolling
+- **Live Log Streaming**: Real-time log viewer with search, filtering, and auto-scroll
+- **Gitea API Integration**: Complete GitOps workflow management through secure backend
+- **Dashboard Customization**: Hide/show UI sections and tabs via settings modal
+- **Anti-SEO Protection**: Meta tags, robots.txt, and generic descriptions for security
+- **WebSocket Monitoring**: Real-time metrics and cluster state updates
+- **Responsive Design**: Card/table view toggles for different screen sizes
+- **TypeScript Coverage**: Full type safety with strict mode enabled
 
 ### Technology Stack
 - **Backend**: Go 1.24.6 with standard library HTTP routing
@@ -297,7 +297,7 @@ Follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0
 
 **Commit size limits**:
 - **Maximum 1-2 files per commit** (can be more only if absolutely necessary)
-- One logical change per commit
+- One logical change per commit, commit must be granular
 - Separate unrelated changes into different commits
   
 **Examples**:
