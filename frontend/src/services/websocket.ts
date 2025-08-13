@@ -217,6 +217,13 @@ export class DenshimonWebSocket {
       MASTER_NODES,
       MASTER_DEPLOYMENTS
     } = await import('@mocks/masterData');
+    
+    // Import webhook mock generators
+    const { 
+      generateMockPipelineUpdate,
+      generateMockGitHubWebhook,
+      generateMockGiteaWebhook
+    } = await import('@mocks/webhooks/pipelineUpdates');
 
     // Store base values for consistent incremental updates
     let baseCpu = 45 + Math.random() * 20;
@@ -395,20 +402,28 @@ export class DenshimonWebSocket {
           lastTripped: Math.random() > 0.95 ? new Date().toISOString() : null,
           timestamp: new Date().toISOString()
         };
-      }
+      },
+
+      // GitOps Webhook events
+      pipeline_update: () => generateMockPipelineUpdate(),
+      gitea_webhook: () => generateMockGiteaWebhook(),
+      github_webhook: () => generateMockGitHubWebhook()
     };
 
     // Send mock data at different intervals
     Object.entries(mockData).forEach(([type, generator]) => {
       const interval = {
-        metrics: 2000,     // Every 2 seconds
-        logs: 500,         // Every 0.5 seconds for real-time feel
-        workflows: 5000,   // Every 5 seconds
-        events: 3000,      // Every 3 seconds
-        alerts: 10000,     // Every 10 seconds
-        pods: 4000,        // Every 4 seconds
-        deployments: 8000, // Every 8 seconds
-        services: 6000     // Every 6 seconds
+        metrics: 2000,        // Every 2 seconds
+        logs: 500,            // Every 0.5 seconds for real-time feel
+        workflows: 5000,      // Every 5 seconds
+        events: 3000,         // Every 3 seconds
+        alerts: 10000,        // Every 10 seconds
+        pods: 4000,           // Every 4 seconds
+        deployments: 8000,    // Every 8 seconds
+        services: 6000,       // Every 6 seconds
+        pipeline_update: 15000, // Every 15 seconds for pipeline updates
+        gitea_webhook: 20000,   // Every 20 seconds for Gitea webhooks
+        github_webhook: 30000   // Every 30 seconds for GitHub webhooks
       }[type] || 5000;
 
       setInterval(() => {

@@ -228,3 +228,87 @@ export interface GitOpsStore {
   // Cleanup
   clearGitOps: () => void;
 }
+
+// ============================================================================
+// WEBHOOK PAYLOAD TYPES
+// ============================================================================
+
+export interface GitHubWebhookPayload {
+  action: 'push' | 'pull_request' | 'release' | 'create' | 'delete';
+  repository: {
+    id: number;
+    name: string;
+    full_name: string;
+    html_url: string;
+    clone_url: string;
+  };
+  ref?: string;
+  commits?: Array<{
+    id: string;
+    message: string;
+    author: {
+      name: string;
+      email: string;
+    };
+    timestamp: string;
+  }>;
+  pusher?: {
+    name: string;
+    email: string;
+  };
+}
+
+export interface GiteaWebhookPayload {
+  action: 'opened' | 'closed' | 'synchronized' | 'pushed' | 'created' | 'completed' | 'started';
+  repository: {
+    id: number;
+    name: string;
+    full_name: string;
+    html_url: string;
+    clone_url: string;
+  };
+  workflow_run?: {
+    id: string;
+    name: string;
+    status: PipelineStatus;
+    conclusion?: string;
+    head_sha: string;
+    head_branch: string;
+    run_number: number;
+    actor: {
+      login: string;
+      avatar_url: string;
+    };
+    created_at: string;
+    updated_at: string;
+    html_url: string;
+  };
+  package?: {
+    id: string;
+    name: string;
+    package_type: 'container';
+    version: {
+      id: string;
+      name: string;
+      tag: string;
+    };
+    registry_url: string;
+    created_at: string;
+  };
+}
+
+export interface PipelineUpdatePayload {
+  type: 'mirror_sync' | 'action_status' | 'image_push' | 'deployment_status';
+  repository_id: string;
+  status: PipelineStatus | DeploymentStatus | MirrorSyncStatus;
+  timestamp: string;
+  metadata?: {
+    action_id?: string;
+    image_id?: string;
+    deployment_id?: string;
+    error_message?: string;
+    duration?: number;
+    commit_sha?: string;
+    branch?: string;
+  };
+}

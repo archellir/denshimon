@@ -616,7 +616,10 @@ export enum WebSocketEventType {
   EVENTS = 'events',
   WORKFLOWS = 'workflows',
   DEPLOYMENTS = 'deployments',
-  ALERTS = 'alerts'
+  ALERTS = 'alerts',
+  GITEA_WEBHOOK = 'gitea_webhook',
+  GITHUB_WEBHOOK = 'github_webhook',
+  PIPELINE_UPDATE = 'pipeline_update'
 }
 
 // ============================================================================

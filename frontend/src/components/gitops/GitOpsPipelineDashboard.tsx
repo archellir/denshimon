@@ -11,10 +11,13 @@ import {
   ArrowRight,
   Container,
   Activity,
+  Zap,
+  Wifi
 } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
+import useGitOpsWebhooks from '@hooks/useGitOpsWebhooks';
 import { PipelineStatus, DeploymentStatus, MirrorSyncStatus } from '@/types/gitops';
-import type { Application, ContainerImage } from '@/types/gitops';
+import type { Application, ContainerImage, PipelineUpdatePayload } from '@/types/gitops';
 
 interface GitOpsPipelineDashboardProps {
   selectedRepository?: string | null;
@@ -22,6 +25,8 @@ interface GitOpsPipelineDashboardProps {
 
 const GitOpsPipelineDashboard: FC<GitOpsPipelineDashboardProps> = ({ selectedRepository }) => {
   const [deployingImage, setDeployingImage] = useState<ContainerImage | null>(null);
+  const [realtimeUpdates, setRealtimeUpdates] = useState<PipelineUpdatePayload[]>([]);
+  const [isWebhooksConnected, setIsWebhooksConnected] = useState(false);
 
   const {
     repositories,
@@ -42,6 +47,23 @@ const GitOpsPipelineDashboard: FC<GitOpsPipelineDashboardProps> = ({ selectedRep
     getDeploymentsByApplication
   } = useGitOpsStore();
 
+  // Setup webhook integration for real-time updates
+  const { isSubscribed } = useGitOpsWebhooks({
+    onPipelineUpdate: (payload: PipelineUpdatePayload) => {
+      // Add to real-time updates feed
+      setRealtimeUpdates(prev => [payload, ...prev.slice(0, 9)]); // Keep last 10 updates
+      setIsWebhooksConnected(true);
+    },
+    onGiteaWebhook: (payload) => {
+      console.log('Gitea webhook:', payload);
+      setIsWebhooksConnected(true);
+    },
+    onGitHubWebhook: (payload) => {
+      console.log('GitHub webhook:', payload);
+      setIsWebhooksConnected(true);
+    }
+  });
+
   // Fetch all pipeline data on mount
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +77,11 @@ const GitOpsPipelineDashboard: FC<GitOpsPipelineDashboardProps> = ({ selectedRep
     };
     fetchData();
   }, []);
+
+  // Update webhook connection status
+  useEffect(() => {
+    setIsWebhooksConnected(isSubscribed);
+  }, [isSubscribed]);
 
   // Filter data based on selected repository
   const filteredApplications = selectedRepository 
@@ -139,11 +166,67 @@ const GitOpsPipelineDashboard: FC<GitOpsPipelineDashboardProps> = ({ selectedRep
 
   return (
     <div className="space-y-6">
+      {/* Real-time Status & Updates */}
+      <div className="border border-white p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-mono flex items-center">
+            <GitBranch className="w-5 h-5 mr-2" />
+            GITHUB → GITEA → KUBERNETES PIPELINE
+          </h2>
+          <div className="flex items-center space-x-4">
+            {/* Webhook Status */}
+            <div className="flex items-center space-x-2">
+              <Wifi className={`w-4 h-4 ${isWebhooksConnected ? 'text-green-400' : 'text-red-400'}`} />
+              <span className={`text-xs font-mono ${isWebhooksConnected ? 'text-green-400' : 'text-red-400'}`}>
+                {isWebhooksConnected ? 'LIVE' : 'OFFLINE'}
+              </span>
+            </div>
+            {/* Real-time Updates Counter */}
+            {realtimeUpdates.length > 0 && (
+              <div className="flex items-center space-x-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                <span className="text-xs font-mono text-yellow-400">
+                  {realtimeUpdates.length} UPDATES
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Pipeline Updates */}
+        {realtimeUpdates.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-mono mb-2 text-gray-400">RECENT UPDATES:</h3>
+            <div className="space-y-1 max-h-20 overflow-y-auto">
+              {realtimeUpdates.slice(0, 3).map((update, index) => {
+                const statusDisplay = getStatusDisplay(update.status);
+                const StatusIcon = statusDisplay.icon;
+                return (
+                  <div key={index} className="flex items-center space-x-2 text-xs">
+                    <StatusIcon className={`w-3 h-3 ${statusDisplay.color}`} />
+                    <span className="font-mono">
+                      {update.type.replace('_', ' ').toUpperCase()}
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className={statusDisplay.color}>
+                      {update.status.toUpperCase()}
+                    </span>
+                    <span className="text-gray-400 ml-auto">
+                      {new Date(update.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Pipeline Overview */}
       <div className="border border-white p-4">
         <h2 className="text-lg font-mono mb-4 flex items-center">
-          <GitBranch className="w-5 h-5 mr-2" />
-          GITHUB → GITEA → KUBERNETES PIPELINE
+          <Activity className="w-5 h-5 mr-2" />
+          REPOSITORY STATUS
         </h2>
 
         {/* Repository Selection */}
