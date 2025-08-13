@@ -166,6 +166,119 @@ func (s *SQLiteDB) DeleteSession(sessionID string) error {
 	return err
 }
 
+// User management methods
+type User struct {
+	ID           string    `json:"id"`
+	Username     string    `json:"username"`
+	PasswordHash string    `json:"-"` // Don't expose password hash in JSON
+	Role         string    `json:"role"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+func (s *SQLiteDB) CreateUser(username, passwordHash, role string) (*User, error) {
+	now := time.Now()
+	userID := fmt.Sprintf("user-%d", now.UnixNano())
+	
+	_, err := s.DB.Exec(`
+		INSERT INTO users (id, username, password_hash, role, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, userID, username, passwordHash, role, now, now)
+	
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+	
+	return &User{
+		ID:           userID,
+		Username:     username,
+		PasswordHash: passwordHash,
+		Role:         role,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}, nil
+}
+
+func (s *SQLiteDB) GetUser(username string) (*User, error) {
+	var user User
+	err := s.DB.QueryRow(`
+		SELECT id, username, password_hash, role, created_at, updated_at
+		FROM users WHERE username = ?
+	`, username).Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	
+	return &user, nil
+}
+
+func (s *SQLiteDB) GetUserByID(userID string) (*User, error) {
+	var user User
+	err := s.DB.QueryRow(`
+		SELECT id, username, password_hash, role, created_at, updated_at
+		FROM users WHERE id = ?
+	`, userID).Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	
+	return &user, nil
+}
+
+func (s *SQLiteDB) UpdateUser(userID, username, passwordHash, role string) error {
+	_, err := s.DB.Exec(`
+		UPDATE users 
+		SET username = ?, password_hash = ?, role = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ?
+	`, username, passwordHash, role, userID)
+	
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+	
+	return nil
+}
+
+func (s *SQLiteDB) DeleteUser(userID string) error {
+	_, err := s.DB.Exec("DELETE FROM users WHERE id = ?", userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+	
+	return nil
+}
+
+func (s *SQLiteDB) ListUsers() ([]*User, error) {
+	rows, err := s.DB.Query(`
+		SELECT id, username, password_hash, role, created_at, updated_at
+		FROM users ORDER BY created_at DESC
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list users: %w", err)
+	}
+	defer rows.Close()
+	
+	var users []*User
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		users = append(users, &user)
+	}
+	
+	return users, nil
+}
+
 // Cache operations
 func (s *SQLiteDB) CacheSet(key string, value interface{}, ttl time.Duration) error {
 	jsonValue, err := json.Marshal(value)
@@ -203,15 +316,19 @@ func (s *SQLiteDB) CacheDelete(key string) error {
 	return err
 }
 
-// Utility methods
+// Redis-compatible interface methods (for auth service)
 func (s *SQLiteDB) Set(key string, value interface{}, expiration time.Duration) error {
 	return s.CacheSet(key, value, expiration)
 }
 
 func (s *SQLiteDB) Get(key string) (string, error) {
-	var value string
-	err := s.CacheGet(key, &value)
-	return value, err
+	var result string
+	err := s.CacheGet(key, &result)
+	if err != nil {
+		// Return empty string and error for Redis compatibility
+		return "", err
+	}
+	return result, nil
 }
 
 func (s *SQLiteDB) Delete(key string) error {
