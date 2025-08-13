@@ -88,7 +88,7 @@ export enum ServiceStatus {
   HEALTHY = 'healthy',
   WARNING = 'warning',
   ERROR = 'error',
-  DEGRADED = 'degraded'
+  UNKNOWN = 'unknown'
 }
 
 /**
@@ -682,61 +682,127 @@ export enum ServiceType {
   SIDECAR = 'sidecar'
 }
 
+export enum ServiceFilterType {
+  ALL = 'all',
+  FRONTEND = 'frontend',
+  BACKEND = 'backend',
+  DATABASE = 'database',
+  CACHE = 'cache',
+  GATEWAY = 'gateway'
+}
+
 // ============================================================================
-// BASE COLOR PALETTE - Consolidated color system
+// GRAPH VISUALIZATION ENUMS
 // ============================================================================
 
-export const BASE_COLORS = {
-  // Tailwind color values
-  RED: '#ef4444',    // red-500
-  YELLOW: '#eab308', // yellow-500
-  GREEN: '#22c55e',  // green-500
-  BLUE: '#3b82f6',   // blue-500
-  PURPLE: '#a855f7', // purple-500
-  GRAY: '#6b7280',   // gray-500
-  BLUE_400: '#60a5fa', // blue-400
-  GREEN_400: '#4ade80', // green-400
-  WHITE: '#ffffff',
-  BLACK: '#000000',
-  ORANGE: '#f97316',  // orange-500
-  CYAN: '#06b6d4',    // cyan-500
-  GREEN_500: '#10b981', // green-500
-  BLUE_500: '#3b82f6',  // blue-500
-  PURPLE_500: '#8b5cf6', // purple-500
+export enum GraphViewMode {
+  GRAPH = 'graph',
+  GRID = 'grid'
+}
+
+export enum GraphVisualizationLayer {
+  SERVICE_TYPES = 'serviceTypes',
+  DEPENDENCY_PATHS = 'dependencyPaths',
+  CRITICAL_PATH = 'criticalPath',
+  SINGLE_POINTS_OF_FAILURE = 'singlePointsOfFailure',
+  LATENCY_HEATMAP = 'latencyHeatmap',
+  CIRCUIT_BREAKERS = 'circuitBreakers'
+}
+
+export enum LatencyCategory {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  MODERATE = 'moderate',
+  SLOW = 'slow',
+  CRITICAL = 'critical'
+}
+
+// ============================================================================
+// UNIFIED COLOR SYSTEM - Consolidated colors organized by purpose
+// ============================================================================
+
+export const COLORS = {
+  // Core color palette
+  PRIMARY: {
+    WHITE: '#ffffff',
+    BLACK: '#000000',
+    RED: '#ef4444',      // red-500
+    YELLOW: '#eab308',   // yellow-500
+    GREEN: '#22c55e',    // green-500
+    BLUE: '#3b82f6',     // blue-500
+    PURPLE: '#a855f7',   // purple-500
+    ORANGE: '#f97316',   // orange-500
+    CYAN: '#06b6d4',     // cyan-500
+    GRAY: '#6b7280',     // gray-500
+  },
   
-  // Terminal/Matrix theme colors
-  MATRIX_GREEN: '#00FF00',
-  CYAN_BRIGHT: '#00FFFF',
-  MAGENTA: '#FF00FF'
+  // Service type specific colors
+  SERVICE_TYPES: {
+    FRONTEND: '#10b981',   // green-500
+    BACKEND: '#3b82f6',    // blue-500
+    DATABASE: '#8b5cf6',   // purple-500
+    CACHE: '#f97316',      // orange-500
+    GATEWAY: '#06b6d4',    // cyan-500
+    SIDECAR: '#6b7280',    // gray-500
+  },
+  
+  // Status colors
+  STATUS: {
+    HEALTHY: '#22c55e',    // green-500
+    WARNING: '#eab308',    // yellow-500
+    ERROR: '#ef4444',      // red-500
+    UNKNOWN: '#6b7280',    // gray-500
+  },
+  
+  // Traffic and network colors
+  TRAFFIC: {
+    HEALTHY: '#00FF00',    // Matrix green
+    MTLS: '#00FFFF',       // Cyan bright
+    WARNING: '#eab308',    // yellow-500
+    ERROR: '#ef4444',      // red-500
+  },
+  
+  // Latency heatmap colors
+  LATENCY: {
+    EXCELLENT: '#22c55e',  // green-500 - < 50ms
+    GOOD: '#3b82f6',       // blue-500 - 50-100ms
+    MODERATE: '#eab308',   // yellow-500 - 100-200ms
+    SLOW: '#f97316',       // orange-500 - 200-500ms
+    CRITICAL: '#ef4444',   // red-500 - > 500ms
+  },
+  
+  // Canvas and rendering colors with alpha variants
+  CANVAS: {
+    WHITE: '#ffffff',
+    WHITE_80: '#ffffff80',
+    WHITE_30: '#ffffff30',
+    TRANSPARENT_BLACK: '#00000099',
+    ERROR_RED: '#ef4444',
+    ERROR_RED_60: '#ef444460',
+    MTLS_GREEN_60: '#10b98160',
+    ENCRYPTED_BLUE_60: '#3b82f660',
+  },
+  
+  // Special theme colors
+  THEME: {
+    MATRIX_GREEN: '#00FF00',
+    CYAN_BRIGHT: '#00FFFF',
+    MAGENTA: '#FF00FF',
+  }
 } as const;
 
-// ============================================================================
-// SERVICE MESH COLORS
-// ============================================================================
-
+// Legacy color objects for backward compatibility (deprecated)
+export const BASE_COLORS = COLORS.PRIMARY;
 export const SERVICE_TYPE_COLORS = {
-  [ServiceType.FRONTEND]: BASE_COLORS.GREEN_500,
-  [ServiceType.BACKEND]: BASE_COLORS.BLUE_500,
-  [ServiceType.DATABASE]: BASE_COLORS.PURPLE_500,
-  [ServiceType.CACHE]: BASE_COLORS.ORANGE,
-  [ServiceType.GATEWAY]: BASE_COLORS.CYAN,
-  [ServiceType.SIDECAR]: BASE_COLORS.GRAY
+  [ServiceType.FRONTEND]: COLORS.SERVICE_TYPES.FRONTEND,
+  [ServiceType.BACKEND]: COLORS.SERVICE_TYPES.BACKEND,
+  [ServiceType.DATABASE]: COLORS.SERVICE_TYPES.DATABASE,
+  [ServiceType.CACHE]: COLORS.SERVICE_TYPES.CACHE,
+  [ServiceType.GATEWAY]: COLORS.SERVICE_TYPES.GATEWAY,
+  [ServiceType.SIDECAR]: COLORS.SERVICE_TYPES.SIDECAR,
 } as const;
-
-export const TRAFFIC_COLORS = {
-  HEALTHY: BASE_COLORS.MATRIX_GREEN,
-  MTLS: BASE_COLORS.CYAN_BRIGHT,
-  WARNING: BASE_COLORS.YELLOW,
-  ERROR: BASE_COLORS.RED
-} as const;
-
-export const LATENCY_HEATMAP_COLORS = {
-  EXCELLENT: BASE_COLORS.GREEN,     // < 50ms
-  GOOD: BASE_COLORS.BLUE,          // 50-100ms  
-  MODERATE: BASE_COLORS.YELLOW,    // 100-200ms
-  SLOW: BASE_COLORS.ORANGE,        // 200-500ms
-  CRITICAL: BASE_COLORS.RED        // > 500ms
-} as const;
+export const TRAFFIC_COLORS = COLORS.TRAFFIC;
+export const LATENCY_HEATMAP_COLORS = COLORS.LATENCY;
 
 export const SERVICE_ICONS = {
   [ServiceType.FRONTEND]: '◈',
@@ -756,7 +822,16 @@ export const GRAPH_CONFIG = {
     BASE_SIZE: 2.5,
     SCALE_FACTOR: 0.6,
     MIN_ZOOM: 0.1,
-    MAX_ZOOM: 10
+    MAX_ZOOM: 10,
+    SELECTION_MULTIPLIER: 1.5,
+    SPOF_MULTIPLIER: 1.3,
+    FONT_SIZE: 12,
+    ICON_SIZE_RATIO: 0.6,
+    ICON_FONT_MULTIPLIER: 2,
+    LABEL_OFFSET: 4,
+    LABEL_PADDING: 2,
+    ERROR_INDICATOR_OFFSET: 0.7,
+    ERROR_INDICATOR_SIZE: 1.5
   },
   PHYSICS: {
     CHARGE_STRENGTH: -8,
@@ -765,23 +840,146 @@ export const GRAPH_CONFIG = {
     ALPHA_DECAY: 0.02,
     VELOCITY_DECAY: 0.3
   },
+  RINGS: {
+    CRITICAL_PATH_OFFSET: 1.5,
+    CRITICAL_PATH_WIDTH: 1,
+    CRITICAL_PATH_DASH: [2, 2],
+    SPOF_OFFSET: 1.2,
+    SPOF_WIDTH: 0.8,
+    SPOF_DASH: [1, 1],
+    DEPENDENCY_OFFSET: 0.8,
+    DEPENDENCY_WIDTH: 0.5,
+    SELECTION_OFFSET: 0.5,
+    SELECTION_WIDTH_SELECTED: 0.8,
+    SELECTION_WIDTH_HOVER: 0.5,
+    CIRCUIT_BREAKER_OFFSET: 1.8,
+    CIRCUIT_BREAKER_WIDTH: 0.8,
+    CIRCUIT_BREAKER_DASH: [1.5, 1.5]
+  },
   ANIMATION: {
     FRAME_INTERVAL: 50,
     PARTICLE_SIZE: 2,
     GLOW_SIZE: 4,
     AUTO_FIT_DELAY: 500,
-    AUTO_FIT_PADDING: 50
+    AUTO_FIT_PADDING: 50,
+    AUTO_ROTATE_INTERVAL: 10000,
+    AUTO_ROTATE_ZOOM: 1,
+    AUTO_ROTATE_DURATION: 1000
   },
   TRAFFIC: {
     ERROR_THRESHOLD_HIGH: 5,
     ERROR_THRESHOLD_MEDIUM: 2,
-    PARTICLE_OPACITY: '33'
+    PARTICLE_OPACITY: '33',
+    LINK_WIDTH_MULTIPLIER: 2,
+    DEPENDENCY_LINK_WIDTH_MULTIPLIER: 1.5,
+    MIN_LINK_WIDTH: 0.5
   },
   LATENCY: {
     EXCELLENT_THRESHOLD: 50,
     GOOD_THRESHOLD: 100,
     MODERATE_THRESHOLD: 200,
     SLOW_THRESHOLD: 500
+  },
+  ARROWS: {
+    LENGTH: 10,
+    ANGLE: Math.PI / 6,
+    OFFSET: 5
+  },
+  DIMENSIONS: {
+    DEFAULT_WIDTH: 800,
+    DEFAULT_HEIGHT: 600,
+    MAX_HEIGHT: 600
+  }
+} as const;
+
+// ============================================================================
+// SERVICE MESH ANALYSIS CONSTANTS
+// ============================================================================
+
+export const MESH_ANALYSIS = {
+  SPOF_DETECTION: {
+    DATABASE_CONNECTION_THRESHOLD: 2,
+    GATEWAY_CONNECTION_THRESHOLD: 3,
+    HIGH_TRAFFIC_THRESHOLD: 100,
+    CRITICAL_ERROR_RATE: 5
+  },
+  CRITICAL_PATH: {
+    GATEWAY_WEIGHT_MULTIPLIER: 2,
+    MIN_SERVICES_FOR_ANALYSIS: 2
+  },
+  DEPENDENCY_ANALYSIS: {
+    MAX_PATH_DEPTH: 10,
+    CIRCULAR_DEPENDENCY_LIMIT: 100
+  }
+} as const;
+
+// ============================================================================
+// CSS CLASS CONSTANTS
+// ============================================================================
+
+export const CSS_CLASSES = {
+  COMMON: {
+    BORDER_WHITE: 'border-white',
+    BORDER_WHITE_20: 'border-white/20',
+    BORDER_WHITE_30: 'border-white/30',
+    BG_BLACK: 'bg-black',
+    BG_WHITE_5: 'bg-white/5',
+    BG_WHITE_10: 'bg-white/10',
+    TEXT_WHITE: 'text-white',
+    TEXT_BLACK: 'text-black',
+    FONT_MONO: 'font-mono',
+    TRANSITION_COLORS: 'transition-colors'
+  },
+  STATUS: {
+    GREEN_500: 'bg-green-500',
+    YELLOW_500: 'bg-yellow-500',
+    RED_500: 'bg-red-500',
+    TEXT_GREEN_500: 'text-green-500',
+    TEXT_YELLOW_500: 'text-yellow-500',
+    TEXT_RED_500: 'text-red-500',
+    TEXT_GRAY_500: 'text-gray-500'
+  },
+  LAYOUT: {
+    FLEX: 'flex',
+    FLEX_COL: 'flex-col',
+    ITEMS_CENTER: 'items-center',
+    JUSTIFY_CENTER: 'justify-center',
+    JUSTIFY_BETWEEN: 'justify-between',
+    GAP_1: 'gap-1',
+    GAP_2: 'gap-2',
+    SPACE_Y_1: 'space-y-1',
+    SPACE_Y_2: 'space-y-2'
+  },
+  SIZE: {
+    W_2: 'w-2',
+    H_2: 'h-2',
+    W_3: 'w-3',
+    H_3: 'h-3',
+    W_1_5: 'w-1.5',
+    H_1_5: 'h-1.5',
+    ROUNDED_FULL: 'rounded-full'
+  }
+} as const;
+
+// ============================================================================
+// CANVAS AND FONT CONSTANTS
+// ============================================================================
+
+export const CANVAS_CONSTANTS = {
+  FONTS: {
+    JETBRAINS_MONO: "'JetBrains Mono', monospace",
+    ARIAL: 'Arial'
+  },
+  COLORS: COLORS.CANVAS,
+  TEXT_ALIGN: {
+    CENTER: 'center' as const,
+    LEFT: 'left' as const,
+    RIGHT: 'right' as const
+  },
+  TEXT_BASELINE: {
+    TOP: 'top' as const,
+    MIDDLE: 'middle' as const,
+    BOTTOM: 'bottom' as const
   }
 } as const;
 
