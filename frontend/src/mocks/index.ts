@@ -4,7 +4,11 @@ export { mockPods } from './k8s/pods';
 export { mockNamespaces } from './k8s/namespaces';
 export { mockClusterMetrics, mockMetricsHistory, generateMockMetricsHistory } from './metrics/cluster';
 export { mockLogs, generateMockLogs } from './logs/system';
-// GitOps mocks removed - using new deployment system
+// Deployment system mocks
+export { mockRegistries } from './deployments/registries';
+export { mockImages } from './deployments/images';
+export { mockDeployments, mockNodes as mockDeploymentNodes } from './deployments/deployments';
+export { mockDeploymentHistory } from './deployments/history';
 
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';

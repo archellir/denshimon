@@ -136,6 +136,136 @@ export const MASTER_ENDPOINTS = [
   { name: '/dashboard', service: 'grafana-service', namespace: 'monitoring' },
 ] as const;
 
+// Container Registries
+export const MASTER_REGISTRIES = [
+  {
+    id: 'dockerhub-registry',
+    name: 'Docker Hub',
+    type: 'dockerhub' as const,
+    status: 'connected' as const,
+    url: 'https://index.docker.io/v1/',
+    namespace: undefined
+  },
+  {
+    id: 'gitea-registry',
+    name: 'Company Gitea',
+    type: 'gitea' as const, 
+    status: 'connected' as const,
+    url: 'https://git.company.com',
+    namespace: 'denshimon'
+  },
+  {
+    id: 'private-registry',
+    name: 'Private Registry',
+    type: 'generic' as const,
+    status: 'error' as const,
+    url: 'https://registry.company.com',
+    namespace: undefined,
+    error: 'Authentication failed'
+  }
+] as const;
+
+// Container Images
+export const MASTER_IMAGES = [
+  {
+    registry: 'dockerhub-registry',
+    repository: 'nginx',
+    tag: 'latest',
+    platform: 'linux/amd64',
+    size: 142857420,
+    created: '2024-01-15T10:30:00Z',
+    digest: 'sha256:abc123def456'
+  },
+  {
+    registry: 'dockerhub-registry', 
+    repository: 'nginx',
+    tag: '1.25',
+    platform: 'linux/amd64',
+    size: 138947621,
+    created: '2024-01-10T08:15:00Z',
+    digest: 'sha256:def456ghi789'
+  },
+  {
+    registry: 'dockerhub-registry',
+    repository: 'postgres',
+    tag: '15',
+    platform: 'linux/amd64',
+    size: 387694812,
+    created: '2024-01-12T14:20:00Z',
+    digest: 'sha256:ghi789jkl012'
+  },
+  {
+    registry: 'dockerhub-registry',
+    repository: 'redis',
+    tag: '7-alpine',
+    platform: 'linux/amd64',
+    size: 32547896,
+    created: '2024-01-08T16:45:00Z',
+    digest: 'sha256:jkl012mno345'
+  },
+  {
+    registry: 'gitea-registry',
+    repository: 'denshimon/api-server',
+    tag: 'v1.2.3',
+    platform: 'linux/amd64',
+    size: 156842973,
+    created: '2024-01-18T12:00:00Z',
+    digest: 'sha256:mno345pqr678'
+  },
+  {
+    registry: 'gitea-registry',
+    repository: 'denshimon/frontend',
+    tag: 'v2.1.0',
+    platform: 'linux/amd64',
+    size: 89357241,
+    created: '2024-01-20T09:30:00Z',
+    digest: 'sha256:pqr678stu901'
+  }
+] as const;
+
+// Deployment History
+export const MASTER_DEPLOYMENT_HISTORY = [
+  {
+    id: 'hist-001',
+    deploymentId: 'nginx-deployment',
+    action: 'create' as const,
+    timestamp: '2024-01-20T10:00:00Z',
+    user: 'admin',
+    success: true,
+    image: 'nginx:latest',
+    replicas: 3
+  },
+  {
+    id: 'hist-002', 
+    deploymentId: 'nginx-deployment',
+    action: 'scale' as const,
+    timestamp: '2024-01-20T14:30:00Z',
+    user: 'devops',
+    success: true,
+    oldReplicas: 3,
+    newReplicas: 5
+  },
+  {
+    id: 'hist-003',
+    deploymentId: 'api-server-deployment',
+    action: 'update' as const,
+    timestamp: '2024-01-21T08:15:00Z',
+    user: 'developer',
+    success: false,
+    oldImage: 'denshimon/api-server:v1.2.2',
+    newImage: 'denshimon/api-server:v1.2.3',
+    error: 'ImagePullBackOff: authentication required'
+  },
+  {
+    id: 'hist-004',
+    deploymentId: 'frontend-deployment',
+    action: 'restart' as const,
+    timestamp: '2024-01-21T16:45:00Z',
+    user: 'admin',
+    success: true
+  }
+] as const;
+
 // Repositories (for GitOps)
 export const MASTER_REPOSITORIES = [
   { name: 'nginx-config', url: 'https://git.company.com/k8s/nginx-config', branch: 'main' },

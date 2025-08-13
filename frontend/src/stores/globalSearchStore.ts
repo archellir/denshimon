@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 export interface SearchResult {
   id: string;
-  type: 'pod' | 'node' | 'service' | 'namespace' | 'deployment' | 'endpoint';
+  type: 'pod' | 'node' | 'service' | 'namespace' | 'deployment' | 'endpoint' | 'registry' | 'image';
   name: string;
   namespace?: string;
   description?: string;
@@ -116,7 +116,9 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
     MASTER_SERVICES, 
     MASTER_NAMESPACES, 
     MASTER_DEPLOYMENTS, 
-    MASTER_ENDPOINTS 
+    MASTER_ENDPOINTS,
+    MASTER_REGISTRIES,
+    MASTER_IMAGES
   } = await import('@mocks/masterData');
 
   // Convert master data to search format
@@ -127,6 +129,8 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
     namespaces: MASTER_NAMESPACES.map(name => ({ name })),
     deployments: MASTER_DEPLOYMENTS.map(deployment => ({ name: deployment.name, namespace: deployment.namespace })),
     endpoints: MASTER_ENDPOINTS.map(endpoint => ({ name: endpoint.name, service: endpoint.service })),
+    registries: MASTER_REGISTRIES.map(registry => ({ name: registry.name, type: registry.type, url: registry.url })),
+    images: MASTER_IMAGES.map(image => ({ repository: image.repository, tag: image.tag, registry: image.registry })),
   };
 
   // Search pods
@@ -219,9 +223,48 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         description: `Deployment in ${deployment.namespace} namespace`,
         location: {
           primaryTab: 'deployments',
-          secondaryTab: 'applications'
+          secondaryTab: 'deployments'
         },
         matchedFields: getMatchedFields(lowerQuery, deployment.name, deployment.namespace),
+        relevanceScore: relevance
+      });
+    }
+  });
+
+  // Search registries
+  mockResources.registries.forEach(registry => {
+    const relevance = calculateRelevance(lowerQuery, registry.name, registry.type, registry.url);
+    if (relevance > 0) {
+      results.push({
+        id: `registry-${registry.name.replace(/\s+/g, '-').toLowerCase()}`,
+        type: 'registry',
+        name: registry.name,
+        description: `${registry.type} registry at ${registry.url}`,
+        location: {
+          primaryTab: 'deployments',
+          secondaryTab: 'registries'
+        },
+        matchedFields: getMatchedFields(lowerQuery, registry.name, registry.type, registry.url),
+        relevanceScore: relevance
+      });
+    }
+  });
+
+  // Search images
+  mockResources.images.forEach(image => {
+    const fullName = `${image.repository}:${image.tag}`;
+    const relevance = calculateRelevance(lowerQuery, image.repository, image.tag, fullName);
+    if (relevance > 0) {
+      results.push({
+        id: `image-${image.repository.replace('/', '-')}-${image.tag}`,
+        type: 'image',
+        name: fullName,
+        description: `Container image from ${image.registry}`,
+        location: {
+          primaryTab: 'deployments',
+          secondaryTab: 'images'
+        },
+        matchedFields: getMatchedFields(lowerQuery, image.repository, image.tag, fullName),
         relevanceScore: relevance
       });
     }

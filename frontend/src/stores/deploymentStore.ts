@@ -8,6 +8,9 @@ import type {
   DeploymentHistory,
 } from '@/types/deployments';
 
+// Import mock utilities
+import { mockApiResponse } from '@/mocks';
+
 interface DeploymentStore {
   // State
   registries: Registry[];
@@ -155,11 +158,20 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   testRegistry: async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/registries/${id}/test`, { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to test registry');
+      // Use mock registry test with simulated delay
+      const success = await mockApiResponse(generateMockRegistryTest(id), 500);
       
-      const result = await response.json();
-      return result.success;
+      // Update registry status
+      const registries = get().registries.map(r => 
+        r.id === id ? { 
+          ...r, 
+          status: success ? 'connected' : 'error', 
+          error: success ? undefined : 'Connection timeout'
+        } : r
+      );
+      set({ registries });
+      
+      return success;
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to test registry' });
       return false;
@@ -171,14 +183,9 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, images: true }, error: null }));
     
     try {
-      const params = new URLSearchParams();
-      if (registryId) params.append('registry', registryId);
-      if (namespace) params.append('namespace', namespace);
-      
-      const response = await fetch(`${API_BASE}/images?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch images');
-      
-      const images = await response.json();
+      // Filter images by selected registry
+      const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
+      const images = await mockApiResponse(searchMockImages('', registryName), 400);
       set({ images, loading: { ...get().loading, images: false } });
     } catch (error) {
       set(state => ({
@@ -192,10 +199,8 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, images: true }, error: null }));
     
     try {
-      const response = await fetch(`${API_BASE}/images/search?q=${encodeURIComponent(query)}`);
-      if (!response.ok) throw new Error('Failed to search images');
-      
-      const images = await response.json();
+      const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
+      const images = await mockApiResponse(searchMockImages(query, registryName), 300);
       set({ images, loading: { ...get().loading, images: false } });
     } catch (error) {
       set(state => ({
@@ -223,11 +228,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deployments: true }, error: null }));
     
     try {
-      const params = namespace ? `?namespace=${namespace}` : '';
-      const response = await fetch(`${API_BASE}${params}`);
-      if (!response.ok) throw new Error('Failed to fetch deployments');
-      
-      const deployments = await response.json();
+      const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
       set({ deployments, loading: { ...get().loading, deployments: false } });
     } catch (error) {
       set(state => ({
@@ -331,10 +332,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, nodes: true }, error: null }));
     
     try {
-      const response = await fetch(`${API_BASE}/nodes`);
-      if (!response.ok) throw new Error('Failed to fetch nodes');
-      
-      const nodes = await response.json();
+      const nodes = await mockApiResponse(mockNodes, 250);
       set({ nodes, loading: { ...get().loading, nodes: false } });
     } catch (error) {
       set(state => ({
@@ -349,10 +347,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, history: true }, error: null }));
     
     try {
-      const response = await fetch(`${API_BASE}/${deploymentId}/history`);
-      if (!response.ok) throw new Error('Failed to fetch history');
-      
-      const history = await response.json();
+      const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
       set({ history, loading: { ...get().loading, history: false } });
     } catch (error) {
       set(state => ({
