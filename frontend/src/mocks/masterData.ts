@@ -14,10 +14,7 @@ export const MASTER_NAMESPACES = [
 ] as const;
 
 export const MASTER_NODES = [
-  'control-plane',
-  'worker-node-1', 
-  'worker-node-2',
-  'gpu-node-1'
+  'vps-main' // Single VPS node running K3s/MicroK8s
 ] as const;
 
 // Application definitions
@@ -68,38 +65,37 @@ export const MASTER_APPLICATIONS = [
 
 // All pods in the system
 export const MASTER_PODS = [
-  // System pods
-  { name: 'kube-apiserver-control-plane', namespace: 'kube-system', node: 'control-plane', app: 'kube-apiserver' },
-  { name: 'kube-controller-manager-control-plane', namespace: 'kube-system', node: 'control-plane', app: 'kube-controller-manager' },
-  { name: 'kube-scheduler-control-plane', namespace: 'kube-system', node: 'control-plane', app: 'kube-scheduler' },
-  { name: 'etcd-control-plane', namespace: 'kube-system', node: 'control-plane', app: 'etcd' },
-  { name: 'coredns-5d78c9869d-xm2n4', namespace: 'kube-system', node: 'worker-node-1', app: 'coredns' },
-  { name: 'coredns-5d78c9869d-yz5p7', namespace: 'kube-system', node: 'worker-node-2', app: 'coredns' },
+  // System pods (K3s/MicroK8s single node)
+  { name: 'k3s-server', namespace: 'kube-system', node: 'vps-main', app: 'k3s-server' },
+  { name: 'traefik-7d9f8c6b5a', namespace: 'kube-system', node: 'vps-main', app: 'traefik' },
+  { name: 'local-path-provisioner-5f8b9c7d6f', namespace: 'kube-system', node: 'vps-main', app: 'local-path-provisioner' },
+  { name: 'metrics-server-84c9d4cf6b', namespace: 'kube-system', node: 'vps-main', app: 'metrics-server' },
+  { name: 'coredns-5d78c9869d-xm2n4', namespace: 'kube-system', node: 'vps-main', app: 'coredns' },
 
   // Monitoring stack
-  { name: 'prometheus-server-5f8b9c7d6f-xm2n4', namespace: 'monitoring', node: 'worker-node-1', app: 'prometheus' },
-  { name: 'grafana-84c9d4cf6b-k8s9x', namespace: 'monitoring', node: 'worker-node-2', app: 'grafana' },
+  { name: 'prometheus-server-5f8b9c7d6f-xm2n4', namespace: 'monitoring', node: 'vps-main', app: 'prometheus' },
+  { name: 'grafana-84c9d4cf6b-k8s9x', namespace: 'monitoring', node: 'vps-main', app: 'grafana' },
 
   // Application pods - nginx
-  { name: 'nginx-deployment-7d9f8c6b5a-abc12', namespace: 'default', node: 'worker-node-1', app: 'nginx' },
-  { name: 'nginx-deployment-7d9f8c6b5a-def34', namespace: 'default', node: 'worker-node-2', app: 'nginx' },
-  { name: 'nginx-deployment-7d9f8c6b5a-ghi56', namespace: 'default', node: 'worker-node-1', app: 'nginx' },
+  { name: 'nginx-deployment-7d9f8c6b5a-abc12', namespace: 'default', node: 'vps-main', app: 'nginx' },
+  { name: 'nginx-deployment-7d9f8c6b5a-def34', namespace: 'default', node: 'vps-main', app: 'nginx' },
+  { name: 'nginx-deployment-7d9f8c6b5a-ghi56', namespace: 'default', node: 'vps-main', app: 'nginx' },
 
   // Application pods - API server
-  { name: 'api-server-deployment-5f7b8c9d-def456', namespace: 'production', node: 'worker-node-1', app: 'api-server' },
-  { name: 'api-server-deployment-5f7b8c9d-xyz789', namespace: 'production', node: 'worker-node-2', app: 'api-server' },
+  { name: 'api-server-deployment-5f7b8c9d-def456', namespace: 'production', node: 'vps-main', app: 'api-server' },
+  { name: 'api-server-deployment-5f7b8c9d-xyz789', namespace: 'production', node: 'vps-main', app: 'api-server' },
 
   // Database pods
-  { name: 'redis-cache-6a8b9c0d-ghi789', namespace: 'production', node: 'worker-node-1', app: 'redis' },
-  { name: 'postgres-database-1a2b3c4d-jkl012', namespace: 'production', node: 'worker-node-2', app: 'postgres' },
+  { name: 'redis-cache-6a8b9c0d-ghi789', namespace: 'production', node: 'vps-main', app: 'redis' },
+  { name: 'postgres-database-1a2b3c4d-jkl012', namespace: 'production', node: 'vps-main', app: 'postgres' },
 
   // Frontend pods
-  { name: 'frontend-app-8e9f0a1b-mno345', namespace: 'default', node: 'worker-node-1', app: 'frontend' },
-  { name: 'frontend-app-8e9f0a1b-pqr678', namespace: 'default', node: 'worker-node-2', app: 'frontend' },
+  { name: 'frontend-app-8e9f0a1b-mno345', namespace: 'default', node: 'vps-main', app: 'frontend' },
+  { name: 'frontend-app-8e9f0a1b-pqr678', namespace: 'default', node: 'vps-main', app: 'frontend' },
 
   // Problem pods
-  { name: 'failing-app-deployment-7d9f8c6b5a-k8s9x', namespace: 'production', node: 'worker-node-2', app: 'failing-app' },
-  { name: 'pending-pod-xyz789', namespace: 'staging', node: 'worker-node-2', app: 'pending-app' },
+  { name: 'failing-app-deployment-7d9f8c6b5a-k8s9x', namespace: 'production', node: 'vps-main', app: 'failing-app' },
+  { name: 'pending-pod-xyz789', namespace: 'staging', node: 'vps-main', app: 'pending-app' },
 ] as const;
 
 // Services
