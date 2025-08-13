@@ -276,10 +276,10 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Critical path highlighting
     if (isInCriticalPath) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 8, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + 1.5, 0, 2 * Math.PI, false);
       ctx.strokeStyle = BASE_COLORS.YELLOW;
-      ctx.lineWidth = 3 / globalScale;
-      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1 / globalScale;
+      ctx.setLineDash([2, 2]);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -287,10 +287,10 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Single point of failure highlighting
     if (isSpof) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 6, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + 1.2, 0, 2 * Math.PI, false);
       ctx.strokeStyle = BASE_COLORS.RED;
-      ctx.lineWidth = 2 / globalScale;
-      ctx.setLineDash([2, 2]);
+      ctx.lineWidth = 0.8 / globalScale;
+      ctx.setLineDash([1, 1]);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -298,28 +298,28 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Dependency path highlighting  
     if (isInDependencyPath && selectedService) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 4, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + 0.8, 0, 2 * Math.PI, false);
       ctx.strokeStyle = BASE_COLORS.CYAN + '80';
-      ctx.lineWidth = 1 / globalScale;
+      ctx.lineWidth = 0.5 / globalScale;
       ctx.stroke();
     }
     
     // Outer ring for selection/hover
     if (isSelected || isHovered) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 3, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + 0.5, 0, 2 * Math.PI, false);
       ctx.strokeStyle = isSelected ? '#ffffff' : '#ffffff80';
-      ctx.lineWidth = isSelected ? 2 / globalScale : 1 / globalScale;
+      ctx.lineWidth = isSelected ? 0.8 / globalScale : 0.5 / globalScale;
       ctx.stroke();
     }
     
     // Circuit breaker indicator
     if (node.circuitBreaker === CircuitBreakerStatus.OPEN) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 6, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + 1.8, 0, 2 * Math.PI, false);
       ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 2 / globalScale;
-      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 0.8 / globalScale;
+      ctx.setLineDash([1.5, 1.5]);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -363,7 +363,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Error rate indicator
     if (node.metrics.errorRate > 5) {
       ctx.beginPath();
-      ctx.arc(node.x + nodeSize * 0.7, node.y - nodeSize * 0.7, 3, 0, 2 * Math.PI, false);
+      ctx.arc(node.x + nodeSize * 0.7, node.y - nodeSize * 0.7, 1.5, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#ef4444';
       ctx.fill();
     }

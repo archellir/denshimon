@@ -745,14 +745,14 @@ export const SERVICE_ICONS = {
 
 export const GRAPH_CONFIG = {
   NODE: {
-    BASE_SIZE: 4,
-    SCALE_FACTOR: 1,
+    BASE_SIZE: 2.5,
+    SCALE_FACTOR: 0.6,
     MIN_ZOOM: 0.1,
     MAX_ZOOM: 10
   },
   PHYSICS: {
-    CHARGE_STRENGTH: -20,
-    LINK_DISTANCE: 8,
+    CHARGE_STRENGTH: -8,
+    LINK_DISTANCE: 4,
     COOLDOWN_TICKS: 100,
     ALPHA_DECAY: 0.02,
     VELOCITY_DECAY: 0.3
