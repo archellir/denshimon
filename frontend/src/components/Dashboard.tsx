@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, Download, Grid, List } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, Download, Grid, List, Workflow } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -33,6 +33,7 @@ import EnhancedLogs from '@components/observability/EnhancedLogs';
 import LiveStreams from '@components/observability/LiveStreams';
 import LogAnalytics from '@components/observability/LogAnalytics';
 import GitOps from '@components/GitOps';
+import GitOpsPipelineDashboard from '@components/gitops/GitOpsPipelineDashboard';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
@@ -76,7 +77,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
     [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
     [PrimaryTab.MESH]: MeshTab.TOPOLOGY,
-    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.APPLICATIONS,
+    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.PIPELINE,
     [PrimaryTab.OBSERVABILITY]: ObservabilityTab.LOGS,
   };
 
@@ -107,6 +108,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: DeploymentsTab.APPLICATIONS, label: UI_LABELS.APPLICATIONS, icon: Package },
       { id: DeploymentsTab.REPOSITORIES, label: UI_LABELS.REPOSITORIES, icon: GitBranch },
       { id: DeploymentsTab.GITEA, label: UI_LABELS.GITEA_ACTIONS, icon: Zap },
+      { id: DeploymentsTab.PIPELINE, label: UI_LABELS.PIPELINE, icon: Workflow },
     ],
     [PrimaryTab.OBSERVABILITY]: [
       { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
@@ -428,6 +430,21 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 </button>
               </div>
             );
+          case DeploymentsTab.PIPELINE:
+            return (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-mono opacity-60">
+                  GITHUB → GITEA → K8S
+                </span>
+                <button
+                  onClick={() => {}}
+                  className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
+                >
+                  <Workflow size={16} />
+                  <span>DEPLOY</span>
+                </button>
+              </div>
+            );
           default:
             return null;
         }
@@ -591,6 +608,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.APPLICATIONS && <GitOps activeSecondaryTab={activeSecondaryTab} />}
         {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.REPOSITORIES && <GitOps activeSecondaryTab={activeSecondaryTab} />}
         {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.GITEA && <GiteaActions />}
+        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.PIPELINE && <GitOpsPipelineDashboard />}
         
         {/* Observability Tab Content */}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOGS && <EnhancedLogs />}
