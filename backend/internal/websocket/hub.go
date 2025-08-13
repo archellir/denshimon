@@ -13,15 +13,21 @@ import (
 type MessageType string
 
 const (
-	MessageTypeMetrics     MessageType = "metrics"
-	MessageTypeLogs        MessageType = "logs"
-	MessageTypeEvents      MessageType = "events"
-	MessageTypeWorkflows   MessageType = "workflows"
-	MessageTypePods        MessageType = "pods"
-	MessageTypeDeployments MessageType = "deployments"
-	MessageTypeAlerts      MessageType = "alerts"
-	MessageTypePing        MessageType = "ping"
-	MessageTypePong        MessageType = "pong"
+	MessageTypeHeartbeat      MessageType = "heartbeat"
+	MessageTypeConnection     MessageType = "connection"
+	MessageTypeMetrics        MessageType = "metrics"
+	MessageTypeLogs           MessageType = "logs"
+	MessageTypeEvents         MessageType = "events"
+	MessageTypeWorkflows      MessageType = "workflows"
+	MessageTypePods           MessageType = "pods"
+	MessageTypeServices       MessageType = "services"
+	MessageTypeDeployments    MessageType = "deployments"
+	MessageTypeAlerts         MessageType = "alerts"
+	MessageTypeGiteaWebhook   MessageType = "gitea_webhook"
+	MessageTypeGithubWebhook  MessageType = "github_webhook"
+	MessageTypePipelineUpdate MessageType = "pipeline_update"
+	MessageTypePing           MessageType = "ping"
+	MessageTypePong           MessageType = "pong"
 )
 
 // Message represents a WebSocket message
@@ -131,7 +137,7 @@ func (h *Hub) broadcastMessage(message Message) {
 // sendPing sends ping messages to all clients
 func (h *Hub) sendPing() {
 	pingMessage := Message{
-		Type:      MessageTypePing,
+		Type:      MessageTypeHeartbeat,
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Data:      map[string]interface{}{"heartbeat": true},
 	}

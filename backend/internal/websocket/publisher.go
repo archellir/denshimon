@@ -41,7 +41,9 @@ func (p *Publisher) Start() {
 	go p.publishWorkflows()
 	go p.publishEvents()
 	go p.publishPods()
+	go p.publishServices()
 	go p.publishAlerts()
+	go p.publishGitOpsEvents()
 }
 
 // Stop stops the publisher
@@ -297,6 +299,143 @@ func (p *Publisher) generateMockAlert() map[string]interface{} {
 		"metadata": map[string]interface{}{
 			"namespace": []string{"production", "staging"}[rand.Intn(2)],
 			"service":   "app-service-" + randomStringForPublisher(4),
+		},
+	}
+}
+
+// publishServices publishes service mesh updates every 6 seconds
+func (p *Publisher) publishServices() {
+	ticker := time.NewTicker(6 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			serviceUpdate := p.generateMockServiceUpdate()
+			p.hub.Broadcast(MessageTypeServices, serviceUpdate)
+		}
+	}
+}
+
+// publishGitOpsEvents publishes GitOps-related events (webhooks, pipeline updates)
+func (p *Publisher) publishGitOpsEvents() {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			// Randomly generate different types of GitOps events
+			eventType := rand.Intn(3)
+			switch eventType {
+			case 0:
+				// Gitea webhook event
+				giteaEvent := p.generateMockGiteaWebhook()
+				p.hub.Broadcast(MessageTypeGiteaWebhook, giteaEvent)
+			case 1:
+				// GitHub webhook event
+				githubEvent := p.generateMockGithubWebhook()
+				p.hub.Broadcast(MessageTypeGithubWebhook, githubEvent)
+			case 2:
+				// Pipeline update event
+				pipelineEvent := p.generateMockPipelineUpdate()
+				p.hub.Broadcast(MessageTypePipelineUpdate, pipelineEvent)
+			}
+		}
+	}
+}
+
+// GitOps mock data generators
+
+func (p *Publisher) generateMockServiceUpdate() map[string]interface{} {
+	serviceIds := []string{"api-service", "web-frontend", "database", "redis", "nginx-ingress"}
+	statuses := []string{"healthy", "warning", "critical"}
+	
+	return map[string]interface{}{
+		"serviceId": serviceIds[rand.Intn(len(serviceIds))],
+		"status":    statuses[rand.Intn(len(statuses))],
+		"metrics": map[string]interface{}{
+			"requestRate": 50 + rand.Intn(200),
+			"errorRate":   rand.Float64() * 5,
+			"latency": map[string]interface{}{
+				"p95": 50 + rand.Intn(150),
+			},
+		},
+		"circuitBreakerStatus": []string{"closed", "open", "half-open"}[rand.Intn(3)],
+		"timestamp":           time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
+func (p *Publisher) generateMockGiteaWebhook() map[string]interface{} {
+	actions := []string{"opened", "closed", "synchronized", "pushed", "created", "completed", "started"}
+	repositoryNames := []string{"k8s-configs", "app-manifests", "infrastructure", "frontend-apps", "backend-services"}
+	
+	return map[string]interface{}{
+		"action": actions[rand.Intn(len(actions))],
+		"repository": map[string]interface{}{
+			"id":        rand.Intn(1000) + 1,
+			"name":      repositoryNames[rand.Intn(len(repositoryNames))],
+			"full_name": "company/" + repositoryNames[rand.Intn(len(repositoryNames))],
+			"html_url":  "https://gitea.company.com/company/" + repositoryNames[rand.Intn(len(repositoryNames))],
+		},
+		"workflow_run": map[string]interface{}{
+			"id":         "run-" + randomStringForPublisher(8),
+			"name":       "Build and Push Image",
+			"status":     []string{"success", "running", "failure"}[rand.Intn(3)],
+			"head_sha":   randomStringForPublisher(7),
+			"head_branch": []string{"main", "production", "develop"}[rand.Intn(3)],
+			"run_number": rand.Intn(100) + 1,
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
+func (p *Publisher) generateMockGithubWebhook() map[string]interface{} {
+	actions := []string{"push", "pull_request", "release", "create", "delete"}
+	repositoryNames := []string{"k8s-configs", "app-manifests", "infrastructure", "frontend-apps", "backend-services"}
+	
+	return map[string]interface{}{
+		"action": actions[rand.Intn(len(actions))],
+		"repository": map[string]interface{}{
+			"id":        rand.Intn(1000) + 1,
+			"name":      repositoryNames[rand.Intn(len(repositoryNames))],
+			"full_name": "company/" + repositoryNames[rand.Intn(len(repositoryNames))],
+			"html_url":  "https://github.com/company/" + repositoryNames[rand.Intn(len(repositoryNames))],
+		},
+		"ref": "refs/heads/main",
+		"commits": []map[string]interface{}{
+			{
+				"id":      randomStringForPublisher(7),
+				"message": "feat: update application configuration",
+				"author": map[string]interface{}{
+					"name":  "Developer",
+					"email": "dev@company.com",
+				},
+				"timestamp": time.Now().UTC().Format(time.RFC3339),
+			},
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
+func (p *Publisher) generateMockPipelineUpdate() map[string]interface{} {
+	updateTypes := []string{"mirror_sync", "action_status", "image_push", "deployment_status"}
+	repositoryIds := []string{"repo-1", "repo-2", "repo-3", "repo-4", "repo-5"}
+	statuses := []string{"synced", "syncing", "success", "failure", "pending", "in_progress"}
+	
+	return map[string]interface{}{
+		"type":          updateTypes[rand.Intn(len(updateTypes))],
+		"repository_id": repositoryIds[rand.Intn(len(repositoryIds))],
+		"status":        statuses[rand.Intn(len(statuses))],
+		"timestamp":     time.Now().UTC().Format(time.RFC3339),
+		"metadata": map[string]interface{}{
+			"commit_sha": randomStringForPublisher(7),
+			"branch":     []string{"main", "production", "develop"}[rand.Intn(3)],
+			"duration":   30 + rand.Intn(300),
 		},
 	}
 }
