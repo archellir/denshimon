@@ -9,7 +9,10 @@ import type {
   CreateApplicationRequest,
   GiteaAction,
   ContainerImage,
-  DeploymentHistory
+  DeploymentHistory,
+  RepositoryStatus,
+  CommitRequest,
+  DiffResponse
 } from '@/types/gitops';
 import { 
   mockRepositories, 
@@ -322,6 +325,109 @@ const useGitOpsStore = create<GitOpsStore>()(
           error: error instanceof Error ? error.message : 'Unknown error',
           isSyncing: false 
         });
+        throw error;
+      }
+    },
+
+    // Pull repository latest changes
+    pullRepository: async (repositoryId: string) => {
+      set({ isSyncing: true, error: null });
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_PULL(repositoryId), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to pull repository: ${response.statusText}`);
+        }
+        
+        // Refresh repositories to get updated status
+        await get().fetchRepositories();
+        set({ isSyncing: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          isSyncing: false 
+        });
+        throw error;
+      }
+    },
+
+    // Get repository status and commit history
+    getRepositoryStatus: async (repositoryId: string): Promise<RepositoryStatus> => {
+      try {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_STATUS(repositoryId), {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to get repository status: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        throw error;
+      }
+    },
+
+    // Commit and push changes
+    commitAndPush: async (repositoryId: string, commitData: CommitRequest) => {
+      set({ isSyncing: true, error: null });
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_COMMIT(repositoryId), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+          body: JSON.stringify(commitData),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to commit and push: ${response.statusText}`);
+        }
+        
+        // Refresh repositories to get updated status
+        await get().fetchRepositories();
+        set({ isSyncing: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          isSyncing: false 
+        });
+        throw error;
+      }
+    },
+
+    // Get repository diff
+    getRepositoryDiff: async (repositoryId: string, path?: string): Promise<DiffResponse> => {
+      try {
+        const url = new URL(API_ENDPOINTS.GITOPS.REPOSITORY_DIFF(repositoryId), window.location.origin);
+        if (path) {
+          url.searchParams.set('path', path);
+        }
+
+        const response = await fetch(url.toString(), {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to get repository diff: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
         throw error;
       }
     },

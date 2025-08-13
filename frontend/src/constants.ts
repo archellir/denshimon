@@ -585,6 +585,11 @@ export const API_ENDPOINTS = {
     REPOSITORY: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}`,
     REPOSITORY_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/sync`,
     MIRROR_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/mirror-sync`,
+    // Git Operations
+    REPOSITORY_PULL: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/pull`,
+    REPOSITORY_STATUS: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/status`,
+    REPOSITORY_COMMIT: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/commit`,
+    REPOSITORY_DIFF: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/diff`,
     // Application Management  
     APPLICATIONS: `${API_BASE_PATHS.GITOPS}/applications`,
     APPLICATION: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}`,

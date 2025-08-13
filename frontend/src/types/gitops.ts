@@ -155,6 +155,33 @@ export interface CreateApplicationRequest {
   sync_policy: SyncPolicy;
 }
 
+export interface GitCommitInfo {
+  hash: string;
+  author: string;
+  email: string;
+  timestamp: string;
+  message: string;
+}
+
+export interface RepositoryStatus {
+  repository_id: string;
+  branch: string;
+  status: string;
+  commits: GitCommitInfo[];
+  synced_at: string;
+}
+
+export interface CommitRequest {
+  message: string;
+  paths: string[];
+}
+
+export interface DiffResponse {
+  repository_id: string;
+  path?: string;
+  diff: string;
+}
+
 export interface GitOpsStore {
   // Data
   repositories: Repository[];
@@ -198,6 +225,12 @@ export interface GitOpsStore {
   deleteRepository: (id: string) => Promise<void>;
   syncRepository: (id: string) => Promise<void>;
   triggerMirrorSync: (id: string) => Promise<void>;
+  
+  // Git Operations
+  pullRepository: (id: string) => Promise<void>;
+  getRepositoryStatus: (id: string) => Promise<RepositoryStatus>;
+  commitAndPush: (id: string, commitData: CommitRequest) => Promise<void>;
+  getRepositoryDiff: (id: string, path?: string) => Promise<DiffResponse>;
   
   // Application Actions
   fetchApplications: () => Promise<void>;
