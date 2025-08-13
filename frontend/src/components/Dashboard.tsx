@@ -22,6 +22,7 @@ import {
   type QuickStat
 } from '@utils/quickStatsUtils';
 import ClusterOverview from '@components/metrics/ClusterOverview';
+import WorkloadsOverview from '@components/metrics/WorkloadsOverview';
 import HealthDashboard from '@components/metrics/HealthDashboard';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 import NodeList from '@components/metrics/NodeList';
@@ -586,7 +587,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NETWORK && <NetworkTraffic timeRange={timeRange} />}
         
         {/* Workloads Tab Content */}
-        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <ClusterOverview timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <WorkloadsOverview timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.PODS && <PodsView selectedNamespace={selectedNamespace} />}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.SERVICES && <ServicesList 
           selectedNamespace={selectedNamespace} 
