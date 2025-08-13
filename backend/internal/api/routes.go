@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/database"
@@ -90,16 +91,48 @@ func RegisterRoutes(
 	// Repository endpoints
 	mux.HandleFunc("GET /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(server.handleListRepositories)))
 	mux.HandleFunc("POST /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(server.handleCreateRepository)))
-	mux.HandleFunc("GET /api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(server.handleGetRepository)))
-	mux.HandleFunc("POST /api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(server.handleSyncRepository)))
-	mux.HandleFunc("DELETE /api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(server.handleDeleteRepository)))
+	
+	// Repository management (these use path patterns to handle IDs and actions)
+	mux.Handle("/api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch {
+		case strings.HasSuffix(path, "/sync") && r.Method == "POST":
+			server.handleSyncRepository(w, r)
+		case strings.HasSuffix(path, "/pull") && r.Method == "POST":
+			server.handlePullRepository(w, r)
+		case strings.HasSuffix(path, "/status") && r.Method == "GET":
+			server.handleGetRepositoryStatus(w, r)
+		case strings.HasSuffix(path, "/commit") && r.Method == "POST":
+			server.handleCommitAndPush(w, r)
+		case strings.HasSuffix(path, "/diff") && r.Method == "GET":
+			server.handleGetRepositoryDiff(w, r)
+		case r.Method == "GET":
+			server.handleGetRepository(w, r)
+		case r.Method == "DELETE":
+			server.handleDeleteRepository(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
 	
 	// Application endpoints
 	mux.HandleFunc("GET /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(server.handleListApplications)))
 	mux.HandleFunc("POST /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(server.handleCreateApplication)))
-	mux.HandleFunc("GET /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleGetApplication)))
-	mux.HandleFunc("POST /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleSyncApplication)))
-	mux.HandleFunc("DELETE /api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(server.handleDeleteApplication)))
+	
+	// Application management
+	mux.Handle("/api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch {
+		case strings.HasSuffix(path, "/sync") && r.Method == "POST":
+			server.handleSyncApplication(w, r)
+		case r.Method == "GET":
+			server.handleGetApplication(w, r)
+		case r.Method == "DELETE":
+			server.handleDeleteApplication(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
 
 	// Metrics endpoints (require authentication)
 	mux.HandleFunc("GET /api/metrics/cluster", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetClusterMetrics)))

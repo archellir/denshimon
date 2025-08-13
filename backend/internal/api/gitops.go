@@ -246,3 +246,139 @@ func (s *Server) handleDeleteApplication(w http.ResponseWriter, r *http.Request)
 		"message": "Application deleted successfully",
 	})
 }
+
+// Git operation handlers
+
+func (s *Server) handlePullRepository(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		s.respondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	id := s.extractIDFromPath(r.URL.Path, "/api/gitops/repositories/")
+	if id == "" {
+		s.respondWithError(w, http.StatusBadRequest, "Repository ID is required")
+		return
+	}
+
+	// Remove "/pull" suffix to get the ID
+	if len(id) > 5 && id[len(id)-5:] == "/pull" {
+		id = id[:len(id)-5]
+	}
+
+	err := s.gitopsService.PullRepository(r.Context(), id)
+	if err != nil {
+		s.respondWithError(w, http.StatusInternalServerError, "Failed to pull repository")
+		return
+	}
+
+	s.respondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "Repository pull completed successfully",
+	})
+}
+
+func (s *Server) handleGetRepositoryStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		s.respondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	id := s.extractIDFromPath(r.URL.Path, "/api/gitops/repositories/")
+	if id == "" {
+		s.respondWithError(w, http.StatusBadRequest, "Repository ID is required")
+		return
+	}
+
+	// Remove "/status" suffix to get the ID
+	if len(id) > 7 && id[len(id)-7:] == "/status" {
+		id = id[:len(id)-7]
+	}
+
+	status, err := s.gitopsService.GetRepositoryStatus(r.Context(), id)
+	if err != nil {
+		s.respondWithError(w, http.StatusInternalServerError, "Failed to get repository status")
+		return
+	}
+
+	s.respondWithJSON(w, http.StatusOK, status)
+}
+
+func (s *Server) handleCommitAndPush(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		s.respondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	id := s.extractIDFromPath(r.URL.Path, "/api/gitops/repositories/")
+	if id == "" {
+		s.respondWithError(w, http.StatusBadRequest, "Repository ID is required")
+		return
+	}
+
+	// Remove "/commit" suffix to get the ID
+	if len(id) > 7 && id[len(id)-7:] == "/commit" {
+		id = id[:len(id)-7]
+	}
+
+	var req struct {
+		Message string   `json:"message"`
+		Paths   []string `json:"paths"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.respondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Message == "" {
+		s.respondWithError(w, http.StatusBadRequest, "Commit message is required")
+		return
+	}
+
+	if len(req.Paths) == 0 {
+		req.Paths = []string{"."}
+	}
+
+	err := s.gitopsService.CommitAndPush(r.Context(), id, req.Message, req.Paths)
+	if err != nil {
+		s.respondWithError(w, http.StatusInternalServerError, "Failed to commit and push")
+		return
+	}
+
+	s.respondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "Changes committed and pushed successfully",
+	})
+}
+
+func (s *Server) handleGetRepositoryDiff(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		s.respondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	id := s.extractIDFromPath(r.URL.Path, "/api/gitops/repositories/")
+	if id == "" {
+		s.respondWithError(w, http.StatusBadRequest, "Repository ID is required")
+		return
+	}
+
+	// Remove "/diff" suffix to get the ID
+	if len(id) > 5 && id[len(id)-5:] == "/diff" {
+		id = id[:len(id)-5]
+	}
+
+	// Get app path from query parameter (optional)
+	appPath := r.URL.Query().Get("path")
+
+	diff, err := s.gitopsService.DiffRepository(r.Context(), id, appPath)
+	if err != nil {
+		s.respondWithError(w, http.StatusInternalServerError, "Failed to get repository diff")
+		return
+	}
+
+	s.respondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"repository_id": id,
+		"path":          appPath,
+		"diff":          diff,
+	})
+}
