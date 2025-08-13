@@ -5,6 +5,9 @@ export { mockNamespaces } from './k8s/namespaces';
 export { mockClusterMetrics, mockMetricsHistory, generateMockMetricsHistory } from './metrics/cluster';
 export { mockLogs, generateMockLogs } from './logs/system';
 export { mockRepositories, mockApplications } from './gitops/repositories';
+export { mockGiteaActions } from './gitops/giteaActions';
+export { mockContainerImages } from './gitops/containerImages';
+export { mockDeploymentHistory } from './gitops/deploymentHistory';
 
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
