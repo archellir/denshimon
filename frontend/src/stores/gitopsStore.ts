@@ -11,7 +11,15 @@ import type {
   ContainerImage,
   DeploymentHistory
 } from '@/types/gitops';
-import { mockRepositories, mockApplications, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { 
+  mockRepositories, 
+  mockApplications, 
+  mockGiteaActions, 
+  mockContainerImages, 
+  mockDeploymentHistory, 
+  mockApiResponse, 
+  MOCK_ENABLED 
+} from '@mocks/index';
 
 const useGitOpsStore = create<GitOpsStore>()(
   subscribeWithSelector((set, get) => ({
@@ -387,6 +395,15 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Fetch Gitea Actions
     fetchGiteaActions: async (repositoryId?: string) => {
       try {
+        if (MOCK_ENABLED) {
+          let actions = await mockApiResponse(mockGiteaActions);
+          if (repositoryId) {
+            actions = actions.filter(action => action.repository_id === repositoryId);
+          }
+          set({ giteaActions: actions });
+          return;
+        }
+
         const url = repositoryId 
           ? API_ENDPOINTS.GITEA.ACTIONS_BY_REPO(repositoryId)
           : API_ENDPOINTS.GITEA.ACTIONS;
@@ -456,6 +473,15 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Fetch container images
     fetchContainerImages: async (repositoryId?: string) => {
       try {
+        if (MOCK_ENABLED) {
+          let images = await mockApiResponse(mockContainerImages);
+          if (repositoryId) {
+            images = images.filter(image => image.repository_id === repositoryId);
+          }
+          set({ containerImages: images });
+          return;
+        }
+
         const url = repositoryId 
           ? API_ENDPOINTS.GITEA.IMAGES_BY_REPO(repositoryId)
           : API_ENDPOINTS.GITEA.IMAGES;
@@ -496,6 +522,15 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Fetch deployment history
     fetchDeploymentHistory: async (applicationId?: string) => {
       try {
+        if (MOCK_ENABLED) {
+          let history = await mockApiResponse(mockDeploymentHistory);
+          if (applicationId) {
+            history = history.filter(deployment => deployment.application_id === applicationId);
+          }
+          set({ deploymentHistory: history });
+          return;
+        }
+
         const url = applicationId 
           ? API_ENDPOINTS.GITOPS.DEPLOYMENT_HISTORY_BY_APP(applicationId)
           : API_ENDPOINTS.GITOPS.DEPLOYMENT_HISTORY;
