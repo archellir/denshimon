@@ -52,8 +52,8 @@ const ForceGraph: FC<ForceGraphProps> = ({
 
   // Calculate node size based on request rate
   const getNodeSize = (service: ServiceNode): number => {
-    const baseSize = 8;
-    const scaleFactor = Math.log10(service.metrics.requestRate + 1) * 2;
+    const baseSize = 4;
+    const scaleFactor = Math.log10(service.metrics.requestRate + 1) * 1;
     return baseSize + scaleFactor;
   };
 
@@ -328,6 +328,17 @@ const ForceGraph: FC<ForceGraphProps> = ({
     }
   }, [showTraffic, isLive]);
 
+  // Auto-fit to viewport when data changes
+  useEffect(() => {
+    if (graphRef.current && graphData.nodes.length > 0) {
+      setTimeout(() => {
+        if (graphRef.current) {
+          graphRef.current.zoomToFit(1000, 50);
+        }
+      }, 500);
+    }
+  }, [graphData]);
+
   // Auto-rotate animation for live mode
   useEffect(() => {
     if (isLive && graphRef.current) {
@@ -431,11 +442,14 @@ const ForceGraph: FC<ForceGraphProps> = ({
         enableNodeDrag={true}
         enableZoomInteraction={true}
         enablePanInteraction={true}
-        minZoom={0.5}
-        maxZoom={5}
+        minZoom={0.1}
+        maxZoom={10}
         cooldownTicks={100}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}
+        nodeRelSize={4}
+        chargeStrength={-20}
+        linkDistance={8}
       />
     </div>
   );
