@@ -3,7 +3,9 @@ import { MASTER_APPLICATIONS, MASTER_NODES, MASTER_PODS } from '../masterData';
 
 // Convert master data to Deployment type
 export const mockDeployments: Deployment[] = MASTER_APPLICATIONS.map(app => {
-  const appPods = MASTER_PODS.filter(pod => app.pods.includes(pod.name));
+  const appPods = MASTER_PODS.filter(pod => 
+    typeof app.pods === 'object' && Array.isArray(app.pods) ? app.pods.includes(pod.name) : false
+  );
   const availableReplicas = appPods.filter(() => Math.random() > 0.1).length; // 90% availability
   const readyReplicas = Math.min(availableReplicas, Math.floor(availableReplicas * 0.9));
   
@@ -77,6 +79,11 @@ export const mockNodes: NodeInfo[] = MASTER_NODES.map(nodeName => ({
   arch: 'amd64',
   zone: nodeName.includes('gpu') ? 'gpu-zone-1' : 'standard-zone-1',
   region: 'us-west-2',
+  allocatable: {
+    cpu: nodeName === 'gpu-node-1' ? '16' : '8',
+    memory: nodeName === 'gpu-node-1' ? '64Gi' : '32Gi',
+    storage: '100Gi',
+  },
   allocatableResources: {
     cpu: nodeName === 'gpu-node-1' ? '16' : '8',
     memory: nodeName === 'gpu-node-1' ? '64Gi' : '32Gi',
@@ -87,13 +94,16 @@ export const mockNodes: NodeInfo[] = MASTER_NODES.map(nodeName => ({
     memory: nodeName === 'gpu-node-1' ? '64Gi' : '32Gi',
     storage: '100Gi',
   },
-  labels: {
-    'kubernetes.io/os': 'linux',
-    'kubernetes.io/arch': 'amd64',
-    'node-role.kubernetes.io/worker': nodeName.includes('worker') ? '' : undefined,
-    'node-role.kubernetes.io/control-plane': nodeName.includes('control') ? '' : undefined,
-    'node.kubernetes.io/gpu': nodeName.includes('gpu') ? 'nvidia' : undefined,
-  },
+  podCount: Math.floor(Math.random() * 20) + 5,
+  labels: Object.fromEntries(
+    Object.entries({
+      'kubernetes.io/os': 'linux',
+      'kubernetes.io/arch': 'amd64',
+      'node-role.kubernetes.io/worker': nodeName.includes('worker') ? '' : undefined,
+      'node-role.kubernetes.io/control-plane': nodeName.includes('control') ? '' : undefined,
+      'node.kubernetes.io/gpu': nodeName.includes('gpu') ? 'nvidia' : undefined,
+    }).filter(([, value]) => value !== undefined)
+  ) as Record<string, string>,
   createdAt: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString(),
 }));
 
