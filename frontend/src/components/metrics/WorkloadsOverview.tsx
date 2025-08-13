@@ -47,8 +47,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
         return {
           time: format(new Date(podPoint.timestamp), 'HH:mm'),
           pods: podPoint.value || 0,
-          services: metricsHistory.services?.[index]?.value || 0,
-          deployments: metricsHistory.deployments?.[index]?.value || 0,
+          nodes: metricsHistory.nodes?.[index]?.value || 0,
         };
       }).filter(Boolean);
       
@@ -200,21 +199,12 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
                   />
                   <Area
                     type="monotone"
-                    dataKey="services"
+                    dataKey="nodes"
                     stackId="2"
                     stroke="#FFFF00"
                     fill="#FFFF0020"
                     strokeWidth={1}
-                    name="Services"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="deployments"
-                    stackId="3"
-                    stroke="#00FFFF"
-                    fill="#00FFFF20"
-                    strokeWidth={1}
-                    name="Deployments"
+                    name="Nodes"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -339,15 +329,15 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
           </div>
           <div className="border border-white p-4 text-center">
             <div className="font-mono text-2xl text-white">
-              {clusterMetrics.total_services || 0}
+              {clusterMetrics.total_nodes || 0}
             </div>
-            <div className="font-mono text-xs text-gray-400">SERVICES</div>
+            <div className="font-mono text-xs text-gray-400">NODES</div>
           </div>
           <div className="border border-white p-4 text-center">
             <div className="font-mono text-2xl text-white">
-              {clusterMetrics.total_deployments || 0}
+              {clusterMetrics.healthy_pods || 0}
             </div>
-            <div className="font-mono text-xs text-gray-400">DEPLOYMENTS</div>
+            <div className="font-mono text-xs text-gray-400">HEALTHY PODS</div>
           </div>
           <div className="border border-white p-4 text-center">
             <div className="font-mono text-2xl text-white">
