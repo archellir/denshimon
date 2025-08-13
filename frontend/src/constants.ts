@@ -670,6 +670,19 @@ export enum LogLevel {
 }
 
 // ============================================================================
+// SERVICE TYPES
+// ============================================================================
+
+export enum ServiceType {
+  FRONTEND = 'frontend',
+  BACKEND = 'backend', 
+  DATABASE = 'database',
+  CACHE = 'cache',
+  GATEWAY = 'gateway',
+  SIDECAR = 'sidecar'
+}
+
+// ============================================================================
 // BASE COLOR PALETTE - Consolidated color system
 // ============================================================================
 
@@ -685,13 +698,78 @@ export const BASE_COLORS = {
   GREEN_400: '#4ade80', // green-400
   WHITE: '#ffffff',
   BLACK: '#000000',
+  ORANGE: '#f97316',  // orange-500
+  CYAN: '#06b6d4',    // cyan-500
+  GREEN_500: '#10b981', // green-500
+  BLUE_500: '#3b82f6',  // blue-500
+  PURPLE_500: '#8b5cf6', // purple-500
   
   // Terminal/Matrix theme colors
   MATRIX_GREEN: '#00FF00',
-  CYAN: '#00FFFF',
+  CYAN_BRIGHT: '#00FFFF',
   MAGENTA: '#FF00FF'
 } as const;
 
+// ============================================================================
+// SERVICE MESH COLORS
+// ============================================================================
+
+export const SERVICE_TYPE_COLORS = {
+  [ServiceType.FRONTEND]: BASE_COLORS.GREEN_500,
+  [ServiceType.BACKEND]: BASE_COLORS.BLUE_500,
+  [ServiceType.DATABASE]: BASE_COLORS.PURPLE_500,
+  [ServiceType.CACHE]: BASE_COLORS.ORANGE,
+  [ServiceType.GATEWAY]: BASE_COLORS.CYAN,
+  [ServiceType.SIDECAR]: BASE_COLORS.GRAY
+} as const;
+
+export const TRAFFIC_COLORS = {
+  HEALTHY: BASE_COLORS.MATRIX_GREEN,
+  MTLS: BASE_COLORS.CYAN_BRIGHT,
+  WARNING: BASE_COLORS.YELLOW,
+  ERROR: BASE_COLORS.RED
+} as const;
+
+export const SERVICE_ICONS = {
+  [ServiceType.FRONTEND]: '◈',
+  [ServiceType.BACKEND]: '▣',
+  [ServiceType.DATABASE]: '◉',
+  [ServiceType.CACHE]: '◊',
+  [ServiceType.GATEWAY]: '⬢',
+  [ServiceType.SIDECAR]: '◆'
+} as const;
+
+// ============================================================================
+// GRAPH CONFIGURATION
+// ============================================================================
+
+export const GRAPH_CONFIG = {
+  NODE: {
+    BASE_SIZE: 4,
+    SCALE_FACTOR: 1,
+    MIN_ZOOM: 0.1,
+    MAX_ZOOM: 10
+  },
+  PHYSICS: {
+    CHARGE_STRENGTH: -20,
+    LINK_DISTANCE: 8,
+    COOLDOWN_TICKS: 100,
+    ALPHA_DECAY: 0.02,
+    VELOCITY_DECAY: 0.3
+  },
+  ANIMATION: {
+    FRAME_INTERVAL: 50,
+    PARTICLE_SIZE: 2,
+    GLOW_SIZE: 4,
+    AUTO_FIT_DELAY: 500,
+    AUTO_FIT_PADDING: 50
+  },
+  TRAFFIC: {
+    ERROR_THRESHOLD_HIGH: 5,
+    ERROR_THRESHOLD_MEDIUM: 2,
+    PARTICLE_OPACITY: '33'
+  }
+} as const;
 
 // ============================================================================
 // SIZE CONSTANTS

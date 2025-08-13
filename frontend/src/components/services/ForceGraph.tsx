@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState, useCallback, FC } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { ServiceNode, ServiceConnection } from '@/types/serviceMesh';
-import { CircuitBreakerStatus, NetworkProtocol } from '@/constants';
+import { 
+  CircuitBreakerStatus, 
+  NetworkProtocol, 
+  ServiceType, 
+  SERVICE_TYPE_COLORS, 
+  TRAFFIC_COLORS, 
+  SERVICE_ICONS, 
+  GRAPH_CONFIG,
+  BASE_COLORS 
+} from '@/constants';
 
 interface ForceGraphProps {
   services: ServiceNode[];
@@ -51,39 +60,25 @@ const ForceGraph: FC<ForceGraphProps> = ({
 
   // Calculate node size based on request rate
   const getNodeSize = (service: ServiceNode): number => {
-    const baseSize = 4;
-    const scaleFactor = Math.log10(service.metrics.requestRate + 1) * 1;
-    return baseSize + scaleFactor;
+    const { BASE_SIZE, SCALE_FACTOR } = GRAPH_CONFIG.NODE;
+    return BASE_SIZE + Math.log10(service.metrics.requestRate + 1) * SCALE_FACTOR;
   };
 
   // Get node color based on service type and status
   const getNodeColor = (service: ServiceNode): string => {
     if (service.circuitBreaker.status === CircuitBreakerStatus.OPEN) {
-      return '#ef4444'; // red-500
+      return BASE_COLORS.RED;
     }
     
     switch (service.status) {
       case 'error':
-        return '#ef4444'; // red-500
+        return BASE_COLORS.RED;
       case 'warning':
-        return '#eab308'; // yellow-500
+        return BASE_COLORS.YELLOW;
       case 'healthy':
-        switch (service.type) {
-          case 'frontend':
-            return '#10b981'; // green-500
-          case 'backend':
-            return '#3b82f6'; // blue-500
-          case 'database':
-            return '#8b5cf6'; // purple-500
-          case 'cache':
-            return '#f97316'; // orange-500
-          case 'gateway':
-            return '#06b6d4'; // cyan-500
-          default:
-            return '#6b7280'; // gray-500
-        }
+        return SERVICE_TYPE_COLORS[service.type as ServiceType] || BASE_COLORS.GRAY;
       default:
-        return '#6b7280'; // gray-500
+        return BASE_COLORS.GRAY;
     }
   };
 
@@ -187,15 +182,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    const iconMap: Record<string, string> = {
-      'frontend': '◈',
-      'backend': '▣',
-      'database': '◉',
-      'cache': '◊',
-      'gateway': '⬢',
-      'sidecar': '◆'
-    };
-    const iconChar = iconMap[node.type] || '●';
+    const iconChar = SERVICE_ICONS[node.type as ServiceType] || '●';
     
     ctx.font = `${iconSize * 2}px Arial`;
     ctx.fillText(iconChar, node.x, node.y);
@@ -267,22 +254,23 @@ const ForceGraph: FC<ForceGraphProps> = ({
         const y = start.y + dy * offset;
         
         // Particle glow
-        const particleSize = 2 / globalScale;
-        const glowSize = 4 / globalScale;
+        const particleSize = GRAPH_CONFIG.ANIMATION.PARTICLE_SIZE / globalScale;
+        const glowSize = GRAPH_CONFIG.ANIMATION.GLOW_SIZE / globalScale;
         
         // Outer glow
         ctx.beginPath();
         ctx.arc(x, y, glowSize, 0, 2 * Math.PI);
-        let particleColor = '#00ff00';
-        if (link.errorRate > 5) {
-          particleColor = '#ff0000';
-        } else if (link.errorRate > 2) {
-          particleColor = '#ffff00';
+        
+        let particleColor = TRAFFIC_COLORS.HEALTHY;
+        if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
+          particleColor = TRAFFIC_COLORS.ERROR;
+        } else if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_MEDIUM) {
+          particleColor = TRAFFIC_COLORS.WARNING;
         } else if (link.mTLS) {
-          particleColor = '#00ffff';
+          particleColor = TRAFFIC_COLORS.MTLS;
         }
         
-        ctx.fillStyle = particleColor + '33';
+        ctx.fillStyle = particleColor + GRAPH_CONFIG.TRAFFIC.PARTICLE_OPACITY;
         ctx.fill();
         
         // Core particle
@@ -321,7 +309,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     if (isLive) {
       const interval = setInterval(() => {
         setAnimationFrame(prev => (prev + 1) % 100);
-      }, 50); // Update every 50ms for smooth animation
+      }, GRAPH_CONFIG.ANIMATION.FRAME_INTERVAL);
       
       return () => clearInterval(interval);
     }
@@ -332,9 +320,9 @@ const ForceGraph: FC<ForceGraphProps> = ({
     if (graphRef.current && graphData.nodes.length > 0) {
       setTimeout(() => {
         if (graphRef.current) {
-          graphRef.current.zoomToFit(1000, 50);
+          graphRef.current.zoomToFit(1000, GRAPH_CONFIG.ANIMATION.AUTO_FIT_PADDING);
         }
-      }, 500);
+      }, GRAPH_CONFIG.ANIMATION.AUTO_FIT_DELAY);
     }
   }, [graphData]);
 
@@ -356,43 +344,28 @@ const ForceGraph: FC<ForceGraphProps> = ({
       <div className="absolute top-2 left-2 z-20 bg-black/80 border border-white p-2">
         <div className="text-xs font-mono space-y-1">
           <div className="text-white/60 font-bold mb-1">SERVICE TYPES</div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full" />
-            <span>Frontend</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full" />
-            <span>Backend</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-purple-500 rounded-full" />
-            <span>Database</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-orange-500 rounded-full" />
-            <span>Cache</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-cyan-500 rounded-full" />
-            <span>Gateway</span>
-          </div>
-          
+          {Object.entries(SERVICE_TYPE_COLORS).map(([type, color]) => (
+            <div key={type} className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+              <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+            </div>
+          ))}
           
           <div className="text-white/60 font-bold mt-2 mb-1">TRAFFIC</div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: TRAFFIC_COLORS.HEALTHY }} />
             <span>Healthy</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: TRAFFIC_COLORS.MTLS }} />
             <span>mTLS</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: TRAFFIC_COLORS.WARNING }} />
             <span>Warning</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: TRAFFIC_COLORS.ERROR }} />
             <span>Errors</span>
           </div>
         </div>
@@ -424,14 +397,14 @@ const ForceGraph: FC<ForceGraphProps> = ({
         enableNodeDrag={true}
         enableZoomInteraction={true}
         enablePanInteraction={true}
-        minZoom={0.1}
-        maxZoom={10}
-        cooldownTicks={100}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.3}
-        nodeRelSize={4}
-        chargeStrength={-20}
-        linkDistance={8}
+        minZoom={GRAPH_CONFIG.NODE.MIN_ZOOM}
+        maxZoom={GRAPH_CONFIG.NODE.MAX_ZOOM}
+        cooldownTicks={GRAPH_CONFIG.PHYSICS.COOLDOWN_TICKS}
+        d3AlphaDecay={GRAPH_CONFIG.PHYSICS.ALPHA_DECAY}
+        d3VelocityDecay={GRAPH_CONFIG.PHYSICS.VELOCITY_DECAY}
+        nodeRelSize={GRAPH_CONFIG.NODE.BASE_SIZE}
+        chargeStrength={GRAPH_CONFIG.PHYSICS.CHARGE_STRENGTH}
+        linkDistance={GRAPH_CONFIG.PHYSICS.LINK_DISTANCE}
       />
     </div>
   );
