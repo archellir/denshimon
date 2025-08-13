@@ -250,8 +250,16 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
       <div className="bg-black border border-white p-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xs text-gray-500 uppercase mb-1">Connections</div>
-            <div className="text-2xl font-mono">{data.metrics.overview.totalConnections}</div>
+            <div className="text-xs text-gray-500 uppercase mb-1">Circuit Breakers</div>
+            <div className="text-2xl font-mono">
+              {data.services.filter(s => s.circuitBreaker.status === 'open').length > 0 ? (
+                <span className="text-red-500">{data.services.filter(s => s.circuitBreaker.status === 'open').length} OPEN</span>
+              ) : data.services.filter(s => s.circuitBreaker.status === 'half-open').length > 0 ? (
+                <span className="text-yellow-500">{data.services.filter(s => s.circuitBreaker.status === 'half-open').length} HALF</span>
+              ) : (
+                <span className="text-green-500">ALL OK</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center space-x-1">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -341,6 +349,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 showDependencyPaths={true}
                 showCriticalPath={true}
                 showSinglePointsOfFailure={true}
+                showLatencyHeatmap={true}
               />
             ) : (
               <div className="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto">
@@ -383,6 +392,11 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                     <div className="flex justify-between items-center mt-2">
                       <div className="flex items-center gap-1">
                         {getCircuitBreakerIcon(service.circuitBreaker.status)}
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          service.circuitBreaker.status === 'closed' ? 'bg-green-500' :
+                          service.circuitBreaker.status === 'half-open' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`} />
                         <span className="text-xs">{service.instances}</span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -435,6 +449,11 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                     <span className="text-xs font-mono">
                       {selectedServiceData.circuitBreaker.status.toUpperCase()}
                     </span>
+                    <div className={`w-2 h-2 rounded-full ml-2 ${
+                      selectedServiceData.circuitBreaker.status === 'closed' ? 'bg-green-500' :
+                      selectedServiceData.circuitBreaker.status === 'half-open' ? 'bg-yellow-500' :
+                      'bg-red-500'
+                    }`} />
                   </div>
                   <div className="text-xs font-mono text-gray-400">
                     Threshold: {selectedServiceData.circuitBreaker.failureThreshold}%
@@ -528,7 +547,14 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                   </td>
                   <td className="p-3 text-right">{service.metrics.latency.p95.toFixed(0)}ms</td>
                   <td className="p-3 text-center">
-                    {getCircuitBreakerIcon(service.circuitBreaker.status)}
+                    <div className="flex items-center justify-center gap-1">
+                      {getCircuitBreakerIcon(service.circuitBreaker.status)}
+                      <div className={`w-2 h-2 rounded-full ${
+                        service.circuitBreaker.status === 'closed' ? 'bg-green-500' :
+                        service.circuitBreaker.status === 'half-open' ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`} />
+                    </div>
                   </td>
                   <td className="p-3 text-center">
                     <div className="flex items-center justify-center gap-1">

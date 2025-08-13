@@ -7,6 +7,7 @@ import {
   ServiceType as MeshServiceType, 
   SERVICE_TYPE_COLORS, 
   TRAFFIC_COLORS, 
+  LATENCY_HEATMAP_COLORS,
   SERVICE_ICONS, 
   GRAPH_CONFIG,
   BASE_COLORS 
@@ -21,6 +22,7 @@ interface ForceGraphProps {
   showDependencyPaths?: boolean;
   showCriticalPath?: boolean;
   showSinglePointsOfFailure?: boolean;
+  showLatencyHeatmap?: boolean;
 }
 
 interface GraphNode {
@@ -56,7 +58,8 @@ const ForceGraph: FC<ForceGraphProps> = ({
   isLive = false,
   showDependencyPaths = true,
   showCriticalPath = true,
-  showSinglePointsOfFailure = true
+  showSinglePointsOfFailure = true,
+  showLatencyHeatmap = true
 }) => {
   const graphRef = useRef<any>(null);
   const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
@@ -149,8 +152,28 @@ const ForceGraph: FC<ForceGraphProps> = ({
     return BASE_SIZE + Math.log10(service.metrics.requestRate + 1) * SCALE_FACTOR;
   };
 
+  // Get latency heatmap color based on latency value
+  const getLatencyHeatmapColor = (latency: number): string => {
+    if (latency < GRAPH_CONFIG.LATENCY.EXCELLENT_THRESHOLD) {
+      return LATENCY_HEATMAP_COLORS.EXCELLENT;
+    } else if (latency < GRAPH_CONFIG.LATENCY.GOOD_THRESHOLD) {
+      return LATENCY_HEATMAP_COLORS.GOOD;
+    } else if (latency < GRAPH_CONFIG.LATENCY.MODERATE_THRESHOLD) {
+      return LATENCY_HEATMAP_COLORS.MODERATE;
+    } else if (latency < GRAPH_CONFIG.LATENCY.SLOW_THRESHOLD) {
+      return LATENCY_HEATMAP_COLORS.SLOW;
+    } else {
+      return LATENCY_HEATMAP_COLORS.CRITICAL;
+    }
+  };
+
   // Get node color based on service type and status
   const getNodeColor = (service: ServiceNode): string => {
+    // If latency heatmap is enabled, use latency-based coloring
+    if (showLatencyHeatmap) {
+      return getLatencyHeatmapColor(service.metrics.latency.p95);
+    }
+
     if (service.circuitBreaker.status === CircuitBreakerStatus.OPEN) {
       return BASE_COLORS.RED;
     }
@@ -314,12 +337,19 @@ const ForceGraph: FC<ForceGraphProps> = ({
     }
     
     // Circuit breaker indicator
-    if (node.circuitBreaker === CircuitBreakerStatus.OPEN) {
+    if (node.circuitBreaker !== CircuitBreakerStatus.CLOSED) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, nodeSize + 1.8, 0, 2 * Math.PI, false);
-      ctx.strokeStyle = '#ef4444';
+      
+      if (node.circuitBreaker === CircuitBreakerStatus.OPEN) {
+        ctx.strokeStyle = BASE_COLORS.RED;
+        ctx.setLineDash([1.5, 1.5]);
+      } else if (node.circuitBreaker === CircuitBreakerStatus.HALF_OPEN) {
+        ctx.strokeStyle = BASE_COLORS.YELLOW;
+        ctx.setLineDash([3, 1, 1, 1]);
+      }
+      
       ctx.lineWidth = 0.8 / globalScale;
-      ctx.setLineDash([1.5, 1.5]);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -367,7 +397,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
       ctx.fillStyle = '#ef4444';
       ctx.fill();
     }
-  }, [selectedService, hoveredNode, showCriticalPath, criticalPath, showSinglePointsOfFailure, singlePointsOfFailure, showDependencyPaths, dependencyPaths]);
+  }, [selectedService, hoveredNode, showCriticalPath, criticalPath, showSinglePointsOfFailure, singlePointsOfFailure, showDependencyPaths, dependencyPaths, showLatencyHeatmap]);
 
   // Custom link rendering with animated traffic
   const linkCanvasObject = useCallback((link: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
@@ -578,6 +608,46 @@ const ForceGraph: FC<ForceGraphProps> = ({
                   <span>Dependencies</span>
                 </div>
               )}
+            </>
+          )}
+          
+          <div className="text-white/60 font-bold mt-2 mb-1">CIRCUIT BREAKERS</div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-1 border-dashed border-red-500" style={{ borderWidth: '1px', borderColor: BASE_COLORS.RED }} />
+            <span>Open</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-1 border-dashed border-yellow-500" style={{ borderWidth: '1px', borderColor: BASE_COLORS.YELLOW, borderStyle: 'dashed' }} />
+            <span>Half-Open</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-1" style={{ backgroundColor: BASE_COLORS.GREEN + '80' }} />
+            <span>Closed</span>
+          </div>
+          
+          {showLatencyHeatmap && (
+            <>
+              <div className="text-white/60 font-bold mt-2 mb-1">LATENCY HEATMAP</div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: LATENCY_HEATMAP_COLORS.EXCELLENT }} />
+                <span>&lt;50ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: LATENCY_HEATMAP_COLORS.GOOD }} />
+                <span>50-100ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: LATENCY_HEATMAP_COLORS.MODERATE }} />
+                <span>100-200ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: LATENCY_HEATMAP_COLORS.SLOW }} />
+                <span>200-500ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: LATENCY_HEATMAP_COLORS.CRITICAL }} />
+                <span>&gt;500ms</span>
+              </div>
             </>
           )}
         </div>

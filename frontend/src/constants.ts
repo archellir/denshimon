@@ -730,6 +730,14 @@ export const TRAFFIC_COLORS = {
   ERROR: BASE_COLORS.RED
 } as const;
 
+export const LATENCY_HEATMAP_COLORS = {
+  EXCELLENT: BASE_COLORS.GREEN,     // < 50ms
+  GOOD: BASE_COLORS.BLUE,          // 50-100ms  
+  MODERATE: BASE_COLORS.YELLOW,    // 100-200ms
+  SLOW: BASE_COLORS.ORANGE,        // 200-500ms
+  CRITICAL: BASE_COLORS.RED        // > 500ms
+} as const;
+
 export const SERVICE_ICONS = {
   [ServiceType.FRONTEND]: '◈',
   [ServiceType.BACKEND]: '▣',
@@ -768,6 +776,12 @@ export const GRAPH_CONFIG = {
     ERROR_THRESHOLD_HIGH: 5,
     ERROR_THRESHOLD_MEDIUM: 2,
     PARTICLE_OPACITY: '33'
+  },
+  LATENCY: {
+    EXCELLENT_THRESHOLD: 50,
+    GOOD_THRESHOLD: 100,
+    MODERATE_THRESHOLD: 200,
+    SLOW_THRESHOLD: 500
   }
 } as const;
 
