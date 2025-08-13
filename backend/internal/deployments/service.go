@@ -1,0 +1,607 @@
+package deployments
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/internal/providers"
+)
+
+// Service manages deployments and integrates with Kubernetes and registries
+type Service struct {
+	k8sClient       *k8s.Client
+	registryManager *providers.RegistryManager
+	db              *sql.DB
+	deployer        *KubernetesDeployer
+	scaler          *KubernetesScaler
+}
+
+// NewService creates a new deployment service
+func NewService(k8sClient *k8s.Client, registryManager *providers.RegistryManager, db *sql.DB) *Service {
+	deployer := NewKubernetesDeployer(k8sClient, registryManager)
+	scaler := NewKubernetesScaler(k8sClient)
+
+	service := &Service{
+		k8sClient:       k8sClient,
+		registryManager: registryManager,
+		db:              db,
+		deployer:        deployer,
+		scaler:          scaler,
+	}
+
+	// Initialize database tables
+	service.initDB()
+	
+	return service
+}
+
+// initDB creates necessary database tables
+func (s *Service) initDB() error {
+	queries := []string{
+		`CREATE TABLE IF NOT EXISTS deployments (
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			namespace TEXT NOT NULL,
+			image TEXT NOT NULL,
+			registry_id TEXT NOT NULL,
+			replicas INTEGER DEFAULT 1,
+			node_selector TEXT,
+			strategy TEXT,
+			resources TEXT,
+			environment TEXT,
+			status TEXT DEFAULT 'pending',
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+		`CREATE TABLE IF NOT EXISTS deployment_history (
+			id TEXT PRIMARY KEY,
+			deployment_id TEXT NOT NULL,
+			action TEXT NOT NULL,
+			old_image TEXT,
+			new_image TEXT,
+			old_replicas INTEGER,
+			new_replicas INTEGER,
+			success BOOLEAN DEFAULT FALSE,
+			error TEXT,
+			user TEXT,
+			timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			metadata TEXT,
+			FOREIGN KEY (deployment_id) REFERENCES deployments(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS autoscalers (
+			id TEXT PRIMARY KEY,
+			deployment_id TEXT NOT NULL,
+			min_replicas INTEGER NOT NULL,
+			max_replicas INTEGER NOT NULL,
+			target_cpu_percent INTEGER,
+			target_memory_percent INTEGER,
+			enabled BOOLEAN DEFAULT TRUE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (deployment_id) REFERENCES deployments(id)
+		)`,
+	}
+
+	for _, query := range queries {
+		if _, err := s.db.Exec(query); err != nil {
+			return fmt.Errorf("failed to create table: %w", err)
+		}
+	}
+	
+	return nil
+}
+
+// CreateDeployment creates a new deployment
+func (s *Service) CreateDeployment(ctx context.Context, req CreateDeploymentRequest) (*Deployment, error) {
+	deployment := &Deployment{
+		ID:           uuid.New().String(),
+		Name:         req.Name,
+		Namespace:    req.Namespace,
+		Image:        req.Image,
+		RegistryID:   req.RegistryID,
+		Replicas:     req.Replicas,
+		NodeSelector: req.NodeSelector,
+		Strategy:     req.Strategy,
+		Status:       DeploymentStatusPending,
+		Resources:    req.Resources,
+		Environment:  req.Environment,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+
+	// Deploy to Kubernetes
+	k8sDeployment, err := s.deployer.Deploy(ctx, *deployment)
+	if err != nil {
+		deployment.Status = DeploymentStatusFailed
+		s.recordHistory(deployment.ID, "create", "", deployment.Image, 0, deployment.Replicas, false, err.Error(), "")
+		return nil, fmt.Errorf("failed to deploy to kubernetes: %w", err)
+	}
+
+	deployment.Status = DeploymentStatusRunning
+
+	// Store in database
+	if err := s.storeDeployment(deployment); err != nil {
+		// Cleanup Kubernetes deployment on DB error
+		s.deployer.Delete(ctx, deployment.Namespace, deployment.Name)
+		return nil, fmt.Errorf("failed to store deployment: %w", err)
+	}
+
+	// Record successful creation
+	s.recordHistory(deployment.ID, "create", "", deployment.Image, 0, deployment.Replicas, true, "", "")
+
+	// Update with live status from Kubernetes
+	s.updateDeploymentStatus(deployment, k8sDeployment)
+
+	return deployment, nil
+}
+
+// GetDeployment retrieves a deployment by ID
+func (s *Service) GetDeployment(ctx context.Context, id string) (*Deployment, error) {
+	deployment, err := s.getDeploymentFromDB(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update with live status from Kubernetes
+	clientset := s.k8sClient.Clientset()
+	k8sDeployment, err := clientset.AppsV1().Deployments(deployment.Namespace).Get(ctx, deployment.Name, metav1.GetOptions{})
+	if err == nil {
+		s.updateDeploymentStatus(deployment, k8sDeployment)
+	}
+
+	return deployment, nil
+}
+
+// ListDeployments returns all deployments
+func (s *Service) ListDeployments(ctx context.Context, namespace string) ([]Deployment, error) {
+	deployments, err := s.listDeploymentsFromDB(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update each deployment with live status
+	clientset := s.k8sClient.Clientset()
+	for i := range deployments {
+		k8sDeployment, err := clientset.AppsV1().Deployments(deployments[i].Namespace).Get(ctx, deployments[i].Name, metav1.GetOptions{})
+		if err == nil {
+			s.updateDeploymentStatus(&deployments[i], k8sDeployment)
+		}
+	}
+
+	return deployments, nil
+}
+
+// ScaleDeployment changes the number of replicas
+func (s *Service) ScaleDeployment(ctx context.Context, id string, replicas int32) error {
+	deployment, err := s.GetDeployment(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	oldReplicas := deployment.Replicas
+
+	// Scale in Kubernetes
+	if err := s.scaler.Scale(ctx, deployment.Namespace, deployment.Name, replicas); err != nil {
+		s.recordHistory(id, "scale", "", "", oldReplicas, replicas, false, err.Error(), "")
+		return fmt.Errorf("failed to scale deployment: %w", err)
+	}
+
+	// Update database
+	deployment.Replicas = replicas
+	deployment.Status = DeploymentStatusUpdating
+	deployment.UpdatedAt = time.Now()
+
+	if err := s.updateDeploymentInDB(deployment); err != nil {
+		return fmt.Errorf("failed to update deployment in database: %w", err)
+	}
+
+	// Record successful scale
+	s.recordHistory(id, "scale", "", "", oldReplicas, replicas, true, "", "")
+
+	return nil
+}
+
+// UpdateDeployment updates a deployment with new image or configuration
+func (s *Service) UpdateDeployment(ctx context.Context, id string, req UpdateDeploymentRequest) error {
+	deployment, err := s.GetDeployment(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	oldImage := deployment.Image
+	oldReplicas := deployment.Replicas
+
+	// Update fields
+	if req.Image != "" {
+		deployment.Image = req.Image
+	}
+	if req.Replicas != nil {
+		deployment.Replicas = *req.Replicas
+	}
+	if req.Resources != nil {
+		deployment.Resources = *req.Resources
+	}
+	if req.Environment != nil {
+		deployment.Environment = req.Environment
+	}
+
+	deployment.Status = DeploymentStatusUpdating
+	deployment.UpdatedAt = time.Now()
+
+	// Update in Kubernetes
+	if err := s.deployer.Update(ctx, *deployment); err != nil {
+		s.recordHistory(id, "update", oldImage, deployment.Image, oldReplicas, deployment.Replicas, false, err.Error(), "")
+		return fmt.Errorf("failed to update deployment: %w", err)
+	}
+
+	// Update database
+	if err := s.updateDeploymentInDB(deployment); err != nil {
+		return fmt.Errorf("failed to update deployment in database: %w", err)
+	}
+
+	// Record successful update
+	s.recordHistory(id, "update", oldImage, deployment.Image, oldReplicas, deployment.Replicas, true, "", "")
+
+	return nil
+}
+
+// DeleteDeployment removes a deployment
+func (s *Service) DeleteDeployment(ctx context.Context, id string) error {
+	deployment, err := s.GetDeployment(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// Delete from Kubernetes
+	if err := s.deployer.Delete(ctx, deployment.Namespace, deployment.Name); err != nil {
+		s.recordHistory(id, "delete", "", "", deployment.Replicas, 0, false, err.Error(), "")
+		return fmt.Errorf("failed to delete deployment: %w", err)
+	}
+
+	// Remove from database
+	if err := s.deleteDeploymentFromDB(id); err != nil {
+		return fmt.Errorf("failed to delete deployment from database: %w", err)
+	}
+
+	// Record successful deletion
+	s.recordHistory(id, "delete", "", "", deployment.Replicas, 0, true, "", "")
+
+	return nil
+}
+
+// RestartDeployment restarts all pods in a deployment
+func (s *Service) RestartDeployment(ctx context.Context, id string) error {
+	deployment, err := s.GetDeployment(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := s.deployer.Restart(ctx, deployment.Namespace, deployment.Name); err != nil {
+		return fmt.Errorf("failed to restart deployment: %w", err)
+	}
+
+	// Record restart
+	s.recordHistory(id, "restart", "", "", deployment.Replicas, deployment.Replicas, true, "", "")
+
+	return nil
+}
+
+// GetDeploymentHistory returns the history of changes for a deployment
+func (s *Service) GetDeploymentHistory(ctx context.Context, deploymentID string) ([]DeploymentHistory, error) {
+	query := `
+		SELECT id, deployment_id, action, old_image, new_image, old_replicas, new_replicas,
+		       success, error, user, timestamp, metadata
+		FROM deployment_history
+		WHERE deployment_id = ?
+		ORDER BY timestamp DESC
+		LIMIT 50
+	`
+
+	rows, err := s.db.Query(query, deploymentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var history []DeploymentHistory
+	for rows.Next() {
+		var h DeploymentHistory
+		var metadataJSON sql.NullString
+
+		err := rows.Scan(
+			&h.ID, &h.DeploymentID, &h.Action, &h.OldImage, &h.NewImage,
+			&h.OldReplicas, &h.NewReplicas, &h.Success, &h.Error,
+			&h.User, &h.Timestamp, &metadataJSON,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if metadataJSON.Valid {
+			json.Unmarshal([]byte(metadataJSON.String), &h.Metadata)
+		}
+
+		history = append(history, h)
+	}
+
+	return history, nil
+}
+
+// GetAvailableNodes returns information about available Kubernetes nodes
+func (s *Service) GetAvailableNodes(ctx context.Context) ([]NodeInfo, error) {
+	nodeList, err := s.k8sClient.ListNodes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := make([]NodeInfo, 0, len(nodeList.Items))
+	for _, node := range nodeList.Items {
+		nodeInfo := NodeInfo{
+			Name:    node.Name,
+			Ready:   isNodeReady(&node),
+			Roles:   getNodeRoles(&node),
+			Version: node.Status.NodeInfo.KubeletVersion,
+			OS:      node.Status.NodeInfo.OperatingSystem,
+			Arch:    node.Status.NodeInfo.Architecture,
+			Labels:  node.Labels,
+			Capacity: ResourceList{
+				CPU:    node.Status.Capacity.Cpu().String(),
+				Memory: node.Status.Capacity.Memory().String(),
+			},
+			Allocatable: ResourceList{
+				CPU:    node.Status.Allocatable.Cpu().String(),
+				Memory: node.Status.Allocatable.Memory().String(),
+			},
+		}
+
+		// Extract zone and region from labels
+		if zone, ok := node.Labels["topology.kubernetes.io/zone"]; ok {
+			nodeInfo.Zone = zone
+		}
+		if region, ok := node.Labels["topology.kubernetes.io/region"]; ok {
+			nodeInfo.Region = region
+		}
+
+		nodes = append(nodes, nodeInfo)
+	}
+
+	return nodes, nil
+}
+
+// Helper methods
+
+func (s *Service) storeDeployment(deployment *Deployment) error {
+	nodeSelector, _ := json.Marshal(deployment.NodeSelector)
+	strategy, _ := json.Marshal(deployment.Strategy)
+	resources, _ := json.Marshal(deployment.Resources)
+	environment, _ := json.Marshal(deployment.Environment)
+
+	query := `
+		INSERT INTO deployments (
+			id, name, namespace, image, registry_id, replicas,
+			node_selector, strategy, resources, environment, status,
+			created_at, updated_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	_, err := s.db.Exec(query,
+		deployment.ID, deployment.Name, deployment.Namespace, deployment.Image,
+		deployment.RegistryID, deployment.Replicas, string(nodeSelector),
+		string(strategy), string(resources), string(environment),
+		deployment.Status, deployment.CreatedAt, deployment.UpdatedAt,
+	)
+
+	return err
+}
+
+func (s *Service) updateDeploymentInDB(deployment *Deployment) error {
+	nodeSelector, _ := json.Marshal(deployment.NodeSelector)
+	strategy, _ := json.Marshal(deployment.Strategy)
+	resources, _ := json.Marshal(deployment.Resources)
+	environment, _ := json.Marshal(deployment.Environment)
+
+	query := `
+		UPDATE deployments SET
+			name = ?, namespace = ?, image = ?, registry_id = ?, replicas = ?,
+			node_selector = ?, strategy = ?, resources = ?, environment = ?,
+			status = ?, updated_at = ?
+		WHERE id = ?
+	`
+
+	_, err := s.db.Exec(query,
+		deployment.Name, deployment.Namespace, deployment.Image,
+		deployment.RegistryID, deployment.Replicas, string(nodeSelector),
+		string(strategy), string(resources), string(environment),
+		deployment.Status, deployment.UpdatedAt, deployment.ID,
+	)
+
+	return err
+}
+
+func (s *Service) getDeploymentFromDB(id string) (*Deployment, error) {
+	query := `
+		SELECT id, name, namespace, image, registry_id, replicas,
+		       node_selector, strategy, resources, environment, status,
+		       created_at, updated_at
+		FROM deployments
+		WHERE id = ?
+	`
+
+	row := s.db.QueryRow(query, id)
+
+	var deployment Deployment
+	var nodeSelector, strategy, resources, environment sql.NullString
+
+	err := row.Scan(
+		&deployment.ID, &deployment.Name, &deployment.Namespace,
+		&deployment.Image, &deployment.RegistryID, &deployment.Replicas,
+		&nodeSelector, &strategy, &resources, &environment,
+		&deployment.Status, &deployment.CreatedAt, &deployment.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse JSON fields
+	if nodeSelector.Valid {
+		json.Unmarshal([]byte(nodeSelector.String), &deployment.NodeSelector)
+	}
+	if strategy.Valid {
+		json.Unmarshal([]byte(strategy.String), &deployment.Strategy)
+	}
+	if resources.Valid {
+		json.Unmarshal([]byte(resources.String), &deployment.Resources)
+	}
+	if environment.Valid {
+		json.Unmarshal([]byte(environment.String), &deployment.Environment)
+	}
+
+	return &deployment, nil
+}
+
+func (s *Service) listDeploymentsFromDB(namespace string) ([]Deployment, error) {
+	var query string
+	var args []interface{}
+
+	if namespace != "" {
+		query = `
+			SELECT id, name, namespace, image, registry_id, replicas,
+			       node_selector, strategy, resources, environment, status,
+			       created_at, updated_at
+			FROM deployments
+			WHERE namespace = ?
+			ORDER BY created_at DESC
+		`
+		args = []interface{}{namespace}
+	} else {
+		query = `
+			SELECT id, name, namespace, image, registry_id, replicas,
+			       node_selector, strategy, resources, environment, status,
+			       created_at, updated_at
+			FROM deployments
+			ORDER BY created_at DESC
+		`
+	}
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var deployments []Deployment
+	for rows.Next() {
+		var deployment Deployment
+		var nodeSelector, strategy, resources, environment sql.NullString
+
+		err := rows.Scan(
+			&deployment.ID, &deployment.Name, &deployment.Namespace,
+			&deployment.Image, &deployment.RegistryID, &deployment.Replicas,
+			&nodeSelector, &strategy, &resources, &environment,
+			&deployment.Status, &deployment.CreatedAt, &deployment.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Parse JSON fields
+		if nodeSelector.Valid {
+			json.Unmarshal([]byte(nodeSelector.String), &deployment.NodeSelector)
+		}
+		if strategy.Valid {
+			json.Unmarshal([]byte(strategy.String), &deployment.Strategy)
+		}
+		if resources.Valid {
+			json.Unmarshal([]byte(resources.String), &deployment.Resources)
+		}
+		if environment.Valid {
+			json.Unmarshal([]byte(environment.String), &deployment.Environment)
+		}
+
+		deployments = append(deployments, deployment)
+	}
+
+	return deployments, nil
+}
+
+func (s *Service) deleteDeploymentFromDB(id string) error {
+	// Delete deployment history first
+	_, err := s.db.Exec("DELETE FROM deployment_history WHERE deployment_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	// Delete autoscaler
+	_, err = s.db.Exec("DELETE FROM autoscalers WHERE deployment_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	// Delete deployment
+	_, err = s.db.Exec("DELETE FROM deployments WHERE id = ?", id)
+	return err
+}
+
+func (s *Service) recordHistory(deploymentID, action, oldImage, newImage string, oldReplicas, newReplicas int32, success bool, errorMsg, user string) {
+	historyID := uuid.New().String()
+
+	query := `
+		INSERT INTO deployment_history (
+			id, deployment_id, action, old_image, new_image,
+			old_replicas, new_replicas, success, error, user, timestamp
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	s.db.Exec(query,
+		historyID, deploymentID, action, oldImage, newImage,
+		oldReplicas, newReplicas, success, errorMsg, user, time.Now(),
+	)
+}
+
+func (s *Service) updateDeploymentStatus(deployment *Deployment, k8sDeployment interface{}) {
+	// This would be implemented to sync status from Kubernetes deployment
+	// For now, we'll keep it simple
+	if deployment.Status == DeploymentStatusPending {
+		deployment.Status = DeploymentStatusRunning
+	}
+}
+
+// Helper functions for node analysis
+
+func isNodeReady(node *corev1.Node) bool {
+	for _, condition := range node.Status.Conditions {
+		if condition.Type == corev1.NodeReady {
+			return condition.Status == corev1.ConditionTrue
+		}
+	}
+	return false
+}
+
+func getNodeRoles(node *corev1.Node) []string {
+	var roles []string
+	
+	for label := range node.Labels {
+		if strings.HasPrefix(label, "node-role.kubernetes.io/") {
+			role := strings.TrimPrefix(label, "node-role.kubernetes.io/")
+			if role != "" {
+				roles = append(roles, role)
+			}
+		}
+	}
+	
+	// If no roles found, default to worker
+	if len(roles) == 0 {
+		roles = append(roles, "worker")
+	}
+	
+	return roles
+}
