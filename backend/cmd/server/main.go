@@ -17,7 +17,6 @@ import (
 	"github.com/archellir/denshimon/internal/api"
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/database"
-	"github.com/archellir/denshimon/internal/gitea"
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
 	"github.com/archellir/denshimon/internal/websocket"
@@ -63,9 +62,6 @@ func main() {
 	dbAdapter := auth.NewDatabaseAdapter(db)
 	authService := auth.NewService(cfg.PasetoKey, db, dbAdapter)
 
-	// Initialize Gitea handler
-	giteaHandler := gitea.NewHandler()
-
 	// Initialize WebSocket hub
 	wsHub := websocket.NewHub()
 	go wsHub.Run() // Start the hub in a goroutine
@@ -80,11 +76,6 @@ func main() {
 
 	// API routes
 	api.RegisterRoutes(mux, authService, k8sClient, db, wsHub)
-	
-	// Gitea API routes
-	if giteaHandler != nil {
-		registerGiteaRoutes(mux, giteaHandler, authService)
-	}
 
 	// Health check endpoint
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -189,29 +180,4 @@ func main() {
 	}
 
 	slog.Info("Server exited")
-}
-
-// registerGiteaRoutes registers Gitea API endpoints with authentication
-func registerGiteaRoutes(mux *http.ServeMux, giteaHandler *gitea.Handler, authService *auth.Service) {
-	// Wrap Gitea handlers with authentication middleware
-	authMiddleware := func(handler http.HandlerFunc) http.HandlerFunc {
-		return authService.AuthMiddleware(handler)
-	}
-	
-	// Repository endpoints
-	mux.HandleFunc("GET /api/gitea/repositories", authMiddleware(giteaHandler.HandleListRepositories))
-	mux.HandleFunc("GET /api/gitea/repositories/{owner}/{repo}", authMiddleware(giteaHandler.HandleGetRepository))
-	mux.HandleFunc("GET /api/gitea/repositories/{owner}/{repo}/commits", authMiddleware(giteaHandler.HandleListCommits))
-	mux.HandleFunc("GET /api/gitea/repositories/{owner}/{repo}/branches", authMiddleware(giteaHandler.HandleListBranches))
-	mux.HandleFunc("GET /api/gitea/repositories/{owner}/{repo}/pulls", authMiddleware(giteaHandler.HandleListPullRequests))
-	mux.HandleFunc("GET /api/gitea/repositories/{owner}/{repo}/releases", authMiddleware(giteaHandler.HandleListReleases))
-	mux.HandleFunc("GET /api/gitea/repositories/{owner}/{repo}/actions/runs", authMiddleware(giteaHandler.HandleListWorkflowRuns))
-	
-	// Deployment endpoint
-	mux.HandleFunc("POST /api/gitea/repositories/{owner}/{repo}/deploy", authMiddleware(giteaHandler.HandleTriggerDeployment))
-	
-	// Webhook endpoint (no auth required as it comes from Gitea)
-	mux.HandleFunc("POST /api/gitea/webhook", giteaHandler.HandleWebhook)
-	
-	slog.Info("Gitea API routes registered")
 }

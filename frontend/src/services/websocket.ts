@@ -218,12 +218,7 @@ export class DenshimonWebSocket {
       MASTER_DEPLOYMENTS
     } = await import('@mocks/masterData');
     
-    // Import webhook mock generators
-    const { 
-      generateMockPipelineUpdate,
-      generateMockGitHubWebhook,
-      generateMockGiteaWebhook
-    } = await import('@mocks/webhooks/pipelineUpdates');
+    // GitOps webhook generators removed
 
     // Store base values for consistent incremental updates
     let baseCpu = 45 + Math.random() * 20;
@@ -404,18 +399,7 @@ export class DenshimonWebSocket {
         };
       },
 
-      // GitOps Webhook events
-      pipeline_update: () => generateMockPipelineUpdate(),
-      gitea_webhook: () => generateMockGiteaWebhook(),
-      github_webhook: () => generateMockGitHubWebhook(),
-
-      // GitOps-specific events
-      repository_sync: () => ({
-        repository_id: `repo-${Math.random().toString(36).substr(2, 9)}`,
-        status: ['synced', 'syncing', 'error'][Math.floor(Math.random() * 3)],
-        timestamp: new Date().toISOString(),
-        error: Math.random() > 0.8 ? 'Connection timeout' : null
-      }),
+      // GitOps events removed - using new deployment system
 
       application_sync: () => ({
         application_id: `app-${Math.random().toString(36).substr(2, 9)}`,

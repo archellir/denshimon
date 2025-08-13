@@ -1,16 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, GitBranch, TreePine, TrendingUp, Plus, Download, Grid, List, Workflow } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import useDeploymentStore from '@stores/deploymentStore';
 import { SearchResult } from '@stores/globalSearchStore';
 import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
-import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
-import CreateRepositoryModal from '@components/gitops/CreateRepositoryModal';
-import useGitOpsStore from '@stores/gitopsStore';
 import NotificationContainer from '@components/common/NotificationContainer';
 import { useAlertNotifications } from '@hooks/useAlertNotifications';
 import { 
@@ -33,13 +31,11 @@ import ServiceMesh from '@components/services/ServiceMesh';
 import EnhancedLogs from '@components/observability/EnhancedLogs';
 import LiveStreams from '@components/observability/LiveStreams';
 import LogAnalytics from '@components/observability/LogAnalytics';
-import GitOps from '@components/GitOps';
-import GitOpsPipelineDashboard from '@components/gitops/GitOpsPipelineDashboard';
+import DeploymentDashboard from '@components/deployments/DeploymentDashboard';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
 import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
-import GiteaActions from '@components/cicd/GiteaActions';
 import ServicesList from '@components/workloads/ServicesList';
 
 interface DashboardProps {
@@ -63,12 +59,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const [serviceSortBy, setServiceSortBy] = useState<string>('name');
   const [serviceSortOrder, setServiceSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Modal states
-  const [showCreateAppModal, setShowCreateAppModal] = useState(false);
-  const [showCreateRepoModal, setShowCreateRepoModal] = useState(false);
-
-  // GitOps store for repositories data
-  const { repositories } = useGitOpsStore();
 
   // Initialize alert notifications
   const notifications = useAlertNotifications();
@@ -78,7 +68,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
     [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
     [PrimaryTab.MESH]: MeshTab.TOPOLOGY,
-    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.PIPELINE,
+    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.REGISTRIES,
     [PrimaryTab.OBSERVABILITY]: ObservabilityTab.LOGS,
   };
 
@@ -106,10 +96,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: MeshTab.GATEWAY, label: UI_LABELS.API_GATEWAY, icon: Eye },
     ],
     [PrimaryTab.DEPLOYMENTS]: [
-      { id: DeploymentsTab.APPLICATIONS, label: UI_LABELS.APPLICATIONS, icon: Package },
-      { id: DeploymentsTab.REPOSITORIES, label: UI_LABELS.REPOSITORIES, icon: GitBranch },
-      { id: DeploymentsTab.GITEA, label: UI_LABELS.GITEA_ACTIONS, icon: Zap },
-      { id: DeploymentsTab.PIPELINE, label: UI_LABELS.PIPELINE, icon: Workflow },
+      { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
+      { id: DeploymentsTab.IMAGES, label: UI_LABELS.IMAGES, icon: Package },
+      { id: DeploymentsTab.DEPLOYMENTS, label: UI_LABELS.DEPLOYMENTS, icon: Rocket },
+      { id: DeploymentsTab.HISTORY, label: UI_LABELS.HISTORY, icon: History },
     ],
     [PrimaryTab.OBSERVABILITY]: [
       { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
@@ -215,6 +205,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     initializeWebSocketMetrics,
     cleanupWebSocketMetrics,
   } = useWebSocketMetricsStore();
+  
+  // Deployment store for secondary nav controls
+  const deploymentStore = useDeploymentStore();
 
   // WebSocket metrics initialization - only once on mount
   useEffect(() => {
@@ -400,51 +393,33 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         );
       
       case PrimaryTab.DEPLOYMENTS:
+        if (deploymentStore.error) {
+          return (
+            <div className="flex items-center space-x-2">
+              <span className="text-red-400 font-mono text-sm">{deploymentStore.error}</span>
+              <button
+                onClick={() => {
+                  deploymentStore.setError(null);
+                  deploymentStore.fetchRegistries();
+                  deploymentStore.fetchDeployments();
+                  deploymentStore.fetchNodes();
+                }}
+                className="px-3 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
+              >
+                RETRY
+              </button>
+            </div>
+          );
+        }
         switch (secondaryTab) {
-          case DeploymentsTab.APPLICATIONS:
+          case DeploymentsTab.REGISTRIES:
             return (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-mono opacity-60">
-                  8 APPLICATIONS
-                </span>
-                <button
-                  onClick={() => setShowCreateAppModal(true)}
-                  className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
-                >
-                  <Plus size={16} />
-                  <span>CREATE</span>
-                </button>
-              </div>
-            );
-          case DeploymentsTab.REPOSITORIES:
-            return (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-mono opacity-60">
-                  4 REPOSITORIES
-                </span>
-                <button
-                  onClick={() => setShowCreateRepoModal(true)}
-                  className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
-                >
-                  <Plus size={16} />
-                  <span>CREATE</span>
-                </button>
-              </div>
-            );
-          case DeploymentsTab.PIPELINE:
-            return (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-mono opacity-60">
-                  GITHUB → GITEA → K8S
-                </span>
-                <button
-                  onClick={() => {}}
-                  className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
-                >
-                  <Workflow size={16} />
-                  <span>DEPLOY</span>
-                </button>
-              </div>
+              <button
+                className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
+              >
+                <Plus size={16} />
+                <span>ADD REGISTRY</span>
+              </button>
             );
           default:
             return null;
@@ -606,10 +581,17 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.MESH && activeSecondaryTab === MeshTab.GATEWAY && <APIGatewayAnalytics timeRange={timeRange} />}
         
         {/* Deployments Tab Content */}
-        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.APPLICATIONS && <GitOps activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.REPOSITORIES && <GitOps activeSecondaryTab={activeSecondaryTab} />}
-        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.GITEA && <GiteaActions />}
-        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && activeSecondaryTab === DeploymentsTab.PIPELINE && <GitOpsPipelineDashboard />}
+        {activePrimaryTab === PrimaryTab.DEPLOYMENTS && (
+          <DeploymentDashboard 
+            activeTab={
+              activeSecondaryTab === DeploymentsTab.REGISTRIES ? 'registries' :
+              activeSecondaryTab === DeploymentsTab.IMAGES ? 'images' :
+              activeSecondaryTab === DeploymentsTab.DEPLOYMENTS ? 'deployments' :
+              activeSecondaryTab === DeploymentsTab.HISTORY ? 'history' :
+              'deployments'
+            } 
+          />
+        )}
         
         {/* Observability Tab Content */}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOGS && <EnhancedLogs />}
@@ -630,17 +612,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         </button>
       )}
 
-      {/* Modals */}
-      <CreateApplicationModal 
-        isOpen={showCreateAppModal}
-        onClose={() => setShowCreateAppModal(false)}
-        repositories={repositories}
-      />
-      
-      <CreateRepositoryModal 
-        isOpen={showCreateRepoModal}
-        onClose={() => setShowCreateRepoModal(false)}
-      />
+      {/* Modals - removed GitOps modals */}
 
       {/* Notification Container */}
       {isSectionVisible(DASHBOARD_SECTIONS.NOTIFICATIONS) && (

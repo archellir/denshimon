@@ -1,6 +1,4 @@
 // Re-export all types from their respective files
-export * from './components';
-export * from './gitops';
 export * from './logs';
 export * from './metrics';
 export * from './network';

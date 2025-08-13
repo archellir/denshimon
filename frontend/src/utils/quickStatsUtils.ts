@@ -189,13 +189,13 @@ export const generateDeploymentStats = (): QuickStat[] => {
 
   return [
     {
-      label: UI_LABELS.APPLICATIONS,
+      label: UI_LABELS.REGISTRIES,
       value: TOTAL_APPLICATIONS.toString(),
       icon: Package,
       status: TOTAL_APPLICATIONS > 0 ? Status.HEALTHY as StatusType : Status.WARNING as StatusType,
     },
     {
-      label: UI_LABELS.REPOSITORIES,
+      label: UI_LABELS.IMAGES,
       value: REPOSITORIES.toString(),
       icon: GitBranch,
       status: REPOSITORIES > 0 ? Status.HEALTHY as StatusType : Status.WARNING as StatusType,

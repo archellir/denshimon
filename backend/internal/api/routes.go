@@ -6,9 +6,10 @@ import (
 
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/database"
-	"github.com/archellir/denshimon/internal/gitops"
+	"github.com/archellir/denshimon/internal/deployments"
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
+	"github.com/archellir/denshimon/internal/providers"
 	"github.com/archellir/denshimon/internal/websocket"
 )
 
@@ -20,9 +21,13 @@ func RegisterRoutes(
 	wsHub *websocket.Hub,
 ) {
 	// Initialize services
-	gitopsService := gitops.NewService(db.DB)
 	metricsService := metrics.NewService(k8sClient)
-	server := NewServer(gitopsService)
+	
+	// Initialize provider registry and deployment service
+	providerRegistry := InitializeProviders()
+	registryManager := providers.NewRegistryManager(providerRegistry)
+	deploymentService := deployments.NewService(k8sClient, registryManager, db.DB)
+	deploymentHandlers := NewDeploymentHandlers(deploymentService, registryManager, providerRegistry)
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -82,57 +87,7 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /api/k8s/pods/files/upload", corsMiddleware(authService.AuthMiddleware(k8sHandlers.HandleFileUpload)))
 	mux.HandleFunc("GET /api/k8s/pods/files/download", corsMiddleware(authService.AuthMiddleware(k8sHandlers.HandleFileDownload)))
 
-	mux.HandleFunc("GET /api/k8s/events", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement events stream handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	// GitOps endpoints (require authentication)
-	// Repository endpoints
-	mux.HandleFunc("GET /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(server.handleListRepositories)))
-	mux.HandleFunc("POST /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(server.handleCreateRepository)))
-	
-	// Repository management (these use path patterns to handle IDs and actions)
-	mux.Handle("/api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		switch {
-		case strings.HasSuffix(path, "/sync") && r.Method == "POST":
-			server.handleSyncRepository(w, r)
-		case strings.HasSuffix(path, "/pull") && r.Method == "POST":
-			server.handlePullRepository(w, r)
-		case strings.HasSuffix(path, "/status") && r.Method == "GET":
-			server.handleGetRepositoryStatus(w, r)
-		case strings.HasSuffix(path, "/commit") && r.Method == "POST":
-			server.handleCommitAndPush(w, r)
-		case strings.HasSuffix(path, "/diff") && r.Method == "GET":
-			server.handleGetRepositoryDiff(w, r)
-		case r.Method == "GET":
-			server.handleGetRepository(w, r)
-		case r.Method == "DELETE":
-			server.handleDeleteRepository(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	}))))
-	
-	// Application endpoints
-	mux.HandleFunc("GET /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(server.handleListApplications)))
-	mux.HandleFunc("POST /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(server.handleCreateApplication)))
-	
-	// Application management
-	mux.Handle("/api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		switch {
-		case strings.HasSuffix(path, "/sync") && r.Method == "POST":
-			server.handleSyncApplication(w, r)
-		case r.Method == "GET":
-			server.handleGetApplication(w, r)
-		case r.Method == "DELETE":
-			server.handleDeleteApplication(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	}))))
+	// Events stream endpoint removed - using existing events handler
 
 	// Metrics endpoints (require authentication)
 	mux.HandleFunc("GET /api/metrics/cluster", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetClusterMetrics)))
@@ -153,6 +108,64 @@ func RegisterRoutes(
 		// TODO: Implement log stream handler
 		w.WriteHeader(http.StatusNotImplemented)
 	}))
+
+	// Deployment endpoints (require authentication)
+	// Registry management
+	mux.HandleFunc("GET /api/deployments/registries", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListRegistries)))
+	mux.HandleFunc("POST /api/deployments/registries", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.AddRegistry)))
+	
+	// Registry operations (using pattern matching)
+	mux.Handle("/api/deployments/registries/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/test") && r.Method == "POST":
+			deploymentHandlers.TestRegistry(w, r)
+		case r.Method == "DELETE":
+			deploymentHandlers.DeleteRegistry(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
+
+	// Image management
+	mux.HandleFunc("GET /api/deployments/images", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListImages)))
+	mux.HandleFunc("GET /api/deployments/images/search", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.SearchImages)))
+	
+	// Image operations
+	mux.Handle("/api/deployments/images/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/tags") && r.Method == "GET" {
+			deploymentHandlers.GetImageTags(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	}))))
+
+	// Deployment management
+	mux.HandleFunc("GET /api/deployments", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListDeployments)))
+	mux.HandleFunc("POST /api/deployments", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.CreateDeployment)))
+	mux.HandleFunc("GET /api/deployments/nodes", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.GetAvailableNodes)))
+	
+	// Deployment operations
+	mux.Handle("/api/deployments/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch {
+		case strings.HasSuffix(path, "/scale") && r.Method == "PATCH":
+			deploymentHandlers.ScaleDeployment(w, r)
+		case strings.HasSuffix(path, "/restart") && r.Method == "POST":
+			deploymentHandlers.RestartDeployment(w, r)
+		case strings.HasSuffix(path, "/pods") && r.Method == "GET":
+			deploymentHandlers.GetDeploymentPods(w, r)
+		case strings.HasSuffix(path, "/history") && r.Method == "GET":
+			deploymentHandlers.GetDeploymentHistory(w, r)
+		case r.Method == "GET":
+			deploymentHandlers.GetDeployment(w, r)
+		case r.Method == "PUT":
+			deploymentHandlers.UpdateDeployment(w, r)
+		case r.Method == "DELETE":
+			deploymentHandlers.DeleteDeployment(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
 
 	// WebSocket endpoint for real-time updates
 	wsHandler := websocket.NewHandler(wsHub)

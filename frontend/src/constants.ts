@@ -220,10 +220,10 @@ export enum MeshTab {
 }
 
 export enum DeploymentsTab {
-  APPLICATIONS = 'applications',
-  REPOSITORIES = 'repositories',
-  GITEA = 'gitea',
-  PIPELINE = 'pipeline'
+  REGISTRIES = 'registries',
+  IMAGES = 'images',
+  DEPLOYMENTS = 'deployments',
+  HISTORY = 'history'
 }
 
 export enum ObservabilityTab {
@@ -387,10 +387,9 @@ export const UI_LABELS = {
   ENDPOINTS: 'Endpoints',
   TRAFFIC_FLOW: 'Traffic Flow',
   API_GATEWAY: 'API Gateway',
-  APPLICATIONS: 'Applications',
-  REPOSITORIES: 'Repositories',
-  GITEA_ACTIONS: 'Gitea Actions',
-  PIPELINE: 'Pipeline',
+  REGISTRIES: 'Registries',
+  IMAGES: 'Images',
+  HISTORY: 'History',
   LOGS: 'Log Data',
   EVENTS: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
