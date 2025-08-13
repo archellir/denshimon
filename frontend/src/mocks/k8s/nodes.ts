@@ -1,36 +1,20 @@
 import type { NodeMetrics } from '@/types/metrics';
 import { MASTER_NODES, getMasterPodsByNode } from '@mocks/masterData';
 
-// Generate metrics for each node in master data
+// Generate metrics for single VPS node
 const generateNodeMetrics = (): NodeMetrics[] => {
   return MASTER_NODES.map((nodeName) => {
     const podCount = getMasterPodsByNode(nodeName).length;
-    const isControlPlane = nodeName === 'control-plane';
-    const isGpuNode = nodeName.includes('gpu');
     
-    // Base specs vary by node type
-    let totalCpu: number;
-    let totalMemory: number; 
-    let totalStorage: number;
+    // Single VPS specs
+    const totalCpu = 8000; // 8 vCPUs
+    const totalMemory = 17179869184; // 16GB RAM
+    const totalStorage = 214748364800; // 200GB disk
     
-    if (isControlPlane) {
-      totalCpu = 2000;
-      totalMemory = 4294967296; // 4GB
-      totalStorage = 53687091200; // 50GB
-    } else if (isGpuNode) {
-      totalCpu = 8000;
-      totalMemory = 17179869184; // 16GB  
-      totalStorage = 214748364800; // 200GB
-    } else {
-      totalCpu = 4000;
-      totalMemory = 8589934592; // 8GB
-      totalStorage = 107374182400; // 100GB
-    }
-    
-    // Usage varies by pod load
-    const cpuUsed = Math.floor(totalCpu * (0.3 + (podCount * 0.08)));
-    const memoryUsed = Math.floor(totalMemory * (0.25 + (podCount * 0.05)));
-    const storageUsed = Math.floor(totalStorage * (0.2 + (podCount * 0.04)));
+    // Realistic usage for single VPS (higher utilization)
+    const cpuUsed = Math.floor(totalCpu * 0.65); // 65% CPU usage
+    const memoryUsed = Math.floor(totalMemory * 0.75); // 75% memory usage  
+    const storageUsed = Math.floor(totalStorage * 0.45); // 45% storage used
     
     return {
       name: nodeName,
