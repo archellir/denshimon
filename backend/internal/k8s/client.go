@@ -103,3 +103,17 @@ func (c *Client) GetPod(ctx context.Context, namespace, name string) (*corev1.Po
 func (c *Client) ListNamespaces(ctx context.Context) (*corev1.NamespaceList, error) {
 	return c.clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 }
+
+func (c *Client) ListServices(ctx context.Context, namespace string) (*corev1.ServiceList, error) {
+	if namespace == "" {
+		return c.clientset.CoreV1().Services(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	}
+	return c.clientset.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{})
+}
+
+func (c *Client) ListEvents(ctx context.Context, namespace string) (*corev1.EventList, error) {
+	if namespace == "" {
+		return c.clientset.CoreV1().Events(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	}
+	return c.clientset.CoreV1().Events(namespace).List(ctx, metav1.ListOptions{})
+}
