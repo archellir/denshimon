@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import useGitOpsStore from '@stores/gitopsStore';
 import useGitOpsWebhooks from '@hooks/useGitOpsWebhooks';
+import MirrorSyncMonitor from '@components/gitops/MirrorSyncMonitor';
 import { PipelineStatus, DeploymentStatus, MirrorSyncStatus } from '@/types/gitops';
 import type { Application, ContainerImage, PipelineUpdatePayload } from '@/types/gitops';
 
@@ -522,6 +523,9 @@ const GitOpsPipelineDashboard: FC<GitOpsPipelineDashboardProps> = ({ selectedRep
           })}
         </div>
       </div>
+
+      {/* GitHub Mirror Sync Monitoring */}
+      <MirrorSyncMonitor selectedRepository={selectedRepository} />
     </div>
   );
 };

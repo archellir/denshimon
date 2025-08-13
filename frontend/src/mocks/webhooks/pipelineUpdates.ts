@@ -26,7 +26,7 @@ export const generateMockPipelineUpdate = (): PipelineUpdatePayload => {
   
   return {
     type,
-    repository_id: `repo-${Math.floor(Math.random() * 3) + 1}`,
+    repository_id: `repo-${Math.floor(Math.random() * 5) + 1}`, // Now includes repo-4 and repo-5
     status,
     timestamp: new Date().toISOString(),
     metadata: {
@@ -34,7 +34,7 @@ export const generateMockPipelineUpdate = (): PipelineUpdatePayload => {
       image_id: type === 'image_push' ? `image-${Date.now()}` : undefined,
       deployment_id: type === 'deployment_status' ? `deploy-${Date.now()}` : undefined,
       commit_sha: Math.random().toString(36).substring(2, 10),
-      branch: Math.random() > 0.7 ? 'main' : 'production',
+      branch: Math.random() > 0.7 ? 'main' : Math.random() > 0.5 ? 'production' : 'develop',
       duration: Math.floor(Math.random() * 600) + 30
     }
   };
@@ -48,10 +48,10 @@ export const generateMockGitHubWebhook = (): GitHubWebhookPayload => {
     action,
     repository: {
       id: Math.floor(Math.random() * 1000) + 1,
-      name: `repo-${Math.floor(Math.random() * 3) + 1}`,
-      full_name: `user/repo-${Math.floor(Math.random() * 3) + 1}`,
-      html_url: `https://github.com/user/repo-${Math.floor(Math.random() * 3) + 1}`,
-      clone_url: `https://github.com/user/repo-${Math.floor(Math.random() * 3) + 1}.git`
+      name: `repo-${Math.floor(Math.random() * 5) + 1}`,
+      full_name: `company/repo-${Math.floor(Math.random() * 5) + 1}`,
+      html_url: `https://github.com/company/repo-${Math.floor(Math.random() * 5) + 1}`,
+      clone_url: `https://github.com/company/repo-${Math.floor(Math.random() * 5) + 1}.git`
     },
     ref: action === 'push' ? 'refs/heads/main' : undefined,
     commits: action === 'push' ? [{
@@ -78,10 +78,10 @@ export const generateMockGiteaWebhook = (): GiteaWebhookPayload => {
     action,
     repository: {
       id: Math.floor(Math.random() * 1000) + 1,
-      name: `repo-${Math.floor(Math.random() * 3) + 1}`,
-      full_name: `user/repo-${Math.floor(Math.random() * 3) + 1}`,
-      html_url: `https://gitea.company.com/user/repo-${Math.floor(Math.random() * 3) + 1}`,
-      clone_url: `https://gitea.company.com/user/repo-${Math.floor(Math.random() * 3) + 1}.git`
+      name: `repo-${Math.floor(Math.random() * 5) + 1}`,
+      full_name: `company/repo-${Math.floor(Math.random() * 5) + 1}`,
+      html_url: `https://gitea.company.com/company/repo-${Math.floor(Math.random() * 5) + 1}`,
+      clone_url: `https://gitea.company.com/company/repo-${Math.floor(Math.random() * 5) + 1}.git`
     }
   };
   

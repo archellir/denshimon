@@ -51,6 +51,38 @@ export const mockRepositories: Repository[] = [
     mirror_sync_status: MirrorSyncStatus.ERROR,
     last_mirror_sync: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     mirror_sync_error: 'Mirror sync failed: repository not found'
+  },
+  {
+    id: 'repo-4',
+    name: 'frontend-apps',
+    url: 'https://gitea.company.com/frontend/apps.git',
+    branch: 'main',
+    auth_type: AuthType.TOKEN,
+    last_sync: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
+    sync_status: SyncStatus.SYNCED,
+    sync_error: null,
+    created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days ago
+    updated_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    github_url: 'https://github.com/company/frontend-apps.git',
+    mirror_sync_status: MirrorSyncStatus.OUT_OF_SYNC,
+    last_mirror_sync: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+    mirror_sync_error: null
+  },
+  {
+    id: 'repo-5',
+    name: 'backend-services',
+    url: 'https://gitea.company.com/backend/services.git',
+    branch: 'develop',
+    auth_type: AuthType.SSH,
+    last_sync: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
+    sync_status: SyncStatus.PENDING,
+    sync_error: null,
+    created_at: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(), // 21 days ago
+    updated_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+    github_url: 'https://github.com/company/backend-services.git',
+    mirror_sync_status: MirrorSyncStatus.SYNCING,
+    last_mirror_sync: new Date(Date.now() - 1 * 60 * 1000).toISOString(), // 1 minute ago (currently syncing)
+    mirror_sync_error: null
   }
 ];
 
