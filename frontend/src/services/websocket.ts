@@ -37,8 +37,8 @@ export class DenshimonWebSocket {
       ...options
     };
 
-    // In development, use mock WebSocket
-    if (process.env.NODE_ENV === 'development') {
+    // Check if we should use mock WebSocket or real backend connection
+    if (import.meta.env.VITE_USE_MOCK_WS === 'true') {
       this.startMockWebSocket();
     } else {
       this.connect();
@@ -472,7 +472,7 @@ export const initializeWebSocket = (url: string): DenshimonWebSocket => {
   
   wsInstance = new DenshimonWebSocket({
     url,
-    debug: process.env.NODE_ENV === 'development'
+    debug: import.meta.env.DEV
   });
   
   return wsInstance;
