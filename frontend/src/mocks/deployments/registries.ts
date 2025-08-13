@@ -11,7 +11,7 @@ export const mockRegistries: Registry[] = MASTER_REGISTRIES.map(registry => ({
     url: registry.url,
     namespace: registry.namespace,
   },
-  error: registry.error,
+  error: 'error' in registry ? registry.error : undefined,
   createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 30 days
   updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 7 days
 }));
