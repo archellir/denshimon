@@ -54,6 +54,38 @@ type DeploymentInfo struct {
 	Labels    map[string]string `json:"labels"`
 }
 
+type ServiceInfo struct {
+	Name        string            `json:"name"`
+	Namespace   string            `json:"namespace"`
+	Type        string            `json:"type"`
+	ClusterIP   string            `json:"cluster_ip"`
+	ExternalIPs []string          `json:"external_ips"`
+	Ports       []ServicePort     `json:"ports"`
+	Age         string            `json:"age"`
+	Labels      map[string]string `json:"labels"`
+}
+
+type ServicePort struct {
+	Name       string `json:"name"`
+	Protocol   string `json:"protocol"`
+	Port       int32  `json:"port"`
+	TargetPort string `json:"target_port"`
+	NodePort   int32  `json:"node_port,omitempty"`
+}
+
+type EventInfo struct {
+	Name            string            `json:"name"`
+	Namespace       string            `json:"namespace"`
+	Type            string            `json:"type"`
+	Reason          string            `json:"reason"`
+	Object          string            `json:"object"`
+	Message         string            `json:"message"`
+	Count           int32             `json:"count"`
+	FirstTime       string            `json:"first_time"`
+	LastTime        string            `json:"last_time"`
+	Labels          map[string]string `json:"labels"`
+}
+
 func NewKubernetesHandlers(k8sClient *k8s.Client) *KubernetesHandlers {
 	return &KubernetesHandlers{
 		k8sClient: k8sClient,
@@ -448,6 +480,102 @@ func (h *KubernetesHandlers) HandleFileDownload(w http.ResponseWriter, r *http.R
 	h.k8sClient.HandleFileDownload(w, r)
 }
 
+// GET /api/k8s/services
+func (h *KubernetesHandlers) ListServices(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockServices := getMockServices()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(mockServices)
+		return
+	}
+	
+	namespace := r.URL.Query().Get("namespace")
+	if namespace == "" {
+		namespace = "default"
+	}
+
+	services, err := h.k8sClient.Clientset().CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list services: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	var serviceInfos []ServiceInfo
+	for _, service := range services.Items {
+		var ports []ServicePort
+		for _, port := range service.Spec.Ports {
+			servicePort := ServicePort{
+				Name:       port.Name,
+				Protocol:   string(port.Protocol),
+				Port:       port.Port,
+				TargetPort: port.TargetPort.String(),
+			}
+			if port.NodePort != 0 {
+				servicePort.NodePort = port.NodePort
+			}
+			ports = append(ports, servicePort)
+		}
+
+		serviceInfo := ServiceInfo{
+			Name:        service.Name,
+			Namespace:   service.Namespace,
+			Type:        string(service.Spec.Type),
+			ClusterIP:   service.Spec.ClusterIP,
+			ExternalIPs: service.Spec.ExternalIPs,
+			Ports:       ports,
+			Age:         formatAge(service.CreationTimestamp.Time),
+			Labels:      service.Labels,
+		}
+		serviceInfos = append(serviceInfos, serviceInfo)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(serviceInfos)
+}
+
+// GET /api/k8s/events
+func (h *KubernetesHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockEvents := getMockEvents()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(mockEvents)
+		return
+	}
+	
+	namespace := r.URL.Query().Get("namespace")
+	if namespace == "" {
+		namespace = "default"
+	}
+
+	events, err := h.k8sClient.Clientset().CoreV1().Events(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list events: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	var eventInfos []EventInfo
+	for _, event := range events.Items {
+		eventInfo := EventInfo{
+			Name:      event.Name,
+			Namespace: event.Namespace,
+			Type:      event.Type,
+			Reason:    event.Reason,
+			Object:    fmt.Sprintf("%s/%s", event.InvolvedObject.Kind, event.InvolvedObject.Name),
+			Message:   event.Message,
+			Count:     event.Count,
+			FirstTime: event.FirstTimestamp.Format(time.RFC3339),
+			LastTime:  event.LastTimestamp.Format(time.RFC3339),
+			Labels:    event.Labels,
+		}
+		eventInfos = append(eventInfos, eventInfo)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(eventInfos)
+}
+
 // Helper functions
 func getPodReadyStatus(pod *corev1.Pod) string {
 	ready := 0
@@ -777,6 +905,206 @@ func getMockDeployments() []DeploymentInfo {
 			Available: 1,
 			Age:       "7d",
 			Labels:    map[string]string{"app": "grafana", "component": "monitoring"},
+		},
+	}
+}
+
+func getMockServices() []ServiceInfo {
+	return []ServiceInfo{
+		{
+			Name:      "nginx-service",
+			Namespace: "denshimon-test",
+			Type:      "ClusterIP",
+			ClusterIP: "10.96.123.45",
+			ExternalIPs: []string{},
+			Ports: []ServicePort{
+				{
+					Name:       "http",
+					Protocol:   "TCP",
+					Port:       80,
+					TargetPort: "8080",
+				},
+			},
+			Age:    "2h",
+			Labels: map[string]string{"app": "nginx", "service": "web"},
+		},
+		{
+			Name:      "redis-service",
+			Namespace: "denshimon-test",
+			Type:      "ClusterIP",
+			ClusterIP: "10.96.234.56",
+			ExternalIPs: []string{},
+			Ports: []ServicePort{
+				{
+					Name:       "redis",
+					Protocol:   "TCP",
+					Port:       6379,
+					TargetPort: "6379",
+				},
+			},
+			Age:    "3h",
+			Labels: map[string]string{"app": "redis", "tier": "cache"},
+		},
+		{
+			Name:      "api-backend-service",
+			Namespace: "production",
+			Type:      "LoadBalancer",
+			ClusterIP: "10.96.345.67",
+			ExternalIPs: []string{"203.0.113.10"},
+			Ports: []ServicePort{
+				{
+					Name:       "api",
+					Protocol:   "TCP",
+					Port:       8080,
+					TargetPort: "8080",
+					NodePort:   30080,
+				},
+				{
+					Name:       "metrics",
+					Protocol:   "TCP",
+					Port:       9090,
+					TargetPort: "9090",
+					NodePort:   30090,
+				},
+			},
+			Age:    "1d",
+			Labels: map[string]string{"app": "api-backend", "environment": "production"},
+		},
+		{
+			Name:      "kubernetes",
+			Namespace: "default",
+			Type:      "ClusterIP",
+			ClusterIP: "10.96.0.1",
+			ExternalIPs: []string{},
+			Ports: []ServicePort{
+				{
+					Name:       "https",
+					Protocol:   "TCP",
+					Port:       443,
+					TargetPort: "6443",
+				},
+			},
+			Age:    "30d",
+			Labels: map[string]string{"component": "apiserver", "provider": "kubernetes"},
+		},
+		{
+			Name:      "prometheus-service",
+			Namespace: "monitoring",
+			Type:      "NodePort",
+			ClusterIP: "10.96.456.78",
+			ExternalIPs: []string{},
+			Ports: []ServicePort{
+				{
+					Name:       "web",
+					Protocol:   "TCP",
+					Port:       9090,
+					TargetPort: "9090",
+					NodePort:   31090,
+				},
+			},
+			Age:    "7d",
+			Labels: map[string]string{"app": "prometheus", "component": "monitoring"},
+		},
+	}
+}
+
+func getMockEvents() []EventInfo {
+	return []EventInfo{
+		{
+			Name:      "nginx-app-5d4c4b8f45-abc12.17d2a1b2c3d4e5f6",
+			Namespace: "denshimon-test",
+			Type:      "Normal",
+			Reason:    "Scheduled",
+			Object:    "Pod/nginx-app-5d4c4b8f45-abc12",
+			Message:   "Successfully assigned denshimon-test/nginx-app-5d4c4b8f45-abc12 to worker-1",
+			Count:     1,
+			FirstTime: time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "nginx-app-5d4c4b8f45-abc12.17d2a1b2c3d4e5f7",
+			Namespace: "denshimon-test",
+			Type:      "Normal",
+			Reason:    "Pulling",
+			Object:    "Pod/nginx-app-5d4c4b8f45-abc12",
+			Message:   "Pulling image \"nginx:1.21\"",
+			Count:     1,
+			FirstTime: time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "nginx-app-5d4c4b8f45-abc12.17d2a1b2c3d4e5f8",
+			Namespace: "denshimon-test",
+			Type:      "Normal",
+			Reason:    "Pulled",
+			Object:    "Pod/nginx-app-5d4c4b8f45-abc12",
+			Message:   "Successfully pulled image \"nginx:1.21\"",
+			Count:     1,
+			FirstTime: time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "nginx-app-5d4c4b8f45-abc12.17d2a1b2c3d4e5f9",
+			Namespace: "denshimon-test",
+			Type:      "Normal",
+			Reason:    "Created",
+			Object:    "Pod/nginx-app-5d4c4b8f45-abc12",
+			Message:   "Created container nginx",
+			Count:     1,
+			FirstTime: time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "nginx-app-5d4c4b8f45-abc12.17d2a1b2c3d4e5fa",
+			Namespace: "denshimon-test",
+			Type:      "Normal",
+			Reason:    "Started",
+			Object:    "Pod/nginx-app-5d4c4b8f45-abc12",
+			Message:   "Started container nginx",
+			Count:     1,
+			FirstTime: time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "failing-pod-crash.17d2a1b2c3d4e5fb",
+			Namespace: "denshimon-test",
+			Type:      "Warning",
+			Reason:    "BackOff",
+			Object:    "Pod/failing-pod-crash",
+			Message:   "Back-off restarting failed container",
+			Count:     15,
+			FirstTime: time.Now().Add(-30 * time.Minute).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-1 * time.Minute).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "pending-pod-no-resources.17d2a1b2c3d4e5fc",
+			Namespace: "denshimon-test",
+			Type:      "Warning",
+			Reason:    "FailedScheduling",
+			Object:    "Pod/pending-pod-no-resources",
+			Message:   "0/3 nodes are available: 3 Insufficient memory.",
+			Count:     5,
+			FirstTime: time.Now().Add(-45 * time.Minute).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-30 * time.Minute).Format(time.RFC3339),
+			Labels:    map[string]string{},
+		},
+		{
+			Name:      "nginx-app.17d2a1b2c3d4e5fd",
+			Namespace: "denshimon-test",
+			Type:      "Normal",
+			Reason:    "ScalingReplicaSet",
+			Object:    "Deployment/nginx-app",
+			Message:   "Scaled up replica set nginx-app-5d4c4b8f45 to 3",
+			Count:     1,
+			FirstTime: time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			LastTime:  time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+			Labels:    map[string]string{},
 		},
 	}
 }
