@@ -1,7 +1,16 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { SortDirection, API_ENDPOINTS } from '@/constants';
-import type { GitOpsStore, Repository, Application, CreateRepositoryRequest, CreateApplicationRequest } from '@/types/gitops';
+import type { 
+  GitOpsStore, 
+  Repository, 
+  Application, 
+  CreateRepositoryRequest, 
+  CreateApplicationRequest,
+  GiteaAction,
+  ContainerImage,
+  DeploymentHistory
+} from '@/types/gitops';
 import { mockRepositories, mockApplications, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 
 const useGitOpsStore = create<GitOpsStore>()(
@@ -9,11 +18,15 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Repository data
     repositories: [],
     applications: [],
+    giteaActions: [],
+    containerImages: [],
+    deploymentHistory: [],
     
     // Loading states
     isLoading: false,
     isCreating: false,
     isSyncing: false,
+    isDeploying: false,
     error: null,
     
     // Filters and sorting
@@ -25,10 +38,14 @@ const useGitOpsStore = create<GitOpsStore>()(
     // Actions
     setRepositories: (repositories: Repository[]) => set({ repositories }),
     setApplications: (applications: Application[]) => set({ applications }),
+    setGiteaActions: (giteaActions: GiteaAction[]) => set({ giteaActions }),
+    setContainerImages: (containerImages: ContainerImage[]) => set({ containerImages }),
+    setDeploymentHistory: (deploymentHistory: DeploymentHistory[]) => set({ deploymentHistory }),
     
     setLoading: (isLoading: boolean) => set({ isLoading }),
     setCreating: (isCreating: boolean) => set({ isCreating }),
     setSyncing: (isSyncing: boolean) => set({ isSyncing }),
+    setDeploying: (isDeploying: boolean) => set({ isDeploying }),
     setError: (error: string | null) => set({ error }),
     
     setRepositoryFilter: (filter: string) => set({ repositoryFilter: filter }),
@@ -272,6 +289,240 @@ const useGitOpsStore = create<GitOpsStore>()(
         throw error;
       }
     },
+
+    // Mirror sync trigger (GitHub → Gitea)
+    triggerMirrorSync: async (repositoryId: string) => {
+      set({ isSyncing: true, error: null });
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.GITOPS.MIRROR_SYNC(repositoryId), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to trigger mirror sync: ${response.statusText}`);
+        }
+        
+        // Refresh repositories to get updated sync status
+        await get().fetchRepositories();
+        set({ isSyncing: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          isSyncing: false 
+        });
+        throw error;
+      }
+    },
+
+    // Deploy application with specific image
+    deployApplication: async (applicationId: string, imageId: string) => {
+      set({ isDeploying: true, error: null });
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATION_DEPLOY(applicationId), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+          body: JSON.stringify({ image_id: imageId }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to deploy application: ${response.statusText}`);
+        }
+        
+        // Refresh applications and deployment history
+        await Promise.all([
+          get().fetchApplications(),
+          get().fetchDeploymentHistory(applicationId)
+        ]);
+        set({ isDeploying: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          isDeploying: false 
+        });
+        throw error;
+      }
+    },
+
+    // Rollback application to previous deployment
+    rollbackApplication: async (applicationId: string, deploymentId: string) => {
+      set({ isDeploying: true, error: null });
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATION_ROLLBACK(applicationId), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+          body: JSON.stringify({ deployment_id: deploymentId }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to rollback application: ${response.statusText}`);
+        }
+        
+        // Refresh applications and deployment history
+        await Promise.all([
+          get().fetchApplications(),
+          get().fetchDeploymentHistory(applicationId)
+        ]);
+        set({ isDeploying: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          isDeploying: false 
+        });
+        throw error;
+      }
+    },
+
+    // Fetch Gitea Actions
+    fetchGiteaActions: async (repositoryId?: string) => {
+      try {
+        const url = repositoryId 
+          ? API_ENDPOINTS.GITEA.ACTIONS_BY_REPO(repositoryId)
+          : API_ENDPOINTS.GITEA.ACTIONS;
+          
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Gitea actions: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        set({ giteaActions: data });
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        throw error;
+      }
+    },
+
+    // Trigger Gitea Action
+    triggerGiteaAction: async (repositoryId: string, workflowName: string) => {
+      try {
+        const response = await fetch(API_ENDPOINTS.GITEA.TRIGGER_ACTION(repositoryId), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+          body: JSON.stringify({ workflow: workflowName }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to trigger Gitea action: ${response.statusText}`);
+        }
+        
+        // Refresh actions
+        await get().fetchGiteaActions(repositoryId);
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        throw error;
+      }
+    },
+
+    // Get action logs
+    getActionLogs: async (actionId: string): Promise<string> => {
+      try {
+        const response = await fetch(API_ENDPOINTS.GITEA.ACTION_LOGS(actionId), {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch action logs: ${response.statusText}`);
+        }
+        
+        return await response.text();
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        throw error;
+      }
+    },
+
+    // Fetch container images
+    fetchContainerImages: async (repositoryId?: string) => {
+      try {
+        const url = repositoryId 
+          ? API_ENDPOINTS.GITEA.IMAGES_BY_REPO(repositoryId)
+          : API_ENDPOINTS.GITEA.IMAGES;
+          
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch container images: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        set({ containerImages: data });
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        throw error;
+      }
+    },
+
+    // Get images by repository
+    getImagesByRepository: (repositoryId: string) => {
+      const { containerImages } = get();
+      return containerImages.filter(image => image.repository_id === repositoryId);
+    },
+
+    // Get latest image for repository
+    getLatestImage: (repositoryId: string, tag: string = 'latest') => {
+      const images = get().getImagesByRepository(repositoryId);
+      const latestImages = images.filter(image => image.tag === tag);
+      return latestImages.sort((a, b) => 
+        new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime()
+      )[0] || null;
+    },
+
+    // Fetch deployment history
+    fetchDeploymentHistory: async (applicationId?: string) => {
+      try {
+        const url = applicationId 
+          ? API_ENDPOINTS.GITOPS.DEPLOYMENT_HISTORY_BY_APP(applicationId)
+          : API_ENDPOINTS.GITOPS.DEPLOYMENT_HISTORY;
+          
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch deployment history: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        set({ deploymentHistory: data });
+      } catch (error) {
+        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        throw error;
+      }
+    },
+
+    // Get deployments by application
+    getDeploymentsByApplication: (applicationId: string) => {
+      const { deploymentHistory } = get();
+      return deploymentHistory.filter(deployment => deployment.application_id === applicationId);
+    },
     
     // Get filtered and sorted repositories
     getFilteredRepositories: () => {
@@ -337,6 +588,9 @@ const useGitOpsStore = create<GitOpsStore>()(
     clearGitOps: () => set({
       repositories: [],
       applications: [],
+      giteaActions: [],
+      containerImages: [],
+      deploymentHistory: [],
       error: null,
     }),
   }))
