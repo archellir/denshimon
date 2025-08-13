@@ -47,7 +47,6 @@ const ForceGraph: FC<ForceGraphProps> = ({
   const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [showTraffic, setShowTraffic] = useState(true);
   const [animationFrame, setAnimationFrame] = useState(0);
 
   // Calculate node size based on request rate
@@ -256,8 +255,8 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     ctx.setLineDash([]);
     
-    // Animated traffic particles when traffic is shown
-    if (showTraffic && isLive) {
+    // Animated traffic particles
+    if (isLive) {
       const particleCount = Math.ceil(link.value / 2);
       const dx = end.x - start.x;
       const dy = end.y - start.y;
@@ -315,18 +314,18 @@ const ForceGraph: FC<ForceGraphProps> = ({
       arrowY - arrowLength * Math.sin(angle + arrowAngle)
     );
     ctx.stroke();
-  }, [showTraffic, isLive, animationFrame]);
+  }, [isLive, animationFrame]);
 
   // Animation frame counter for traffic flow
   useEffect(() => {
-    if (showTraffic && isLive) {
+    if (isLive) {
       const interval = setInterval(() => {
         setAnimationFrame(prev => (prev + 1) % 100);
       }, 50); // Update every 50ms for smooth animation
       
       return () => clearInterval(interval);
     }
-  }, [showTraffic, isLive]);
+  }, [isLive]);
 
   // Auto-fit to viewport when data changes
   useEffect(() => {
@@ -378,50 +377,33 @@ const ForceGraph: FC<ForceGraphProps> = ({
             <span>Gateway</span>
           </div>
           
-          {showTraffic && (
-            <>
-              <div className="text-white/60 font-bold mt-2 mb-1">TRAFFIC</div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span>Healthy</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                <span>mTLS</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                <span>Warning</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-                <span>Errors</span>
-              </div>
-            </>
-          )}
+          
+          <div className="text-white/60 font-bold mt-2 mb-1">TRAFFIC</div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span>Healthy</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+            <span>mTLS</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+            <span>Warning</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+            <span>Errors</span>
+          </div>
         </div>
       </div>
       
-      <div className="absolute top-2 right-2 z-20 flex items-center gap-4">
-        {/* Traffic Toggle */}
-        <button
-          onClick={() => setShowTraffic(!showTraffic)}
-          className={`px-3 py-1 border font-mono text-xs transition-colors ${
-            showTraffic 
-              ? 'border-green-400 text-green-400 bg-green-400/10' 
-              : 'border-white/50 text-white/50 hover:border-white hover:text-white'
-          }`}
-        >
-          {showTraffic ? '● TRAFFIC ON' : '○ TRAFFIC OFF'}
-        </button>
-        
-        {isLive && (
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-xs font-mono text-green-400">LIVE</span>
-          </div>
-        )}
-      </div>
+      {isLive && (
+        <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          <span className="text-xs font-mono text-green-400">LIVE</span>
+        </div>
+      )}
       
       <ForceGraph2D
         ref={graphRef}
