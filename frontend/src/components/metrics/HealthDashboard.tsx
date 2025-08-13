@@ -20,10 +20,10 @@ const generateHealthData = () => {
 
   return {
     cluster: {
-      readyNodes: Math.floor(Math.random() * 2) + 4,
-      totalNodes: 5,
-      runningPods: Math.floor(Math.random() * 50) + 100,
-      totalPods: 150,
+      readyNodes: 1, // Single VPS
+      totalNodes: 1,
+      runningPods: Math.floor(Math.random() * 5) + 15, // 15-20 pods
+      totalPods: 20,
       cpuUsage: 45 + Math.random() * 40,
       cpuTrend: randomTrend(),
       cpuTrendValue: randomTrendValue(),
