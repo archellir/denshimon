@@ -16,12 +16,12 @@ export const mockDeploymentHistory: DeploymentHistory[] = MASTER_DEPLOYMENT_HIST
     },
   } as DeploymentHistory;
 
-  // Add optional fields based on record properties
-  if ('image' in record) baseRecord.image = record.image;
-  if ('oldImage' in record) baseRecord.oldImage = record.oldImage;
-  if ('newImage' in record) baseRecord.newImage = record.newImage;
-  if ('replicas' in record) baseRecord.replicas = record.replicas;
-  if ('oldReplicas' in record) baseRecord.oldReplicas = record.oldReplicas;
+  // Add optional fields based on record properties  
+  if ('image' in record && 'image' in baseRecord) (baseRecord as any).image = record.image;
+  if ('oldImage' in record && 'oldImage' in baseRecord) (baseRecord as any).oldImage = record.oldImage;
+  if ('newImage' in record && 'newImage' in baseRecord) (baseRecord as any).newImage = record.newImage;
+  if ('replicas' in record && 'replicas' in baseRecord) (baseRecord as any).replicas = record.replicas;
+  if ('oldReplicas' in record && 'oldReplicas' in baseRecord) (baseRecord as any).oldReplicas = record.oldReplicas;
   if ('newReplicas' in record) {
     baseRecord.newReplicas = record.newReplicas;
     baseRecord.metadata!.affectedPods = Math.abs(record.newReplicas - (record.oldReplicas || 0));
