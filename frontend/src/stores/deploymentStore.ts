@@ -9,7 +9,7 @@ import type {
 } from '@/types/deployments';
 
 // Import mock utilities
-import { mockApiResponse } from '@/mocks';
+import { mockApiResponse, mockRegistries } from '@/mocks';
 
 interface DeploymentStore {
   // State
@@ -105,10 +105,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, registries: true }, error: null }));
     
     try {
-      const response = await fetch(`${API_BASE}/registries`);
-      if (!response.ok) throw new Error('Failed to fetch registries');
-      
-      const registries = await response.json();
+      const registries = await mockApiResponse(mockRegistries, 300);
       set({ registries, loading: { ...get().loading, registries: false } });
     } catch (error) {
       set(state => ({
@@ -158,14 +155,14 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   testRegistry: async (id) => {
     try {
-      // Use mock registry test with simulated delay
+      const { generateMockRegistryTest } = await import('@/mocks/deployments/registries');
       const success = await mockApiResponse(generateMockRegistryTest(id), 500);
       
       // Update registry status
       const registries = get().registries.map(r => 
         r.id === id ? { 
           ...r, 
-          status: success ? 'connected' : 'error', 
+          status: (success ? 'connected' : 'error') as 'connected' | 'error' | 'pending', 
           error: success ? undefined : 'Connection timeout'
         } : r
       );
@@ -179,11 +176,12 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   },
   
   // Image Management
-  fetchImages: async (registryId, namespace) => {
+  fetchImages: async (registryId) => {
     set(state => ({ loading: { ...state.loading, images: true }, error: null }));
     
     try {
       // Filter images by selected registry
+      const { searchMockImages } = await import('@/mocks/deployments/images');
       const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
       const images = await mockApiResponse(searchMockImages('', registryName), 400);
       set({ images, loading: { ...get().loading, images: false } });
@@ -199,6 +197,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, images: true }, error: null }));
     
     try {
+      const { searchMockImages } = await import('@/mocks/deployments/images');
       const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
       const images = await mockApiResponse(searchMockImages(query, registryName), 300);
       set({ images, loading: { ...get().loading, images: false } });
@@ -228,6 +227,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deployments: true }, error: null }));
     
     try {
+      const { filterDeploymentsByNamespace } = await import('@/mocks/deployments/deployments');
       const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
       set({ deployments, loading: { ...get().loading, deployments: false } });
     } catch (error) {
@@ -332,6 +332,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, nodes: true }, error: null }));
     
     try {
+      const { mockNodes } = await import('@/mocks/deployments/deployments');
       const nodes = await mockApiResponse(mockNodes, 250);
       set({ nodes, loading: { ...get().loading, nodes: false } });
     } catch (error) {
@@ -347,6 +348,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, history: true }, error: null }));
     
     try {
+      const { generateMockHistoryForDeployment } = await import('@/mocks/deployments/history');
       const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
       set({ history, loading: { ...get().loading, history: false } });
     } catch (error) {
