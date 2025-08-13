@@ -598,7 +598,7 @@ export const API_ENDPOINTS = {
   },
   WEBSOCKET: {
     BASE: API_BASE_PATHS.WEBSOCKET,
-    DEFAULT_URL: 'ws://localhost:8080/ws'
+    DEFAULT_URL: 'ws://localhost:5173/ws' // Vite dev server with proxy
   }
 } as const;
 
