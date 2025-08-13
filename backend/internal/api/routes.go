@@ -51,6 +51,12 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /api/auth/refresh", corsMiddleware(authService.AuthMiddleware(authHandlers.Refresh)))
 	mux.HandleFunc("GET /api/auth/me", corsMiddleware(authService.AuthMiddleware(authHandlers.Me)))
 
+	// User management endpoints (admin only)
+	mux.HandleFunc("POST /api/auth/users", corsMiddleware(authService.RequireRole("admin")(authHandlers.CreateUser)))
+	mux.HandleFunc("GET /api/auth/users", corsMiddleware(authService.RequireRole("admin")(authHandlers.ListUsers)))
+	mux.HandleFunc("PUT /api/auth/users/{id}", corsMiddleware(authService.RequireRole("admin")(authHandlers.UpdateUser)))
+	mux.HandleFunc("DELETE /api/auth/users/{id}", corsMiddleware(authService.RequireRole("admin")(authHandlers.DeleteUser)))
+
 	// Protected routes (require auth)
 	
 	// Kubernetes endpoints (require authentication)
