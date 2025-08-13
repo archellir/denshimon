@@ -64,6 +64,8 @@ func RegisterRoutes(
 	mux.HandleFunc("PATCH /api/k8s/deployments/{name}/scale", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ScaleDeployment)))
 	
 	mux.HandleFunc("GET /api/k8s/nodes", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListNodes)))
+	mux.HandleFunc("GET /api/k8s/services", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListServices)))
+	mux.HandleFunc("GET /api/k8s/events", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListEvents)))
 	mux.HandleFunc("GET /api/k8s/health", corsMiddleware(k8sHandlers.HealthCheck)) // No auth required for health check
 
 	// Pod debugging endpoints
