@@ -624,7 +624,12 @@ export enum WebSocketEventType {
   ALERTS = 'alerts',
   GITEA_WEBHOOK = 'gitea_webhook',
   GITHUB_WEBHOOK = 'github_webhook',
-  PIPELINE_UPDATE = 'pipeline_update'
+  PIPELINE_UPDATE = 'pipeline_update',
+  // GitOps-specific events
+  REPOSITORY_SYNC = 'repository_sync',
+  APPLICATION_SYNC = 'application_sync',
+  GIT_OPERATION = 'git_operation',
+  DEPLOYMENT_STATUS = 'deployment_status'
 }
 
 // ============================================================================

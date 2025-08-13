@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import useGitOpsStore from '@stores/gitopsStore';
+import useGitOpsWebSocket from '@hooks/useGitOpsWebSocket';
 import RepositoryList from '@components/gitops/RepositoryList';
 import ApplicationList from '@components/gitops/ApplicationList';
 import CreateRepositoryModal from '@components/gitops/CreateRepositoryModal';
 import CreateApplicationModal from '@components/gitops/CreateApplicationModal';
 import RepositoryDetails from '@components/gitops/RepositoryDetails';
 import ApplicationDetails from '@components/gitops/ApplicationDetails';
+import GitOpsWebSocketStatus from '@components/gitops/GitOpsWebSocketStatus';
 import type { DetailsState } from '@/types/components';
 import type { Repository, Application } from '@/types/gitops';
 
@@ -39,6 +41,9 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
     fetchApplications,
     clearGitOps,
   } = useGitOpsStore();
+
+  // Initialize WebSocket for real-time GitOps events
+  useGitOpsWebSocket();
 
   useEffect(() => {
     fetchRepositories();
@@ -76,7 +81,10 @@ const GitOps: FC<GitOpsProps> = ({ activeSecondaryTab }) => {
 
   return (
     <div className="space-y-6">
-
+      {/* WebSocket Status */}
+      <div className="flex justify-end">
+        <GitOpsWebSocketStatus />
+      </div>
 
       {/* Content */}
       <div>

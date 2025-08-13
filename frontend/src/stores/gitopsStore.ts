@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { SortDirection, API_ENDPOINTS } from '@/constants';
+import { SortDirection, API_ENDPOINTS, WebSocketEventType } from '@/constants';
+import { getWebSocketInstance } from '@/services/websocket';
 import type { 
   GitOpsStore, 
   Repository, 
@@ -25,7 +26,11 @@ import {
 } from '@mocks/index';
 
 const useGitOpsStore = create<GitOpsStore>()(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set, get) => {
+    // WebSocket subscriptions
+    let wsSubscriptions: string[] = [];
+
+    return {
     // Repository data
     repositories: [],
     applications: [],
@@ -734,7 +739,122 @@ const useGitOpsStore = create<GitOpsStore>()(
       deploymentHistory: [],
       error: null,
     }),
-  }))
+
+    // WebSocket integration
+    initializeWebSocket: () => {
+      try {
+        const ws = getWebSocketInstance();
+        if (!ws) return;
+
+        // Clear existing subscriptions
+        wsSubscriptions.forEach(id => ws.unsubscribe(id));
+        wsSubscriptions = [];
+
+        // Repository sync events
+        const repoSyncSub = ws.subscribe(WebSocketEventType.REPOSITORY_SYNC, (data: any) => {
+          const { repositories } = get();
+          const updatedRepos = repositories.map(repo => 
+            repo.id === data.repository_id 
+              ? { ...repo, sync_status: data.status, last_sync: data.timestamp, sync_error: data.error || null }
+              : repo
+          );
+          set({ repositories: updatedRepos });
+        });
+        wsSubscriptions.push(repoSyncSub);
+
+        // Application sync events
+        const appSyncSub = ws.subscribe(WebSocketEventType.APPLICATION_SYNC, (data: any) => {
+          const { applications } = get();
+          const updatedApps = applications.map(app => 
+            app.id === data.application_id 
+              ? { ...app, sync_status: data.status, last_sync: data.timestamp, sync_error: data.error || null }
+              : app
+          );
+          set({ applications: updatedApps });
+        });
+        wsSubscriptions.push(appSyncSub);
+
+        // Git operation events
+        const gitOpSub = ws.subscribe(WebSocketEventType.GIT_OPERATION, (data: any) => {
+          if (data.type === 'pull_completed' || data.type === 'commit_pushed') {
+            // Refresh repositories to get updated status
+            get().fetchRepositories();
+          }
+        });
+        wsSubscriptions.push(gitOpSub);
+
+        // Deployment status events
+        const deploymentSub = ws.subscribe(WebSocketEventType.DEPLOYMENT_STATUS, (data: any) => {
+          const { applications } = get();
+          const updatedApps = applications.map(app => 
+            app.id === data.application_id 
+              ? { 
+                  ...app, 
+                  deployment_status: data.status, 
+                  last_deployment: data.timestamp,
+                  deployment_error: data.error || null
+                }
+              : app
+          );
+          set({ applications: updatedApps });
+        });
+        wsSubscriptions.push(deploymentSub);
+
+        // Pipeline update events
+        const pipelineSub = ws.subscribe(WebSocketEventType.PIPELINE_UPDATE, (data: any) => {
+          if (data.type === 'action_status') {
+            // Refresh Gitea actions
+            get().fetchGiteaActions();
+          } else if (data.type === 'image_push') {
+            // Refresh container images
+            get().fetchContainerImages();
+          }
+        });
+        wsSubscriptions.push(pipelineSub);
+
+        // Gitea webhook events
+        const giteaWebhookSub = ws.subscribe(WebSocketEventType.GITEA_WEBHOOK, (data: any) => {
+          if (data.action === 'completed' && data.workflow_run) {
+            // Refresh Gitea actions when workflow completes
+            get().fetchGiteaActions();
+          }
+        });
+        wsSubscriptions.push(giteaWebhookSub);
+
+        // GitHub webhook events
+        const githubWebhookSub = ws.subscribe(WebSocketEventType.GITHUB_WEBHOOK, (data: any) => {
+          if (data.action === 'push') {
+            // Trigger repository sync for affected repositories
+            const { repositories } = get();
+            const affectedRepo = repositories.find(repo => 
+              repo.github_url && repo.github_url.includes(data.repository.full_name)
+            );
+            if (affectedRepo) {
+              get().triggerMirrorSync(affectedRepo.id);
+            }
+          }
+        });
+        wsSubscriptions.push(githubWebhookSub);
+
+      } catch (error) {
+        console.error('Failed to initialize GitOps WebSocket:', error);
+      }
+    },
+
+    // Cleanup WebSocket subscriptions
+    cleanupWebSocket: () => {
+      try {
+        const ws = getWebSocketInstance();
+        if (ws) {
+          wsSubscriptions.forEach(id => ws.unsubscribe(id));
+          wsSubscriptions = [];
+        }
+      } catch (error) {
+        console.error('Failed to cleanup GitOps WebSocket:', error);
+      }
+    },
+    };
+  })
 );
 
 export default useGitOpsStore;

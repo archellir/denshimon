@@ -260,6 +260,10 @@ export interface GitOpsStore {
   
   // Cleanup
   clearGitOps: () => void;
+  
+  // WebSocket integration
+  initializeWebSocket: () => void;
+  cleanupWebSocket: () => void;
 }
 
 // ============================================================================

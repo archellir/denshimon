@@ -407,7 +407,38 @@ export class DenshimonWebSocket {
       // GitOps Webhook events
       pipeline_update: () => generateMockPipelineUpdate(),
       gitea_webhook: () => generateMockGiteaWebhook(),
-      github_webhook: () => generateMockGitHubWebhook()
+      github_webhook: () => generateMockGitHubWebhook(),
+
+      // GitOps-specific events
+      repository_sync: () => ({
+        repository_id: `repo-${Math.random().toString(36).substr(2, 9)}`,
+        status: ['synced', 'syncing', 'error'][Math.floor(Math.random() * 3)],
+        timestamp: new Date().toISOString(),
+        error: Math.random() > 0.8 ? 'Connection timeout' : null
+      }),
+
+      application_sync: () => ({
+        application_id: `app-${Math.random().toString(36).substr(2, 9)}`,
+        status: ['synced', 'syncing', 'out_of_sync', 'error'][Math.floor(Math.random() * 4)],
+        timestamp: new Date().toISOString(),
+        error: Math.random() > 0.9 ? 'Manifest validation failed' : null
+      }),
+
+      git_operation: () => ({
+        repository_id: `repo-${Math.random().toString(36).substr(2, 9)}`,
+        type: ['pull_completed', 'commit_pushed', 'status_updated', 'diff_generated'][Math.floor(Math.random() * 4)],
+        operation: ['pull', 'commit', 'status', 'diff'][Math.floor(Math.random() * 4)],
+        success: Math.random() > 0.2,
+        message: Math.random() > 0.2 ? 'Operation completed successfully' : 'Operation failed',
+        timestamp: new Date().toISOString()
+      }),
+
+      deployment_status: () => ({
+        application_id: `app-${Math.random().toString(36).substr(2, 9)}`,
+        status: ['pending', 'in_progress', 'success', 'failure', 'rollback'][Math.floor(Math.random() * 5)],
+        timestamp: new Date().toISOString(),
+        error: Math.random() > 0.8 ? 'Pod startup failed' : null
+      })
     };
 
     // Send mock data at different intervals
@@ -423,7 +454,12 @@ export class DenshimonWebSocket {
         services: 6000,       // Every 6 seconds
         pipeline_update: 15000, // Every 15 seconds for pipeline updates
         gitea_webhook: 20000,   // Every 20 seconds for Gitea webhooks
-        github_webhook: 30000   // Every 30 seconds for GitHub webhooks
+        github_webhook: 30000,  // Every 30 seconds for GitHub webhooks
+        // GitOps-specific events
+        repository_sync: 12000,  // Every 12 seconds for repository sync events
+        application_sync: 18000, // Every 18 seconds for application sync events
+        git_operation: 8000,     // Every 8 seconds for Git operations
+        deployment_status: 25000 // Every 25 seconds for deployment status updates
       }[type] || 5000;
 
       setInterval(() => {
