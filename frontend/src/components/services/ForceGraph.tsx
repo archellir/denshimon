@@ -4,7 +4,7 @@ import { ServiceNode, ServiceConnection } from '@/types/serviceMesh';
 import { 
   CircuitBreakerStatus, 
   NetworkProtocol, 
-  ServiceType, 
+  ServiceType as MeshServiceType, 
   SERVICE_TYPE_COLORS, 
   TRAFFIC_COLORS, 
   SERVICE_ICONS, 
@@ -18,6 +18,9 @@ interface ForceGraphProps {
   selectedService: string | null;
   onServiceSelect: (serviceId: string | null) => void;
   isLive?: boolean;
+  showDependencyPaths?: boolean;
+  showCriticalPath?: boolean;
+  showSinglePointsOfFailure?: boolean;
 }
 
 interface GraphNode {
@@ -50,13 +53,95 @@ const ForceGraph: FC<ForceGraphProps> = ({
   connections,
   selectedService,
   onServiceSelect,
-  isLive = false
+  isLive = false,
+  showDependencyPaths = true,
+  showCriticalPath = true,
+  showSinglePointsOfFailure = true
 }) => {
   const graphRef = useRef<any>(null);
   const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [animationFrame, setAnimationFrame] = useState(0);
+  const [dependencyPaths, setDependencyPaths] = useState<string[][]>([]);
+  const [criticalPath, setCriticalPath] = useState<string[]>([]);
+  const [singlePointsOfFailure, setSinglePointsOfFailure] = useState<string[]>([]);
+
+  // Dependency analysis functions
+  const findAllPaths = useCallback((connections: ServiceConnection[], startId: string, endId: string, visited: Set<string> = new Set()): string[][] => {
+    if (startId === endId) return [[startId]];
+    if (visited.has(startId)) return [];
+    
+    visited.add(startId);
+    const paths: string[][] = [];
+    
+    const outgoingConnections = connections.filter(conn => conn.source === startId);
+    for (const conn of outgoingConnections) {
+      const subPaths = findAllPaths(connections, conn.target, endId, new Set(visited));
+      for (const subPath of subPaths) {
+        paths.push([startId, ...subPath]);
+      }
+    }
+    
+    return paths;
+  }, []);
+
+  const findCriticalPath = useCallback((services: ServiceNode[], connections: ServiceConnection[]): string[] => {
+    // Find path with highest cumulative request rate or lowest redundancy
+    const frontendServices = services.filter(s => s.type === MeshServiceType.FRONTEND);
+    const databaseServices = services.filter(s => s.type === MeshServiceType.DATABASE);
+    
+    if (frontendServices.length === 0 || databaseServices.length === 0) return [];
+    
+    let criticalPath: string[] = [];
+    let maxCriticality = 0;
+    
+    for (const frontend of frontendServices) {
+      for (const database of databaseServices) {
+        const paths = findAllPaths(connections, frontend.id, database.id);
+        for (const path of paths) {
+          // Calculate criticality based on request rate and service importance
+          const pathCriticality = path.reduce((sum, serviceId) => {
+            const service = services.find(s => s.id === serviceId);
+            return sum + (service?.metrics.requestRate || 0) * (service?.type === MeshServiceType.GATEWAY ? 2 : 1);
+          }, 0);
+          
+          if (pathCriticality > maxCriticality) {
+            maxCriticality = pathCriticality;
+            criticalPath = path;
+          }
+        }
+      }
+    }
+    
+    return criticalPath;
+  }, [findAllPaths]);
+
+  const findSinglePointsOfFailure = useCallback((services: ServiceNode[], connections: ServiceConnection[]): string[] => {
+    const spofs: string[] = [];
+    
+    for (const service of services) {
+      // Count incoming and outgoing connections
+      const incomingCount = connections.filter(conn => conn.target === service.id).length;
+      const outgoingCount = connections.filter(conn => conn.source === service.id).length;
+      const totalConnections = incomingCount + outgoingCount;
+      
+      // A service is a SPOF if:
+      // 1. It's a gateway with high connectivity
+      // 2. It's the only service of its type with multiple dependents
+      // 3. It has very high request rate and multiple dependents
+      const isDatabaseBottleneck = service.type === MeshServiceType.DATABASE && incomingCount > 2;
+      const isGatewayBottleneck = service.type === MeshServiceType.GATEWAY && totalConnections > 3;
+      const isHighTrafficBottleneck = service.metrics.requestRate > 100 && incomingCount > 1;
+      const isSingleServiceType = services.filter(s => s.type === service.type).length === 1 && totalConnections > 1;
+      
+      if (isDatabaseBottleneck || isGatewayBottleneck || isHighTrafficBottleneck || isSingleServiceType) {
+        spofs.push(service.id);
+      }
+    }
+    
+    return spofs;
+  }, []);
 
   // Calculate node size based on request rate
   const getNodeSize = (service: ServiceNode): number => {
@@ -76,7 +161,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
       case 'warning':
         return BASE_COLORS.YELLOW;
       case 'healthy':
-        return SERVICE_TYPE_COLORS[service.type as ServiceType] || BASE_COLORS.GRAY;
+        return SERVICE_TYPE_COLORS[service.type as keyof typeof SERVICE_TYPE_COLORS] || BASE_COLORS.GRAY;
       default:
         return BASE_COLORS.GRAY;
     }
@@ -112,6 +197,43 @@ const ForceGraph: FC<ForceGraphProps> = ({
     setGraphData({ nodes, links });
   }, [services, connections]);
 
+  // Analyze dependencies when data changes
+  useEffect(() => {
+    if (services.length > 0 && connections.length > 0) {
+      // Find critical path
+      if (showCriticalPath) {
+        const critical = findCriticalPath(services, connections);
+        setCriticalPath(critical);
+      }
+      
+      // Find single points of failure
+      if (showSinglePointsOfFailure) {
+        const spofs = findSinglePointsOfFailure(services, connections);
+        setSinglePointsOfFailure(spofs);
+      }
+      
+      // Calculate dependency paths for selected service
+      if (selectedService && showDependencyPaths) {
+        const allPaths: string[][] = [];
+        // Find all paths from selected service
+        const outgoingConnections = connections.filter(conn => conn.source === selectedService);
+        for (const conn of outgoingConnections) {
+          const paths = findAllPaths(connections, selectedService, conn.target);
+          allPaths.push(...paths);
+        }
+        // Find all paths to selected service
+        const incomingConnections = connections.filter(conn => conn.target === selectedService);
+        for (const conn of incomingConnections) {
+          const paths = findAllPaths(connections, conn.source, selectedService);
+          allPaths.push(...paths);
+        }
+        setDependencyPaths(allPaths);
+      } else {
+        setDependencyPaths([]);
+      }
+    }
+  }, [services, connections, selectedService, showCriticalPath, showSinglePointsOfFailure, showDependencyPaths, findCriticalPath, findSinglePointsOfFailure, findAllPaths]);
+
   // Update dimensions on mount and resize
   useEffect(() => {
     const updateDimensions = () => {
@@ -143,7 +265,44 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Node circle
     const isSelected = node.id === selectedService;
     const isHovered = node.id === hoveredNode;
-    const nodeSize = isSelected ? node.size * 1.5 : node.size;
+    const isInCriticalPath = showCriticalPath && criticalPath.includes(node.id);
+    const isSpof = showSinglePointsOfFailure && singlePointsOfFailure.includes(node.id);
+    const isInDependencyPath = showDependencyPaths && dependencyPaths.some(path => path.includes(node.id));
+    
+    let nodeSize = node.size;
+    if (isSelected) nodeSize *= 1.5;
+    if (isSpof) nodeSize *= 1.3;
+    
+    // Critical path highlighting
+    if (isInCriticalPath) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, nodeSize + 8, 0, 2 * Math.PI, false);
+      ctx.strokeStyle = BASE_COLORS.YELLOW;
+      ctx.lineWidth = 3 / globalScale;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    
+    // Single point of failure highlighting
+    if (isSpof) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, nodeSize + 6, 0, 2 * Math.PI, false);
+      ctx.strokeStyle = BASE_COLORS.RED;
+      ctx.lineWidth = 2 / globalScale;
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    
+    // Dependency path highlighting  
+    if (isInDependencyPath && selectedService) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, nodeSize + 4, 0, 2 * Math.PI, false);
+      ctx.strokeStyle = BASE_COLORS.CYAN + '80';
+      ctx.lineWidth = 1 / globalScale;
+      ctx.stroke();
+    }
     
     // Outer ring for selection/hover
     if (isSelected || isHovered) {
@@ -182,7 +341,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    const iconChar = SERVICE_ICONS[node.type as ServiceType] || '●';
+    const iconChar = SERVICE_ICONS[node.type as keyof typeof SERVICE_ICONS] || '●';
     
     ctx.font = `${iconSize * 2}px Arial`;
     ctx.fillText(iconChar, node.x, node.y);
@@ -208,7 +367,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
       ctx.fillStyle = '#ef4444';
       ctx.fill();
     }
-  }, [selectedService, hoveredNode]);
+  }, [selectedService, hoveredNode, showCriticalPath, criticalPath, showSinglePointsOfFailure, singlePointsOfFailure, showDependencyPaths, dependencyPaths]);
 
   // Custom link rendering with animated traffic
   const linkCanvasObject = useCallback((link: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
@@ -217,9 +376,38 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     if (!start || !end || !start.x || !start.y || !end.x || !end.y) return;
     
-    // Link color based on protocol and health
+    // Check if link is part of critical path or dependency path
+    const isInCriticalPath = showCriticalPath && criticalPath.length > 1 && (() => {
+      for (let i = 0; i < criticalPath.length - 1; i++) {
+        if ((criticalPath[i] === link.source.id && criticalPath[i + 1] === link.target.id) ||
+            (criticalPath[i] === link.target.id && criticalPath[i + 1] === link.source.id)) {
+          return true;
+        }
+      }
+      return false;
+    })();
+    
+    const isInDependencyPath = showDependencyPaths && selectedService && dependencyPaths.some(path => {
+      for (let i = 0; i < path.length - 1; i++) {
+        if ((path[i] === link.source.id && path[i + 1] === link.target.id) ||
+            (path[i] === link.target.id && path[i + 1] === link.source.id)) {
+          return true;
+        }
+      }
+      return false;
+    });
+    
+    // Link color based on protocol, health, and dependency analysis
     let linkColor = '#ffffff30';
-    if (link.errorRate > 5) {
+    let lineWidth = Math.max(link.value, 0.5) / globalScale;
+    
+    if (isInCriticalPath) {
+      linkColor = BASE_COLORS.YELLOW + '80';
+      lineWidth = Math.max(lineWidth * 2, 2 / globalScale);
+    } else if (isInDependencyPath) {
+      linkColor = BASE_COLORS.CYAN + '60';
+      lineWidth = Math.max(lineWidth * 1.5, 1.5 / globalScale);
+    } else if (link.errorRate > 5) {
       linkColor = '#ef444460';
     } else if (link.mTLS) {
       linkColor = '#10b98160';
@@ -229,7 +417,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     // Draw link
     ctx.strokeStyle = linkColor;
-    ctx.lineWidth = Math.max(link.value, 0.5) / globalScale;
+    ctx.lineWidth = lineWidth;
     
     if (link.protocol === NetworkProtocol.GRPC) {
       ctx.setLineDash([5, 3]);
@@ -261,7 +449,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
         ctx.beginPath();
         ctx.arc(x, y, glowSize, 0, 2 * Math.PI);
         
-        let particleColor = TRAFFIC_COLORS.HEALTHY;
+        let particleColor: string = TRAFFIC_COLORS.HEALTHY;
         if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
           particleColor = TRAFFIC_COLORS.ERROR;
         } else if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_MEDIUM) {
@@ -302,7 +490,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
       arrowY - arrowLength * Math.sin(angle + arrowAngle)
     );
     ctx.stroke();
-  }, [isLive, animationFrame]);
+  }, [isLive, animationFrame, showCriticalPath, criticalPath, showDependencyPaths, dependencyPaths, selectedService]);
 
   // Animation frame counter for traffic flow
   useEffect(() => {
@@ -368,6 +556,30 @@ const ForceGraph: FC<ForceGraphProps> = ({
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: TRAFFIC_COLORS.ERROR }} />
             <span>Errors</span>
           </div>
+          
+          {(showCriticalPath || showSinglePointsOfFailure || showDependencyPaths) && (
+            <>
+              <div className="text-white/60 font-bold mt-2 mb-1">DEPENDENCIES</div>
+              {showCriticalPath && (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-1 border-dashed border-yellow-500" style={{ borderWidth: '1px', borderColor: BASE_COLORS.YELLOW }} />
+                  <span>Critical Path</span>
+                </div>
+              )}
+              {showSinglePointsOfFailure && (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-1 border-dashed border-red-500" style={{ borderWidth: '1px', borderColor: BASE_COLORS.RED }} />
+                  <span>SPOF Risk</span>
+                </div>
+              )}
+              {showDependencyPaths && selectedService && (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-1" style={{ backgroundColor: BASE_COLORS.CYAN + '80' }} />
+                  <span>Dependencies</span>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
       
@@ -403,8 +615,6 @@ const ForceGraph: FC<ForceGraphProps> = ({
         d3AlphaDecay={GRAPH_CONFIG.PHYSICS.ALPHA_DECAY}
         d3VelocityDecay={GRAPH_CONFIG.PHYSICS.VELOCITY_DECAY}
         nodeRelSize={GRAPH_CONFIG.NODE.BASE_SIZE}
-        chargeStrength={GRAPH_CONFIG.PHYSICS.CHARGE_STRENGTH}
-        linkDistance={GRAPH_CONFIG.PHYSICS.LINK_DISTANCE}
       />
     </div>
   );

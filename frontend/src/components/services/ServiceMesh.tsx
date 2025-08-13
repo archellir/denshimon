@@ -338,6 +338,9 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 selectedService={selectedService}
                 onServiceSelect={setSelectedService}
                 isLive={isConnected}
+                showDependencyPaths={true}
+                showCriticalPath={true}
+                showSinglePointsOfFailure={true}
               />
             ) : (
               <div className="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto">
