@@ -59,8 +59,9 @@ func main() {
 		k8sClient = nil
 	}
 
-	// Initialize PASETO auth
-	authService := auth.NewService(cfg.PasetoKey, db)
+	// Initialize PASETO auth with database adapter
+	dbAdapter := auth.NewDatabaseAdapter(db)
+	authService := auth.NewService(cfg.PasetoKey, db, dbAdapter)
 
 	// Initialize Gitea handler
 	giteaHandler := gitea.NewHandler()
