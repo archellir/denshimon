@@ -565,16 +565,34 @@ export const API_ENDPOINTS = {
     RELEASES: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/releases`,
     ACTIONS_RUNS: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/actions/runs`,
     DEPLOY: (owner: string, repo: string) => `${API_BASE_PATHS.GITEA}/repositories/${owner}/${repo}/deploy`,
-    WEBHOOK: `${API_BASE_PATHS.GITEA}/webhook`
+    WEBHOOK: `${API_BASE_PATHS.GITEA}/webhook`,
+    // Enhanced Gitea Actions Integration
+    ACTIONS: `${API_BASE_PATHS.GITEA}/actions`,
+    ACTIONS_BY_REPO: (repositoryId: string) => `${API_BASE_PATHS.GITEA}/actions?repository_id=${repositoryId}`,
+    TRIGGER_ACTION: (repositoryId: string) => `${API_BASE_PATHS.GITEA}/repositories/${repositoryId}/actions/trigger`,
+    ACTION_LOGS: (actionId: string) => `${API_BASE_PATHS.GITEA}/actions/${actionId}/logs`,
+    // Container Images from Gitea Packages
+    IMAGES: `${API_BASE_PATHS.GITEA}/packages/images`,
+    IMAGES_BY_REPO: (repositoryId: string) => `${API_BASE_PATHS.GITEA}/packages/images?repository_id=${repositoryId}`,
+    IMAGE: (imageId: string) => `${API_BASE_PATHS.GITEA}/packages/images/${imageId}`,
   },
   GITOPS: {
     BASE: API_BASE_PATHS.GITOPS,
+    // Repository Management
     REPOSITORIES: `${API_BASE_PATHS.GITOPS}/repositories`,
     REPOSITORY: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}`,
     REPOSITORY_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/sync`,
+    MIRROR_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/mirror-sync`,
+    // Application Management  
     APPLICATIONS: `${API_BASE_PATHS.GITOPS}/applications`,
     APPLICATION: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}`,
-    APPLICATION_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/sync`
+    APPLICATION_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/sync`,
+    APPLICATION_DEPLOY: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/deploy`,
+    APPLICATION_ROLLBACK: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/rollback`,
+    // Deployment History
+    DEPLOYMENT_HISTORY: `${API_BASE_PATHS.GITOPS}/deployments`,
+    DEPLOYMENT_HISTORY_BY_APP: (applicationId: string) => `${API_BASE_PATHS.GITOPS}/deployments?application_id=${applicationId}`,
+    DEPLOYMENT: (id: string) => `${API_BASE_PATHS.GITOPS}/deployments/${id}`,
   },
   WEBSOCKET: {
     BASE: API_BASE_PATHS.WEBSOCKET,
