@@ -4,13 +4,16 @@ import { ServiceNode, ServiceConnection } from '@/types/serviceMesh';
 import { 
   CircuitBreakerStatus, 
   NetworkProtocol, 
-  ServiceType as MeshServiceType, 
+  ServiceType as MeshServiceType,
+  ServiceStatus,
   SERVICE_TYPE_COLORS, 
   TRAFFIC_COLORS, 
   LATENCY_HEATMAP_COLORS,
   SERVICE_ICONS, 
   GRAPH_CONFIG,
-  BASE_COLORS 
+  BASE_COLORS,
+  MESH_ANALYSIS,
+  CANVAS_CONSTANTS
 } from '@/constants';
 
 interface ForceGraphProps {
@@ -64,7 +67,10 @@ const ForceGraph: FC<ForceGraphProps> = ({
   const graphRef = useRef<any>(null);
   const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [dimensions, setDimensions] = useState({ 
+    width: GRAPH_CONFIG.DIMENSIONS.DEFAULT_WIDTH as number, 
+    height: GRAPH_CONFIG.DIMENSIONS.DEFAULT_HEIGHT as number 
+  });
   const [animationFrame, setAnimationFrame] = useState(0);
   const [dependencyPaths, setDependencyPaths] = useState<string[][]>([]);
   const [criticalPath, setCriticalPath] = useState<string[]>([]);
@@ -106,7 +112,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
           // Calculate criticality based on request rate and service importance
           const pathCriticality = path.reduce((sum, serviceId) => {
             const service = services.find(s => s.id === serviceId);
-            return sum + (service?.metrics.requestRate || 0) * (service?.type === MeshServiceType.GATEWAY ? 2 : 1);
+            return sum + (service?.metrics.requestRate || 0) * (service?.type === MeshServiceType.GATEWAY ? MESH_ANALYSIS.CRITICAL_PATH.GATEWAY_WEIGHT_MULTIPLIER : 1);
           }, 0);
           
           if (pathCriticality > maxCriticality) {
@@ -133,9 +139,9 @@ const ForceGraph: FC<ForceGraphProps> = ({
       // 1. It's a gateway with high connectivity
       // 2. It's the only service of its type with multiple dependents
       // 3. It has very high request rate and multiple dependents
-      const isDatabaseBottleneck = service.type === MeshServiceType.DATABASE && incomingCount > 2;
-      const isGatewayBottleneck = service.type === MeshServiceType.GATEWAY && totalConnections > 3;
-      const isHighTrafficBottleneck = service.metrics.requestRate > 100 && incomingCount > 1;
+      const isDatabaseBottleneck = service.type === MeshServiceType.DATABASE && incomingCount > MESH_ANALYSIS.SPOF_DETECTION.DATABASE_CONNECTION_THRESHOLD;
+      const isGatewayBottleneck = service.type === MeshServiceType.GATEWAY && totalConnections > MESH_ANALYSIS.SPOF_DETECTION.GATEWAY_CONNECTION_THRESHOLD;
+      const isHighTrafficBottleneck = service.metrics.requestRate > MESH_ANALYSIS.SPOF_DETECTION.HIGH_TRAFFIC_THRESHOLD && incomingCount > 1;
       const isSingleServiceType = services.filter(s => s.type === service.type).length === 1 && totalConnections > 1;
       
       if (isDatabaseBottleneck || isGatewayBottleneck || isHighTrafficBottleneck || isSingleServiceType) {
@@ -179,11 +185,11 @@ const ForceGraph: FC<ForceGraphProps> = ({
     }
     
     switch (service.status) {
-      case 'error':
+      case ServiceStatus.ERROR:
         return BASE_COLORS.RED;
-      case 'warning':
+      case ServiceStatus.WARNING:
         return BASE_COLORS.YELLOW;
-      case 'healthy':
+      case ServiceStatus.HEALTHY:
         return SERVICE_TYPE_COLORS[service.type as keyof typeof SERVICE_TYPE_COLORS] || BASE_COLORS.GRAY;
       default:
         return BASE_COLORS.GRAY;
@@ -264,7 +270,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
       if (container) {
         setDimensions({
           width: container.clientWidth,
-          height: Math.min(container.clientHeight, 600)
+          height: Math.min(container.clientHeight, GRAPH_CONFIG.DIMENSIONS.MAX_HEIGHT)
         });
       }
     };
@@ -282,8 +288,8 @@ const ForceGraph: FC<ForceGraphProps> = ({
   // Custom node rendering
   const nodeCanvasObject = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const label = node.name;
-    const fontSize = 12 / globalScale;
-    ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+    const fontSize = GRAPH_CONFIG.NODE.FONT_SIZE / globalScale;
+    ctx.font = `${fontSize}px ${CANVAS_CONSTANTS.FONTS.JETBRAINS_MONO}`;
     
     // Node circle
     const isSelected = node.id === selectedService;
@@ -293,16 +299,16 @@ const ForceGraph: FC<ForceGraphProps> = ({
     const isInDependencyPath = showDependencyPaths && dependencyPaths.some(path => path.includes(node.id));
     
     let nodeSize = node.size;
-    if (isSelected) nodeSize *= 1.5;
-    if (isSpof) nodeSize *= 1.3;
+    if (isSelected) nodeSize *= GRAPH_CONFIG.NODE.SELECTION_MULTIPLIER;
+    if (isSpof) nodeSize *= GRAPH_CONFIG.NODE.SPOF_MULTIPLIER;
     
     // Critical path highlighting
     if (isInCriticalPath) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 1.5, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + GRAPH_CONFIG.RINGS.CRITICAL_PATH_OFFSET, 0, 2 * Math.PI, false);
       ctx.strokeStyle = BASE_COLORS.YELLOW;
-      ctx.lineWidth = 1 / globalScale;
-      ctx.setLineDash([2, 2]);
+      ctx.lineWidth = GRAPH_CONFIG.RINGS.CRITICAL_PATH_WIDTH / globalScale;
+      ctx.setLineDash(GRAPH_CONFIG.RINGS.CRITICAL_PATH_DASH);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -310,10 +316,10 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Single point of failure highlighting
     if (isSpof) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 1.2, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + GRAPH_CONFIG.RINGS.SPOF_OFFSET, 0, 2 * Math.PI, false);
       ctx.strokeStyle = BASE_COLORS.RED;
-      ctx.lineWidth = 0.8 / globalScale;
-      ctx.setLineDash([1, 1]);
+      ctx.lineWidth = GRAPH_CONFIG.RINGS.SPOF_WIDTH / globalScale;
+      ctx.setLineDash(GRAPH_CONFIG.RINGS.SPOF_DASH);
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -321,35 +327,35 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Dependency path highlighting  
     if (isInDependencyPath && selectedService) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 0.8, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + GRAPH_CONFIG.RINGS.DEPENDENCY_OFFSET, 0, 2 * Math.PI, false);
       ctx.strokeStyle = BASE_COLORS.CYAN + '80';
-      ctx.lineWidth = 0.5 / globalScale;
+      ctx.lineWidth = GRAPH_CONFIG.RINGS.DEPENDENCY_WIDTH / globalScale;
       ctx.stroke();
     }
     
     // Outer ring for selection/hover
     if (isSelected || isHovered) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 0.5, 0, 2 * Math.PI, false);
-      ctx.strokeStyle = isSelected ? '#ffffff' : '#ffffff80';
-      ctx.lineWidth = isSelected ? 0.8 / globalScale : 0.5 / globalScale;
+      ctx.arc(node.x, node.y, nodeSize + GRAPH_CONFIG.RINGS.SELECTION_OFFSET, 0, 2 * Math.PI, false);
+      ctx.strokeStyle = isSelected ? CANVAS_CONSTANTS.COLORS.WHITE : CANVAS_CONSTANTS.COLORS.WHITE_80;
+      ctx.lineWidth = (isSelected ? GRAPH_CONFIG.RINGS.SELECTION_WIDTH_SELECTED : GRAPH_CONFIG.RINGS.SELECTION_WIDTH_HOVER) / globalScale;
       ctx.stroke();
     }
     
     // Circuit breaker indicator
     if (node.circuitBreaker !== CircuitBreakerStatus.CLOSED) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeSize + 1.8, 0, 2 * Math.PI, false);
+      ctx.arc(node.x, node.y, nodeSize + GRAPH_CONFIG.RINGS.CIRCUIT_BREAKER_OFFSET, 0, 2 * Math.PI, false);
       
       if (node.circuitBreaker === CircuitBreakerStatus.OPEN) {
         ctx.strokeStyle = BASE_COLORS.RED;
-        ctx.setLineDash([1.5, 1.5]);
+        ctx.setLineDash(GRAPH_CONFIG.RINGS.CIRCUIT_BREAKER_DASH);
       } else if (node.circuitBreaker === CircuitBreakerStatus.HALF_OPEN) {
         ctx.strokeStyle = BASE_COLORS.YELLOW;
         ctx.setLineDash([3, 1, 1, 1]);
       }
       
-      ctx.lineWidth = 0.8 / globalScale;
+      ctx.lineWidth = GRAPH_CONFIG.RINGS.CIRCUIT_BREAKER_WIDTH / globalScale;
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -366,35 +372,45 @@ const ForceGraph: FC<ForceGraphProps> = ({
     ctx.stroke();
     
     // Service type icon (simplified representation)
-    const iconSize = nodeSize * 0.6;
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    const iconSize = nodeSize * GRAPH_CONFIG.NODE.ICON_SIZE_RATIO;
+    ctx.fillStyle = CANVAS_CONSTANTS.COLORS.WHITE;
+    ctx.textAlign = CANVAS_CONSTANTS.TEXT_ALIGN.CENTER;
+    ctx.textBaseline = CANVAS_CONSTANTS.TEXT_BASELINE.MIDDLE;
     
     const iconChar = SERVICE_ICONS[node.type as keyof typeof SERVICE_ICONS] || '●';
     
-    ctx.font = `${iconSize * 2}px Arial`;
+    ctx.font = `${iconSize * GRAPH_CONFIG.NODE.ICON_FONT_MULTIPLIER}px ${CANVAS_CONSTANTS.FONTS.ARIAL}`;
     ctx.fillText(iconChar, node.x, node.y);
     
     // Label
-    ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    ctx.font = `${fontSize}px ${CANVAS_CONSTANTS.FONTS.JETBRAINS_MONO}`;
+    ctx.textAlign = CANVAS_CONSTANTS.TEXT_ALIGN.CENTER;
+    ctx.textBaseline = CANVAS_CONSTANTS.TEXT_BASELINE.TOP;
     
     // Background for label
     const textWidth = ctx.measureText(label).width;
-    ctx.fillStyle = '#00000099';
-    ctx.fillRect(node.x - textWidth / 2 - 2, node.y + nodeSize + 2, textWidth + 4, fontSize + 4);
+    ctx.fillStyle = CANVAS_CONSTANTS.COLORS.TRANSPARENT_BLACK;
+    ctx.fillRect(
+      node.x - textWidth / 2 - GRAPH_CONFIG.NODE.LABEL_PADDING, 
+      node.y + nodeSize + GRAPH_CONFIG.NODE.LABEL_PADDING, 
+      textWidth + GRAPH_CONFIG.NODE.LABEL_PADDING * 2, 
+      fontSize + GRAPH_CONFIG.NODE.LABEL_PADDING * 2
+    );
     
     // Text
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(label, node.x, node.y + nodeSize + 4);
+    ctx.fillStyle = CANVAS_CONSTANTS.COLORS.WHITE;
+    ctx.fillText(label, node.x, node.y + nodeSize + GRAPH_CONFIG.NODE.LABEL_OFFSET);
     
     // Error rate indicator
-    if (node.metrics.errorRate > 5) {
+    if (node.metrics.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
       ctx.beginPath();
-      ctx.arc(node.x + nodeSize * 0.7, node.y - nodeSize * 0.7, 1.5, 0, 2 * Math.PI, false);
-      ctx.fillStyle = '#ef4444';
+      ctx.arc(
+        node.x + nodeSize * GRAPH_CONFIG.NODE.ERROR_INDICATOR_OFFSET, 
+        node.y - nodeSize * GRAPH_CONFIG.NODE.ERROR_INDICATOR_OFFSET, 
+        GRAPH_CONFIG.NODE.ERROR_INDICATOR_SIZE, 
+        0, 2 * Math.PI, false
+      );
+      ctx.fillStyle = CANVAS_CONSTANTS.COLORS.ERROR_RED;
       ctx.fill();
     }
   }, [selectedService, hoveredNode, showCriticalPath, criticalPath, showSinglePointsOfFailure, singlePointsOfFailure, showDependencyPaths, dependencyPaths, showLatencyHeatmap]);
@@ -428,21 +444,21 @@ const ForceGraph: FC<ForceGraphProps> = ({
     });
     
     // Link color based on protocol, health, and dependency analysis
-    let linkColor = '#ffffff30';
-    let lineWidth = Math.max(link.value, 0.5) / globalScale;
+    let linkColor: string = CANVAS_CONSTANTS.COLORS.WHITE_30;
+    let lineWidth = Math.max(link.value, GRAPH_CONFIG.TRAFFIC.MIN_LINK_WIDTH) / globalScale;
     
     if (isInCriticalPath) {
       linkColor = BASE_COLORS.YELLOW + '80';
-      lineWidth = Math.max(lineWidth * 2, 2 / globalScale);
+      lineWidth = Math.max(lineWidth * GRAPH_CONFIG.TRAFFIC.LINK_WIDTH_MULTIPLIER, 2 / globalScale);
     } else if (isInDependencyPath) {
       linkColor = BASE_COLORS.CYAN + '60';
-      lineWidth = Math.max(lineWidth * 1.5, 1.5 / globalScale);
-    } else if (link.errorRate > 5) {
-      linkColor = '#ef444460';
+      lineWidth = Math.max(lineWidth * GRAPH_CONFIG.TRAFFIC.DEPENDENCY_LINK_WIDTH_MULTIPLIER, 1.5 / globalScale);
+    } else if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
+      linkColor = CANVAS_CONSTANTS.COLORS.ERROR_RED_60;
     } else if (link.mTLS) {
-      linkColor = '#10b98160';
+      linkColor = CANVAS_CONSTANTS.COLORS.MTLS_GREEN_60;
     } else if (link.encrypted) {
-      linkColor = '#3b82f660';
+      linkColor = CANVAS_CONSTANTS.COLORS.ENCRYPTED_BLUE_60;
     }
     
     // Draw link
@@ -501,12 +517,12 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     // Draw arrow for direction
     const angle = Math.atan2(end.y - start.y, end.x - start.x);
-    const arrowLength = 10 / globalScale;
-    const arrowAngle = Math.PI / 6;
+    const arrowLength = GRAPH_CONFIG.ARROWS.LENGTH / globalScale;
+    const arrowAngle = GRAPH_CONFIG.ARROWS.ANGLE;
     
-    const nodeRadius = end.size || 8;
-    const arrowX = end.x - Math.cos(angle) * (nodeRadius + 5);
-    const arrowY = end.y - Math.sin(angle) * (nodeRadius + 5);
+    const nodeRadius = end.size || GRAPH_CONFIG.NODE.BASE_SIZE;
+    const arrowX = end.x - Math.cos(angle) * (nodeRadius + GRAPH_CONFIG.ARROWS.OFFSET);
+    const arrowY = end.y - Math.sin(angle) * (nodeRadius + GRAPH_CONFIG.ARROWS.OFFSET);
     
     ctx.beginPath();
     ctx.moveTo(arrowX, arrowY);
@@ -549,9 +565,9 @@ const ForceGraph: FC<ForceGraphProps> = ({
     if (isLive && graphRef.current) {
       const interval = setInterval(() => {
         if (graphRef.current) {
-          graphRef.current.zoom(1, 1000);
+          graphRef.current.zoom(GRAPH_CONFIG.ANIMATION.AUTO_ROTATE_ZOOM, GRAPH_CONFIG.ANIMATION.AUTO_ROTATE_DURATION);
         }
-      }, 10000);
+      }, GRAPH_CONFIG.ANIMATION.AUTO_ROTATE_INTERVAL);
       
       return () => clearInterval(interval);
     }
