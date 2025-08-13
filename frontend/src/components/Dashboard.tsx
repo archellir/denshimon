@@ -97,10 +97,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: WorkloadsTab.NAMESPACES, label: UI_LABELS.NAMESPACES, icon: HardDrive },
     ],
     [PrimaryTab.MESH]: [
-      { id: MeshTab.TOPOLOGY, label: UI_LABELS.TOPOLOGY, icon: Network },
       { id: MeshTab.SERVICES, label: UI_LABELS.SERVICES, icon: Server },
       { id: MeshTab.ENDPOINTS, label: UI_LABELS.ENDPOINTS, icon: Activity },
       { id: MeshTab.FLOWS, label: UI_LABELS.TRAFFIC_FLOW, icon: Zap },
+      { id: MeshTab.TOPOLOGY, label: UI_LABELS.TOPOLOGY, icon: Network },
       { id: MeshTab.GATEWAY, label: UI_LABELS.API_GATEWAY, icon: Eye },
     ],
     [PrimaryTab.DEPLOYMENTS]: [

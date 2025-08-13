@@ -226,43 +226,45 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
   return (
     <div className="space-y-6">
-      {/* Overview Stats */}
-      <div className="grid grid-cols-6 gap-4">
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Services</div>
-          <div className="text-2xl font-mono">{data.metrics.overview.totalServices}</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">RPS</div>
-          <div className="text-2xl font-mono">{data.metrics.overview.totalRequestRate.toFixed(0)}</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Avg Latency</div>
-          <div className="text-2xl font-mono">{data.metrics.overview.avgLatency.toFixed(0)}ms</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">Error Rate</div>
-          <div className="text-2xl font-mono text-red-500">{data.metrics.overview.errorRate.toFixed(1)}%</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="text-xs text-gray-500 uppercase mb-1">mTLS Coverage</div>
-          <div className="text-2xl font-mono text-green-500">{data.metrics.overview.mTLSCoverage.toFixed(0)}%</div>
-        </div>
-        <div className="bg-black border border-white p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs text-gray-500 uppercase mb-1">Connections</div>
-              <div className="text-2xl font-mono">{data.metrics.overview.totalConnections}</div>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
-              <span className="text-xs font-mono text-gray-500">
-                {isConnected ? 'LIVE' : 'OFFLINE'}
-              </span>
+      {/* Overview Stats - Only show for non-topology views */}
+      {selectedView !== 'topology' && (
+        <div className="grid grid-cols-6 gap-4">
+          <div className="bg-black border border-white p-4">
+            <div className="text-xs text-gray-500 uppercase mb-1">Services</div>
+            <div className="text-2xl font-mono">{data.metrics.overview.totalServices}</div>
+          </div>
+          <div className="bg-black border border-white p-4">
+            <div className="text-xs text-gray-500 uppercase mb-1">RPS</div>
+            <div className="text-2xl font-mono">{data.metrics.overview.totalRequestRate.toFixed(0)}</div>
+          </div>
+          <div className="bg-black border border-white p-4">
+            <div className="text-xs text-gray-500 uppercase mb-1">Avg Latency</div>
+            <div className="text-2xl font-mono">{data.metrics.overview.avgLatency.toFixed(0)}ms</div>
+          </div>
+          <div className="bg-black border border-white p-4">
+            <div className="text-xs text-gray-500 uppercase mb-1">Error Rate</div>
+            <div className="text-2xl font-mono text-red-500">{data.metrics.overview.errorRate.toFixed(1)}%</div>
+          </div>
+          <div className="bg-black border border-white p-4">
+            <div className="text-xs text-gray-500 uppercase mb-1">mTLS Coverage</div>
+            <div className="text-2xl font-mono text-green-500">{data.metrics.overview.mTLSCoverage.toFixed(0)}%</div>
+          </div>
+          <div className="bg-black border border-white p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs text-gray-500 uppercase mb-1">Connections</div>
+                <div className="text-2xl font-mono">{data.metrics.overview.totalConnections}</div>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+                <span className="text-xs font-mono text-gray-500">
+                  {isConnected ? 'LIVE' : 'OFFLINE'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Clear Filter Button */}
       {searchQuery && (
