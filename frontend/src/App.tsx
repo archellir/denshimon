@@ -377,7 +377,7 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
       hierarchy: 'Hierarchy',
       network: 'Network',
       certificates: 'Certificates',
-      service_health: 'Service Health'
+      backup: 'Backup & Recovery'
     },
     workloads: {
       overview: 'Overview',
@@ -407,7 +407,8 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
       logs: 'Log Data',
       events: 'System Changes',
       streams: 'Live Streams',
-      analytics: 'Analytics'
+      analytics: 'Analytics',
+      service_health: 'Service Health'
     }
   }
 

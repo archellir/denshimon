@@ -46,6 +46,7 @@ import SQLQueryInterface from '@components/database/SQLQueryInterface';
 import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
 import CertificateHealthDashboard from '@components/infrastructure/CertificateHealthDashboard';
 import ServiceHealthDashboard from '@components/infrastructure/ServiceHealthDashboard';
+import BackupRecoveryDashboard from '@components/infrastructure/BackupRecoveryDashboard';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -95,7 +96,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
       { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
       { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
-      { id: InfrastructureTab.SERVICE_HEALTH, label: UI_LABELS.SERVICE_HEALTH, icon: Activity },
+      { id: InfrastructureTab.BACKUP, label: UI_LABELS.BACKUP, icon: HardDrive },
     ],
     [PrimaryTab.WORKLOADS]: [
       { id: WorkloadsTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
@@ -127,6 +128,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: ObservabilityTab.EVENTS, label: UI_LABELS.EVENTS, icon: Clock },
       { id: ObservabilityTab.STREAMS, label: UI_LABELS.LIVE_STREAMS, icon: Activity },
       { id: ObservabilityTab.ANALYTICS, label: UI_LABELS.ANALYTICS, icon: TrendingUp },
+      { id: ObservabilityTab.SERVICE_HEALTH, label: UI_LABELS.SERVICE_HEALTH, icon: Server },
     ],
   };
 
@@ -584,7 +586,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.HIERARCHY && <ResourceTree />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NETWORK && <NetworkTraffic timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CERTIFICATES && <CertificateHealthDashboard />}
-        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.SERVICE_HEALTH && <ServiceHealthDashboard />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.BACKUP && <BackupRecoveryDashboard />}
         
         {/* Workloads Tab Content */}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <WorkloadsOverview timeRange={timeRange} />}
@@ -641,6 +643,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.EVENTS && <EventTimeline timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.STREAMS && <LiveStreams />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.ANALYTICS && <LogAnalytics timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.SERVICE_HEALTH && <ServiceHealthDashboard />}
       </div>
       
       {/* Global Search Component */}

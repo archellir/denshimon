@@ -207,7 +207,7 @@ export enum InfrastructureTab {
   HIERARCHY = 'hierarchy',
   NETWORK = 'network',
   CERTIFICATES = 'certificates',
-  SERVICE_HEALTH = 'service_health'
+  BACKUP = 'backup'
 }
 
 export enum WorkloadsTab {
@@ -243,7 +243,8 @@ export enum ObservabilityTab {
   LOGS = 'logs',
   EVENTS = 'events',
   STREAMS = 'streams',
-  ANALYTICS = 'analytics'
+  ANALYTICS = 'analytics',
+  SERVICE_HEALTH = 'service_health'
 }
 
 // ============================================================================
@@ -425,7 +426,7 @@ export const UI_LABELS = {
   HIERARCHY: 'Hierarchy',
   NETWORK: 'Network',
   CERTIFICATES: 'Certificates',
-  SERVICE_HEALTH: 'Service Health',
+  BACKUP: 'Backup & Recovery',
   PODS: 'Pods',
   SERVICES: 'Services',
   NAMESPACES: 'Namespaces',
@@ -440,6 +441,7 @@ export const UI_LABELS = {
   EVENTS: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
   ANALYTICS: 'Analytics',
+  SERVICE_HEALTH: 'Service Health',
   
   // Database Navigation
   CONNECTIONS: 'Connections',

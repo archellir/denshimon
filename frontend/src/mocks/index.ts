@@ -41,6 +41,15 @@ export {
   mockInfrastructureAlerts
 } from './serviceHealth/serviceHealth';
 
+// Backup & Recovery system mocks
+export {
+  mockBackupJobs,
+  mockBackupHistory,
+  mockBackupStorage,
+  mockBackupStatistics,
+  mockBackupAlerts
+} from './backup/backup';
+
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
