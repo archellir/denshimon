@@ -11,6 +11,7 @@ import (
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
 	"github.com/archellir/denshimon/internal/providers"
+	"github.com/archellir/denshimon/internal/providers/certificates"
 	"github.com/archellir/denshimon/internal/providers/databases"
 	"github.com/archellir/denshimon/internal/websocket"
 )
@@ -34,6 +35,10 @@ func RegisterRoutes(
 	// Initialize database management
 	databaseManager := databases.NewManager(db.DB)
 	databaseHandlers := handlers.NewDatabasesHandler(databaseManager)
+	
+	// Initialize certificate management
+	certificateManager := certificates.NewManager()
+	certificateHandlers := handlers.NewCertificateHandlers(certificateManager)
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -199,6 +204,17 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /api/databases/connections/{id}/tables/{table}/rows", corsMiddleware(authService.AuthMiddleware(databaseHandlers.InsertRow)))
 	mux.HandleFunc("GET /api/databases/connections/{id}/stats", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetStats)))
 	mux.HandleFunc("GET /api/databases/types", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetSupportedTypes)))
+
+	// Certificate management endpoints (require authentication)
+	mux.HandleFunc("GET /api/certificates", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetCertificates)))
+	mux.HandleFunc("GET /api/certificates/stats", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetCertificateStats)))
+	mux.HandleFunc("GET /api/certificates/alerts", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetAlerts)))
+	mux.HandleFunc("POST /api/certificates/alerts/acknowledge", corsMiddleware(authService.AuthMiddleware(certificateHandlers.AcknowledgeAlert)))
+	mux.HandleFunc("GET /api/certificates/check", corsMiddleware(authService.AuthMiddleware(certificateHandlers.CheckCertificate)))
+	mux.HandleFunc("POST /api/certificates/refresh", corsMiddleware(authService.AuthMiddleware(certificateHandlers.RefreshCertificates)))
+	mux.HandleFunc("GET /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetDomainConfigs)))
+	mux.HandleFunc("POST /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.AddDomainConfig)))
+	mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.RemoveDomainConfig)))
 
 	// WebSocket endpoint for real-time updates
 	wsHandler := websocket.NewHandler(wsHub)
