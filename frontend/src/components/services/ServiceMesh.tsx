@@ -6,6 +6,7 @@ import ForceGraph from './ForceGraph';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType, GraphViewMode, CSS_CLASSES, ServiceFilterType, ServiceType } from '@/constants';
+import { MOCK_ENABLED } from '@/mocks/index';
 import { getWebSocketInstance } from '@services/websocket';
 
 interface ServiceMeshProps {
@@ -113,12 +114,41 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
       });
     });
 
-    // Initial data load with delay
-    setTimeout(() => {
-      const meshData = generateServiceMeshData();
-      setData(meshData);
-      setIsLoading(false);
-    }, 1000);
+    // Load initial service mesh data
+    const loadInitialData = async () => {
+      try {
+        if (MOCK_ENABLED) {
+          // Use mock data in development
+          const meshData = generateServiceMeshData();
+          setData(meshData);
+        } else {
+          // Load from API
+          const token = localStorage.getItem('auth_token');
+          const response = await fetch('/api/services/mesh', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          
+          if (response.ok) {
+            const meshData = await response.json();
+            setData(meshData);
+          } else {
+            // Fallback to mock data on API failure
+            const meshData = generateServiceMeshData();
+            setData(meshData);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load service mesh data:', error);
+        // Fallback to mock data on error
+        const meshData = generateServiceMeshData();
+        setData(meshData);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Load initial data
+    loadInitialData();
 
     return () => {
       if (subscriptionIdRef.current) {
@@ -228,7 +258,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const overviewStats = selectedView !== 'topology' && (
     <div className="grid grid-cols-6 gap-4">
       <div className="bg-black border border-white p-4">
-        <div className="text-xs text-gray-500 uppercase mb-1">Services</div>
+        <div className="text-xs text-gray-500 uppercase mb-1">VPS Services</div>
         <div className="text-2xl font-mono">{data.metrics.overview.totalServices}</div>
       </div>
       <div className="bg-black border border-white p-4">
@@ -244,7 +274,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         <div className="text-2xl font-mono text-red-500">{data.metrics.overview.errorRate.toFixed(1)}%</div>
       </div>
       <div className="bg-black border border-white p-4">
-        <div className="text-xs text-gray-500 uppercase mb-1">mTLS Coverage</div>
+        <div className="text-xs text-gray-500 uppercase mb-1">TLS Coverage</div>
         <div className="text-2xl font-mono text-green-500">{data.metrics.overview.mTLSCoverage.toFixed(0)}%</div>
       </div>
       <div className="bg-black border border-white p-4">
@@ -336,8 +366,11 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Service Map */}
+            {/* VPS Service Architecture */}
             <div className="lg:col-span-2 border border-white p-4">
+              <div className="border-b border-white/20 pb-2 mb-4">
+                <h3 className="font-mono text-sm text-gray-400 uppercase">VPS SERVICE ARCHITECTURE</h3>
+              </div>
             
             {viewMode === GraphViewMode.GRAPH ? (
               <ForceGraph
@@ -468,10 +501,10 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                   )}
                 </div>
 
-                {/* Connections */}
+                {/* Service Dependencies */}
                 {serviceConnections.length > 0 && (
                   <div>
-                    <h5 className="font-mono text-xs font-bold mb-2">CONNECTIONS ({serviceConnections.length})</h5>
+                    <h5 className="font-mono text-xs font-bold mb-2">VPS DEPENDENCIES ({serviceConnections.length})</h5>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {serviceConnections.slice(0, 5).map(conn => {
                         const isOutbound = conn.source === selectedService;
@@ -650,11 +683,14 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         </div>
       )}
 
-      {/* Traffic Flows View */}
+      {/* VPS Traffic Flows View */}
       {selectedView === 'flows' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Critical Flows */}
+          {/* Critical VPS Flows */}
           <div className="border border-white p-4">
+            <div className="border-b border-white/20 pb-2 mb-4">
+              <h3 className="font-mono text-sm text-gray-400 uppercase">CRITICAL VPS FLOWS</h3>
+            </div>
             <div className="space-y-3">
               {data.flows.filter(f => f.criticalPath).map(flow => (
                 <div key={flow.id} className="border border-yellow-500 p-3">
@@ -685,8 +721,11 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
             </div>
           </div>
 
-          {/* All Flows */}
+          {/* All VPS Flows */}
           <div className="border border-white p-4">
+            <div className="border-b border-white/20 pb-2 mb-4">
+              <h3 className="font-mono text-sm text-gray-400 uppercase">ALL VPS FLOWS</h3>
+            </div>
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {data.flows.map(flow => (
                 <div key={flow.id} className={`border p-2 ${
