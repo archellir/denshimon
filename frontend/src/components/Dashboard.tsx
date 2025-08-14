@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -44,6 +44,7 @@ import DatabaseManagement from '@components/infrastructure/DatabaseManagement';
 import DatabaseBrowser from '@components/database/DatabaseBrowser';
 import SQLQueryInterface from '@components/database/SQLQueryInterface';
 import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
+import CertificateHealthDashboard from '@components/infrastructure/CertificateHealthDashboard';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -92,6 +93,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: InfrastructureTab.STORAGE, label: UI_LABELS.STORAGE, icon: HardDrive },
       { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
       { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
+      { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
     ],
     [PrimaryTab.WORKLOADS]: [
       { id: WorkloadsTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
@@ -579,6 +581,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.STORAGE && <StorageIOMetrics timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.HIERARCHY && <ResourceTree />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NETWORK && <NetworkTraffic timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CERTIFICATES && <CertificateHealthDashboard />}
         
         {/* Workloads Tab Content */}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <WorkloadsOverview timeRange={timeRange} />}
