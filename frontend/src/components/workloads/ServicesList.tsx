@@ -11,7 +11,7 @@ import {
   Server
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { ServiceType, CommonNamespace } from '@constants';
+import { KubernetesServiceType, CommonNamespace } from '@constants';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 
 interface Service {
@@ -47,7 +47,7 @@ const mockServices: Service[] = [
     id: 'web-frontend-svc',
     name: 'web-frontend',
     namespace: CommonNamespace.PRODUCTION,
-    type: ServiceType.LOAD_BALANCER,
+    type: KubernetesServiceType.LOAD_BALANCER,
     cluster_ip: '10.96.120.45',
     external_ip: '203.0.113.42',
     ports: [
@@ -66,7 +66,7 @@ const mockServices: Service[] = [
     id: 'api-backend-svc',
     name: 'api-backend',
     namespace: CommonNamespace.PRODUCTION,
-    type: ServiceType.CLUSTER_IP,
+    type: KubernetesServiceType.CLUSTER_IP,
     cluster_ip: '10.96.87.123',
     ports: [
       { name: 'api', port: 3000, target_port: 3000, protocol: 'TCP' },
@@ -84,7 +84,7 @@ const mockServices: Service[] = [
     id: 'database-svc',
     name: 'postgres-primary',
     namespace: CommonNamespace.PRODUCTION,
-    type: ServiceType.CLUSTER_IP,
+    type: KubernetesServiceType.CLUSTER_IP,
     cluster_ip: '10.96.45.78',
     ports: [
       { name: 'postgres', port: 5432, target_port: 5432, protocol: 'TCP' }
@@ -101,7 +101,7 @@ const mockServices: Service[] = [
     id: 'redis-cache-svc',
     name: 'redis-cache',
     namespace: CommonNamespace.PRODUCTION,
-    type: ServiceType.CLUSTER_IP,
+    type: KubernetesServiceType.CLUSTER_IP,
     cluster_ip: '10.96.92.156',
     ports: [
       { name: 'redis', port: 6379, target_port: 6379, protocol: 'TCP' }
@@ -118,7 +118,7 @@ const mockServices: Service[] = [
     id: 'ingress-controller-svc',
     name: 'ingress-nginx-controller',
     namespace: 'ingress-nginx',
-    type: ServiceType.LOAD_BALANCER,
+    type: KubernetesServiceType.LOAD_BALANCER,
     cluster_ip: '10.96.201.34',
     external_ip: '203.0.113.10',
     ports: [
@@ -137,7 +137,7 @@ const mockServices: Service[] = [
     id: 'monitoring-grafana-svc',
     name: 'grafana',
     namespace: CommonNamespace.MONITORING,
-    type: ServiceType.NODE_PORT,
+    type: KubernetesServiceType.NODE_PORT,
     cluster_ip: '10.96.150.89',
     ports: [
       { name: 'grafana', port: 3000, target_port: 3000, protocol: 'TCP', node_port: 30300 }
@@ -154,7 +154,7 @@ const mockServices: Service[] = [
     id: 'worker-service-headless',
     name: 'worker-headless',
     namespace: CommonNamespace.PRODUCTION,
-    type: ServiceType.CLUSTER_IP,
+    type: KubernetesServiceType.CLUSTER_IP,
     cluster_ip: 'None',
     ports: [
       { name: 'worker', port: 8080, target_port: 8080, protocol: 'TCP' }
