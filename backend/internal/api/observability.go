@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -78,8 +77,7 @@ func (h *ObservabilityHandlers) GetLogs(w http.ResponseWriter, r *http.Request) 
 	// Generate mock logs for VPS (in real implementation, would query actual logs)
 	logs := generateMockLogs(limit, level, source, namespace)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	SendSuccess(w, map[string]interface{}{
 		"logs":  logs,
 		"total": len(logs),
 		"metadata": map[string]interface{}{
@@ -111,8 +109,7 @@ func (h *ObservabilityHandlers) GetEvents(w http.ResponseWriter, r *http.Request
 	// Generate mock events for VPS (in real implementation, would query K8s events)
 	events := generateMockEvents(limit, category, severity, timeRange)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	SendSuccess(w, map[string]interface{}{
 		"events": events,
 		"total":  len(events),
 		"metadata": map[string]interface{}{
@@ -290,4 +287,308 @@ func randomString(length int) string {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+// GetLogStreams returns available log streams
+func (h *ObservabilityHandlers) GetLogStreams(w http.ResponseWriter, r *http.Request) {
+	streams := []map[string]interface{}{
+		{
+			"id":          "stream-kubernetes-api",
+			"name":        "Kubernetes API Server",
+			"source":      "kubernetes-api",
+			"namespace":   "kube-system",
+			"status":      "active",
+			"logLevel":    "info",
+			"messageRate": 45.2,
+			"errorRate":   0.8,
+			"retention":   "7d",
+			"size":        "2.3GB",
+			"lastMessage": time.Now().Add(-30 * time.Second).UTC().Format(time.RFC3339),
+		},
+		{
+			"id":          "stream-nginx-ingress",
+			"name":        "NGINX Ingress Controller",
+			"source":      "nginx-ingress",
+			"namespace":   "ingress-nginx",
+			"status":      "active",
+			"logLevel":    "info",
+			"messageRate": 125.7,
+			"errorRate":   2.1,
+			"retention":   "7d",
+			"size":        "8.9GB",
+			"lastMessage": time.Now().Add(-5 * time.Second).UTC().Format(time.RFC3339),
+		},
+		{
+			"id":          "stream-application",
+			"name":        "Application Logs",
+			"source":      "application",
+			"namespace":   "production",
+			"status":      "active",
+			"logLevel":    "debug",
+			"messageRate": 320.5,
+			"errorRate":   5.3,
+			"retention":   "14d",
+			"size":        "15.2GB",
+			"lastMessage": time.Now().Add(-1 * time.Second).UTC().Format(time.RFC3339),
+		},
+		{
+			"id":          "stream-database",
+			"name":        "PostgreSQL Database",
+			"source":      "database",
+			"namespace":   "production",
+			"status":      "active",
+			"logLevel":    "warn",
+			"messageRate": 25.8,
+			"errorRate":   0.3,
+			"retention":   "30d",
+			"size":        "4.7GB",
+			"lastMessage": time.Now().Add(-45 * time.Second).UTC().Format(time.RFC3339),
+		},
+		{
+			"id":          "stream-redis",
+			"name":        "Redis Cache",
+			"source":      "redis",
+			"namespace":   "production",
+			"status":      "active",
+			"logLevel":    "info",
+			"messageRate": 15.2,
+			"errorRate":   0.1,
+			"retention":   "7d",
+			"size":        "1.1GB",
+			"lastMessage": time.Now().Add(-60 * time.Second).UTC().Format(time.RFC3339),
+		},
+		{
+			"id":          "stream-monitoring",
+			"name":        "Monitoring Stack",
+			"source":      "monitoring",
+			"namespace":   "monitoring",
+			"status":      "active",
+			"logLevel":    "info",
+			"messageRate": 67.3,
+			"errorRate":   1.2,
+			"retention":   "14d",
+			"size":        "6.8GB",
+			"lastMessage": time.Now().Add(-15 * time.Second).UTC().Format(time.RFC3339),
+		},
+		{
+			"id":          "stream-system",
+			"name":        "VPS System Logs",
+			"source":      "system",
+			"namespace":   "kube-system",
+			"status":      "warning",
+			"logLevel":    "error",
+			"messageRate": 8.7,
+			"errorRate":   8.7,
+			"retention":   "30d",
+			"size":        "500MB",
+			"lastMessage": time.Now().Add(-120 * time.Second).UTC().Format(time.RFC3339),
+		},
+	}
+	
+	SendSuccess(w, map[string]interface{}{
+		"streams": streams,
+		"summary": map[string]interface{}{
+			"totalStreams":     len(streams),
+			"activeStreams":    6,
+			"warningStreams":   1,
+			"errorStreams":     0,
+			"totalMessageRate": 618.4,
+			"totalErrorRate":   18.5,
+			"totalSize":        "39.5GB",
+			"avgRetention":     "14d",
+		},
+		"vpsInfo": map[string]interface{}{
+			"node":        "vps-main",
+			"cluster":     "single-vps",
+			"logDriver":   "journald",
+			"aggregator":  "fluent-bit",
+			"storage":     "local-ssd",
+			"compression": "gzip",
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	})
+}
+
+// GetLogAnalytics returns log analytics and insights
+func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.Request) {
+	timeRange := r.URL.Query().Get("timeRange")
+	if timeRange == "" {
+		timeRange = "24h"
+	}
+	
+	analytics := map[string]interface{}{
+		"timeRange": timeRange,
+		"overview": map[string]interface{}{
+			"totalLogs":     2547389,
+			"errorLogs":     12847,
+			"warningLogs":   58392,
+			"infoLogs":      2156780,
+			"debugLogs":     319370,
+			"errorRate":     0.5,
+			"warningRate":   2.3,
+			"avgLogSize":    256,
+			"peakHour":      "14:00",
+			"quietHour":     "03:00",
+		},
+		"trends": map[string]interface{}{
+			"logVolumeChange":   "+15.2%",
+			"errorRateChange":   "-8.7%",
+			"warningRateChange": "+3.1%",
+			"peakVolumeTime":    "14:30",
+			"trend":             "increasing",
+		},
+		"patterns": []map[string]interface{}{
+			{
+				"pattern":     "Connection timeout",
+				"frequency":   347,
+				"severity":    "warning",
+				"source":      "nginx-ingress",
+				"trend":       "stable",
+				"impact":      "medium",
+				"lastSeen":    time.Now().Add(-15 * time.Minute).UTC().Format(time.RFC3339),
+			},
+			{
+				"pattern":     "Database slow query",
+				"frequency":   89,
+				"severity":    "warning",
+				"source":      "database",
+				"trend":       "decreasing",
+				"impact":      "low",
+				"lastSeen":    time.Now().Add(-45 * time.Minute).UTC().Format(time.RFC3339),
+			},
+			{
+				"pattern":     "Pod restart",
+				"frequency":   23,
+				"severity":    "error",
+				"source":      "kubernetes-api",
+				"trend":       "stable",
+				"impact":      "high",
+				"lastSeen":    time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339),
+			},
+			{
+				"pattern":     "Memory usage high",
+				"frequency":   156,
+				"severity":    "warning",
+				"source":      "system",
+				"trend":       "increasing",
+				"impact":      "medium",
+				"lastSeen":    time.Now().Add(-30 * time.Minute).UTC().Format(time.RFC3339),
+			},
+			{
+				"pattern":     "Authentication failure",
+				"frequency":   67,
+				"severity":    "error",
+				"source":      "application",
+				"trend":       "stable",
+				"impact":      "medium",
+				"lastSeen":    time.Now().Add(-20 * time.Minute).UTC().Format(time.RFC3339),
+			},
+		},
+		"topSources": []map[string]interface{}{
+			{
+				"source":    "application",
+				"logCount":  1152847,
+				"errorRate": 0.8,
+				"percentage": 45.2,
+			},
+			{
+				"source":    "nginx-ingress",
+				"logCount":  678945,
+				"errorRate": 1.2,
+				"percentage": 26.7,
+			},
+			{
+				"source":    "kubernetes-api",
+				"logCount":  456782,
+				"errorRate": 0.3,
+				"percentage": 17.9,
+			},
+			{
+				"source":    "monitoring",
+				"logCount":  158923,
+				"errorRate": 0.2,
+				"percentage": 6.2,
+			},
+			{
+				"source":    "database",
+				"logCount":  99892,
+				"errorRate": 0.1,
+				"percentage": 3.9,
+			},
+		},
+		"alerts": []map[string]interface{}{
+			{
+				"id":          "alert-1",
+				"type":        "error_rate_spike",
+				"severity":    "warning",
+				"source":      "nginx-ingress",
+				"message":     "Error rate increased by 25% in the last hour",
+				"threshold":   "5%",
+				"current":     "6.3%",
+				"triggered":   time.Now().Add(-45 * time.Minute).UTC().Format(time.RFC3339),
+				"acknowledged": false,
+			},
+			{
+				"id":          "alert-2",
+				"type":        "log_volume_spike",
+				"severity":    "info",
+				"source":      "application",
+				"message":     "Log volume increased significantly during peak hours",
+				"threshold":   "1000/min",
+				"current":     "1350/min",
+				"triggered":   time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339),
+				"acknowledged": true,
+			},
+			{
+				"id":          "alert-3",
+				"type":        "repeated_errors",
+				"severity":    "critical",
+				"source":      "database",
+				"message":     "Connection pool exhausted errors repeating",
+				"threshold":   "10 occurrences",
+				"current":     "15 occurrences",
+				"triggered":   time.Now().Add(-30 * time.Minute).UTC().Format(time.RFC3339),
+				"acknowledged": false,
+			},
+		},
+		"recommendations": []map[string]interface{}{
+			{
+				"type":        "optimization",
+				"priority":    "high",
+				"title":       "Optimize Database Queries",
+				"description": "Slow query patterns detected. Consider adding indexes or query optimization.",
+				"impact":      "Reduce 45% of database warning logs",
+				"effort":      "medium",
+			},
+			{
+				"type":        "configuration",
+				"priority":    "medium",
+				"title":       "Adjust NGINX Timeout Settings",
+				"description": "Connection timeout patterns suggest tuning proxy timeouts.",
+				"impact":      "Reduce 25% of nginx warning logs",
+				"effort":      "low",
+			},
+			{
+				"type":        "monitoring",
+				"priority":    "low",
+				"title":       "Add Memory Usage Alerting",
+				"description": "Set up proactive alerts for memory usage to prevent pod restarts.",
+				"impact":      "Prevent 80% of restart-related errors",
+				"effort":      "low",
+			},
+		},
+		"performance": map[string]interface{}{
+			"ingestionRate":  "2.1MB/s",
+			"processingTime": "125ms",
+			"indexingDelay":  "45ms",
+			"queryTime":      "8ms",
+			"storageUsed":    "39.5GB",
+			"storageLimit":   "200GB",
+			"retentionPolicy": "14 days",
+			"compressionRatio": "3.2:1",
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	
+	SendSuccess(w, analytics)
 }
