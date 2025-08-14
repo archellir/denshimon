@@ -1,14 +1,17 @@
 /**
  * Application Constants
  * Centralized constants and enums to avoid duplication throughout the codebase
+ * 
+ * Organization:
+ * 1. Core Status System (universal statuses)
+ * 2. Domain-Specific Enums (logs, events, deployments, etc.)
+ * 3. UI Constants (labels, messages, time ranges)
+ * 4. API Configuration (endpoints, websocket events)
+ * 5. Styling and Display (colors, layouts, graphs)
  */
 
 // ============================================================================
-// STATUS ENUMS
-// ============================================================================
-
-// ============================================================================
-// CONSOLIDATED STATUS SYSTEM - Unified from multiple overlapping enums
+// CORE STATUS SYSTEM - Universal status enums used across all components
 // ============================================================================
 
 /**
@@ -164,7 +167,7 @@ export enum HttpMethod {
 // KUBERNETES ENUMS
 // ============================================================================
 
-export enum ServiceType {
+export enum KubernetesServiceType {
   CLUSTER_IP = 'ClusterIP',
   NODE_PORT = 'NodePort',
   LOAD_BALANCER = 'LoadBalancer',
@@ -340,25 +343,55 @@ export const DIRECTION_COLORS = {
 // ============================================================================
 
 export const UI_MESSAGES = {
+  // Loading states
   LOADING: 'LOADING...',
+  LOADING_HISTORY: 'LOADING HISTORY...',
+  LOADING_METRICS: 'Fetching VPS metrics',
+  LOADING_LOGS: 'Loading VPS logs...',
+  LOADING_EVENTS: 'Loading VPS events...',
+  LOADING_TIMELINE: 'Loading timeline...',
+  INITIALIZING: 'INITIALIZING...',
+  AUTHENTICATING: 'AUTHENTICATING...',
+  
+  // Status messages
   ERROR: 'ERROR',
   SUCCESS: 'SUCCESS',
   RETRY: 'RETRY',
-  NO_DATA: 'NO DATA AVAILABLE',
-  LOADING_HISTORY: 'LOADING HISTORY...',
-  LOADING_METRICS: 'Fetching cluster metrics',
   LIVE_UPDATES: 'LIVE UPDATES',
+  
+  // No data states
+  NO_DATA: 'NO DATA AVAILABLE',
   CHART_NO_DATA: 'NO CHART DATA AVAILABLE',
   NETWORK_NO_DATA: 'NO NETWORK DATA AVAILABLE',
   PROTOCOL_NO_DATA: 'NO PROTOCOL DATA',
   TOP_TALKERS_NO_DATA: 'NO TOP TALKERS DATA',
+  NO_VPS_LOGS: 'NO VPS LOGS FOUND',
+  NO_VPS_EVENTS: 'NO VPS EVENTS FOUND',
+  NO_VPS_SERVICES: 'NO VPS SERVICES FOUND',
+  NO_DEPLOYMENTS: 'NO DEPLOYMENTS FOUND',
+  NO_REGISTRIES: 'NO REGISTRIES CONFIGURED',
+  NO_IMAGES: 'NO IMAGES FOUND',
+  
+  // Error states
   RENDER_ERROR: 'RENDER ERROR',
   COMPONENT_FAILED: 'Component failed to render',
   CHECK_CONSOLE: 'Check console for details',
-  AUTHENTICATING: 'AUTHENTICATING...',
+  API_ERROR: 'API request failed',
+  NETWORK_ERROR: 'Network connection error',
+  AUTH_ERROR: 'Authentication failed',
+  
+  // Actions
   LOGIN: 'LOGIN',
-  INITIALIZING: 'INITIALIZING...',
-  CLOSE: 'CLOSE'
+  LOGOUT: 'LOGOUT',
+  CLOSE: 'CLOSE',
+  SAVE: 'SAVE',
+  CANCEL: 'CANCEL',
+  DELETE: 'DELETE',
+  EDIT: 'EDIT',
+  REFRESH: 'REFRESH',
+  CLEAR_FILTERS: 'CLEAR FILTERS',
+  EXPAND_ALL: 'EXPAND ALL',
+  COLLAPSE_ALL: 'COLLAPSE ALL'
 } as const;
 
 // ============================================================================
@@ -395,6 +428,16 @@ export const UI_LABELS = {
   LIVE_STREAMS: 'Live Streams',
   ANALYTICS: 'Analytics',
   
+  // VPS-Specific Labels
+  VPS_LOGS: 'VPS LOGS',
+  VPS_EVENTS: 'VPS EVENTS',
+  VPS_SERVICES: 'VPS SERVICES',
+  VPS_PODS: 'VPS PODS',
+  VPS_NODE: 'VPS NODE',
+  VPS_SERVICE_ARCHITECTURE: 'VPS SERVICE ARCHITECTURE',
+  VPS_DEPLOYMENTS: 'VPS DEPLOYMENTS',
+  VPS_SOURCES: 'VPS SOURCES',
+  
   // Metrics and Stats
   CPU: 'CPU',
   MEMORY: 'Memory',
@@ -408,7 +451,35 @@ export const UI_LABELS = {
   ACTIVE_ALERTS: 'Active Alerts',
   LOG_EVENTS: 'Log Events',
   ERROR_RATE: 'Error Rate',
-  SLO_HEALTH: 'SLO Health'
+  SLO_HEALTH: 'SLO Health',
+  
+  // Filter Labels
+  ALL_LEVELS: 'ALL LEVELS',
+  ALL_SOURCES: 'ALL SOURCES',
+  ALL_NAMESPACES: 'ALL NAMESPACES',
+  ALL_CATEGORIES: 'ALL CATEGORIES',
+  ALL_SEVERITIES: 'ALL SEVERITIES',
+  
+  // Log Levels
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  WARN: 'WARN',
+  ERROR: 'ERROR',
+  FATAL: 'FATAL',
+  
+  // Event Severities
+  CRITICAL: 'CRITICAL',
+  WARNING: 'WARNING',
+  SUCCESS: 'SUCCESS',
+  
+  // Event Categories  
+  NODE_CATEGORY: 'NODE',
+  POD_CATEGORY: 'POD', 
+  SERVICE_CATEGORY: 'SERVICE',
+  CONFIG_CATEGORY: 'CONFIG',
+  SECURITY_CATEGORY: 'SECURITY',
+  NETWORK_CATEGORY: 'NETWORK',
+  STORAGE_CATEGORY: 'STORAGE'
 } as const;
 
 
@@ -530,8 +601,11 @@ export const DASHBOARD_TAB_LABELS = {
 
 export const API_BASE_PATHS = {
   AUTH: '/api/auth',
-  METRICS: '/api/metrics',
+  METRICS: '/api/metrics', 
   KUBERNETES: '/api/k8s',
+  SERVICES: '/api/services',
+  OBSERVABILITY: '/api',
+  DEPLOYMENTS: '/api/deployments',
   GITEA: '/api/gitea',
   GITOPS: '/api/gitops',
   WEBSOCKET: '/ws'
@@ -541,20 +615,54 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: `${API_BASE_PATHS.AUTH}/login`,
     ME: `${API_BASE_PATHS.AUTH}/me`,
-    LOGOUT: `${API_BASE_PATHS.AUTH}/logout`
+    LOGOUT: `${API_BASE_PATHS.AUTH}/logout`,
+    REFRESH: `${API_BASE_PATHS.AUTH}/refresh`,
+    USERS: `${API_BASE_PATHS.AUTH}/users`,
+    USER: (id: string) => `${API_BASE_PATHS.AUTH}/users/${id}`
   },
   METRICS: {
     CLUSTER: `${API_BASE_PATHS.METRICS}/cluster`,
     NODES: `${API_BASE_PATHS.METRICS}/nodes`,
     PODS: `${API_BASE_PATHS.METRICS}/pods`,
     NAMESPACES: `${API_BASE_PATHS.METRICS}/namespaces`,
-    HISTORY: `${API_BASE_PATHS.METRICS}/history`
+    HISTORY: `${API_BASE_PATHS.METRICS}/history`,
+    RESOURCES: `${API_BASE_PATHS.METRICS}/resources`,
+    HEALTH: `${API_BASE_PATHS.METRICS}/health`
   },
   KUBERNETES: {
     PODS: `${API_BASE_PATHS.KUBERNETES}/pods`,
+    POD: (name: string) => `${API_BASE_PATHS.KUBERNETES}/pods/${name}`,
+    POD_RESTART: (name: string) => `${API_BASE_PATHS.KUBERNETES}/pods/${name}/restart`,
+    POD_LOGS: (name: string) => `${API_BASE_PATHS.KUBERNETES}/pods/${name}/logs`,
+    DEPLOYMENTS: `${API_BASE_PATHS.KUBERNETES}/deployments`,
+    DEPLOYMENT_SCALE: (name: string) => `${API_BASE_PATHS.KUBERNETES}/deployments/${name}/scale`,
     SERVICES: `${API_BASE_PATHS.KUBERNETES}/services`,
     NODES: `${API_BASE_PATHS.KUBERNETES}/nodes`,
-    NAMESPACES: `${API_BASE_PATHS.KUBERNETES}/namespaces`
+    EVENTS: `${API_BASE_PATHS.KUBERNETES}/events`,
+    HEALTH: `${API_BASE_PATHS.KUBERNETES}/health`
+  },
+  SERVICES: {
+    MESH: `${API_BASE_PATHS.SERVICES}/mesh`
+  },
+  OBSERVABILITY: {
+    LOGS: `${API_BASE_PATHS.OBSERVABILITY}/logs`,
+    EVENTS: `${API_BASE_PATHS.OBSERVABILITY}/events`
+  },
+  DEPLOYMENTS: {
+    BASE: API_BASE_PATHS.DEPLOYMENTS,
+    REGISTRIES: `${API_BASE_PATHS.DEPLOYMENTS}/registries`,
+    REGISTRY: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/registries/${id}`,
+    REGISTRY_TEST: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/registries/${id}/test`,
+    IMAGES: `${API_BASE_PATHS.DEPLOYMENTS}/images`,
+    IMAGES_SEARCH: `${API_BASE_PATHS.DEPLOYMENTS}/images/search`,
+    IMAGE_TAGS: (image: string) => `${API_BASE_PATHS.DEPLOYMENTS}/images/${image}/tags`,
+    DEPLOYMENTS: API_BASE_PATHS.DEPLOYMENTS,
+    DEPLOYMENT: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}`,
+    DEPLOYMENT_SCALE: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}/scale`,
+    DEPLOYMENT_RESTART: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}/restart`,
+    DEPLOYMENT_PODS: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}/pods`,
+    DEPLOYMENT_HISTORY: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}/history`,
+    NODES: `${API_BASE_PATHS.DEPLOYMENTS}/nodes`
   },
   GITEA: {
     BASE: API_BASE_PATHS.GITEA,
@@ -689,7 +797,7 @@ export enum SortDirection {
 }
 
 // ============================================================================
-// LOG LEVELS
+// LOG LEVELS AND OBSERVABILITY ENUMS
 // ============================================================================
 
 export enum LogLevel {
@@ -701,8 +809,44 @@ export enum LogLevel {
   FATAL = 'fatal'
 }
 
+/**
+ * Event severity levels for observability events
+ */
+export enum EventSeverity {
+  CRITICAL = 'critical',
+  WARNING = 'warning',
+  INFO = 'info',
+  SUCCESS = 'success'
+}
+
+/**
+ * Event categories for system events and observability
+ */
+export enum EventCategory {
+  NODE = 'node',
+  POD = 'pod',
+  SERVICE = 'service',
+  CONFIG = 'config',
+  SECURITY = 'security',
+  NETWORK = 'network',
+  STORAGE = 'storage'
+}
+
+/**
+ * Log source types for VPS services
+ */
+export enum LogSource {
+  KUBERNETES_API = 'kubernetes-api',
+  NGINX_INGRESS = 'nginx-ingress',
+  APPLICATION = 'application',
+  DATABASE = 'database',
+  REDIS = 'redis',
+  MONITORING = 'monitoring',
+  SYSTEM = 'system'
+}
+
 // ============================================================================
-// SERVICE TYPES
+// APPLICATION SERVICE TYPES (Mesh/Architecture)
 // ============================================================================
 
 export enum ServiceType {
@@ -721,6 +865,59 @@ export enum ServiceFilterType {
   DATABASE = 'database',
   CACHE = 'cache',
   GATEWAY = 'gateway'
+}
+
+// ============================================================================
+// DEPLOYMENT AND REGISTRY ENUMS
+// ============================================================================
+
+/**
+ * Container registry types supported by the platform
+ */
+export enum RegistryType {
+  DOCKERHUB = 'dockerhub',
+  GITEA = 'gitea',
+  GITLAB = 'gitlab',
+  GENERIC = 'generic'
+}
+
+/**
+ * Registry connection status
+ */
+export enum RegistryStatus {
+  PENDING = 'pending',
+  CONNECTED = 'connected',
+  ERROR = 'error'
+}
+
+/**
+ * Deployment status for VPS deployments
+ */
+export enum DeploymentStatus {
+  PENDING = 'pending',
+  RUNNING = 'running',
+  FAILED = 'failed',
+  UPDATING = 'updating',
+  TERMINATING = 'terminating'
+}
+
+/**
+ * Deployment strategy types
+ */
+export enum DeploymentStrategy {
+  ROLLING_UPDATE = 'RollingUpdate',
+  RECREATE = 'Recreate'
+}
+
+/**
+ * Deployment history action types
+ */
+export enum DeploymentAction {
+  CREATE = 'create',
+  UPDATE = 'update',
+  SCALE = 'scale',
+  DELETE = 'delete',
+  RESTART = 'restart'
 }
 
 // ============================================================================
@@ -1070,6 +1267,38 @@ export const VALIDATION = {
   MAX_USERNAME_LENGTH: 50,
   MAX_NAMESPACE_LENGTH: 63,
   MAX_LABEL_VALUE_LENGTH: 63
+} as const;
+
+// ============================================================================
+// UTILITY FUNCTIONS FOR CONSTANTS
+// ============================================================================
+
+/**
+ * Get status color for consistent styling across components
+ */
+export const getStatusColor = (status: Status | EventSeverity | LogLevel, type: 'text' | 'border' = 'text'): string => {
+  const colorMap = type === 'text' ? STATUS_COLORS.TEXT : STATUS_COLORS.BORDER;
+  return colorMap[status as keyof typeof colorMap] || (type === 'text' ? 'text-gray-500' : 'border-gray-500 text-gray-500');
+};
+
+/**
+ * Get log level icon and color mapping
+ */
+export const LOG_LEVEL_CONFIG = {
+  [LogLevel.ERROR]: { color: 'text-red-400 border-red-400 bg-red-900/10', icon: 'AlertCircle' },
+  [LogLevel.WARN]: { color: 'text-yellow-400 border-yellow-400 bg-yellow-900/10', icon: 'AlertTriangle' },
+  [LogLevel.INFO]: { color: 'text-blue-400 border-blue-400 bg-blue-900/10', icon: 'Info' },
+  [LogLevel.DEBUG]: { color: 'text-gray-400 border-gray-400 bg-gray-900/10', icon: 'Bug' },
+} as const;
+
+/**
+ * Event severity configuration for consistent styling
+ */
+export const EVENT_SEVERITY_CONFIG = {
+  [EventSeverity.CRITICAL]: { color: 'border-red-500 text-red-500', icon: 'AlertCircle' },
+  [EventSeverity.WARNING]: { color: 'border-yellow-500 text-yellow-500', icon: 'AlertTriangle' },
+  [EventSeverity.INFO]: { color: 'border-blue-500 text-blue-500', icon: 'Info' },
+  [EventSeverity.SUCCESS]: { color: 'border-green-500 text-green-500', icon: 'CheckCircle' },
 } as const;
 
 // ============================================================================
