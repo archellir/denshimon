@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"math/rand"
 	"time"
@@ -272,17 +273,22 @@ func (p *Publisher) generateMockLogEntry() map[string]interface{} {
 		"Pod scheduled successfully",
 		"Service endpoint updated",
 	}
-
+	
+	// Generate VPS-specific log entry matching frontend LogEntry interface
 	return map[string]interface{}{
-		"id":        time.Now().UnixNano(),
+		"id":        fmt.Sprintf("%d", time.Now().UnixNano()),
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 		"level":     levels[rand.Intn(len(levels))],
 		"source":    sources[rand.Intn(len(sources))],
 		"message":   messages[rand.Intn(len(messages))],
+		"user":      "system",
+		"action":    "log_entry",
 		"metadata": map[string]interface{}{
 			"namespace": namespaces[rand.Intn(len(namespaces))],
 			"pod":       "app-" + randomStringForPublisher(8),
-			"node":      "node-" + randomStringForPublisher(4),
+			"node":      "vps-main", // Single VPS node
+			"ip":        "10.0.0." + fmt.Sprintf("%d", rand.Intn(255)+1),
+			"duration":  rand.Intn(1000) + 50, // milliseconds
 		},
 	}
 }
@@ -310,19 +316,52 @@ func (p *Publisher) generateMockWorkflow() map[string]interface{} {
 }
 
 func (p *Publisher) generateMockEvent() map[string]interface{} {
-	types := []string{"Normal", "Warning"}
-	reasons := []string{"Created", "Started", "Pulled", "Scheduled", "Failed", "Killing"}
-	objects := []string{"Pod", "Service", "Deployment", "ReplicaSet"}
-	namespaces := []string{"production", "staging", "monitoring", "default"}
+	categories := []string{"node", "pod", "service", "config", "security", "network", "storage"}
+	severities := []string{"critical", "warning", "info", "success"}
+	titles := []string{
+		"Pod Created", "Service Updated", "Node Ready", "Config Applied",
+		"Security Policy Updated", "Network Route Added", "Storage Provisioned",
+		"Deployment Scaled", "Container Started", "Health Check Passed",
+	}
+	descriptions := []string{
+		"Successfully created new pod on VPS",
+		"Service configuration updated successfully",
+		"VPS node is ready and healthy",
+		"Configuration changes applied",
+		"Security policy enforcement enabled",
+		"Network connectivity established",
+		"Storage volume mounted successfully",
+	}
+	namespaces := []string{"production", "staging", "monitoring", "kube-system", "default"}
 
+	// Generate VPS-specific event matching frontend TimelineEvent interface
+	category := categories[rand.Intn(len(categories))]
+	severity := severities[rand.Intn(len(severities))]
+	
 	return map[string]interface{}{
-		"id":        randomStringForPublisher(16),
-		"type":      types[rand.Intn(len(types))],
-		"reason":    reasons[rand.Intn(len(reasons))],
-		"object":    objects[rand.Intn(len(objects))],
-		"namespace": namespaces[rand.Intn(len(namespaces))],
-		"message":   "Successfully assigned pod to node",
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"id":          randomStringForPublisher(16),
+		"timestamp":   time.Now().UTC().Format(time.RFC3339),
+		"category":    category,
+		"severity":    severity,
+		"title":       titles[rand.Intn(len(titles))],
+		"description": descriptions[rand.Intn(len(descriptions))],
+		"source": map[string]interface{}{
+			"type":      category,
+			"name":      "vps-" + randomStringForPublisher(4),
+			"namespace": namespaces[rand.Intn(len(namespaces))],
+		},
+		"impact": map[string]interface{}{
+			"affected": rand.Intn(5) + 1,
+			"total":    10,
+			"unit":     "pods",
+		},
+		"duration": rand.Intn(300000) + 30000, // 30s to 5min in milliseconds
+		"resolved": rand.Float32() > 0.3,       // 70% chance of being resolved
+		"metadata": map[string]interface{}{
+			"node":       "vps-main",
+			"cluster":    "single-vps",
+			"event_type": "kubernetes",
+		},
 	}
 }
 
