@@ -1,4 +1,5 @@
 import type { Deployment, NodeInfo } from '@/types/deployments';
+import { DeploymentStatus, DeploymentStrategy } from '@/constants';
 import { MASTER_APPLICATIONS, MASTER_NODES, MASTER_PODS } from '../masterData';
 
 // Convert master data to Deployment type
@@ -10,10 +11,10 @@ export const mockDeployments: Deployment[] = MASTER_APPLICATIONS.map(app => {
   const readyReplicas = Math.min(availableReplicas, Math.floor(availableReplicas * 0.9));
   
   // Determine status based on replica availability
-  let status: Deployment['status'] = 'running';
-  if (availableReplicas === 0) status = 'failed';
-  else if (availableReplicas < app.replicas) status = 'pending';
-  else if (Math.random() > 0.95) status = 'updating';
+  let status: Deployment['status'] = DeploymentStatus.RUNNING;
+  if (availableReplicas === 0) status = DeploymentStatus.FAILED;
+  else if (availableReplicas < app.replicas) status = DeploymentStatus.PENDING;
+  else if (Math.random() > 0.95) status = DeploymentStatus.UPDATING;
 
   // Generate image name based on app
   const getImageForApp = (appName: string): string => {
@@ -44,7 +45,7 @@ export const mockDeployments: Deployment[] = MASTER_APPLICATIONS.map(app => {
     readyReplicas,
     status,
     strategy: {
-      type: 'RollingUpdate',
+      type: DeploymentStrategy.ROLLING_UPDATE,
       maxSurge: 1,
       maxUnavailable: 0,
       nodeSpread: true,
