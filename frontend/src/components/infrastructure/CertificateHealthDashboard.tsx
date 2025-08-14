@@ -186,7 +186,7 @@ const CertificateHealthDashboard: FC = () => {
               <Clock size={16} />
             </div>
             <div className="font-mono text-2xl">{stats.expiringSoon}</div>
-            <div className="font-mono text-xs opacity-60">< 30 days</div>
+            <div className="font-mono text-xs opacity-60">&lt; 30 days</div>
           </div>
           
           <div className="border border-red-400 p-4 text-red-400">
@@ -195,7 +195,7 @@ const CertificateHealthDashboard: FC = () => {
               <AlertTriangle size={16} />
             </div>
             <div className="font-mono text-2xl">{stats.expiringCritical + stats.expired}</div>
-            <div className="font-mono text-xs opacity-60">< 7 days / Expired</div>
+            <div className="font-mono text-xs opacity-60">&lt; 7 days / Expired</div>
           </div>
           
           <div className="border border-white p-4">
