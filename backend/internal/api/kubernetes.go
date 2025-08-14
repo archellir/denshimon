@@ -108,7 +108,7 @@ func (h *KubernetesHandlers) ListPods(w http.ResponseWriter, r *http.Request) {
 
 	pods, err := h.k8sClient.Clientset().CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to list pods: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list pods: %v", err))
 		return
 	}
 
@@ -143,7 +143,7 @@ func (h *KubernetesHandlers) GetPod(w http.ResponseWriter, r *http.Request) {
 
 	pod, err := h.k8sClient.Clientset().CoreV1().Pods(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get pod: %v", err), http.StatusNotFound)
+		SendError(w, http.StatusNotFound, fmt.Sprintf("Failed to get pod: %v", err))
 		return
 	}
 
@@ -182,7 +182,7 @@ func (h *KubernetesHandlers) RestartPod(w http.ResponseWriter, r *http.Request) 
 	// Delete pod to trigger restart (if controlled by deployment/replicaset)
 	err := h.k8sClient.Clientset().CoreV1().Pods(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to restart pod: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to restart pod: %v", err))
 		return
 	}
 
@@ -207,7 +207,7 @@ func (h *KubernetesHandlers) DeletePod(w http.ResponseWriter, r *http.Request) {
 
 	err := h.k8sClient.Clientset().CoreV1().Pods(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to delete pod: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to delete pod: %v", err))
 		return
 	}
 
@@ -242,7 +242,7 @@ func (h *KubernetesHandlers) GetPodLogs(w http.ResponseWriter, r *http.Request) 
 	req := h.k8sClient.Clientset().CoreV1().Pods(namespace).GetLogs(name, opts)
 	podLogs, err := req.Stream(context.Background())
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get pod logs: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get pod logs: %v", err))
 		return
 	}
 	defer podLogs.Close()
@@ -280,7 +280,7 @@ func (h *KubernetesHandlers) ListNodes(w http.ResponseWriter, r *http.Request) {
 	
 	nodes, err := h.k8sClient.Clientset().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to list nodes: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list nodes: %v", err))
 		return
 	}
 
@@ -321,7 +321,7 @@ func (h *KubernetesHandlers) ListDeployments(w http.ResponseWriter, r *http.Requ
 
 	deployments, err := h.k8sClient.Clientset().AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to list deployments: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list deployments: %v", err))
 		return
 	}
 
@@ -369,7 +369,7 @@ func (h *KubernetesHandlers) ScaleDeployment(w http.ResponseWriter, r *http.Requ
 	// Get current deployment
 	deployment, err := h.k8sClient.Clientset().AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get deployment: %v", err), http.StatusNotFound)
+		SendError(w, http.StatusNotFound, fmt.Sprintf("Failed to get deployment: %v", err))
 		return
 	}
 
@@ -377,7 +377,7 @@ func (h *KubernetesHandlers) ScaleDeployment(w http.ResponseWriter, r *http.Requ
 	deployment.Spec.Replicas = &req.Replicas
 	_, err = h.k8sClient.Clientset().AppsV1().Deployments(namespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to scale deployment: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to scale deployment: %v", err))
 		return
 	}
 
@@ -497,7 +497,7 @@ func (h *KubernetesHandlers) ListServices(w http.ResponseWriter, r *http.Request
 
 	services, err := h.k8sClient.Clientset().CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to list services: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list services: %v", err))
 		return
 	}
 
@@ -551,7 +551,7 @@ func (h *KubernetesHandlers) ListEvents(w http.ResponseWriter, r *http.Request) 
 
 	events, err := h.k8sClient.Clientset().CoreV1().Events(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to list events: %v", err), http.StatusInternalServerError)
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list events: %v", err))
 		return
 	}
 
@@ -1004,6 +1004,194 @@ func getMockServices() []ServiceInfo {
 			},
 			Age:    "7d",
 			Labels: map[string]string{"app": "prometheus", "component": "monitoring"},
+		},
+	}
+}
+
+// GET /api/k8s/namespaces - List all namespaces
+func (h *KubernetesHandlers) ListNamespaces(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockNamespaces := getMockNamespaces()
+		SendSuccess(w, mockNamespaces)
+		return
+	}
+	
+	namespaces, err := h.k8sClient.Clientset().CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list namespaces: %v", err))
+		return
+	}
+
+	type NamespaceInfo struct {
+		Name   string            `json:"name"`
+		Status string            `json:"status"`
+		Age    string            `json:"age"`
+		Labels map[string]string `json:"labels"`
+	}
+
+	var namespaceInfos []NamespaceInfo
+	for _, ns := range namespaces.Items {
+		namespaceInfo := NamespaceInfo{
+			Name:   ns.Name,
+			Status: string(ns.Status.Phase),
+			Age:    formatAge(ns.CreationTimestamp.Time),
+			Labels: ns.Labels,
+		}
+		namespaceInfos = append(namespaceInfos, namespaceInfo)
+	}
+
+	SendSuccess(w, namespaceInfos)
+}
+
+// GET /api/k8s/storage - Get storage information
+func (h *KubernetesHandlers) GetStorageInfo(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		// Return mock data for testing
+		mockStorage := getMockStorageInfo()
+		SendSuccess(w, mockStorage)
+		return
+	}
+	
+	// Get persistent volumes
+	pvs, err := h.k8sClient.Clientset().CoreV1().PersistentVolumes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list persistent volumes: %v", err))
+		return
+	}
+
+	// Get persistent volume claims
+	pvcs, err := h.k8sClient.Clientset().CoreV1().PersistentVolumeClaims("").List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list persistent volume claims: %v", err))
+		return
+	}
+
+	type StorageInfo struct {
+		PersistentVolumes      []map[string]interface{} `json:"persistentVolumes"`
+		PersistentVolumeClaims []map[string]interface{} `json:"persistentVolumeClaims"`
+		StorageClasses         []map[string]interface{} `json:"storageClasses"`
+	}
+
+	storageInfo := StorageInfo{
+		PersistentVolumes:      []map[string]interface{}{},
+		PersistentVolumeClaims: []map[string]interface{}{},
+		StorageClasses:         []map[string]interface{}{},
+	}
+
+	// Process PVs
+	for _, pv := range pvs.Items {
+		pvInfo := map[string]interface{}{
+			"name":       pv.Name,
+			"status":     string(pv.Status.Phase),
+			"capacity":   pv.Spec.Capacity,
+			"accessModes": pv.Spec.AccessModes,
+			"reclaimPolicy": string(pv.Spec.PersistentVolumeReclaimPolicy),
+			"age":        formatAge(pv.CreationTimestamp.Time),
+		}
+		storageInfo.PersistentVolumes = append(storageInfo.PersistentVolumes, pvInfo)
+	}
+
+	// Process PVCs
+	for _, pvc := range pvcs.Items {
+		pvcInfo := map[string]interface{}{
+			"name":      pvc.Name,
+			"namespace": pvc.Namespace,
+			"status":    string(pvc.Status.Phase),
+			"capacity":  pvc.Status.Capacity,
+			"accessModes": pvc.Spec.AccessModes,
+			"storageClass": pvc.Spec.StorageClassName,
+			"age":       formatAge(pvc.CreationTimestamp.Time),
+		}
+		storageInfo.PersistentVolumeClaims = append(storageInfo.PersistentVolumeClaims, pvcInfo)
+	}
+
+	SendSuccess(w, storageInfo)
+}
+
+func getMockNamespaces() []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"name":   "default",
+			"status": "Active",
+			"age":    "30d",
+			"labels": map[string]string{},
+		},
+		{
+			"name":   "kube-system",
+			"status": "Active",
+			"age":    "30d",
+			"labels": map[string]string{},
+		},
+		{
+			"name":   "production",
+			"status": "Active",
+			"age":    "25d",
+			"labels": map[string]string{"environment": "production"},
+		},
+		{
+			"name":   "denshimon-test",
+			"status": "Active",
+			"age":    "7d",
+			"labels": map[string]string{"environment": "test"},
+		},
+		{
+			"name":   "monitoring",
+			"status": "Active",
+			"age":    "15d",
+			"labels": map[string]string{"purpose": "monitoring"},
+		},
+	}
+}
+
+func getMockStorageInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"persistentVolumes": []map[string]interface{}{
+			{
+				"name":       "pv-vps-storage-1",
+				"status":     "Bound",
+				"capacity":   map[string]string{"storage": "50Gi"},
+				"accessModes": []string{"ReadWriteOnce"},
+				"reclaimPolicy": "Retain",
+				"age":        "15d",
+			},
+			{
+				"name":       "pv-vps-storage-2",
+				"status":     "Available",
+				"capacity":   map[string]string{"storage": "100Gi"},
+				"accessModes": []string{"ReadWriteOnce"},
+				"reclaimPolicy": "Delete",
+				"age":        "10d",
+			},
+		},
+		"persistentVolumeClaims": []map[string]interface{}{
+			{
+				"name":      "data-postgres-0",
+				"namespace": "production",
+				"status":    "Bound",
+				"capacity":  map[string]string{"storage": "20Gi"},
+				"accessModes": []string{"ReadWriteOnce"},
+				"storageClass": "vps-ssd",
+				"age":       "15d",
+			},
+			{
+				"name":      "redis-data",
+				"namespace": "denshimon-test",
+				"status":    "Bound",
+				"capacity":  map[string]string{"storage": "5Gi"},
+				"accessModes": []string{"ReadWriteOnce"},
+				"storageClass": "vps-ssd",
+				"age":       "3h",
+			},
+		},
+		"storageClasses": []map[string]interface{}{
+			{
+				"name":      "vps-ssd",
+				"provisioner": "kubernetes.io/host-path",
+				"reclaimPolicy": "Delete",
+				"volumeBindingMode": "Immediate",
+				"age":       "30d",
+			},
 		},
 	}
 }
