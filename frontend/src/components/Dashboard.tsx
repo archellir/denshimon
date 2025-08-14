@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, type LucideIcon } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -10,7 +10,6 @@ import { SearchResult } from '@stores/globalSearchStore';
 import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
 import NotificationContainer from '@components/common/NotificationContainer';
-import { useAlertNotifications } from '@hooks/useAlertNotifications';
 import { 
   generateInfrastructureStats, 
   generateWorkloadsStats, 
@@ -73,9 +72,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const [showAddDatabaseModal, setShowAddDatabaseModal] = useState(false);
   const [selectedDatabaseConnection, setSelectedDatabaseConnection] = useState<string | null>(null);
 
-  // Initialize alert notifications
-  const notifications = useAlertNotifications();
-
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
     [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
@@ -87,7 +83,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   };
 
   // Secondary tab definitions
-  const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: any }>> = {
+  const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: LucideIcon }>> = {
     [PrimaryTab.INFRASTRUCTURE]: [
       { id: InfrastructureTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
       { id: InfrastructureTab.NODES, label: UI_LABELS.NODES, icon: Server },
@@ -648,15 +644,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       
       {/* Global Search Component */}
       <GlobalSearch />
-
-      {process.env.NODE_ENV === 'development' && (
-        <button
-          onClick={notifications.test}
-          className="fixed bottom-4 left-4 z-[10000] px-4 py-2 bg-red-500 text-white font-mono text-xs border border-white"
-        >
-          TEST NOTIFICATION
-        </button>
-      )}
 
       {/* Database Modals */}
       <AddDatabaseConnectionModal 
