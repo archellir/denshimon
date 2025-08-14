@@ -4,6 +4,7 @@ import { parseTimeRangeToHours } from '@utils/timeUtils';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { EventTimelineData, TimelineEvent, EventSeverity, EventCategory } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@/mocks/events/timeline';
+import { MOCK_ENABLED } from '@/mocks/index';
 
 interface EventTimelineProps {
   timeRange?: string;
@@ -16,10 +17,70 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const hours = parseTimeRangeToHours(timeRange);
-    const timelineData = generateEventTimelineData(hours);
-    setData(timelineData);
+    loadTimelineData();
   }, [timeRange]);
+
+  const loadTimelineData = async () => {
+    try {
+      if (MOCK_ENABLED) {
+        const hours = parseTimeRangeToHours(timeRange);
+        const timelineData = generateEventTimelineData(hours);
+        setData(timelineData);
+      } else {
+        // Load from API
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(`/api/events?timeRange=${timeRange}&limit=100`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (response.ok) {
+          const apiData = await response.json();
+          // Convert API response to EventTimelineData format
+          const timelineData: EventTimelineData = {
+            events: apiData.events || [],
+            groups: [], // Will be calculated in filteredData
+            statistics: {
+              total: apiData.events?.length || 0,
+              bySeverity: {
+                critical: 0,
+                warning: 0,
+                info: 0,
+                success: 0
+              },
+              byCategory: {
+                node: 0,
+                pod: 0,
+                service: 0,
+                config: 0,
+                security: 0,
+                network: 0,
+                storage: 0
+              },
+              recentTrend: 'stable',
+              averageResolutionTime: 5,
+              unresolvedCritical: 0
+            },
+            filters: {
+              categories: ['node', 'pod', 'service', 'config', 'security', 'network', 'storage'],
+              severities: ['critical', 'warning', 'info', 'success']
+            }
+          };
+          setData(timelineData);
+        } else {
+          // Fallback to mock data on API failure
+          const hours = parseTimeRangeToHours(timeRange);
+          const timelineData = generateEventTimelineData(hours);
+          setData(timelineData);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load timeline data:', error);
+      // Fallback to mock data on error
+      const hours = parseTimeRangeToHours(timeRange);
+      const timelineData = generateEventTimelineData(hours);
+      setData(timelineData);
+    }
+  };
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -70,13 +131,13 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
 
   const getCategoryIcon = (category: EventCategory) => {
     switch (category) {
-      case 'node': return <Server className="w-4 h-4" />;
-      case 'pod': return <Package className="w-4 h-4" />;
-      case 'service': return <Activity className="w-4 h-4" />;
-      case 'config': return <Settings className="w-4 h-4" />;
-      case 'security': return <Shield className="w-4 h-4" />;
-      case 'network': return <Network className="w-4 h-4" />;
-      case 'storage': return <HardDrive className="w-4 h-4" />;
+      case 'node': return <Server className="w-4 h-4" />; // VPS node events
+      case 'pod': return <Package className="w-4 h-4" />; // VPS pod events
+      case 'service': return <Activity className="w-4 h-4" />; // VPS service events
+      case 'config': return <Settings className="w-4 h-4" />; // VPS config events
+      case 'security': return <Shield className="w-4 h-4" />; // VPS security events
+      case 'network': return <Network className="w-4 h-4" />; // VPS network events
+      case 'storage': return <HardDrive className="w-4 h-4" />; // VPS storage events
     }
   };
 
@@ -184,9 +245,9 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
       <div className="border border-white p-4 max-h-[600px] overflow-y-auto">
         {filteredData.groups.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-lg font-mono mb-2">NO EVENTS FOUND</div>
+            <div className="text-lg font-mono mb-2">NO VPS EVENTS FOUND</div>
             <div className="text-sm font-mono text-gray-500">
-              No events match your current filters
+              No VPS events match your current filters
             </div>
           </div>
         ) : (

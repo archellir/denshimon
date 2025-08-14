@@ -27,11 +27,31 @@ const EnhancedLogs: React.FC = () => {
 
 
   const loadLogs = async () => {
-    if (MOCK_ENABLED) {
+    try {
+      if (MOCK_ENABLED) {
+        const mockLogs = await mockApiResponse(generateMockLogs(200));
+        setLogs(mockLogs);
+      } else {
+        // Load from API
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('/api/logs?limit=200', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setLogs(data.logs || []);
+        } else {
+          // Fallback to mock data on API failure
+          const mockLogs = await mockApiResponse(generateMockLogs(200));
+          setLogs(mockLogs);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load logs:', error);
+      // Fallback to mock data on error
       const mockLogs = await mockApiResponse(generateMockLogs(200));
       setLogs(mockLogs);
-    } else {
-      setLogs([]);
     }
   };
 
@@ -93,11 +113,11 @@ const EnhancedLogs: React.FC = () => {
   return (
     <div className="space-y-6">
 
-      {/* Quick Stats */}
+      {/* VPS Log Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div className="border border-white p-3 text-center">
           <div className="text-lg font-mono">{filteredLogs.length}</div>
-          <div className="text-xs font-mono opacity-60">TOTAL</div>
+          <div className="text-xs font-mono opacity-60">VPS LOGS</div>
         </div>
         {(['error', 'warn', 'info', 'debug'] as const).map(level => {
           const count = filteredLogs.filter(log => log.level === level).length;
@@ -112,7 +132,7 @@ const EnhancedLogs: React.FC = () => {
         })}
         <div className="border border-white p-3 text-center">
           <div className="text-lg font-mono">{uniqueSources.length}</div>
-          <div className="text-xs font-mono opacity-60">SOURCES</div>
+          <div className="text-xs font-mono opacity-60">VPS SERVICES</div>
         </div>
       </div>
 
@@ -181,11 +201,11 @@ const EnhancedLogs: React.FC = () => {
           {filteredLogs.length === 0 ? (
             <div className="p-8 text-center">
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-              <div className="text-lg font-mono mb-2">NO LOGS FOUND</div>
+              <div className="text-lg font-mono mb-2">NO VPS LOGS FOUND</div>
               <div className="text-sm font-mono opacity-60">
                 {selectedLevel !== 'all' || selectedSource !== 'all' || selectedNamespace !== 'all' 
-                  ? 'No log entries match your current filters'
-                  : 'No log entries available'
+                  ? 'No VPS log entries match your current filters'
+                  : 'No VPS log entries available'
                 }
               </div>
             </div>
