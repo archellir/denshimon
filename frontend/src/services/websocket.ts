@@ -38,7 +38,7 @@ export class DenshimonWebSocket {
     };
 
     // Check if we should use mock WebSocket or real backend connection
-    if (import.meta.env.VITE_USE_MOCK_WS === 'true') {
+    if (import.meta.env.VITE_MOCK_DATA === 'true') {
       this.startMockWebSocket();
     } else {
       this.connect();
