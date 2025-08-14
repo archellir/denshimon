@@ -7,9 +7,11 @@ import (
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/database"
 	"github.com/archellir/denshimon/internal/deployments"
+	"github.com/archellir/denshimon/internal/handlers"
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
 	"github.com/archellir/denshimon/internal/providers"
+	"github.com/archellir/denshimon/internal/providers/databases"
 	"github.com/archellir/denshimon/internal/websocket"
 )
 
@@ -28,6 +30,10 @@ func RegisterRoutes(
 	registryManager := providers.NewRegistryManager(providerRegistry)
 	deploymentService := deployments.NewService(k8sClient, registryManager, db.DB)
 	deploymentHandlers := NewDeploymentHandlers(deploymentService, registryManager, providerRegistry)
+	
+	// Initialize database management
+	databaseManager := databases.NewManager(db.DB)
+	databaseHandlers := handlers.NewDatabasesHandler(databaseManager)
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +179,26 @@ func RegisterRoutes(
 			http.NotFound(w, r)
 		}
 	}))))
+
+	// Database management endpoints (require authentication)
+	mux.HandleFunc("GET /api/databases/connections", corsMiddleware(authService.AuthMiddleware(databaseHandlers.ListConnections)))
+	mux.HandleFunc("POST /api/databases/connections", corsMiddleware(authService.AuthMiddleware(databaseHandlers.CreateConnection)))
+	mux.HandleFunc("GET /api/databases/connections/{id}", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetConnection)))
+	mux.HandleFunc("PUT /api/databases/connections/{id}", corsMiddleware(authService.AuthMiddleware(databaseHandlers.UpdateConnection)))
+	mux.HandleFunc("DELETE /api/databases/connections/{id}", corsMiddleware(authService.AuthMiddleware(databaseHandlers.DeleteConnection)))
+	mux.HandleFunc("POST /api/databases/connections/{id}/connect", corsMiddleware(authService.AuthMiddleware(databaseHandlers.ConnectDatabase)))
+	mux.HandleFunc("POST /api/databases/connections/{id}/disconnect", corsMiddleware(authService.AuthMiddleware(databaseHandlers.DisconnectDatabase)))
+	mux.HandleFunc("POST /api/databases/connections/test", corsMiddleware(authService.AuthMiddleware(databaseHandlers.TestConnection)))
+	mux.HandleFunc("GET /api/databases/connections/{id}/databases", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetDatabases)))
+	mux.HandleFunc("GET /api/databases/connections/{id}/databases/{database}/tables", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetTables)))
+	mux.HandleFunc("GET /api/databases/connections/{id}/databases/{database}/tables/{table}/columns", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetColumns)))
+	mux.HandleFunc("POST /api/databases/connections/{id}/query", corsMiddleware(authService.AuthMiddleware(databaseHandlers.ExecuteQuery)))
+	mux.HandleFunc("POST /api/databases/connections/{id}/tables/{table}/data", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetTableData)))
+	mux.HandleFunc("PUT /api/databases/connections/{id}/tables/{table}/rows", corsMiddleware(authService.AuthMiddleware(databaseHandlers.UpdateRow)))
+	mux.HandleFunc("DELETE /api/databases/connections/{id}/tables/{table}/rows", corsMiddleware(authService.AuthMiddleware(databaseHandlers.DeleteRow)))
+	mux.HandleFunc("POST /api/databases/connections/{id}/tables/{table}/rows", corsMiddleware(authService.AuthMiddleware(databaseHandlers.InsertRow)))
+	mux.HandleFunc("GET /api/databases/connections/{id}/stats", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetStats)))
+	mux.HandleFunc("GET /api/databases/types", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetSupportedTypes)))
 
 	// WebSocket endpoint for real-time updates
 	wsHandler := websocket.NewHandler(wsHub)
