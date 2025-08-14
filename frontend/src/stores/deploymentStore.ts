@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { RegistryStatus } from '@/constants';
 import type {
   Registry,
   ContainerImage,
@@ -183,7 +184,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       const registries = get().registries.map(r => 
         r.id === id ? { 
           ...r, 
-          status: (success ? 'connected' : 'error') as 'connected' | 'error' | 'pending', 
+          status: success ? RegistryStatus.CONNECTED : RegistryStatus.ERROR, 
           error: success ? undefined : 'Connection timeout'
         } : r
       );
