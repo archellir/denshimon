@@ -220,6 +220,46 @@ export const generateDeploymentStats = (): QuickStat[] => {
   ];
 };
 
+export const generateDatabaseStats = (): QuickStat[] => {
+  // Mock database stats - in production this would come from actual database monitoring
+  const TOTAL_CONNECTIONS = 8;
+  const ACTIVE_CONNECTIONS = 5;
+  const TOTAL_DATABASES = 12;
+  const QUERY_RATE = 45.7; // queries per second
+  const AVG_RESPONSE_TIME = 12.3; // milliseconds
+
+  return [
+    {
+      label: 'ACTIVE CONNECTIONS',
+      value: `${ACTIVE_CONNECTIONS}/${TOTAL_CONNECTIONS}`,
+      icon: Database,
+      status: ACTIVE_CONNECTIONS > 0 ? Status.HEALTHY as StatusType : Status.WARNING as StatusType,
+    },
+    {
+      label: 'TOTAL DATABASES',
+      value: TOTAL_DATABASES.toString(),
+      icon: Server,
+      status: TOTAL_DATABASES > 0 ? Status.HEALTHY as StatusType : Status.WARNING as StatusType,
+    },
+    {
+      label: 'QUERY RATE',
+      value: `${QUERY_RATE}/sec`,
+      icon: Activity,
+      status: QUERY_RATE > 0 ? Status.HEALTHY as StatusType : Status.WARNING as StatusType,
+    },
+    {
+      label: 'AVG RESPONSE',
+      value: `${AVG_RESPONSE_TIME}ms`,
+      icon: Clock,
+      status: AVG_RESPONSE_TIME < 50 
+        ? Status.HEALTHY as StatusType 
+        : AVG_RESPONSE_TIME < 100 
+        ? Status.WARNING as StatusType 
+        : Status.CRITICAL as StatusType,
+    },
+  ];
+};
+
 export const generateObservabilityStats = (): QuickStat[] => {
   const { LOG_EVENTS_PER_MIN, ERROR_RATE, SLO_HEALTH } = MOCK_DATA.OBSERVABILITY;
   const ACTIVE_ALERTS = MOCK_DATA.OBSERVABILITY.ACTIVE_ALERTS;
