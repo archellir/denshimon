@@ -47,7 +47,8 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
         return {
           time: format(new Date(podPoint.timestamp), 'HH:mm'),
           pods: podPoint.value || 0,
-          nodes: metricsHistory.nodes?.[index]?.value || 0,
+          // Add CPU utilization trend for single VPS context
+          cpu: metricsHistory.cpu?.[index]?.value || 0,
         };
       }).filter(Boolean);
       
@@ -161,9 +162,9 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
     return (
       <div className="space-y-6">
 
-        {/* Workloads Over Time */}
+        {/* VPS Workload Performance */}
         <div className="border border-white p-4 h-96">
-          <h3 className="font-mono text-sm mb-4">WORKLOADS OVER TIME</h3>
+          <h3 className="font-mono text-sm mb-4">VPS WORKLOAD PERFORMANCE</h3>
           <div className="h-80">
             {isLoadingHistory ? (
               <div className="h-full">
@@ -186,25 +187,34 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                    yAxisId="left"
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
+                    yAxisId="right"
+                    orientation="right"
+                    tickFormatter={(value) => `${value}%`}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Area
                     type="monotone"
                     dataKey="pods"
-                    stackId="1"
                     stroke="#00FF00"
                     fill="#00FF0020"
-                    strokeWidth={1}
-                    name="Pods"
+                    strokeWidth={2}
+                    name="Pod Count"
+                    yAxisId="left"
                   />
                   <Area
                     type="monotone"
-                    dataKey="nodes"
-                    stackId="2"
+                    dataKey="cpu"
                     stroke="#FFFF00"
-                    fill="#FFFF0020"
-                    strokeWidth={1}
-                    name="Nodes"
+                    fill="#FFFF0015"
+                    strokeWidth={2}
+                    name="CPU Usage %"
+                    yAxisId="right"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -212,8 +222,8 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
           </div>
         </div>
 
-        {/* Workload Status and Types */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* VPS Workload Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Pod Status */}
           <div className="border border-white p-4">
             <h3 className="font-mono text-sm mb-4">POD STATUS</h3>
@@ -293,11 +303,66 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
               ))}
             </div>
           </div>
+
+          {/* VPS Resource Breakdown */}
+          <div className="border border-white p-4">
+            <h3 className="font-mono text-sm mb-4">VPS RESOURCE UTILIZATION</h3>
+            <div className="space-y-4 mt-6">
+              {/* Resource bars for single VPS */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-mono text-xs">CPU BY WORKLOADS</span>
+                  <span className="font-mono text-xs">{clusterMetrics ? `${clusterMetrics.cpu_usage.usage_percent.toFixed(0)}%` : '--'}</span>
+                </div>
+                <div className="w-full bg-gray-800 border border-white h-3">
+                  <div 
+                    className="h-full bg-green-400"
+                    style={{ width: `${Math.min(clusterMetrics?.cpu_usage.usage_percent || 0, 100)}%` }}
+                  />
+                </div>
+                <div className="text-xs font-mono opacity-60 mt-1">
+                  {clusterMetrics ? `${(8 - (8 * clusterMetrics.cpu_usage.usage_percent / 100)).toFixed(1)} cores free` : 'Loading...'}
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-mono text-xs">MEMORY BY WORKLOADS</span>
+                  <span className="font-mono text-xs">{clusterMetrics ? `${clusterMetrics.memory_usage.usage_percent.toFixed(0)}%` : '--'}</span>
+                </div>
+                <div className="w-full bg-gray-800 border border-white h-3">
+                  <div 
+                    className="h-full bg-yellow-400"
+                    style={{ width: `${Math.min(clusterMetrics?.memory_usage.usage_percent || 0, 100)}%` }}
+                  />
+                </div>
+                <div className="text-xs font-mono opacity-60 mt-1">
+                  {clusterMetrics ? `${(16 - (16 * clusterMetrics.memory_usage.usage_percent / 100)).toFixed(1)}GB free` : 'Loading...'}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-mono text-xs">WORKLOAD DENSITY</span>
+                  <span className="font-mono text-xs">{clusterMetrics ? `${clusterMetrics.running_pods}/30` : '--'}</span>
+                </div>
+                <div className="w-full bg-gray-800 border border-white h-3">
+                  <div 
+                    className="h-full bg-cyan-400"
+                    style={{ width: `${clusterMetrics ? (clusterMetrics.running_pods / 30) * 100 : 0}%` }}
+                  />
+                </div>
+                <div className="text-xs font-mono opacity-60 mt-1">
+                  {clusterMetrics ? `${30 - clusterMetrics.running_pods} slots available` : 'Loading...'}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Namespace Distribution */}
         <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">PODS BY NAMESPACE</h3>
+          <h3 className="font-mono text-sm mb-4">VPS WORKLOAD ORGANIZATION</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={namespaceData} margin={{ top: 5, right: 30, left: -35, bottom: 5 }}>
@@ -319,31 +384,31 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* VPS Deployment Summary */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="border border-white p-4 text-center">
-            <div className="font-mono text-2xl text-white">
-              {clusterMetrics.running_pods + clusterMetrics.pending_pods + clusterMetrics.failed_pods}
+            <div className="font-mono text-2xl text-green-400">
+              {clusterMetrics.running_pods}
             </div>
-            <div className="font-mono text-xs text-gray-400">TOTAL PODS</div>
+            <div className="font-mono text-xs text-gray-400">RUNNING WORKLOADS</div>
           </div>
           <div className="border border-white p-4 text-center">
             <div className="font-mono text-2xl text-white">
-              {clusterMetrics.total_nodes || 0}
+              {Math.floor((8 - (8 * clusterMetrics.cpu_usage.usage_percent / 100)) * 10) / 10}
             </div>
-            <div className="font-mono text-xs text-gray-400">NODES</div>
+            <div className="font-mono text-xs text-gray-400">FREE CPU CORES</div>
           </div>
           <div className="border border-white p-4 text-center">
             <div className="font-mono text-2xl text-white">
-              {clusterMetrics.healthy_pods || 0}
+              {Math.floor((16 - (16 * clusterMetrics.memory_usage.usage_percent / 100)) * 10) / 10}GB
             </div>
-            <div className="font-mono text-xs text-gray-400">HEALTHY PODS</div>
+            <div className="font-mono text-xs text-gray-400">FREE MEMORY</div>
           </div>
           <div className="border border-white p-4 text-center">
-            <div className="font-mono text-2xl text-white">
-              {clusterMetrics.total_namespaces || 0}
+            <div className="font-mono text-2xl text-cyan-400">
+              {30 - clusterMetrics.running_pods}
             </div>
-            <div className="font-mono text-xs text-gray-400">NAMESPACES</div>
+            <div className="font-mono text-xs text-gray-400">AVAILABLE SLOTS</div>
           </div>
         </div>
       </div>
