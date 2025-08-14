@@ -8,8 +8,8 @@ const PodsOverview: FC = () => {
   const [activeView, setActiveView] = useState('metrics');
 
   const views = [
-    { id: 'metrics', label: 'Pod Metrics', icon: Database, description: 'Current pod status and resource usage' },
-    { id: 'lifecycle', label: 'Lifecycle', icon: RefreshCw, description: 'Pod churn, restarts, and failure analysis' },
+    { id: 'metrics', label: 'VPS Metrics', icon: Database, description: 'Current workload resource usage and deployment efficiency on your VPS' },
+    { id: 'lifecycle', label: 'Health & Restarts', icon: RefreshCw, description: 'Workload stability, restart patterns, and failure analysis for deployment planning' },
   ];
 
   return (
@@ -17,9 +17,9 @@ const PodsOverview: FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-mono mb-2">POD MONITORING</h2>
+          <h2 className="text-xl font-mono mb-2">VPS WORKLOAD STATUS</h2>
           <p className="text-sm font-mono opacity-60">
-            {views.find(v => v.id === activeView)?.description || ''}
+            {views.find(v => v.id === activeView)?.description || 'Monitor your single VPS workload health and performance'}
           </p>
         </div>
       </div>
