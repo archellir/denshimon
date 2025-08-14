@@ -5,7 +5,7 @@ import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
-import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType, GraphViewMode, CSS_CLASSES, ServiceFilterType, ServiceType } from '@/constants';
+import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType, GraphViewMode, CSS_CLASSES, ServiceFilterType, ServiceType, UI_LABELS, API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks/index';
 import { getWebSocketInstance } from '@services/websocket';
 
@@ -124,7 +124,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         } else {
           // Load from API
           const token = localStorage.getItem('auth_token');
-          const response = await fetch('/api/services/mesh', {
+          const response = await fetch(API_ENDPOINTS.SERVICES.MESH, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           
@@ -258,7 +258,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const overviewStats = selectedView !== 'topology' && (
     <div className="grid grid-cols-6 gap-4">
       <div className="bg-black border border-white p-4">
-        <div className="text-xs text-gray-500 uppercase mb-1">VPS Services</div>
+        <div className="text-xs text-gray-500 uppercase mb-1">{UI_LABELS.VPS_SERVICES}</div>
         <div className="text-2xl font-mono">{data.metrics.overview.totalServices}</div>
       </div>
       <div className="bg-black border border-white p-4">
