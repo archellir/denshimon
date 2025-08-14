@@ -3,7 +3,7 @@
  * This ensures all components use the same resource names for search functionality
  */
 
-import { RegistryType, RegistryStatus, DeploymentStatus, DeploymentStrategy } from '@/constants';
+import { RegistryType, RegistryStatus } from '@/constants';
 
 // Core infrastructure data
 export const MASTER_NAMESPACES = [
