@@ -8,8 +8,8 @@ import type {
   DeploymentHistory,
 } from '@/types/deployments';
 
-// Import mock utilities
-import { mockApiResponse, mockRegistries } from '@/mocks';
+// Import mock utilities  
+import { mockApiResponse, mockRegistries, MOCK_ENABLED } from '@/mocks';
 
 interface DeploymentStore {
   // State
@@ -105,13 +105,34 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, registries: true }, error: null }));
     
     try {
-      const registries = await mockApiResponse(mockRegistries, 300);
-      set({ registries, loading: { ...get().loading, registries: false } });
+      if (MOCK_ENABLED) {
+        const registries = await mockApiResponse(mockRegistries, 300);
+        set({ registries, loading: { ...get().loading, registries: false } });
+      } else {
+        // Real API call
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(`${API_BASE}/registries`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const registries = await response.json();
+        set({ registries, loading: { ...get().loading, registries: false } });
+      }
     } catch (error) {
-      set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to fetch registries',
-        loading: { ...state.loading, registries: false }
-      }));
+      // Fallback to mock data on error
+      try {
+        const registries = await mockApiResponse(mockRegistries, 300);
+        set({ registries, loading: { ...get().loading, registries: false }, error: null });
+      } catch (mockError) {
+        set(state => ({
+          error: error instanceof Error ? error.message : 'Failed to fetch registries',
+          loading: { ...state.loading, registries: false }
+        }));
+      }
     }
   },
   
