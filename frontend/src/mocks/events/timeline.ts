@@ -155,8 +155,8 @@ const generateEvent = (hoursAgo: number): TimelineEvent => {
     return {
       id: generateEventId(),
       timestamp: new Date(Date.now() - hoursAgo * 3600000 - Math.random() * 3600000).toISOString(),
-      category: 'pod',
-      severity: 'info',
+      category: EventCategory.POD,
+      severity: EventSeverity.INFO,
       title: 'Generic Event',
       description: 'A generic cluster event occurred',
       source: {
@@ -294,11 +294,11 @@ export const generateEventTimelineData = (hours: number = 24): EventTimelineData
       byCategory,
       recentTrend,
       averageResolutionTime,
-      unresolvedCritical: events.filter(e => e.severity === 'critical' && !e.resolved).length,
+      unresolvedCritical: events.filter(e => e.severity === EventSeverity.CRITICAL && !e.resolved).length,
     },
     filters: {
       categories: Object.keys(EVENT_TEMPLATES) as EventCategory[],
-      severities: ['critical', 'warning', 'info', 'success'],
+      severities: [EventSeverity.CRITICAL, EventSeverity.WARNING, EventSeverity.INFO, EventSeverity.SUCCESS],
       timeRange: `${hours}h`,
     },
   };

@@ -3,6 +3,8 @@
  * This ensures all components use the same resource names for search functionality
  */
 
+import { RegistryType, RegistryStatus, DeploymentStatus, DeploymentStrategy } from '@/constants';
+
 // Core infrastructure data
 export const MASTER_NAMESPACES = [
   'default',
@@ -137,24 +139,24 @@ export const MASTER_REGISTRIES = [
   {
     id: 'dockerhub-registry',
     name: 'Docker Hub',
-    type: 'dockerhub' as const,
-    status: 'connected' as const,
+    type: RegistryType.DOCKERHUB,
+    status: RegistryStatus.CONNECTED,
     url: 'https://index.docker.io/v1/',
     namespace: undefined
   },
   {
     id: 'gitea-registry',
     name: 'Company Gitea',
-    type: 'gitea' as const, 
-    status: 'connected' as const,
+    type: RegistryType.GITEA, 
+    status: RegistryStatus.CONNECTED,
     url: 'https://git.company.com',
     namespace: 'denshimon'
   },
   {
     id: 'private-registry',
     name: 'Private Registry',
-    type: 'generic' as const,
-    status: 'error' as const,
+    type: RegistryType.GENERIC,
+    status: RegistryStatus.ERROR,
     url: 'https://registry.company.com',
     namespace: undefined,
     error: 'Authentication failed'
