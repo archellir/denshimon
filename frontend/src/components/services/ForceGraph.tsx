@@ -96,7 +96,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
   }, []);
 
   const findCriticalPath = useCallback((services: ServiceNode[], connections: ServiceConnection[]): string[] => {
-    // Find path with highest cumulative request rate or lowest redundancy
+    // Find path with highest cumulative request rate (critical for VPS performance)
     const frontendServices = services.filter(s => s.type === MeshServiceType.FRONTEND);
     const databaseServices = services.filter(s => s.type === MeshServiceType.DATABASE);
     
@@ -135,10 +135,10 @@ const ForceGraph: FC<ForceGraphProps> = ({
       const outgoingCount = connections.filter(conn => conn.source === service.id).length;
       const totalConnections = incomingCount + outgoingCount;
       
-      // A service is a SPOF if:
-      // 1. It's a gateway with high connectivity
-      // 2. It's the only service of its type with multiple dependents
-      // 3. It has very high request rate and multiple dependents
+      // VPS SPOF Analysis - services that would crash the entire VPS:
+      // 1. Database services with multiple dependents (critical for VPS)
+      // 2. Single instance services with high connectivity
+      // 3. Gateway services handling all external traffic
       const isDatabaseBottleneck = service.type === MeshServiceType.DATABASE && incomingCount > MESH_ANALYSIS.SPOF_DETECTION.DATABASE_CONNECTION_THRESHOLD;
       const isGatewayBottleneck = service.type === MeshServiceType.GATEWAY && totalConnections > MESH_ANALYSIS.SPOF_DETECTION.GATEWAY_CONNECTION_THRESHOLD;
       const isHighTrafficBottleneck = service.metrics.requestRate > MESH_ANALYSIS.SPOF_DETECTION.HIGH_TRAFFIC_THRESHOLD && incomingCount > 1;
