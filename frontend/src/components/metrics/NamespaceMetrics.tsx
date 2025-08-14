@@ -121,27 +121,27 @@ const NamespaceMetrics: FC = () => {
         </div>
       )}
 
-      {/* Summary Stats */}
+      {/* VPS Namespace Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="border border-white p-4">
           <div className="text-2xl font-mono">{filteredAndSortedNamespaces.length}</div>
-          <div className="text-xs font-mono opacity-60">FILTERED NAMESPACES</div>
+          <div className="text-xs font-mono opacity-60">VPS NAMESPACES</div>
         </div>
         <div className="border border-white p-4">
           <div className="text-2xl font-mono text-blue-400">{totalStats.totalPods}</div>
-          <div className="text-xs font-mono opacity-60">TOTAL PODS</div>
+          <div className="text-xs font-mono opacity-60">ACTIVE WORKLOADS</div>
         </div>
         <div className="border border-white p-4">
           <div className="text-2xl font-mono text-green-400">
-            {totalStats.totalCpuUsage.toFixed(1)}
+            {totalStats.totalCpuUsage.toFixed(1)}/{8}
           </div>
-          <div className="text-xs font-mono opacity-60">CPU CORES</div>
+          <div className="text-xs font-mono opacity-60">CPU USAGE</div>
         </div>
         <div className="border border-white p-4">
           <div className="text-2xl font-mono text-yellow-400">
-            {formatBytes(totalStats.totalMemoryUsage)}
+            {formatBytes(totalStats.totalMemoryUsage)}/16GB
           </div>
-          <div className="text-xs font-mono opacity-60">MEMORY</div>
+          <div className="text-xs font-mono opacity-60">MEMORY USAGE</div>
         </div>
       </div>
 
