@@ -17,7 +17,15 @@ export {
   WebSocketEventType,
   ChartType,
   ViewType,
-  LogLevel
+  LogLevel,
+  LogSource,
+  EventSeverity,
+  EventCategory,
+  RegistryType,
+  RegistryStatus,
+  DeploymentStatus,
+  DeploymentStrategy,
+  DeploymentAction
 } from '@/constants';
 
 // Common UI types

@@ -1,5 +1,5 @@
-export type EventSeverity = 'critical' | 'warning' | 'info' | 'success';
-export type EventCategory = 'node' | 'pod' | 'service' | 'config' | 'security' | 'network' | 'storage';
+import { EventSeverity, EventCategory } from '@/constants';
+export { EventSeverity, EventCategory };
 
 export interface TimelineEvent {
   id: string;

@@ -1,12 +1,17 @@
+import { LogLevel, LogSource } from '@/constants';
+
 export interface LogEntry {
   id: string;
   timestamp: string;
-  level: 'debug' | 'info' | 'warn' | 'error';
-  source: string;
+  level: LogLevel;
+  source: LogSource | string;
   message: string;
   user?: string;
   action?: string;
   metadata?: {
+    namespace?: string;
+    pod?: string;
+    node?: string;
     ip?: string;
     duration?: number;
     error_code?: string;

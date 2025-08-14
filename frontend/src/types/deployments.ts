@@ -1,7 +1,9 @@
+import { RegistryType, RegistryStatus, DeploymentStatus, DeploymentStrategy, DeploymentAction } from '@/constants';
+
 export interface Registry {
   id: string;
   name: string;
-  type: 'dockerhub' | 'gitea' | 'gitlab' | 'generic';
+  type: RegistryType;
   config: {
     url: string;
     namespace?: string;
@@ -9,7 +11,7 @@ export interface Registry {
     password?: string;
     token?: string;
   };
-  status: 'pending' | 'connected' | 'error';
+  status: RegistryStatus;
   error?: string;
   lastSync?: string;
   createdAt: string;
@@ -35,7 +37,7 @@ export interface DeploymentRequest {
   replicas: number;
   nodeSelector?: Record<string, string>;
   strategy: {
-    type: 'RollingUpdate' | 'Recreate';
+    type: DeploymentStrategy;
     maxSurge?: number;
     maxUnavailable?: number;
     nodeSpread: boolean;
@@ -59,13 +61,13 @@ export interface Deployment {
   readyReplicas: number;
   nodeSelector?: Record<string, string>;
   strategy: {
-    type: 'RollingUpdate' | 'Recreate';
+    type: DeploymentStrategy;
     maxSurge?: number;
     maxUnavailable?: number;
     nodeSpread: boolean;
     zoneSpread: boolean;
   };
-  status: 'pending' | 'running' | 'failed' | 'updating' | 'terminating';
+  status: DeploymentStatus;
   pods: PodInfo[];
   nodeDistribution: Record<string, number>;
   resources?: {
@@ -106,7 +108,7 @@ export interface NodeInfo {
 export interface DeploymentHistory {
   id: string;
   deploymentId: string;
-  action: 'create' | 'update' | 'scale' | 'delete' | 'restart';
+  action: DeploymentAction;
   oldImage?: string;
   newImage?: string;
   oldReplicas?: number;
