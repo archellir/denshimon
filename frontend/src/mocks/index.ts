@@ -23,6 +23,16 @@ export {
   mockSupportedTypes
 } from './database';
 
+// Certificate system mocks
+export {
+  mockCertificates,
+  mockCertificateStats,
+  mockCertificateAlerts,
+  mockDomainConfigs,
+  mockCertificateChecks,
+  generateMockCertificateCheck
+} from './certificates';
+
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
