@@ -1,4 +1,5 @@
 import type { DeploymentHistory } from '@/types/deployments';
+import { DeploymentAction } from '@/constants';
 import { MASTER_DEPLOYMENT_HISTORY, MASTER_APPLICATIONS } from '../masterData';
 
 // Convert master data to DeploymentHistory type
@@ -40,7 +41,7 @@ export const generateMockHistoryForDeployment = (deploymentId: string): Deployme
   
   // Generate additional history records
   const additionalHistory: DeploymentHistory[] = [];
-  const actions = ['scale', 'restart', 'update'] as const;
+  const actions = [DeploymentAction.SCALE, DeploymentAction.RESTART, DeploymentAction.UPDATE] as const;
   
   for (let i = 0; i < Math.floor(Math.random() * 5) + 3; i++) {
     const action = actions[Math.floor(Math.random() * actions.length)];
