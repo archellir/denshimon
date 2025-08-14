@@ -638,6 +638,7 @@ export const API_ENDPOINTS = {
     DEPLOYMENT_SCALE: (name: string) => `${API_BASE_PATHS.KUBERNETES}/deployments/${name}/scale`,
     SERVICES: `${API_BASE_PATHS.KUBERNETES}/services`,
     NODES: `${API_BASE_PATHS.KUBERNETES}/nodes`,
+    NAMESPACES: `${API_BASE_PATHS.KUBERNETES}/namespaces`,
     EVENTS: `${API_BASE_PATHS.KUBERNETES}/events`,
     HEALTH: `${API_BASE_PATHS.KUBERNETES}/health`
   },
