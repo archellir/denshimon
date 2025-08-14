@@ -12,7 +12,6 @@ import {
   MOCK_ENABLED 
 } from '@mocks/index';
 
-const FORCE_MOCK_MODE = import.meta.env.VITE_MOCK_DATA === 'true';
 import { getWebSocketInstance } from '@services/websocket';
 
 interface WebSocketMetricsStore extends MetricsStore {
@@ -123,7 +122,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          if (MOCK_ENABLED || FORCE_MOCK_MODE) {
+          if (MOCK_ENABLED) {
             const mockData = await mockApiResponse(mockClusterMetrics);
             set({ clusterMetrics: mockData });
           } else {
