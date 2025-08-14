@@ -11,11 +11,13 @@ import {
   BackupStatus,
   StorageType,
   StorageStatus,
-  RecoveryStatus,
   VerificationStatus,
   BackupAlertType,
   AlertSeverity,
-  CompressionType
+  CompressionType,
+  BackupSchedule,
+  RecoveryOptions,
+  RestoreType
 } from '@/types/backup';
 
 interface BackupStore {
@@ -39,9 +41,9 @@ interface BackupStore {
   runBackup: (jobId: string) => Promise<void>;
   cancelBackup: (jobId: string) => Promise<void>;
   verifyBackup: (backupId: string) => Promise<void>;
-  startRecovery: (backupId: string, options?: any) => Promise<void>;
+  startRecovery: (backupId: string, options?: RecoveryOptions) => Promise<void>;
   deleteBackup: (backupId: string) => Promise<void>;
-  updateSchedule: (jobId: string, schedule: any) => Promise<void>;
+  updateSchedule: (jobId: string, schedule: BackupSchedule) => Promise<void>;
   acknowledgeAlert: (alertId: string) => void;
   setError: (error: string | null) => void;
 }
@@ -224,7 +226,7 @@ const mockBackupHistory: BackupHistory[] = [
         id: 'rp-001',
         backupId: 'backup-hist-001',
         timestamp: '2024-01-20T02:00:00Z',
-        type: 'full_restore',
+        type: RestoreType.FULL_RESTORE,
         size: 1073741824,
         recoverable: true
       }
@@ -636,7 +638,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
     }
   },
 
-  startRecovery: async (backupId: string, options?: any) => {
+  startRecovery: async (backupId: string, options?: RecoveryOptions) => {
     try {
       const response = await fetch(`/api/backup/history/${backupId}/recover`, {
         method: 'POST',
@@ -680,7 +682,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
     }
   },
 
-  updateSchedule: async (jobId: string, schedule: any) => {
+  updateSchedule: async (jobId: string, schedule: BackupSchedule) => {
     try {
       const response = await fetch(`/api/backup/jobs/${jobId}/schedule`, {
         method: 'PUT',
