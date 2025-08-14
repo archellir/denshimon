@@ -41,6 +41,9 @@ import ServicesList from '@components/workloads/ServicesList';
 import DatabaseGrid from '@components/infrastructure/DatabaseGrid';
 import AddDatabaseConnectionModal from '@components/infrastructure/AddDatabaseConnectionModal';
 import DatabaseManagement from '@components/infrastructure/DatabaseManagement';
+import DatabaseBrowser from '@components/database/DatabaseBrowser';
+import SQLQueryInterface from '@components/database/SQLQueryInterface';
+import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -623,24 +626,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             />
           )
         )}
-        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.BROWSER && (
-          <div className="text-center py-8">
-            <div className="text-lg font-mono mb-4">DATABASE BROWSER</div>
-            <div className="text-sm font-mono opacity-60">Browse database schemas and structures</div>
-          </div>
-        )}
-        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.QUERIES && (
-          <div className="text-center py-8">
-            <div className="text-lg font-mono mb-4">SQL QUERY INTERFACE</div>
-            <div className="text-sm font-mono opacity-60">Execute SQL queries across all connected databases</div>
-          </div>
-        )}
-        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.MONITORING && (
-          <div className="text-center py-8">
-            <div className="text-lg font-mono mb-4">DATABASE MONITORING</div>
-            <div className="text-sm font-mono opacity-60">Monitor database performance and health metrics</div>
-          </div>
-        )}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.BROWSER && <DatabaseBrowser />}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.QUERIES && <SQLQueryInterface />}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.MONITORING && <DatabaseMonitoring />}
         
         {/* Observability Tab Content */}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOGS && <EnhancedLogs />}
