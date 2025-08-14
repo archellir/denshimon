@@ -3,6 +3,7 @@ export * from './logs';
 export * from './metrics';
 export * from './network';
 export * from './podLifecycle';
+export * from './database';
 
 // Re-export enums from constants
 export { 
@@ -25,7 +26,9 @@ export {
   RegistryStatus,
   DeploymentStatus,
   DeploymentStrategy,
-  DeploymentAction
+  DeploymentAction,
+  PrimaryTab,
+  DatabaseTab
 } from '@/constants';
 
 // Common UI types
