@@ -206,7 +206,8 @@ export enum InfrastructureTab {
   STORAGE = 'storage',
   HIERARCHY = 'hierarchy',
   NETWORK = 'network',
-  CERTIFICATES = 'certificates'
+  CERTIFICATES = 'certificates',
+  SERVICE_HEALTH = 'service_health'
 }
 
 export enum WorkloadsTab {
@@ -424,6 +425,7 @@ export const UI_LABELS = {
   HIERARCHY: 'Hierarchy',
   NETWORK: 'Network',
   CERTIFICATES: 'Certificates',
+  SERVICE_HEALTH: 'Service Health',
   PODS: 'Pods',
   SERVICES: 'Services',
   NAMESPACES: 'Namespaces',

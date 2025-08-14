@@ -45,6 +45,7 @@ import DatabaseBrowser from '@components/database/DatabaseBrowser';
 import SQLQueryInterface from '@components/database/SQLQueryInterface';
 import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
 import CertificateHealthDashboard from '@components/infrastructure/CertificateHealthDashboard';
+import ServiceHealthDashboard from '@components/infrastructure/ServiceHealthDashboard';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -94,6 +95,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
       { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
       { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
+      { id: InfrastructureTab.SERVICE_HEALTH, label: UI_LABELS.SERVICE_HEALTH, icon: Activity },
     ],
     [PrimaryTab.WORKLOADS]: [
       { id: WorkloadsTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
@@ -582,6 +584,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.HIERARCHY && <ResourceTree />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NETWORK && <NetworkTraffic timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CERTIFICATES && <CertificateHealthDashboard />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.SERVICE_HEALTH && <ServiceHealthDashboard />}
         
         {/* Workloads Tab Content */}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <WorkloadsOverview timeRange={timeRange} />}

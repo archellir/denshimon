@@ -33,6 +33,14 @@ export {
   generateMockCertificateCheck
 } from './certificates';
 
+// Service Health system mocks
+export {
+  mockServiceHealthData,
+  mockServiceHealthStats,
+  mockInfrastructureStatus,
+  mockInfrastructureAlerts
+} from './serviceHealth/serviceHealth';
+
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 

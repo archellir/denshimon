@@ -376,7 +376,8 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
       storage: 'Storage',
       hierarchy: 'Hierarchy',
       network: 'Network',
-      certificates: 'Certificates'
+      certificates: 'Certificates',
+      service_health: 'Service Health'
     },
     workloads: {
       overview: 'Overview',
