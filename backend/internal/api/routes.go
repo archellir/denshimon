@@ -48,6 +48,7 @@ func RegisterRoutes(
 	authHandlers := NewAuthHandlers(authService, db)
 	k8sHandlers := NewKubernetesHandlers(k8sClient)
 	metricsHandlers := NewMetricsHandlers(metricsService)
+	servicesHandlers := NewServicesHandlers(k8sClient)
 
 	// Auth endpoints (no auth required)
 	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
@@ -79,6 +80,9 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/k8s/services", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListServices)))
 	mux.HandleFunc("GET /api/k8s/events", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListEvents)))
 	mux.HandleFunc("GET /api/k8s/health", corsMiddleware(k8sHandlers.HealthCheck)) // No auth required for health check
+
+	// Service Mesh endpoints (require authentication)
+	mux.HandleFunc("GET /api/services/mesh", corsMiddleware(authService.AuthMiddleware(servicesHandlers.GetServiceMesh)))
 
 	// Pod debugging endpoints
 	mux.HandleFunc("GET /api/k8s/pods/exec", k8sHandlers.HandlePodExec) // WebSocket - no CORS middleware needed
