@@ -191,23 +191,23 @@ export enum ReclaimPolicy {
 // ============================================================================
 
 export enum PrimaryTab {
-  INFRASTRUCTURE = 'infrastructure',
-  WORKLOADS = 'workloads',
-  MESH = 'mesh',
   DEPLOYMENTS = 'deployments',
   DATABASE = 'database',
-  OBSERVABILITY = 'observability'
+  OBSERVABILITY = 'observability',
+  INFRASTRUCTURE = 'infrastructure',
+  WORKLOADS = 'workloads',
+  MESH = 'mesh'
 }
 
 export enum InfrastructureTab {
   OVERVIEW = 'overview',
-  NODES = 'nodes',
+  HIERARCHY = 'hierarchy',
+  BACKUP = 'backup',
+  CERTIFICATES = 'certificates',
+  NETWORK = 'network',
   RESOURCES = 'resources',
   STORAGE = 'storage',
-  HIERARCHY = 'hierarchy',
-  NETWORK = 'network',
-  CERTIFICATES = 'certificates',
-  BACKUP = 'backup'
+  NODES = 'nodes'
 }
 
 export enum WorkloadsTab {
@@ -226,25 +226,25 @@ export enum MeshTab {
 }
 
 export enum DeploymentsTab {
-  REGISTRIES = 'registries',
-  IMAGES = 'images',
   DEPLOYMENTS = 'deployments',
-  HISTORY = 'history'
+  HISTORY = 'history',
+  IMAGES = 'images',
+  REGISTRIES = 'registries'
 }
 
 export enum DatabaseTab {
-  CONNECTIONS = 'connections',
   BROWSER = 'browser',
+  MONITORING = 'monitoring',
   QUERIES = 'queries',
-  MONITORING = 'monitoring'
+  CONNECTIONS = 'connections'
 }
 
 export enum ObservabilityTab {
-  LOGS = 'logs',
-  EVENTS = 'events',
+  SERVICE_HEALTH = 'service_health',
   STREAMS = 'streams',
+  LOGS = 'logs',
   ANALYTICS = 'analytics',
-  SERVICE_HEALTH = 'service_health'
+  EVENTS = 'events'
 }
 
 // ============================================================================
