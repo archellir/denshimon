@@ -80,10 +80,16 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/k8s/nodes", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListNodes)))
 	mux.HandleFunc("GET /api/k8s/services", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListServices)))
 	mux.HandleFunc("GET /api/k8s/events", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListEvents)))
+	mux.HandleFunc("GET /api/k8s/namespaces", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListNamespaces)))
+	mux.HandleFunc("GET /api/k8s/storage", corsMiddleware(authService.AuthMiddleware(k8sHandlers.GetStorageInfo)))
 	mux.HandleFunc("GET /api/k8s/health", corsMiddleware(k8sHandlers.HealthCheck)) // No auth required for health check
 
 	// Service Mesh endpoints (require authentication)
 	mux.HandleFunc("GET /api/services/mesh", corsMiddleware(authService.AuthMiddleware(servicesHandlers.GetServiceMesh)))
+	mux.HandleFunc("GET /api/services/topology", corsMiddleware(authService.AuthMiddleware(servicesHandlers.GetServiceTopology)))
+	mux.HandleFunc("GET /api/services/endpoints", corsMiddleware(authService.AuthMiddleware(servicesHandlers.GetServiceEndpoints)))
+	mux.HandleFunc("GET /api/services/flows", corsMiddleware(authService.AuthMiddleware(servicesHandlers.GetServiceFlows)))
+	mux.HandleFunc("GET /api/services/gateway", corsMiddleware(authService.AuthMiddleware(servicesHandlers.GetServiceGateway)))
 
 	// Pod debugging endpoints
 	mux.HandleFunc("GET /api/k8s/pods/exec", k8sHandlers.HandlePodExec) // WebSocket - no CORS middleware needed
@@ -101,10 +107,13 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/metrics/history", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetMetricsHistory)))
 	mux.HandleFunc("GET /api/metrics/namespaces", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetNamespacesMetrics)))
 	mux.HandleFunc("GET /api/metrics/resources", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetResourceMetrics)))
+	mux.HandleFunc("GET /api/metrics/network", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetNetworkMetrics)))
 	mux.HandleFunc("GET /api/metrics/health", corsMiddleware(metricsHandlers.GetHealthMetrics)) // No auth required for health check
 
 	// Observability endpoints (require authentication)
 	mux.HandleFunc("GET /api/logs", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetLogs)))
+	mux.HandleFunc("GET /api/logs/streams", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetLogStreams)))
+	mux.HandleFunc("GET /api/logs/analytics", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetLogAnalytics)))
 	mux.HandleFunc("GET /api/events", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetEvents)))
 
 	// Deployment endpoints (require authentication)
