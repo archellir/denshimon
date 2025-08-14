@@ -74,25 +74,25 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
+    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.DEPLOYMENTS,
+    [PrimaryTab.DATABASE]: DatabaseTab.BROWSER,
+    [PrimaryTab.OBSERVABILITY]: ObservabilityTab.SERVICE_HEALTH,
     [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
     [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
     [PrimaryTab.MESH]: MeshTab.TOPOLOGY,
-    [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.REGISTRIES,
-    [PrimaryTab.DATABASE]: DatabaseTab.CONNECTIONS,
-    [PrimaryTab.OBSERVABILITY]: ObservabilityTab.LOGS,
   };
 
   // Secondary tab definitions
   const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: LucideIcon }>> = {
     [PrimaryTab.INFRASTRUCTURE]: [
       { id: InfrastructureTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
-      { id: InfrastructureTab.NODES, label: UI_LABELS.NODES, icon: Server },
+      { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
+      { id: InfrastructureTab.BACKUP, label: UI_LABELS.BACKUP, icon: HardDrive },
+      { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
+      { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
       { id: InfrastructureTab.RESOURCES, label: UI_LABELS.RESOURCES, icon: Cpu },
       { id: InfrastructureTab.STORAGE, label: UI_LABELS.STORAGE, icon: HardDrive },
-      { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
-      { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
-      { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
-      { id: InfrastructureTab.BACKUP, label: UI_LABELS.BACKUP, icon: HardDrive },
+      { id: InfrastructureTab.NODES, label: UI_LABELS.NODES, icon: Server },
     ],
     [PrimaryTab.WORKLOADS]: [
       { id: WorkloadsTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
@@ -108,23 +108,23 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: MeshTab.GATEWAY, label: UI_LABELS.API_GATEWAY, icon: Eye },
     ],
     [PrimaryTab.DEPLOYMENTS]: [
-      { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
-      { id: DeploymentsTab.IMAGES, label: UI_LABELS.IMAGES, icon: Package },
       { id: DeploymentsTab.DEPLOYMENTS, label: UI_LABELS.DEPLOYMENTS, icon: Rocket },
       { id: DeploymentsTab.HISTORY, label: UI_LABELS.HISTORY, icon: History },
+      { id: DeploymentsTab.IMAGES, label: UI_LABELS.IMAGES, icon: Package },
+      { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
     ],
     [PrimaryTab.DATABASE]: [
-      { id: DatabaseTab.CONNECTIONS, label: UI_LABELS.CONNECTIONS, icon: Database },
       { id: DatabaseTab.BROWSER, label: UI_LABELS.BROWSER, icon: Eye },
-      { id: DatabaseTab.QUERIES, label: UI_LABELS.QUERIES, icon: FileText },
       { id: DatabaseTab.MONITORING, label: UI_LABELS.MONITORING, icon: TrendingUp },
+      { id: DatabaseTab.QUERIES, label: UI_LABELS.QUERIES, icon: FileText },
+      { id: DatabaseTab.CONNECTIONS, label: UI_LABELS.CONNECTIONS, icon: Database },
     ],
     [PrimaryTab.OBSERVABILITY]: [
-      { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
-      { id: ObservabilityTab.EVENTS, label: UI_LABELS.EVENTS, icon: Clock },
-      { id: ObservabilityTab.STREAMS, label: UI_LABELS.LIVE_STREAMS, icon: Activity },
-      { id: ObservabilityTab.ANALYTICS, label: UI_LABELS.ANALYTICS, icon: TrendingUp },
       { id: ObservabilityTab.SERVICE_HEALTH, label: UI_LABELS.SERVICE_HEALTH, icon: Server },
+      { id: ObservabilityTab.STREAMS, label: UI_LABELS.LIVE_STREAMS, icon: Activity },
+      { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
+      { id: ObservabilityTab.ANALYTICS, label: UI_LABELS.ANALYTICS, icon: TrendingUp },
+      { id: ObservabilityTab.EVENTS, label: UI_LABELS.EVENTS, icon: Clock },
     ],
   };
 
