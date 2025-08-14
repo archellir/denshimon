@@ -2,39 +2,28 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import {
   HardDrive,
-  Shield,
-  Calendar,
   Clock,
   CheckCircle,
   XCircle,
   AlertTriangle,
   Play,
   Pause,
-  RotateCcw,
   Database,
   Archive,
-  Download,
-  Upload,
   Settings,
   RefreshCw,
-  Plus,
   Eye,
-  Trash2,
   X,
   AlertCircle,
   Server,
-  FileText,
-  BarChart3
+  FileText
 } from 'lucide-react';
 import useBackupStore from '@stores/backupStore';
 import { 
   BackupStatus, 
-  BackupType, 
   BackupSource,
   StorageStatus,
-  VerificationStatus,
-  RecoveryStatus,
-  BackupAlertType 
+  VerificationStatus
 } from '@/types/backup';
 
 const BackupRecoveryDashboard: FC = () => {
@@ -43,7 +32,6 @@ const BackupRecoveryDashboard: FC = () => {
     history,
     storage,
     statistics,
-    activeRecoveries,
     alerts,
     isLoading,
     error,
@@ -56,15 +44,12 @@ const BackupRecoveryDashboard: FC = () => {
     runBackup,
     cancelBackup,
     verifyBackup,
-    startRecovery,
     acknowledgeAlert,
     setError
   } = useBackupStore();
 
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
-  const [selectedBackup, setSelectedBackup] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'jobs' | 'history' | 'storage'>('jobs');
-  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Load initial data
@@ -188,7 +173,6 @@ const BackupRecoveryDashboard: FC = () => {
   };
 
   const selectedJobData = jobs.find(job => job.id === selectedJob);
-  const selectedBackupData = history.find(backup => backup.id === selectedBackup);
 
   return (
     <div className="space-y-6">
@@ -452,7 +436,7 @@ const BackupRecoveryDashboard: FC = () => {
             <div
               key={backup.id}
               className={`border p-3 cursor-pointer transition-colors hover:bg-white/5 ${getStatusColor(backup.status)}`}
-              onClick={() => setSelectedBackup(backup.id)}
+              onClick={() => {/* TODO: Implement backup selection */}}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -479,8 +463,7 @@ const BackupRecoveryDashboard: FC = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedBackup(backup.id);
-                      setShowRecoveryModal(true);
+                      // TODO: Implement recovery modal
                     }}
                     className="px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
                   >
