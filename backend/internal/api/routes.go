@@ -13,6 +13,7 @@ import (
 	"github.com/archellir/denshimon/internal/providers"
 	"github.com/archellir/denshimon/internal/providers/certificates"
 	"github.com/archellir/denshimon/internal/providers/databases"
+	"github.com/archellir/denshimon/internal/providers/backup"
 	"github.com/archellir/denshimon/internal/websocket"
 )
 
@@ -39,6 +40,10 @@ func RegisterRoutes(
 	// Initialize certificate management
 	certificateManager := certificates.NewManager()
 	certificateHandlers := handlers.NewCertificateHandlers(certificateManager)
+
+	// Initialize backup management
+	backupManager := backup.NewManager(db.DB)
+	backupHandlers := handlers.NewBackupHandlers(backupManager)
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -215,6 +220,51 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetDomainConfigs)))
 	mux.HandleFunc("POST /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.AddDomainConfig)))
 	mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.RemoveDomainConfig)))
+
+	// Backup & Recovery management endpoints (require authentication)
+	mux.HandleFunc("GET /api/backup/jobs", corsMiddleware(authService.AuthMiddleware(backupHandlers.ListJobs)))
+	mux.HandleFunc("POST /api/backup/jobs", corsMiddleware(authService.AuthMiddleware(backupHandlers.CreateJob)))
+	mux.HandleFunc("GET /api/backup/history", corsMiddleware(authService.AuthMiddleware(backupHandlers.GetHistory)))
+	mux.HandleFunc("GET /api/backup/storage", corsMiddleware(authService.AuthMiddleware(backupHandlers.GetStorage)))
+	mux.HandleFunc("GET /api/backup/statistics", corsMiddleware(authService.AuthMiddleware(backupHandlers.GetStatistics)))
+	mux.HandleFunc("GET /api/backup/recoveries/active", corsMiddleware(authService.AuthMiddleware(backupHandlers.GetActiveRecoveries)))
+	mux.HandleFunc("GET /api/backup/alerts", corsMiddleware(authService.AuthMiddleware(backupHandlers.GetAlerts)))
+
+	// Backup job operations
+	mux.Handle("/api/backup/jobs/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch {
+		case strings.HasSuffix(path, "/run") && r.Method == "POST":
+			backupHandlers.RunJob(w, r)
+		case strings.HasSuffix(path, "/cancel") && r.Method == "POST":
+			backupHandlers.CancelJob(w, r)
+		case strings.HasSuffix(path, "/schedule") && r.Method == "PUT":
+			backupHandlers.UpdateSchedule(w, r)
+		case r.Method == "GET":
+			backupHandlers.GetJob(w, r)
+		case r.Method == "PUT":
+			backupHandlers.UpdateJob(w, r)
+		case r.Method == "DELETE":
+			backupHandlers.DeleteJob(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
+
+	// Backup history operations
+	mux.Handle("/api/backup/history/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch {
+		case strings.HasSuffix(path, "/verify") && r.Method == "POST":
+			backupHandlers.VerifyBackup(w, r)
+		case strings.HasSuffix(path, "/recover") && r.Method == "POST":
+			backupHandlers.StartRecovery(w, r)
+		case r.Method == "DELETE":
+			backupHandlers.DeleteBackup(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
 
 	// WebSocket endpoint for real-time updates
 	wsHandler := websocket.NewHandler(wsHub)
