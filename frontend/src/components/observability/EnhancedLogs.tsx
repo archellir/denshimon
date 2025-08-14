@@ -3,6 +3,12 @@ import { Package, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';
+import { 
+  LogLevel, 
+  UI_LABELS, 
+  UI_MESSAGES,
+  API_ENDPOINTS 
+} from '@/constants';
 
 const EnhancedLogs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -34,7 +40,7 @@ const EnhancedLogs: React.FC = () => {
       } else {
         // Load from API
         const token = localStorage.getItem('auth_token');
-        const response = await fetch('/api/logs?limit=200', {
+        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.LOGS}?limit=200`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         
@@ -69,22 +75,22 @@ const EnhancedLogs: React.FC = () => {
     });
   }, [logs, selectedLevel, selectedSource, selectedNamespace]);
 
-  const getLevelIcon = (level: string) => {
+  const getLevelIcon = (level: LogLevel) => {
     switch (level) {
-      case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'warn': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'info': return <Info className="w-4 h-4 text-blue-500" />;
-      case 'debug': return <Bug className="w-4 h-4 text-gray-500" />;
+      case LogLevel.ERROR: return <AlertCircle className="w-4 h-4 text-red-500" />;
+      case LogLevel.WARN: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case LogLevel.INFO: return <Info className="w-4 h-4 text-blue-500" />;
+      case LogLevel.DEBUG: return <Bug className="w-4 h-4 text-gray-500" />;
       default: return null;
     }
   };
 
-  const getLogLevelColor = (level: string) => {
+  const getLogLevelColor = (level: LogLevel) => {
     switch (level) {
-      case 'error': return 'text-red-400 border-red-400 bg-red-900/10';
-      case 'warn': return 'text-yellow-400 border-yellow-400 bg-yellow-900/10';
-      case 'info': return 'text-blue-400 border-blue-400 bg-blue-900/10';
-      case 'debug': return 'text-gray-400 border-gray-400 bg-gray-900/10';
+      case LogLevel.ERROR: return 'text-red-400 border-red-400 bg-red-900/10';
+      case LogLevel.WARN: return 'text-yellow-400 border-yellow-400 bg-yellow-900/10';
+      case LogLevel.INFO: return 'text-blue-400 border-blue-400 bg-blue-900/10';
+      case LogLevel.DEBUG: return 'text-gray-400 border-gray-400 bg-gray-900/10';
       default: return 'text-white border-white bg-white/5';
     }
   };
@@ -117,9 +123,9 @@ const EnhancedLogs: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div className="border border-white p-3 text-center">
           <div className="text-lg font-mono">{filteredLogs.length}</div>
-          <div className="text-xs font-mono opacity-60">VPS LOGS</div>
+          <div className="text-xs font-mono opacity-60">{UI_LABELS.VPS_LOGS}</div>
         </div>
-        {(['error', 'warn', 'info', 'debug'] as const).map(level => {
+        {([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO, LogLevel.DEBUG] as const).map(level => {
           const count = filteredLogs.filter(log => log.level === level).length;
           const percentage = filteredLogs.length > 0 ? ((count / filteredLogs.length) * 100).toFixed(1) : '0';
           return (
@@ -132,7 +138,7 @@ const EnhancedLogs: React.FC = () => {
         })}
         <div className="border border-white p-3 text-center">
           <div className="text-lg font-mono">{uniqueSources.length}</div>
-          <div className="text-xs font-mono opacity-60">VPS SERVICES</div>
+          <div className="text-xs font-mono opacity-60">{UI_LABELS.VPS_SERVICES}</div>
         </div>
       </div>
 
@@ -147,11 +153,11 @@ const EnhancedLogs: React.FC = () => {
                   onChange={(e) => setSelectedLevel(e.target.value)}
                   className="w-full bg-black border border-white/30 p-2 font-mono text-sm focus:outline-none focus:border-green-400"
                 >
-                  <option value="all">ALL LEVELS</option>
-                  <option value="error">ERROR</option>
-                  <option value="warn">WARN</option>
-                  <option value="info">INFO</option>
-                  <option value="debug">DEBUG</option>
+                  <option value="all">{UI_LABELS.ALL_LEVELS}</option>
+                  <option value={LogLevel.ERROR}>{UI_LABELS.ERROR}</option>
+                  <option value={LogLevel.WARN}>{UI_LABELS.WARN}</option>
+                  <option value={LogLevel.INFO}>{UI_LABELS.INFO}</option>
+                  <option value={LogLevel.DEBUG}>{UI_LABELS.DEBUG}</option>
                 </select>
               </div>
               
@@ -162,7 +168,7 @@ const EnhancedLogs: React.FC = () => {
                   onChange={(e) => setSelectedSource(e.target.value)}
                   className="w-full bg-black border border-white/30 p-2 font-mono text-sm focus:outline-none focus:border-green-400"
                 >
-                  <option value="all">ALL SOURCES</option>
+                  <option value="all">{UI_LABELS.ALL_SOURCES}</option>
                   {uniqueSources.map(source => (
                     <option key={source} value={source}>{source.toUpperCase()}</option>
                   ))}
@@ -176,7 +182,7 @@ const EnhancedLogs: React.FC = () => {
                   onChange={(e) => setSelectedNamespace(e.target.value)}
                   className="w-full bg-black border border-white/30 p-2 font-mono text-sm focus:outline-none focus:border-green-400"
                 >
-                  <option value="all">ALL NAMESPACES</option>
+                  <option value="all">{UI_LABELS.ALL_NAMESPACES}</option>
                   {uniqueNamespaces.map(namespace => (
                     <option key={namespace} value={namespace}>{namespace.toUpperCase()}</option>
                   ))}
@@ -188,7 +194,7 @@ const EnhancedLogs: React.FC = () => {
                   onClick={clearFilters}
                   className="px-4 py-2 border border-white/30 text-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
                 >
-                  CLEAR FILTERS
+{UI_MESSAGES.CLEAR_FILTERS}
                 </button>
               </div>
             </div>
@@ -201,7 +207,7 @@ const EnhancedLogs: React.FC = () => {
           {filteredLogs.length === 0 ? (
             <div className="p-8 text-center">
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-              <div className="text-lg font-mono mb-2">NO VPS LOGS FOUND</div>
+              <div className="text-lg font-mono mb-2">{UI_MESSAGES.NO_VPS_LOGS}</div>
               <div className="text-sm font-mono opacity-60">
                 {selectedLevel !== 'all' || selectedSource !== 'all' || selectedNamespace !== 'all' 
                   ? 'No VPS log entries match your current filters'
@@ -213,10 +219,10 @@ const EnhancedLogs: React.FC = () => {
             <div className="divide-y divide-white/10">
               {filteredLogs.map((log) => (
                 <div key={log.id} className={`p-4 hover:bg-white/5 transition-colors border-l-4 ${
-                  log.level === 'error' ? 'border-l-red-500' :
-                  log.level === 'warn' ? 'border-l-yellow-500' :
-                  log.level === 'info' ? 'border-l-blue-500' :
-                  log.level === 'debug' ? 'border-l-gray-500' :
+                  log.level === LogLevel.ERROR ? 'border-l-red-500' :
+                  log.level === LogLevel.WARN ? 'border-l-yellow-500' :
+                  log.level === LogLevel.INFO ? 'border-l-blue-500' :
+                  log.level === LogLevel.DEBUG ? 'border-l-gray-500' :
                   'border-l-transparent'
                 }`}>
                   <div className="flex items-start space-x-3">
