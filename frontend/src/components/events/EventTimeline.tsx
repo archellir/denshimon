@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TimeRange } from '@constants';
 import { parseTimeRangeToHours } from '@utils/timeUtils';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
-import { EventTimelineData, TimelineEvent, EventSeverity, EventCategory } from '@/types/eventTimeline';
+import { EventTimelineData, TimelineEvent } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@/mocks/events/timeline';
 import { MOCK_ENABLED } from '@/mocks/index';
+import { 
+  TimeRange, 
+  EventSeverity,
+  EventCategory,
+  UI_MESSAGES,
+  API_ENDPOINTS 
+} from '@/constants';
 
 interface EventTimelineProps {
   timeRange?: string;
@@ -29,7 +35,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
       } else {
         // Load from API
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`/api/events?timeRange=${timeRange}&limit=100`, {
+        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.EVENTS}?timeRange=${timeRange}&limit=100`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         
@@ -61,8 +67,9 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
               unresolvedCritical: 0
             },
             filters: {
-              categories: ['node', 'pod', 'service', 'config', 'security', 'network', 'storage'],
-              severities: ['critical', 'warning', 'info', 'success']
+              categories: [EventCategory.NODE, EventCategory.POD, EventCategory.SERVICE, EventCategory.CONFIG, EventCategory.SECURITY, EventCategory.NETWORK, EventCategory.STORAGE],
+              severities: [EventSeverity.CRITICAL, EventSeverity.WARNING, EventSeverity.INFO, EventSeverity.SUCCESS],
+              timeRange: `${parseTimeRangeToHours(timeRange)}h`
             }
           };
           setData(timelineData);
@@ -122,31 +129,31 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
 
   const getSeverityIcon = (severity: EventSeverity) => {
     switch (severity) {
-      case 'critical': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'info': return <Info className="w-4 h-4 text-blue-500" />;
-      case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case EventSeverity.CRITICAL: return <AlertCircle className="w-4 h-4 text-red-500" />;
+      case EventSeverity.WARNING: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case EventSeverity.INFO: return <Info className="w-4 h-4 text-blue-500" />;
+      case EventSeverity.SUCCESS: return <CheckCircle className="w-4 h-4 text-green-500" />;
     }
   };
 
   const getCategoryIcon = (category: EventCategory) => {
     switch (category) {
-      case 'node': return <Server className="w-4 h-4" />; // VPS node events
-      case 'pod': return <Package className="w-4 h-4" />; // VPS pod events
-      case 'service': return <Activity className="w-4 h-4" />; // VPS service events
-      case 'config': return <Settings className="w-4 h-4" />; // VPS config events
-      case 'security': return <Shield className="w-4 h-4" />; // VPS security events
-      case 'network': return <Network className="w-4 h-4" />; // VPS network events
-      case 'storage': return <HardDrive className="w-4 h-4" />; // VPS storage events
+      case EventCategory.NODE: return <Server className="w-4 h-4" />; // VPS node events
+      case EventCategory.POD: return <Package className="w-4 h-4" />; // VPS pod events
+      case EventCategory.SERVICE: return <Activity className="w-4 h-4" />; // VPS service events
+      case EventCategory.CONFIG: return <Settings className="w-4 h-4" />; // VPS config events
+      case EventCategory.SECURITY: return <Shield className="w-4 h-4" />; // VPS security events
+      case EventCategory.NETWORK: return <Network className="w-4 h-4" />; // VPS network events
+      case EventCategory.STORAGE: return <HardDrive className="w-4 h-4" />; // VPS storage events
     }
   };
 
   const getSeverityColor = (severity: EventSeverity) => {
     switch (severity) {
-      case 'critical': return 'border-red-500 text-red-500';
-      case 'warning': return 'border-yellow-500 text-yellow-500';
-      case 'info': return 'border-blue-500 text-blue-500';
-      case 'success': return 'border-green-500 text-green-500';
+      case EventSeverity.CRITICAL: return 'border-red-500 text-red-500';
+      case EventSeverity.WARNING: return 'border-yellow-500 text-yellow-500';
+      case EventSeverity.INFO: return 'border-blue-500 text-blue-500';
+      case EventSeverity.SUCCESS: return 'border-green-500 text-green-500';
     }
   };
 
@@ -194,7 +201,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
 
   if (!filteredData) {
     return <div className="flex items-center justify-center h-64">
-      <div className="text-gray-500">Loading timeline...</div>
+      <div className="text-gray-500">{UI_MESSAGES.LOADING_TIMELINE}</div>
     </div>;
   }
 
@@ -207,7 +214,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         <div className="flex gap-4">
           <div className="flex gap-2 items-center">
             <span className="text-xs font-mono text-gray-500">SEVERITY:</span>
-            {(['critical', 'warning', 'info', 'success'] as EventSeverity[]).map(severity => (
+            {([EventSeverity.CRITICAL, EventSeverity.WARNING, EventSeverity.INFO, EventSeverity.SUCCESS] as EventSeverity[]).map(severity => (
               <button
                 key={severity}
                 onClick={() => toggleSeverity(severity)}
@@ -224,7 +231,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
           
           <div className="flex gap-2 items-center">
             <span className="text-xs font-mono text-gray-500">CATEGORY:</span>
-            {(['node', 'pod', 'service', 'config', 'security', 'network', 'storage'] as EventCategory[]).map(category => (
+            {([EventCategory.NODE, EventCategory.POD, EventCategory.SERVICE, EventCategory.CONFIG, EventCategory.SECURITY, EventCategory.NETWORK, EventCategory.STORAGE] as EventCategory[]).map(category => (
               <button
                 key={category}
                 onClick={() => toggleCategory(category)}
@@ -245,7 +252,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
       <div className="border border-white p-4 max-h-[600px] overflow-y-auto">
         {filteredData.groups.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-lg font-mono mb-2">NO VPS EVENTS FOUND</div>
+            <div className="text-lg font-mono mb-2">{UI_MESSAGES.NO_VPS_EVENTS}</div>
             <div className="text-sm font-mono text-gray-500">
               No VPS events match your current filters
             </div>
