@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, useNavigate, useSearchParams } from 'react-router'
 import type { FC } from 'react'
-import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
+import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Database, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore'
 import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
@@ -127,6 +127,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       workloads: '/workloads',
       mesh: '/mesh',
       deployments: '/deployments',
+      database: '/database',
       observability: '/observability'
     }
     
@@ -266,6 +267,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
           <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
           <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
           <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/database" element={<Dashboard activePrimaryTab="database" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
           <Route path="/observability" element={<Dashboard activePrimaryTab="observability" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
         </Routes>
       </main>
@@ -295,6 +297,7 @@ const NavigationBar: FC = () => {
     { path: '/workloads', icon: Package, label: 'Workloads', tabId: 'workloads' },
     { path: '/mesh', icon: Zap, label: 'Service Mesh', tabId: 'mesh' },
     { path: '/deployments', icon: GitBranch, label: 'Deployments', tabId: 'deployments' },
+    { path: '/database', icon: Database, label: 'Database', tabId: 'database' },
     { path: '/observability', icon: Eye, label: 'Observability', tabId: 'observability' },
   ]
   
@@ -357,6 +360,7 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
     { path: '/workloads', label: 'Workloads' },
     { path: '/mesh', label: 'Service Mesh' },
     { path: '/deployments', label: 'Deployments' },
+    { path: '/database', label: 'Database' },
     { path: '/observability', label: 'Observability' },
   ]
 
@@ -390,6 +394,12 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
       applications: 'Applications',
       repositories: 'Repositories',
       gitea: 'Gitea Actions'
+    },
+    database: {
+      connections: 'Connections',
+      browser: 'Schema Browser',
+      queries: 'Query Interface',
+      monitoring: 'Performance'
     },
     observability: {
       logs: 'Log Data',
