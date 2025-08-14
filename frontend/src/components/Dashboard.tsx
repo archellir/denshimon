@@ -7,7 +7,7 @@ import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import useDeploymentStore from '@stores/deploymentStore';
 import { SearchResult } from '@stores/globalSearchStore';
-import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
 import NotificationContainer from '@components/common/NotificationContainer';
 import { useAlertNotifications } from '@hooks/useAlertNotifications';
@@ -16,6 +16,7 @@ import {
   generateWorkloadsStats, 
   generateMeshStats, 
   generateDeploymentStats, 
+  generateDatabaseStats,
   generateObservabilityStats,
   type QuickStat
 } from '@utils/quickStatsUtils';
@@ -37,6 +38,9 @@ import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
 import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
 import ServicesList from '@components/workloads/ServicesList';
+import DatabaseGrid from '@components/infrastructure/DatabaseGrid';
+import AddDatabaseConnectionModal from '@components/infrastructure/AddDatabaseConnectionModal';
+import DatabaseManagement from '@components/infrastructure/DatabaseManagement';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -59,6 +63,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const [serviceSortBy, setServiceSortBy] = useState<string>('name');
   const [serviceSortOrder, setServiceSortOrder] = useState<'asc' | 'desc'>('asc');
 
+  // Database management state
+  const [showAddDatabaseModal, setShowAddDatabaseModal] = useState(false);
+  const [selectedDatabaseConnection, setSelectedDatabaseConnection] = useState<string | null>(null);
 
   // Initialize alert notifications
   const notifications = useAlertNotifications();
@@ -69,6 +76,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
     [PrimaryTab.MESH]: MeshTab.TOPOLOGY,
     [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.REGISTRIES,
+    [PrimaryTab.DATABASE]: DatabaseTab.CONNECTIONS,
     [PrimaryTab.OBSERVABILITY]: ObservabilityTab.LOGS,
   };
 
@@ -100,6 +108,12 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: DeploymentsTab.IMAGES, label: UI_LABELS.IMAGES, icon: Package },
       { id: DeploymentsTab.DEPLOYMENTS, label: UI_LABELS.DEPLOYMENTS, icon: Rocket },
       { id: DeploymentsTab.HISTORY, label: UI_LABELS.HISTORY, icon: History },
+    ],
+    [PrimaryTab.DATABASE]: [
+      { id: DatabaseTab.CONNECTIONS, label: UI_LABELS.CONNECTIONS, icon: Database },
+      { id: DatabaseTab.BROWSER, label: UI_LABELS.BROWSER, icon: Eye },
+      { id: DatabaseTab.QUERIES, label: UI_LABELS.QUERIES, icon: FileText },
+      { id: DatabaseTab.MONITORING, label: UI_LABELS.MONITORING, icon: TrendingUp },
     ],
     [PrimaryTab.OBSERVABILITY]: [
       { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
@@ -258,6 +272,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         return generateMeshStats();
       case PrimaryTab.DEPLOYMENTS:
         return generateDeploymentStats();
+      case PrimaryTab.DATABASE:
+        return generateDatabaseStats();
       case PrimaryTab.OBSERVABILITY:
         return generateObservabilityStats();
       default:
@@ -490,7 +506,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Quick Stats - show for major tabs except observability */}
-      {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS) && clusterMetrics && (
+      {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS || activePrimaryTab === PrimaryTab.DATABASE) && clusterMetrics && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto px-6 pt-2 pb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -593,6 +609,39 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           />
         )}
         
+        {/* Database Tab Content */}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.CONNECTIONS && (
+          selectedDatabaseConnection ? (
+            <DatabaseManagement 
+              connectionId={selectedDatabaseConnection}
+              onBack={() => setSelectedDatabaseConnection(null)}
+            />
+          ) : (
+            <DatabaseGrid 
+              onAddConnection={() => setShowAddDatabaseModal(true)}
+              onViewConnection={(id) => setSelectedDatabaseConnection(id)}
+            />
+          )
+        )}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.BROWSER && (
+          <div className="text-center py-8">
+            <div className="text-lg font-mono mb-4">DATABASE BROWSER</div>
+            <div className="text-sm font-mono opacity-60">Browse database schemas and structures</div>
+          </div>
+        )}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.QUERIES && (
+          <div className="text-center py-8">
+            <div className="text-lg font-mono mb-4">SQL QUERY INTERFACE</div>
+            <div className="text-sm font-mono opacity-60">Execute SQL queries across all connected databases</div>
+          </div>
+        )}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.MONITORING && (
+          <div className="text-center py-8">
+            <div className="text-lg font-mono mb-4">DATABASE MONITORING</div>
+            <div className="text-sm font-mono opacity-60">Monitor database performance and health metrics</div>
+          </div>
+        )}
+        
         {/* Observability Tab Content */}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOGS && <EnhancedLogs />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.EVENTS && <EventTimeline timeRange={timeRange} />}
@@ -612,7 +661,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         </button>
       )}
 
-      {/* Modals - removed GitOps modals */}
+      {/* Database Modals */}
+      <AddDatabaseConnectionModal 
+        isOpen={showAddDatabaseModal}
+        onClose={() => setShowAddDatabaseModal(false)}
+      />
 
       {/* Notification Container */}
       {isSectionVisible(DASHBOARD_SECTIONS.NOTIFICATIONS) && (
