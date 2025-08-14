@@ -15,7 +15,7 @@ export interface LogEntry {
     ip?: string;
     duration?: number;
     error_code?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

@@ -39,7 +39,7 @@ export interface ServiceMetrics {
   };
   
   // Service-specific metrics
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ServiceAlert {
