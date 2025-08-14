@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Plus,
   Eye,
-  Calendar,
   Server,
   Globe,
   AlertCircle,
@@ -23,7 +22,6 @@ const CertificateHealthDashboard: FC = () => {
     certificates,
     stats,
     alerts,
-    domains,
     isLoading,
     error,
     lastUpdated,
@@ -37,7 +35,6 @@ const CertificateHealthDashboard: FC = () => {
   } = useCertificateStore();
 
   const [selectedCertificate, setSelectedCertificate] = useState<string | null>(null);
-  const [showAddDomain, setShowAddDomain] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Load initial data
@@ -135,7 +132,7 @@ const CertificateHealthDashboard: FC = () => {
             </label>
           </div>
           <button
-            onClick={() => setShowAddDomain(true)}
+            onClick={() => {/* TODO: Implement add domain modal */}}
             className="flex items-center space-x-2 px-3 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
           >
             <Plus size={16} />
