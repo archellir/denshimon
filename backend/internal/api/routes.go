@@ -49,6 +49,7 @@ func RegisterRoutes(
 	k8sHandlers := NewKubernetesHandlers(k8sClient)
 	metricsHandlers := NewMetricsHandlers(metricsService)
 	servicesHandlers := NewServicesHandlers(k8sClient)
+	observabilityHandlers := NewObservabilityHandlers(k8sClient)
 
 	// Auth endpoints (no auth required)
 	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
@@ -102,16 +103,9 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/metrics/resources", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetResourceMetrics)))
 	mux.HandleFunc("GET /api/metrics/health", corsMiddleware(metricsHandlers.GetHealthMetrics)) // No auth required for health check
 
-	// Logs endpoints
-	mux.HandleFunc("GET /api/logs/search", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement log search handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
-
-	mux.HandleFunc("GET /api/logs/stream", corsMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement log stream handler
-		w.WriteHeader(http.StatusNotImplemented)
-	}))
+	// Observability endpoints (require authentication)
+	mux.HandleFunc("GET /api/logs", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetLogs)))
+	mux.HandleFunc("GET /api/events", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetEvents)))
 
 	// Deployment endpoints (require authentication)
 	// Registry management
