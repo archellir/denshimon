@@ -1,6 +1,7 @@
 import { useState, type FC } from 'react';
 import { X, Save } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
+import { RegistryType, RegistryStatus } from '@/constants';
 import type { Registry } from '@/types/deployments';
 
 interface RegistryFormProps {
@@ -12,7 +13,7 @@ interface RegistryFormProps {
 const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     name: registry?.name || '',
-    type: registry?.type || 'dockerhub' as const,
+    type: registry?.type || RegistryType.DOCKERHUB,
     url: registry?.config.url || '',
     namespace: registry?.config.namespace || '',
     username: registry?.config.username || '',
@@ -54,7 +55,7 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
           password: formData.password || undefined,
           token: formData.token || undefined,
         },
-        status: 'pending',
+        status: RegistryStatus.PENDING,
       });
       onSave();
     } catch (error) {
