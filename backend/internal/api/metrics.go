@@ -275,8 +275,7 @@ func (h *MetricsHandlers) GetHealthMetrics(w http.ResponseWriter, r *http.Reques
 		status = "unhealthy"
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	SendSuccess(w, map[string]interface{}{
 		"status":                status,
 		"k8s_client":            true,
 		"nodes_healthy_percent": healthyNodesPercent,
@@ -289,4 +288,132 @@ func (h *MetricsHandlers) GetHealthMetrics(w http.ResponseWriter, r *http.Reques
 		"memory_usage_percent":  clusterMetrics.MemoryUsage.UsagePercent,
 		"timestamp":             time.Now(),
 	})
+}
+
+// GET /api/metrics/network - Get network metrics
+func (h *MetricsHandlers) GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
+	// Mock network metrics for VPS deployment
+	networkMetrics := map[string]interface{}{
+		"interfaces": []map[string]interface{}{
+			{
+				"name":        "eth0",
+				"status":      "up",
+				"ipAddress":   "10.0.0.100",
+				"mtu":         1500,
+				"bytesIn":     1073741824,  // 1GB
+				"bytesOut":    536870912,   // 512MB
+				"packetsIn":   1000000,
+				"packetsOut":  750000,
+				"errorsIn":    0,
+				"errorsOut":   0,
+				"droppedIn":   5,
+				"droppedOut":  2,
+				"throughputIn": 25.6,      // Mbps
+				"throughputOut": 18.3,     // Mbps
+			},
+			{
+				"name":        "lo",
+				"status":      "up",
+				"ipAddress":   "127.0.0.1",
+				"mtu":         65536,
+				"bytesIn":     104857600,   // 100MB
+				"bytesOut":    104857600,   // 100MB
+				"packetsIn":   50000,
+				"packetsOut":  50000,
+				"errorsIn":    0,
+				"errorsOut":   0,
+				"droppedIn":   0,
+				"droppedOut":  0,
+				"throughputIn": 5.2,       // Mbps
+				"throughputOut": 5.2,      // Mbps
+			},
+		},
+		"kubernetes": map[string]interface{}{
+			"podNetworking": map[string]interface{}{
+				"cniPlugin":      "flannel",
+				"podCIDR":        "10.244.0.0/16",
+				"serviceCIDR":    "10.96.0.0/12",
+				"dnsClusterIP":   "10.96.0.10",
+				"activeIPs":      847,
+				"availableIPs":   65289,
+			},
+			"services": map[string]interface{}{
+				"totalServices":  25,
+				"clusterIPs":     20,
+				"nodePort":       3,
+				"loadBalancer":   1,
+				"externalName":   1,
+			},
+			"ingress": map[string]interface{}{
+				"controller":    "nginx",
+				"totalRules":    15,
+				"tlsEnabled":    true,
+				"certificates": 3,
+			},
+		},
+		"connections": map[string]interface{}{
+			"established": 342,
+			"timeWait":     89,
+			"closeWait":    12,
+			"synSent":      5,
+			"synRecv":      3,
+			"finWait1":     8,
+			"finWait2":     2,
+			"listening":    47,
+		},
+		"bandwidth": map[string]interface{}{
+			"totalUsage":     43.9,      // Mbps
+			"inbound":        25.6,      // Mbps
+			"outbound":       18.3,      // Mbps
+			"peakUsage":      89.2,      // Mbps
+			"avgUsage":       35.7,      // Mbps
+			"utilization":    17.45,     // % of 1Gbps
+		},
+		"protocols": map[string]interface{}{
+			"tcp": map[string]interface{}{
+				"connections": 425,
+				"bytesIn":     536870912,
+				"bytesOut":    268435456,
+				"retransmits": 25,
+			},
+			"udp": map[string]interface{}{
+				"packets":  50000,
+				"bytesIn":  10485760,
+				"bytesOut": 5242880,
+				"errors":   2,
+			},
+			"icmp": map[string]interface{}{
+				"packets": 1500,
+				"bytes":   150000,
+				"errors":  0,
+			},
+		},
+		"security": map[string]interface{}{
+			"networkPolicies": 8,
+			"deniedConnections": 127,
+			"allowedConnections": 15342,
+			"suspiciousTraffic": 3,
+			"firewallRules": 45,
+		},
+		"latency": map[string]interface{}{
+			"internalPods": map[string]float64{
+				"avg": 0.5,
+				"p95": 1.2,
+				"p99": 2.8,
+			},
+			"externalServices": map[string]float64{
+				"avg": 45.2,
+				"p95": 120.5,
+				"p99": 350.8,
+			},
+			"dns": map[string]float64{
+				"avg": 2.1,
+				"p95": 8.5,
+				"p99": 25.3,
+			},
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+	
+	SendSuccess(w, networkMetrics)
 }
