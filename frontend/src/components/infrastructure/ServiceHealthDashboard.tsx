@@ -11,7 +11,6 @@ import {
   XCircle,
   RefreshCw,
   Eye,
-  Settings,
   TrendingUp,
   HardDrive,
   Cpu,
@@ -164,12 +163,12 @@ const ServiceHealthDashboard: FC = () => {
           { label: 'Queued Jobs', value: service.metrics.queuedJobs?.toString(), icon: Clock },
           { label: 'Running Jobs', value: service.metrics.runningJobs?.toString(), icon: Activity },
           { label: 'Repositories', value: service.metrics.totalRepositories?.toString(), icon: GitBranch },
-          { label: 'Registry Size', value: formatBytes(service.metrics.registrySize), icon: Database },
+          { label: 'Registry Size', value: formatBytes(service.metrics.registrySize as number), icon: Database },
         ];
       case ServiceType.FILEBROWSER:
         return [
           { label: 'Total Files', value: service.metrics.totalFiles?.toLocaleString(), icon: FileText },
-          { label: 'Storage Used', value: formatBytes(service.metrics.storageUsed), icon: HardDrive },
+          { label: 'Storage Used', value: formatBytes(service.metrics.storageUsed as number), icon: HardDrive },
           { label: 'Active Connections', value: service.metrics.activeConnections?.toString(), icon: Network },
           { label: 'Recent Uploads', value: `${service.metrics.recentUploads24h}/24h`, icon: TrendingUp },
         ];
@@ -178,14 +177,14 @@ const ServiceHealthDashboard: FC = () => {
           { label: 'Total Websites', value: service.metrics.totalWebsites?.toString(), icon: Globe },
           { label: 'Page Views', value: `${service.metrics.totalPageviews24h}/24h`, icon: Eye },
           { label: 'Sessions', value: `${service.metrics.totalSessions24h}/24h`, icon: Users },
-          { label: 'Cache Hit Ratio', value: `${service.metrics.cacheHitRatio?.toFixed(1)}%`, icon: TrendingUp },
+          { label: 'Cache Hit Ratio', value: `${(service.metrics.cacheHitRatio as number)?.toFixed(1)}%`, icon: TrendingUp },
         ];
       case ServiceType.MEMOS:
         return [
           { label: 'Total Notes', value: service.metrics.totalNotes?.toLocaleString(), icon: FileText },
           { label: 'Notes Created', value: `${service.metrics.notesCreated24h}/24h`, icon: TrendingUp },
-          { label: 'Database Size', value: formatBytes(service.metrics.databaseSize), icon: Database },
-          { label: 'Sync Status', value: service.metrics.syncStatus, icon: Activity },
+          { label: 'Database Size', value: formatBytes(service.metrics.databaseSize as number), icon: Database },
+          { label: 'Sync Status', value: (service.metrics.syncStatus as string) || 'Unknown', icon: Activity },
         ];
       case ServiceType.UPTIME_KUMA:
         return [
@@ -199,8 +198,8 @@ const ServiceHealthDashboard: FC = () => {
           { label: 'Total Databases', value: service.metrics.totalDatabases?.toString(), icon: Database },
           { label: 'Connections', value: `${service.metrics.totalConnections}/${service.metrics.maxConnections}`, icon: Network },
           { label: 'Active Queries', value: service.metrics.activeQueries?.toString(), icon: Activity },
-          { label: 'Cache Hit Ratio', value: `${service.metrics.cacheHitRatio?.toFixed(1)}%`, icon: TrendingUp },
-          { label: 'Database Size', value: formatBytes(service.metrics.databaseSize), icon: HardDrive },
+          { label: 'Cache Hit Ratio', value: `${(service.metrics.cacheHitRatio as number)?.toFixed(1)}%`, icon: TrendingUp },
+          { label: 'Database Size', value: formatBytes(service.metrics.databaseSize as number), icon: HardDrive },
         ];
       default:
         return [];
@@ -500,7 +499,7 @@ const ServiceHealthDashboard: FC = () => {
                         <metric.icon size={14} />
                         <span className="font-mono text-xs">{metric.label}</span>
                       </div>
-                      <div className="font-mono text-sm font-semibold">{metric.value}</div>
+                      <div className="font-mono text-sm font-semibold">{metric.value || 'N/A'}</div>
                     </div>
                   ))}
                 </div>
