@@ -65,24 +65,6 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
     return null;
   };
 
-  const CustomNodeTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p className="text-white mb-1">{`Node: ${data.fullName}`}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value.toFixed(1)}${
-                entry.name === 'CPU' || entry.name === 'Memory' ? '%' : entry.name === 'Pods' ? ' pods' : ''
-              }`}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
@@ -160,7 +142,7 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
           </div>
         </div>
 
-        {/* Pod/Node Count Timeline */}
+        {/* Pod Count Timeline */}
         <div className="border border-white p-4">
           <h3 className="font-mono text-sm mb-4">WORKLOAD TRENDS</h3>
           <div className="h-64">
@@ -199,14 +181,6 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
                   dot={false}
                   name="Pods"
                 />
-                <Line
-                  type="monotone"
-                  dataKey="nodes"
-                  stroke="#FF00FF"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Nodes"
-                />
               </LineChart>
             </ResponsiveContainer>
             )}
@@ -215,48 +189,67 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
       </div>
 
 
-      {/* Node Resource Distribution */}
+      {/* VPS Resource Summary */}
       {nodeResourceData.length > 0 && (
         <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">NODE RESOURCE DISTRIBUTION</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={nodeResourceData} margin={{ top: 5, right: 20, left: -20, bottom: 25 }}>
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 9, fontFamily: 'monospace', fill: 'white' }}
-                  angle={0}
-                  textAnchor="middle"
-                  height={40}
-                  interval={0}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fontFamily: 'monospace', fill: 'white' }}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip content={<CustomNodeTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="cpu"
-                  stroke="#00FF00"
-                  strokeWidth={2}
-                  dot={{ fill: '#00FF00', strokeWidth: 1, r: 3 }}
-                  name="CPU"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="memory"
-                  stroke="#FFFF00"
-                  strokeWidth={2}
-                  dot={{ fill: '#FFFF00', strokeWidth: 1, r: 3 }}
-                  name="Memory"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <h3 className="font-mono text-sm mb-4">VPS DEPLOYMENT CAPACITY</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Current State */}
+            <div>
+              <h4 className="font-mono text-xs mb-3 opacity-60">CURRENT USAGE</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">CPU</span>
+                  <span className="font-mono text-sm text-green-400">{nodeResourceData[0]?.cpu.toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Memory</span>
+                  <span className="font-mono text-sm text-yellow-400">{nodeResourceData[0]?.memory.toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Pod Count</span>
+                  <span className="font-mono text-sm text-cyan-400">{nodeResourceData[0]?.pods}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Available Capacity */}
+            <div>
+              <h4 className="font-mono text-xs mb-3 opacity-60">AVAILABLE CAPACITY</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">CPU Cores</span>
+                  <span className="font-mono text-sm">{((100 - (nodeResourceData[0]?.cpu || 0)) * 8 / 100).toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Memory</span>
+                  <span className="font-mono text-sm">{((100 - (nodeResourceData[0]?.memory || 0)) * 16 / 100).toFixed(1)}GB</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Pod Slots</span>
+                  <span className="font-mono text-sm">{Math.max(0, 30 - (nodeResourceData[0]?.pods || 0))}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Deployment Capacity */}
+            <div>
+              <h4 className="font-mono text-xs mb-3 opacity-60">NEW DEPLOYMENTS</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Small Apps</span>
+                  <span className="font-mono text-sm text-green-400">~{Math.floor((100 - (nodeResourceData[0]?.cpu || 0)) / 10)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Medium Apps</span>
+                  <span className="font-mono text-sm text-yellow-400">~{Math.floor((100 - (nodeResourceData[0]?.cpu || 0)) / 25)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs">Large Apps</span>
+                  <span className="font-mono text-sm text-red-400">~{Math.floor((100 - (nodeResourceData[0]?.cpu || 0)) / 50)}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
