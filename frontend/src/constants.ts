@@ -195,6 +195,7 @@ export enum PrimaryTab {
   WORKLOADS = 'workloads',
   MESH = 'mesh',
   DEPLOYMENTS = 'deployments',
+  DATABASE = 'database',
   OBSERVABILITY = 'observability'
 }
 
@@ -227,6 +228,13 @@ export enum DeploymentsTab {
   IMAGES = 'images',
   DEPLOYMENTS = 'deployments',
   HISTORY = 'history'
+}
+
+export enum DatabaseTab {
+  CONNECTIONS = 'connections',
+  BROWSER = 'browser',
+  QUERIES = 'queries',
+  MONITORING = 'monitoring'
 }
 
 export enum ObservabilityTab {
@@ -404,6 +412,7 @@ export const UI_LABELS = {
   WORKLOADS: 'Workloads',
   SERVICE_MESH: 'Service Mesh',
   DEPLOYMENTS: 'Deployments',
+  DATABASE: 'Database',
   OBSERVABILITY: 'Observability',
   
   // Secondary Navigation
@@ -427,6 +436,12 @@ export const UI_LABELS = {
   EVENTS: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
   ANALYTICS: 'Analytics',
+  
+  // Database Navigation
+  CONNECTIONS: 'Connections',
+  BROWSER: 'Browser',
+  QUERIES: 'Queries',
+  MONITORING: 'Monitoring',
   
   // VPS-Specific Labels
   VPS_LOGS: 'VPS LOGS',
@@ -571,6 +586,7 @@ export const DEFAULT_DASHBOARD_CONFIG = {
     [PrimaryTab.WORKLOADS]: true,
     [PrimaryTab.MESH]: true,
     [PrimaryTab.DEPLOYMENTS]: true,
+    [PrimaryTab.DATABASE]: true,
     [PrimaryTab.OBSERVABILITY]: true,
   }
 } as const;
@@ -592,6 +608,7 @@ export const DASHBOARD_TAB_LABELS = {
   [PrimaryTab.WORKLOADS]: UI_LABELS.WORKLOADS,
   [PrimaryTab.MESH]: UI_LABELS.SERVICE_MESH,
   [PrimaryTab.DEPLOYMENTS]: UI_LABELS.DEPLOYMENTS,
+  [PrimaryTab.DATABASE]: UI_LABELS.DATABASE,
   [PrimaryTab.OBSERVABILITY]: UI_LABELS.OBSERVABILITY,
 } as const;
 
@@ -606,6 +623,7 @@ export const API_BASE_PATHS = {
   SERVICES: '/api/services',
   OBSERVABILITY: '/api',
   DEPLOYMENTS: '/api/deployments',
+  DATABASES: '/api/databases',
   GITEA: '/api/gitea',
   GITOPS: '/api/gitops',
   WEBSOCKET: '/ws'
@@ -664,6 +682,24 @@ export const API_ENDPOINTS = {
     DEPLOYMENT_PODS: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}/pods`,
     DEPLOYMENT_HISTORY: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/${id}/history`,
     NODES: `${API_BASE_PATHS.DEPLOYMENTS}/nodes`
+  },
+  DATABASES: {
+    BASE: API_BASE_PATHS.DATABASES,
+    CONNECTIONS: `${API_BASE_PATHS.DATABASES}/connections`,
+    CONNECTION: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}`,
+    CONNECTION_CONNECT: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/connect`,
+    CONNECTION_DISCONNECT: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/disconnect`,
+    CONNECTION_TEST: `${API_BASE_PATHS.DATABASES}/connections/test`,
+    DATABASES: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/databases`,
+    TABLES: (id: string, database: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/databases/${database}/tables`,
+    COLUMNS: (id: string, database: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/databases/${database}/tables/${table}/columns`,
+    QUERY: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/query`,
+    TABLE_DATA: (id: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/tables/${table}/data`,
+    ROW_UPDATE: (id: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/tables/${table}/rows`,
+    ROW_DELETE: (id: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/tables/${table}/rows`,
+    ROW_INSERT: (id: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/tables/${table}/rows`,
+    STATS: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/stats`,
+    TYPES: `${API_BASE_PATHS.DATABASES}/types`
   },
   GITEA: {
     BASE: API_BASE_PATHS.GITEA,
