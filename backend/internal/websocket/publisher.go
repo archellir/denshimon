@@ -64,11 +64,31 @@ func (p *Publisher) publishMetrics() {
 		case <-ticker.C:
 			if p.k8sClient != nil && p.metricsService != nil {
 				// Get real metrics from Kubernetes
-				clusterMetrics, err := p.metricsService.GetClusterMetrics(context.Background())
+				ctx := context.Background()
+				clusterMetrics, err := p.metricsService.GetClusterMetrics(ctx)
+				
+				// Get additional metrics that frontend expects
+				var nodeMetrics []interface{}
+				var podMetrics []interface{}  
+				var namespaceMetrics []interface{}
+				
 				if err == nil {
+					// Try to get node metrics (single VPS)
+					if nodes, nodeErr := p.k8sClient.ListNodes(ctx); nodeErr == nil {
+						for _, node := range nodes.Items {
+							if nodeMetric, nodeMetricErr := p.metricsService.GetNodeMetrics(ctx, node.Name); nodeMetricErr == nil {
+								nodeMetrics = append(nodeMetrics, nodeMetric)
+							}
+						}
+					}
+					
+					// Send complete metrics object that frontend expects
 					p.hub.Broadcast(MessageTypeMetrics, map[string]interface{}{
 						"cluster":    clusterMetrics,
-						"timestamp": time.Now().UTC().Format(time.RFC3339),
+						"nodes":      nodeMetrics,
+						"pods":       podMetrics,
+						"namespaces": namespaceMetrics,
+						"timestamp":  time.Now().UTC().Format(time.RFC3339),
 					})
 				}
 			} else {
@@ -168,21 +188,70 @@ func (p *Publisher) generateMockMetrics() map[string]interface{} {
 	return map[string]interface{}{
 		"cluster": map[string]interface{}{
 			"cpu_usage": map[string]interface{}{
-				"usage_percent": 40 + rand.Float64()*40, // 40-80%
-				"cores_used":    4 + rand.Float64()*4,   // 4-8 cores
-				"cores_total":   12,
+				"usage_percent": 65 + rand.Float64()*20, // 65-85% (realistic for VPS)
+				"used":          5200 + rand.Int63n(1600), // 5.2-6.8 cores
+				"total":         8000, // 8 cores
+				"available":     1800 - rand.Int63n(1600),
+				"usage":         5.2 + rand.Float64()*1.6,
+				"unit":          "m",
 			},
 			"memory_usage": map[string]interface{}{
-				"usage_percent": 50 + rand.Float64()*30, // 50-80%
-				"used_bytes":    8000000000 + rand.Int63n(4000000000), // 8-12GB
-				"total_bytes":   16000000000,
+				"usage_percent": 75 + rand.Float64()*15, // 75-90% (realistic for VPS)
+				"used":          12884901888 + rand.Int63n(2147483648), // 12-14GB
+				"total":         17179869184, // 16GB
+				"available":     4294967296 - rand.Int63n(2147483648),
+				"usage":         12884901888 + rand.Int63n(2147483648),
+				"unit":          "bytes",
 			},
-			"ready_nodes":  3,
-			"total_nodes":  3,
-			"running_pods": 45 + rand.Intn(10),
-			"total_pods":   60,
+			"ready_nodes":    1, // Single VPS
+			"total_nodes":    1,
+			"running_pods":   15 + rand.Intn(5), // 15-20 pods
+			"pending_pods":   rand.Intn(2),      // 0-1 pending
+			"failed_pods":    rand.Intn(2),      // 0-1 failed  
+			"total_pods":     20,
+			"healthy_pods":   15 + rand.Intn(5),
+			"unhealthy_pods": rand.Intn(2),
+			"total_namespaces": 5,
 		},
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"nodes": []map[string]interface{}{
+			{
+				"name":    "vps-main",
+				"status":  "Ready",
+				"version": "v1.28.2",
+				"os":      "Ubuntu 22.04.3 LTS",
+				"architecture": "amd64",
+				"age":          "15d",
+				"pod_count":    18,
+				"cpu_usage": map[string]interface{}{
+					"used":          5200,
+					"total":         8000,
+					"available":     2800,
+					"usage_percent": 65.0,
+					"usage":         5.2,
+					"unit":          "m",
+				},
+				"memory_usage": map[string]interface{}{
+					"used":          12884901888,
+					"total":         17179869184,
+					"available":     4294967296,
+					"usage_percent": 75.0,
+					"usage":         12884901888,
+					"unit":          "bytes",
+				},
+				"storage_usage": map[string]interface{}{
+					"used":          96636764160,
+					"total":         214748364800,
+					"available":     118111600640,
+					"usage_percent": 45.0,
+					"usage":         96636764160,
+					"unit":          "bytes",
+				},
+				"last_updated": time.Now().UTC().Format(time.RFC3339),
+			},
+		},
+		"pods":       []map[string]interface{}{}, // Empty for now
+		"namespaces": []map[string]interface{}{}, // Empty for now  
+		"timestamp":  time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
