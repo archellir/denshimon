@@ -127,7 +127,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
         <div className="border border-white p-4">
           <div className="flex items-center justify-between mb-2">
             <Database size={20} />
-            <span className="text-xs font-mono text-gray-500">TOTAL LOGS</span>
+            <span className="text-xs font-mono text-gray-500">VPS LOGS</span>
           </div>
           <div className="text-2xl font-mono font-bold">{metrics.totalLogs.toLocaleString()}</div>
           <div className="text-xs text-gray-500">last {timeRange}</div>
@@ -163,10 +163,10 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
         <div className="border border-white p-4">
           <div className="flex items-center justify-between mb-2">
             <Server size={20} />
-            <span className="text-xs font-mono text-gray-500">SOURCES</span>
+            <span className="text-xs font-mono text-gray-500">VPS SOURCES</span>
           </div>
           <div className="text-2xl font-mono font-bold">{metrics.topSources.length}</div>
-          <div className="text-xs text-gray-500">active sources</div>
+          <div className="text-xs text-gray-500">VPS services</div>
         </div>
 
         <div className="border border-white p-4">
@@ -207,7 +207,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Hourly Distribution */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">HOURLY LOG DISTRIBUTION</h3>
+            <h3 className="font-mono text-sm mb-4">VPS HOURLY LOG DISTRIBUTION</h3>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={metrics.hourlyDistribution}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -259,7 +259,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
 
           {/* Top Sources */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">TOP LOG SOURCES</h3>
+            <h3 className="font-mono text-sm mb-4">TOP VPS LOG SOURCES</h3>
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={metrics.topSources} margin={{ bottom: 80, left: 20, right: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -291,7 +291,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Error Trend */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">ERROR SEVERITY TREND</h3>
+            <h3 className="font-mono text-sm mb-4">VPS ERROR SEVERITY TREND</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={metrics.severityTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -331,7 +331,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
 
           {/* Namespace Distribution */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">LOGS BY NAMESPACE</h3>
+            <h3 className="font-mono text-sm mb-4">VPS LOGS BY NAMESPACE</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie

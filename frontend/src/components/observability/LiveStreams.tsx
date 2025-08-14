@@ -161,7 +161,7 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
-            Top Pods
+            VPS Pods
           </button>
           <button
             onClick={() => setViewMode('logs')}
@@ -170,7 +170,7 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <FileText className="w-4 h-4 inline mr-2" />
-            Logs
+            VPS Logs
           </button>
           <button
             onClick={() => setViewMode('deployments')}
@@ -179,7 +179,7 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-2" />
-            Deployments
+            VPS Deployments
           </button>
         </div>
         
@@ -238,7 +238,7 @@ const LiveStreams: React.FC = () => {
       {viewMode === 'pods' && liveData && (
         <div className="border border-white">
           <div className="border-b border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">TOP RESOURCE CONSUMING PODS</h3>
+            <h3 className="font-mono text-sm font-bold">TOP VPS RESOURCE CONSUMING PODS</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-sm">
@@ -314,7 +314,7 @@ const LiveStreams: React.FC = () => {
       {viewMode === 'deployments' && liveData && (
         <div className="space-y-4">
           <div className="border border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">Active Deployments</h3>
+            <h3 className="font-mono text-sm font-bold">Active VPS Deployments</h3>
           </div>
           {liveData.deployments.map((deployment) => (
             <div key={`${deployment.namespace}-${deployment.name}`} className="border border-white p-4">
