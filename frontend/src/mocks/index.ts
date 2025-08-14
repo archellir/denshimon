@@ -10,6 +10,19 @@ export { mockImages, searchMockImages } from './deployments/images';
 export { mockDeployments, mockNodes as mockDeploymentNodes, filterDeploymentsByNamespace } from './deployments/deployments';
 export { mockDeploymentHistory, generateMockHistoryForDeployment } from './deployments/history';
 
+// Database system mocks
+export { 
+  mockDatabaseConnections,
+  mockDatabases,
+  mockTables,
+  mockColumns,
+  mockQueryResults,
+  mockQueryHistory,
+  mockDatabaseStats,
+  mockTestResults,
+  mockSupportedTypes
+} from './database';
+
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
