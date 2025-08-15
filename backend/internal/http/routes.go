@@ -296,6 +296,8 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/gitops/sync/status", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.GetSyncStatus)))
 	mux.HandleFunc("POST /api/gitops/sync/start", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.StartSync)))
 	mux.HandleFunc("POST /api/gitops/sync/force", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ForceSync)))
+	mux.HandleFunc("POST /api/gitops/webhook", corsMiddleware(gitopsHandlers.ProcessWebhook)) // No auth required for webhooks
+	mux.HandleFunc("GET /api/gitops/webhook/config", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ConfigureWebhook)))
 
 	// GitOps operations with path parameters
 	mux.Handle("/api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
