@@ -394,6 +394,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 );
               })}
             </div>
+            </div>
             )}
 
             {/* Service Details */}
