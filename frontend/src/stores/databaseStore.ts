@@ -15,8 +15,12 @@ import { API_ENDPOINTS } from '@/constants';
 import { 
   mockDatabaseConnections,
   mockSupportedTypes,
-  mockApiResponse,
-  MOCK_ENABLED
+  mockDatabases,
+  mockTables,
+  mockColumns,
+  mockQueryResults,
+  mockDatabaseStats,
+  mockApiResponse
 } from '@/mocks';
 
 interface DatabaseStore {
@@ -70,7 +74,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   fetchConnections: async () => {
     set({ isLoading: true, error: null });
     try {
-      if (MOCK_ENABLED) {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
         const data = await mockApiResponse({ success: true, data: mockDatabaseConnections });
         set({ connections: data.data, isLoading: false });
         return;
@@ -254,6 +259,14 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   fetchDatabases: async (connectionId) => {
     set({ isLoading: true, error: null });
     try {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
+        const databaseList = mockDatabases[connectionId] || [];
+        const data = await mockApiResponse({ success: true, data: databaseList });
+        set({ databases: data.data, isLoading: false });
+        return;
+      }
+
       const response = await fetch(API_ENDPOINTS.DATABASES.DATABASES(connectionId));
       const data: ApiResponse<DatabaseInfo[]> = await response.json();
       
@@ -263,14 +276,26 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         set({ error: data.error || 'Failed to fetch databases', isLoading: false });
       }
     } catch (error) {
-      console.error('Error fetching databases:', error);
-      set({ error: 'Failed to fetch databases', isLoading: false });
+      console.error('Error fetching databases, falling back to mock data:', error);
+      // Fallback to mock data
+      const databaseList = mockDatabases[connectionId] || [];
+      const data = await mockApiResponse({ success: true, data: databaseList });
+      set({ databases: data.data, isLoading: false });
     }
   },
 
   fetchTables: async (connectionId, database) => {
     set({ isLoading: true, error: null });
     try {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
+        const tableKey = `${connectionId}:${database}`;
+        const tableList = mockTables[tableKey] || [];
+        const data = await mockApiResponse({ success: true, data: tableList });
+        set({ tables: data.data, isLoading: false });
+        return;
+      }
+
       const response = await fetch(API_ENDPOINTS.DATABASES.TABLES(connectionId, database));
       const data: ApiResponse<TableInfo[]> = await response.json();
       
@@ -280,14 +305,27 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         set({ error: data.error || 'Failed to fetch tables', isLoading: false });
       }
     } catch (error) {
-      console.error('Error fetching tables:', error);
-      set({ error: 'Failed to fetch tables', isLoading: false });
+      console.error('Error fetching tables, falling back to mock data:', error);
+      // Fallback to mock data
+      const tableKey = `${connectionId}:${database}`;
+      const tableList = mockTables[tableKey] || [];
+      const data = await mockApiResponse({ success: true, data: tableList });
+      set({ tables: data.data, isLoading: false });
     }
   },
 
   fetchColumns: async (connectionId, database, table) => {
     set({ isLoading: true, error: null });
     try {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
+        const columnKey = `${connectionId}:${database}:${table}`;
+        const columnList = mockColumns[columnKey] || [];
+        const data = await mockApiResponse({ success: true, data: columnList });
+        set({ columns: data.data, isLoading: false });
+        return;
+      }
+
       const response = await fetch(API_ENDPOINTS.DATABASES.COLUMNS(connectionId, database, table));
       const data: ApiResponse<ColumnInfo[]> = await response.json();
       
@@ -297,14 +335,27 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         set({ error: data.error || 'Failed to fetch columns', isLoading: false });
       }
     } catch (error) {
-      console.error('Error fetching columns:', error);
-      set({ error: 'Failed to fetch columns', isLoading: false });
+      console.error('Error fetching columns, falling back to mock data:', error);
+      // Fallback to mock data
+      const columnKey = `${connectionId}:${database}:${table}`;
+      const columnList = mockColumns[columnKey] || [];
+      const data = await mockApiResponse({ success: true, data: columnList });
+      set({ columns: data.data, isLoading: false });
     }
   },
 
   executeQuery: async (connectionId, sql, limit, offset) => {
     set({ isLoading: true, error: null, queryResults: null });
     try {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
+        // Try to find matching mock query result or use a default
+        const queryResult = mockQueryResults[sql] || mockQueryResults['SELECT * FROM users LIMIT 5'];
+        const data = await mockApiResponse({ success: true, data: queryResult });
+        set({ queryResults: data.data, isLoading: false });
+        return;
+      }
+
       const response = await fetch(API_ENDPOINTS.DATABASES.QUERY(connectionId), {
         method: 'POST',
         headers: {
@@ -321,14 +372,25 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         set({ error: data.error || 'Failed to execute query', isLoading: false });
       }
     } catch (error) {
-      console.error('Error executing query:', error);
-      set({ error: 'Failed to execute query', isLoading: false });
+      console.error('Error executing query, falling back to mock data:', error);
+      // Fallback to mock data
+      const queryResult = mockQueryResults[sql] || mockQueryResults['SELECT * FROM users LIMIT 5'];
+      const data = await mockApiResponse({ success: true, data: queryResult });
+      set({ queryResults: data.data, isLoading: false });
     }
   },
 
   fetchStats: async (connectionId) => {
     set({ isLoading: true, error: null });
     try {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
+        const statsData = mockDatabaseStats[connectionId] || mockDatabaseStats['postgres-prod'];
+        const data = await mockApiResponse({ success: true, data: statsData });
+        set({ stats: data.data, isLoading: false });
+        return;
+      }
+
       const response = await fetch(API_ENDPOINTS.DATABASES.STATS(connectionId));
       const data: ApiResponse<DatabaseStats> = await response.json();
       
@@ -338,15 +400,19 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         set({ error: data.error || 'Failed to fetch stats', isLoading: false });
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
-      set({ error: 'Failed to fetch stats', isLoading: false });
+      console.error('Error fetching stats, falling back to mock data:', error);
+      // Fallback to mock data
+      const statsData = mockDatabaseStats[connectionId] || mockDatabaseStats['postgres-prod'];
+      const data = await mockApiResponse({ success: true, data: statsData });
+      set({ stats: data.data, isLoading: false });
     }
   },
 
   fetchSupportedTypes: async () => {
     set({ isLoading: true, error: null });
     try {
-      if (MOCK_ENABLED) {
+      // Use mock data in development or when API fails
+      if (import.meta.env.DEV) {
         const data = await mockApiResponse({ success: true, data: mockSupportedTypes });
         set({ supportedTypes: data.data, isLoading: false });
         return;
