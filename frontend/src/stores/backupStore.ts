@@ -20,6 +20,7 @@ import {
   RestoreType
 } from '@/types/backup';
 import { StorageKey, API_ENDPOINTS } from '@/constants';
+import { MOCK_ENABLED } from '@/mocks';
 
 interface BackupStore {
   // State
@@ -409,8 +410,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         await new Promise(resolve => setTimeout(resolve, 500));
         set({ jobs: mockBackupJobs, isLoading: false });
         return;
@@ -441,8 +441,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         await new Promise(resolve => setTimeout(resolve, 500));
         const history = jobId 
           ? mockBackupHistory.filter(h => h.jobId === jobId)
@@ -478,8 +477,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
 
   fetchBackupStorage: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ storage: mockBackupStorage });
         return;
       }
@@ -503,8 +501,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
 
   fetchBackupStatistics: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ statistics: mockBackupStatistics });
         return;
       }
@@ -528,8 +525,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
 
   fetchActiveRecoveries: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ activeRecoveries: mockActiveRecoveries });
         return;
       }
@@ -553,8 +549,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
 
   fetchAlerts: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ alerts: mockBackupAlerts });
         return;
       }

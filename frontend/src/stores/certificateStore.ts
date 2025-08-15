@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Certificate, CertificateAlert, CertificateStats, DomainConfig, CertificateStatus } from '@/types/certificates';
 import { API_ENDPOINTS } from '@/constants';
+import { MOCK_ENABLED } from '@/mocks';
 
 interface CertificateStore {
   // State
@@ -209,8 +210,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
         set({ 
           certificates: mockCertificates, 
@@ -247,8 +247,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
 
   fetchCertificateStats: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ stats: mockStats });
         return;
       }
@@ -272,8 +271,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
 
   fetchAlerts: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ alerts: mockAlerts });
         return;
       }
@@ -297,8 +295,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
 
   fetchDomains: async () => {
     try {
-      // In development, use mock data
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         set({ domains: mockDomains });
         return;
       }

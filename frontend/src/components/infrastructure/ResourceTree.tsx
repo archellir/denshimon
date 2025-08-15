@@ -4,6 +4,8 @@ import ResourceHierarchy, { type HierarchyNode, buildResourceHierarchy } from '@
 import ManifestViewer, { generateSampleManifest } from '@components/common/ManifestViewer';
 import ResourceActions, { handleResourceAction } from '@components/common/ResourceActions';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { API_ENDPOINTS } from '@/constants';
+import { MOCK_ENABLED } from '@/mocks';
 
 // Mock Kubernetes resources for demonstration
 const generateMockResources = (): any[] => {
@@ -183,13 +185,104 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
   const [showManifest, setShowManifest] = useState(false);
 
   useEffect(() => {
+    loadResources();
+  }, [selectedNamespace]);
+
+  const loadResources = async () => {
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (MOCK_ENABLED) {
+        // Use mock data
+        setTimeout(() => {
+          let mockResources = generateMockResources();
+          
+          // Filter by namespace if specified
+          if (selectedNamespace && selectedNamespace !== 'all') {
+            mockResources = mockResources.filter(
+              resource => resource.metadata?.namespace === selectedNamespace || resource.kind === 'Namespace'
+            );
+          }
+          
+          _setResources(mockResources);
+          const hierarchy = buildResourceHierarchy(mockResources);
+          setHierarchyNodes(hierarchy);
+          setIsLoading(false);
+        }, 500);
+      } else {
+        // Fetch from multiple API endpoints to build comprehensive resource tree
+        const token = localStorage.getItem('auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        const [
+          nodesResponse,
+          podsResponse, 
+          deploymentsResponse,
+          servicesResponse,
+          namespacesResponse,
+          storageResponse
+        ] = await Promise.allSettled([
+          fetch(API_ENDPOINTS.KUBERNETES.NODES, { headers }),
+          fetch(API_ENDPOINTS.KUBERNETES.PODS, { headers }),
+          fetch(API_ENDPOINTS.KUBERNETES.DEPLOYMENTS, { headers }),
+          fetch(API_ENDPOINTS.KUBERNETES.SERVICES, { headers }),
+          fetch(API_ENDPOINTS.KUBERNETES.NAMESPACES, { headers }),
+          fetch(API_ENDPOINTS.KUBERNETES.STORAGE, { headers })
+        ]);
+        
+        const allResources: any[] = [];
+        
+        // Process each API response
+        if (nodesResponse.status === 'fulfilled' && nodesResponse.value.ok) {
+          const data = await nodesResponse.value.json();
+          allResources.push(...(data.data || data || []));
+        }
+        
+        if (podsResponse.status === 'fulfilled' && podsResponse.value.ok) {
+          const data = await podsResponse.value.json();
+          allResources.push(...(data.data || data || []));
+        }
+        
+        if (deploymentsResponse.status === 'fulfilled' && deploymentsResponse.value.ok) {
+          const data = await deploymentsResponse.value.json();
+          allResources.push(...(data.data || data || []));
+        }
+        
+        if (servicesResponse.status === 'fulfilled' && servicesResponse.value.ok) {
+          const data = await servicesResponse.value.json();
+          allResources.push(...(data.data || data || []));
+        }
+        
+        if (namespacesResponse.status === 'fulfilled' && namespacesResponse.value.ok) {
+          const data = await namespacesResponse.value.json();
+          allResources.push(...(data.data || data || []));
+        }
+        
+        if (storageResponse.status === 'fulfilled' && storageResponse.value.ok) {
+          const data = await storageResponse.value.json();
+          allResources.push(...(data.data || data || []));
+        }
+        
+        // Filter by namespace if specified
+        let filteredResources = allResources;
+        if (selectedNamespace && selectedNamespace !== 'all') {
+          filteredResources = allResources.filter(
+            resource => resource.metadata?.namespace === selectedNamespace || 
+                       resource.kind === 'Namespace' ||
+                       resource.kind === 'Node' // Nodes are cluster-scoped
+          );
+        }
+        
+        _setResources(filteredResources);
+        const hierarchy = buildResourceHierarchy(filteredResources);
+        setHierarchyNodes(hierarchy);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Failed to load resources:', error);
+      // Fallback to mock data on error
       let mockResources = generateMockResources();
       
-      // Filter by namespace if specified
       if (selectedNamespace && selectedNamespace !== 'all') {
         mockResources = mockResources.filter(
           resource => resource.metadata?.namespace === selectedNamespace || resource.kind === 'Namespace'
@@ -200,8 +293,8 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
       const hierarchy = buildResourceHierarchy(mockResources);
       setHierarchyNodes(hierarchy);
       setIsLoading(false);
-    }, 500);
-  }, [selectedNamespace]);
+    }
+  };
 
   const handleNodeSelect = (node: HierarchyNode) => {
     setSelectedNode(selectedNode?.id === node.id ? null : node);

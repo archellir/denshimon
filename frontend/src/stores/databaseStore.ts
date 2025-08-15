@@ -15,7 +15,8 @@ import { API_ENDPOINTS } from '@/constants';
 import { 
   mockDatabaseConnections,
   mockSupportedTypes,
-  mockApiResponse
+  mockApiResponse,
+  MOCK_ENABLED
 } from '@/mocks';
 
 interface DatabaseStore {
@@ -69,8 +70,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   fetchConnections: async () => {
     set({ isLoading: true, error: null });
     try {
-      // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const data = await mockApiResponse({ success: true, data: mockDatabaseConnections });
         set({ connections: data.data, isLoading: false });
         return;
@@ -346,8 +346,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   fetchSupportedTypes: async () => {
     set({ isLoading: true, error: null });
     try {
-      // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const data = await mockApiResponse({ success: true, data: mockSupportedTypes });
         set({ supportedTypes: data.data, isLoading: false });
         return;
