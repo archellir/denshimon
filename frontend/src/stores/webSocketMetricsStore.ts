@@ -11,8 +11,8 @@ import {
   mockApiResponse,
   MOCK_ENABLED 
 } from '@mocks/index';
-
 import { getWebSocketInstance } from '@services/websocket';
+import { apiService } from '@/services/api';
 
 interface WebSocketMetricsStore extends MetricsStore {
   // WebSocket connection state
@@ -128,17 +128,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ clusterMetrics: mockData });
           } else {
             // Real API call
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(API_ENDPOINTS.METRICS.CLUSTER, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            set({ clusterMetrics: data });
+            const response = await apiService.get<ClusterMetrics>(API_ENDPOINTS.METRICS.CLUSTER);
+            set({ clusterMetrics: response.data });
           }
         } catch (error) {
           // Fallback to mock data on error
@@ -161,17 +152,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ nodeMetrics: mockData });
           } else {
             // Real API call
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(API_ENDPOINTS.METRICS.NODES, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            set({ nodeMetrics: data.nodes || [] });
+            const response = await apiService.get<any>(API_ENDPOINTS.METRICS.NODES);
+            set({ nodeMetrics: response.data.nodes || response.data || [] });
           }
         } catch (error) {
           // Fallback to mock data on error
@@ -192,17 +174,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ podMetrics: mockData });
           } else {
             // Real API call
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(API_ENDPOINTS.METRICS.PODS, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            set({ podMetrics: data.namespaces || [] });
+            const response = await apiService.get<any>(API_ENDPOINTS.METRICS.PODS);
+            set({ podMetrics: response.data.pods || response.data || [] });
           }
         } catch (error) {
           // Fallback to mock data on error
@@ -223,17 +196,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ namespaceMetrics: mockData });
           } else {
             // Real API call
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(API_ENDPOINTS.METRICS.NAMESPACES, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            set({ namespaceMetrics: data.namespaces || [] });
+            const response = await apiService.get<any>(API_ENDPOINTS.METRICS.NAMESPACES);
+            set({ namespaceMetrics: response.data.namespaces || response.data || [] });
           }
         } catch (error) {
           // Fallback to mock data on error
@@ -268,17 +232,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ metricsHistory: mockData });
           } else {
             // Real API call
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(`${API_ENDPOINTS.METRICS.HISTORY}?duration=${duration}`, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            set({ metricsHistory: data });
+            const response = await apiService.get<MetricsHistory>(`${API_ENDPOINTS.METRICS.HISTORY}?duration=${duration}`);
+            set({ metricsHistory: response.data });
           }
         } catch (error) {
           // Fallback to mock data on error
