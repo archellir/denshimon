@@ -43,7 +43,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	
+
 	// Start cleanup worker for expired sessions and cache
 	db.StartCleanupWorker()
 
@@ -89,7 +89,7 @@ func main() {
 		slog.Error("Failed to create frontend filesystem", "error", err)
 		os.Exit(1)
 	}
-	
+
 	// SPA handler that serves static files or index.html fallback
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Don't serve frontend for API routes
@@ -97,12 +97,12 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		
+
 		path := strings.TrimPrefix(r.URL.Path, "/")
 		if path == "" {
 			path = "index.html"
 		}
-		
+
 		// Try to serve the static file
 		file, err := frontendFS.Open(path)
 		if err != nil {
@@ -116,7 +116,7 @@ func main() {
 			path = "index.html"
 		}
 		defer file.Close()
-		
+
 		// Set appropriate content type
 		if strings.HasSuffix(path, ".css") {
 			w.Header().Set("Content-Type", "text/css; charset=utf-8")
@@ -127,14 +127,14 @@ func main() {
 		} else if strings.HasSuffix(path, ".svg") {
 			w.Header().Set("Content-Type", "image/svg+xml")
 		}
-		
+
 		// Cache static assets (not index.html)
 		if path != "index.html" {
 			w.Header().Set("Cache-Control", "public, max-age=31536000") // 1 year
 		} else {
 			w.Header().Set("Cache-Control", "no-cache") // Don't cache SPA entry point
 		}
-		
+
 		// Copy file content to response
 		if stat, err := file.Stat(); err == nil {
 			w.Header().Set("Content-Length", fmt.Sprintf("%d", stat.Size()))
