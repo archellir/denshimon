@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { FC } from 'react';
 import { 
   Network, 
@@ -13,161 +13,8 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { KubernetesServiceType, CommonNamespace } from '@constants';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
+import useWorkloadsStore, { Service } from '@/stores/workloadsStore';
 
-interface Service {
-  id: string;
-  name: string;
-  namespace: string;
-  type: 'ClusterIP' | 'NodePort' | 'LoadBalancer' | 'ExternalName';
-  cluster_ip: string;
-  external_ip?: string;
-  ports: Array<{
-    name?: string;
-    port: number;
-    target_port: number | string;
-    protocol: 'TCP' | 'UDP';
-    node_port?: number;
-  }>;
-  selector: Record<string, string>;
-  endpoints: {
-    ready: number;
-    not_ready: number;
-    total: number;
-  };
-  age: string;
-  labels: Record<string, string>;
-  annotations?: Record<string, string>;
-  session_affinity: 'None' | 'ClientIP';
-  status: 'active' | 'pending' | 'failed';
-  last_updated: string;
-}
-
-const mockServices: Service[] = [
-  {
-    id: 'web-frontend-svc',
-    name: 'web-frontend',
-    namespace: CommonNamespace.PRODUCTION,
-    type: KubernetesServiceType.LOAD_BALANCER,
-    cluster_ip: '10.96.120.45',
-    external_ip: '203.0.113.42',
-    ports: [
-      { name: 'http', port: 80, target_port: 8080, protocol: 'TCP' },
-      { name: 'https', port: 443, target_port: 8443, protocol: 'TCP' }
-    ],
-    selector: { app: 'web-frontend', version: 'v1.2.3' },
-    endpoints: { ready: 3, not_ready: 0, total: 3 },
-    age: '7d',
-    labels: { app: 'web-frontend', tier: 'frontend', environment: 'production' },
-    session_affinity: 'None',
-    status: 'active',
-    last_updated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'api-backend-svc',
-    name: 'api-backend',
-    namespace: CommonNamespace.PRODUCTION,
-    type: KubernetesServiceType.CLUSTER_IP,
-    cluster_ip: '10.96.87.123',
-    ports: [
-      { name: 'api', port: 3000, target_port: 3000, protocol: 'TCP' },
-      { name: 'metrics', port: 9090, target_port: 'metrics', protocol: 'TCP' }
-    ],
-    selector: { app: 'api-backend', tier: 'backend' },
-    endpoints: { ready: 4, not_ready: 1, total: 5 },
-    age: '5d',
-    labels: { app: 'api-backend', tier: 'backend', version: 'v2.1.0' },
-    session_affinity: 'ClientIP',
-    status: 'active',
-    last_updated: new Date(Date.now() - 15 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'database-svc',
-    name: 'postgres-primary',
-    namespace: CommonNamespace.PRODUCTION,
-    type: KubernetesServiceType.CLUSTER_IP,
-    cluster_ip: '10.96.45.78',
-    ports: [
-      { name: 'postgres', port: 5432, target_port: 5432, protocol: 'TCP' }
-    ],
-    selector: { app: 'postgres', role: 'primary' },
-    endpoints: { ready: 1, not_ready: 0, total: 1 },
-    age: '12d',
-    labels: { app: 'postgres', tier: 'database', role: 'primary' },
-    session_affinity: 'None',
-    status: 'active',
-    last_updated: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'redis-cache-svc',
-    name: 'redis-cache',
-    namespace: CommonNamespace.PRODUCTION,
-    type: KubernetesServiceType.CLUSTER_IP,
-    cluster_ip: '10.96.92.156',
-    ports: [
-      { name: 'redis', port: 6379, target_port: 6379, protocol: 'TCP' }
-    ],
-    selector: { app: 'redis', role: 'cache' },
-    endpoints: { ready: 2, not_ready: 0, total: 2 },
-    age: '8d',
-    labels: { app: 'redis', tier: 'cache', version: 'v7.0' },
-    session_affinity: 'None',
-    status: 'active',
-    last_updated: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'ingress-controller-svc',
-    name: 'ingress-nginx-controller',
-    namespace: 'ingress-nginx',
-    type: KubernetesServiceType.LOAD_BALANCER,
-    cluster_ip: '10.96.201.34',
-    external_ip: '203.0.113.10',
-    ports: [
-      { name: 'http', port: 80, target_port: 'http', protocol: 'TCP', node_port: 32080 },
-      { name: 'https', port: 443, target_port: 'https', protocol: 'TCP', node_port: 32443 }
-    ],
-    selector: { 'app.kubernetes.io/name': 'ingress-nginx' },
-    endpoints: { ready: 2, not_ready: 0, total: 2 },
-    age: '15d',
-    labels: { 'app.kubernetes.io/name': 'ingress-nginx', 'app.kubernetes.io/component': 'controller' },
-    session_affinity: 'None',
-    status: 'active',
-    last_updated: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'monitoring-grafana-svc',
-    name: 'grafana',
-    namespace: CommonNamespace.MONITORING,
-    type: KubernetesServiceType.NODE_PORT,
-    cluster_ip: '10.96.150.89',
-    ports: [
-      { name: 'grafana', port: 3000, target_port: 3000, protocol: 'TCP', node_port: 30300 }
-    ],
-    selector: { app: 'grafana' },
-    endpoints: { ready: 1, not_ready: 0, total: 1 },
-    age: '30d',
-    labels: { app: 'grafana', component: 'monitoring' },
-    session_affinity: 'None',
-    status: 'active',
-    last_updated: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'worker-service-headless',
-    name: 'worker-headless',
-    namespace: CommonNamespace.PRODUCTION,
-    type: KubernetesServiceType.CLUSTER_IP,
-    cluster_ip: 'None',
-    ports: [
-      { name: 'worker', port: 8080, target_port: 8080, protocol: 'TCP' }
-    ],
-    selector: { app: 'worker-service' },
-    endpoints: { ready: 0, not_ready: 2, total: 2 },
-    age: '3d',
-    labels: { app: 'worker-service', type: 'headless' },
-    session_affinity: 'None',
-    status: 'pending',
-    last_updated: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  }
-];
 
 interface ServicesListProps {
   selectedNamespace: string;
@@ -184,19 +31,24 @@ const ServicesList: FC<ServicesListProps> = ({
   sortBy, 
   sortOrder 
 }) => {
+  const { services, isLoading, error, fetchServices } = useWorkloadsStore();
+
+  useEffect(() => {
+    fetchServices(selectedNamespace);
+  }, [selectedNamespace, fetchServices]);
 
   const filteredServices = useMemo(() => {
-    let services = [...mockServices];
+    let servicesList = [...services];
 
     if (selectedNamespace !== 'all') {
-      services = services.filter(svc => svc.namespace === selectedNamespace);
+      servicesList = servicesList.filter(svc => svc.namespace === selectedNamespace);
     }
 
     if (selectedType !== 'all') {
-      services = services.filter(svc => svc.type === selectedType);
+      servicesList = servicesList.filter(svc => svc.type === selectedType);
     }
 
-    services.sort((a, b) => {
+    servicesList.sort((a, b) => {
       let valueA: any, valueB: any;
       
       switch (sortBy) {
@@ -229,8 +81,8 @@ const ServicesList: FC<ServicesListProps> = ({
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
-    return services;
-  }, [selectedNamespace, selectedType, sortBy, sortOrder]);
+    return servicesList;
+  }, [services, selectedNamespace, selectedType, sortBy, sortOrder]);
 
 
   const getTypeIcon = (type: string) => {
@@ -398,6 +250,37 @@ const ServicesList: FC<ServicesListProps> = ({
       ),
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="border border-white p-4 animate-pulse">
+            <Server size={48} className="mx-auto mb-4" />
+            <p className="font-mono text-sm">LOADING SERVICES...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
+          <h3 className="text-lg font-mono mb-2">ERROR LOADING SERVICES</h3>
+          <p className="font-mono text-sm opacity-60">{error}</p>
+          <button 
+            onClick={() => fetchServices(selectedNamespace)}
+            className="mt-4 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
+          >
+            RETRY
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
