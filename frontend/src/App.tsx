@@ -8,7 +8,7 @@ import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
 import DashboardSettings from '@components/DashboardSettings'
 import { useKeyboardNavigation } from '@hooks/useKeyboardNavigation'
 import { initializeWebSocket } from '@services/websocket'
-import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS, DASHBOARD_SECTIONS } from '@constants'
+import { DEFAULT_TIME_RANGES, TimeRange, UI_MESSAGES, API_ENDPOINTS, DASHBOARD_SECTIONS, StorageKey, PrimaryTab, UI_LABELS, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab } from '@constants'
 import useSettingsStore from '@stores/settingsStore'
 import { setupMockApi } from '@services/mockApi'
 
@@ -123,12 +123,12 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   // Handle tab switching
   const handleTabSwitch = (tabId: string) => {
     const tabPaths = {
-      infrastructure: '/infrastructure',
-      workloads: '/workloads',
-      mesh: '/mesh',
-      deployments: '/deployments',
-      database: '/database',
-      observability: '/observability'
+      [PrimaryTab.INFRASTRUCTURE]: `/${PrimaryTab.INFRASTRUCTURE}`,
+      [PrimaryTab.WORKLOADS]: `/${PrimaryTab.WORKLOADS}`,
+      [PrimaryTab.MESH]: `/${PrimaryTab.MESH}`,
+      [PrimaryTab.DEPLOYMENTS]: `/${PrimaryTab.DEPLOYMENTS}`,
+      [PrimaryTab.DATABASE]: `/${PrimaryTab.DATABASE}`,
+      [PrimaryTab.OBSERVABILITY]: `/${PrimaryTab.OBSERVABILITY}`
     }
     
     if (tabPaths[tabId as keyof typeof tabPaths]) {
@@ -262,13 +262,13 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       {/* Main Content */}
       <main>
         <Routes>
-          <Route path="/" element={<Navigate to="/infrastructure" replace />} />
-          <Route path="/infrastructure" element={<Dashboard activePrimaryTab="infrastructure" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path="/workloads" element={<Dashboard activePrimaryTab="workloads" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path="/mesh" element={<Dashboard activePrimaryTab="mesh" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path="/deployments" element={<Dashboard activePrimaryTab="deployments" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path="/database" element={<Dashboard activePrimaryTab="database" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path="/observability" element={<Dashboard activePrimaryTab="observability" onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/" element={<Navigate to={`/${PrimaryTab.INFRASTRUCTURE}`} replace />} />
+          <Route path={`/${PrimaryTab.INFRASTRUCTURE}`} element={<Dashboard activePrimaryTab={PrimaryTab.INFRASTRUCTURE} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.WORKLOADS}`} element={<Dashboard activePrimaryTab={PrimaryTab.WORKLOADS} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.MESH}`} element={<Dashboard activePrimaryTab={PrimaryTab.MESH} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.DEPLOYMENTS}`} element={<Dashboard activePrimaryTab={PrimaryTab.DEPLOYMENTS} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.DATABASE}`} element={<Dashboard activePrimaryTab={PrimaryTab.DATABASE} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.OBSERVABILITY}`} element={<Dashboard activePrimaryTab={PrimaryTab.OBSERVABILITY} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
         </Routes>
       </main>
 
@@ -293,12 +293,12 @@ const NavigationBar: FC = () => {
   const { isConnected } = useWebSocketMetricsStore()
   
   const allNavItems = [
-    { path: '/infrastructure', icon: Server, label: 'Infrastructure', tabId: 'infrastructure' },
-    { path: '/workloads', icon: Package, label: 'Workloads', tabId: 'workloads' },
-    { path: '/mesh', icon: Zap, label: 'Service Mesh', tabId: 'mesh' },
-    { path: '/deployments', icon: GitBranch, label: 'Deployments', tabId: 'deployments' },
-    { path: '/database', icon: Database, label: 'Database', tabId: 'database' },
-    { path: '/observability', icon: Eye, label: 'Observability', tabId: 'observability' },
+    { path: `/${PrimaryTab.INFRASTRUCTURE}`, icon: Server, label: UI_LABELS.INFRASTRUCTURE, tabId: PrimaryTab.INFRASTRUCTURE },
+    { path: `/${PrimaryTab.WORKLOADS}`, icon: Package, label: UI_LABELS.WORKLOADS, tabId: PrimaryTab.WORKLOADS },
+    { path: `/${PrimaryTab.MESH}`, icon: Zap, label: UI_LABELS.SERVICE_MESH, tabId: PrimaryTab.MESH },
+    { path: `/${PrimaryTab.DEPLOYMENTS}`, icon: GitBranch, label: UI_LABELS.DEPLOYMENTS, tabId: PrimaryTab.DEPLOYMENTS },
+    { path: `/${PrimaryTab.DATABASE}`, icon: Database, label: UI_LABELS.DATABASE, tabId: PrimaryTab.DATABASE },
+    { path: `/${PrimaryTab.OBSERVABILITY}`, icon: Eye, label: UI_LABELS.OBSERVABILITY, tabId: PrimaryTab.OBSERVABILITY },
   ]
   
   const navItems = allNavItems.filter(item => isTabVisible(item.tabId))
@@ -356,12 +356,12 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   const { isSectionVisible } = useSettingsStore()
   
   const navItems = [
-    { path: '/infrastructure', label: 'Infrastructure' },
-    { path: '/workloads', label: 'Workloads' },
-    { path: '/mesh', label: 'Service Mesh' },
-    { path: '/deployments', label: 'Deployments' },
-    { path: '/database', label: 'Database' },
-    { path: '/observability', label: 'Observability' },
+    { path: `/${PrimaryTab.INFRASTRUCTURE}`, label: UI_LABELS.INFRASTRUCTURE },
+    { path: `/${PrimaryTab.WORKLOADS}`, label: UI_LABELS.WORKLOADS },
+    { path: `/${PrimaryTab.MESH}`, label: UI_LABELS.SERVICE_MESH },
+    { path: `/${PrimaryTab.DEPLOYMENTS}`, label: UI_LABELS.DEPLOYMENTS },
+    { path: `/${PrimaryTab.DATABASE}`, label: UI_LABELS.DATABASE },
+    { path: `/${PrimaryTab.OBSERVABILITY}`, label: UI_LABELS.OBSERVABILITY },
   ]
 
   const currentItem = navItems.find(item => item.path === location.pathname)
@@ -369,46 +369,47 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   if (!currentItem) return null
 
   const secondaryTabLabels: Record<string, Record<string, string>> = {
-    infrastructure: {
-      overview: 'Overview',
-      nodes: 'Nodes', 
-      resources: 'Resources',
-      storage: 'Storage',
-      hierarchy: 'Hierarchy',
-      network: 'Network',
-      certificates: 'Certificates',
-      backup: 'Backup & Recovery'
+    [PrimaryTab.INFRASTRUCTURE]: {
+      [InfrastructureTab.OVERVIEW]: UI_LABELS.OVERVIEW,
+      [InfrastructureTab.NODES]: UI_LABELS.NODES, 
+      [InfrastructureTab.RESOURCES]: UI_LABELS.RESOURCES,
+      [InfrastructureTab.STORAGE]: UI_LABELS.STORAGE,
+      [InfrastructureTab.HIERARCHY]: UI_LABELS.HIERARCHY,
+      [InfrastructureTab.NETWORK]: UI_LABELS.NETWORK,
+      [InfrastructureTab.CERTIFICATES]: UI_LABELS.CERTIFICATES,
+      [InfrastructureTab.BACKUP]: UI_LABELS.BACKUP
     },
-    workloads: {
-      overview: 'Overview',
-      pods: 'Pods',
-      services: 'Services', 
-      namespaces: 'Namespaces'
+    [PrimaryTab.WORKLOADS]: {
+      [WorkloadsTab.OVERVIEW]: UI_LABELS.OVERVIEW,
+      [WorkloadsTab.PODS]: UI_LABELS.PODS,
+      [WorkloadsTab.SERVICES]: UI_LABELS.SERVICES, 
+      [WorkloadsTab.NAMESPACES]: UI_LABELS.NAMESPACES
     },
-    mesh: {
-      topology: 'Topology',
-      services: 'Services',
-      endpoints: 'Endpoints',
-      flows: 'Traffic Flow',
-      gateway: 'API Gateway'
+    [PrimaryTab.MESH]: {
+      [MeshTab.TOPOLOGY]: UI_LABELS.TOPOLOGY,
+      [MeshTab.SERVICES]: UI_LABELS.SERVICES,
+      [MeshTab.ENDPOINTS]: UI_LABELS.ENDPOINTS,
+      [MeshTab.FLOWS]: UI_LABELS.TRAFFIC_FLOW,
+      [MeshTab.GATEWAY]: UI_LABELS.API_GATEWAY
     },
-    deployments: {
-      applications: 'Applications',
-      repositories: 'Repositories',
-      gitea: 'Gitea Actions'
+    [PrimaryTab.DEPLOYMENTS]: {
+      [DeploymentsTab.DEPLOYMENTS]: UI_LABELS.DEPLOYMENTS,
+      [DeploymentsTab.HISTORY]: UI_LABELS.HISTORY,
+      [DeploymentsTab.IMAGES]: UI_LABELS.IMAGES,
+      [DeploymentsTab.REGISTRIES]: UI_LABELS.REGISTRIES
     },
-    database: {
-      connections: 'Connections',
-      browser: 'Schema Browser',
-      queries: 'Query Interface',
-      monitoring: 'Performance'
+    [PrimaryTab.DATABASE]: {
+      [DatabaseTab.CONNECTIONS]: UI_LABELS.CONNECTIONS,
+      [DatabaseTab.BROWSER]: UI_LABELS.BROWSER,
+      [DatabaseTab.QUERIES]: UI_LABELS.QUERIES,
+      [DatabaseTab.MONITORING]: UI_LABELS.MONITORING
     },
-    observability: {
-      logs: 'Log Data',
-      events: 'System Changes',
-      streams: 'Live Streams',
-      analytics: 'Analytics',
-      service_health: 'Service Health'
+    [PrimaryTab.OBSERVABILITY]: {
+      [ObservabilityTab.LOGS]: UI_LABELS.LOGS,
+      [ObservabilityTab.EVENTS]: UI_LABELS.EVENTS,
+      [ObservabilityTab.STREAMS]: UI_LABELS.LIVE_STREAMS,
+      [ObservabilityTab.ANALYTICS]: UI_LABELS.ANALYTICS,
+      [ObservabilityTab.SERVICE_HEALTH]: UI_LABELS.SERVICE_HEALTH
     }
   }
 
@@ -457,7 +458,7 @@ const App: FC = () => {
 
   useEffect(() => {
     // Check if user is already authenticated
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem(StorageKey.AUTH_TOKEN)
     if (token) {
       // Verify the token is still valid by making a test API call
       fetch(API_ENDPOINTS.AUTH.ME, {
@@ -468,19 +469,19 @@ const App: FC = () => {
       .then(response => {
         if (response.ok) {
           setIsAuthenticated(true)
-          setCurrentUser(localStorage.getItem('username') || 'admin')
+          setCurrentUser(localStorage.getItem(StorageKey.USERNAME) || 'admin')
         } else {
           // Token is invalid, clear it
-          localStorage.removeItem('auth_token')
-          localStorage.removeItem('username')
+          localStorage.removeItem(StorageKey.AUTH_TOKEN)
+          localStorage.removeItem(StorageKey.USERNAME)
           setIsAuthenticated(false)
           setCurrentUser(null)
         }
       })
       .catch(() => {
         // Network error or other issue, clear token
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('username')
+        localStorage.removeItem(StorageKey.AUTH_TOKEN)
+        localStorage.removeItem(StorageKey.USERNAME)
         setIsAuthenticated(false)
         setCurrentUser(null)
       })
@@ -525,8 +526,8 @@ const App: FC = () => {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('username')
+    localStorage.removeItem(StorageKey.AUTH_TOKEN)
+    localStorage.removeItem(StorageKey.USERNAME)
     setIsAuthenticated(false)
     setCurrentUser(null)
   }
@@ -558,7 +559,7 @@ const App: FC = () => {
               error={error}
             />
           ) : (
-            <Navigate to="/infrastructure" replace />
+            <Navigate to={`/${PrimaryTab.INFRASTRUCTURE}`} replace />
           )
         } />
         
