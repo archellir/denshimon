@@ -624,6 +624,22 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         </div>
       )}
 
+      {/* Tab Descriptions */}
+      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
+        <div className="border-b border-white">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="space-y-2">
+              <p className="text-gray-300 font-mono text-sm">
+                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).primary}
+              </p>
+              <p className="text-gray-400 font-mono text-sm">
+                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).secondary}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Secondary Navigation - with visual separation and right-side actions */}
       {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && secondaryTabs[activePrimaryTab] && (
         <div className="bg-black border-b border-white/20">
@@ -652,22 +668,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 {/* Item counts and action buttons will be rendered here per tab */}
                 {renderSecondaryTabActions(activePrimaryTab, activeSecondaryTab)}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab Descriptions */}
-      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
-        <div className="bg-gray-900/50 border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="space-y-2">
-              <p className="text-gray-300 font-mono text-sm">
-                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).primary}
-              </p>
-              <p className="text-gray-400 font-mono text-sm">
-                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).secondary}
-              </p>
             </div>
           </div>
         </div>
