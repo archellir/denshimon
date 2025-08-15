@@ -74,6 +74,8 @@ const GitOpsTab: React.FC = () => {
   const [rollbackTargets, setRollbackTargets] = useState<{ [key: string]: GitOpsDeployment[] }>({});
   const [showRollbackModal, setShowRollbackModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<GitOpsApplication | null>(null);
+  // const [webhookConfig, setWebhookConfig] = useState<any>(null);
+  // const [showWebhookConfig, setShowWebhookConfig] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -181,6 +183,30 @@ const GitOpsTab: React.FC = () => {
     } catch (error) {
       console.error('Failed to rollback application:', error);
     }
+  };
+
+  // const fetchWebhookConfig = async () => {
+  //   try {
+  //     const response = await fetch(API_ENDPOINTS.GITOPS.WEBHOOK_CONFIG);
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setWebhookConfig(data.data);
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch webhook config:', error);
+  //   }
+  // };
+
+  // const handleShowWebhookConfig = async () => {
+  //   await fetchWebhookConfig();
+  //   setShowWebhookConfig(true);
+  // };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      // Could add a toast notification here
+      console.log('Copied to clipboard');
+    });
   };
 
   const getStatusBadge = (status: string, type: 'repository' | 'application' | 'deployment' = 'repository') => {
@@ -319,6 +345,16 @@ const GitOpsTab: React.FC = () => {
             }`}
           >
             Deployment History
+          </button>
+          <button
+            onClick={() => setActiveTab('webhooks')}
+            className={`px-4 py-2 font-mono border-b-2 transition-colors ${
+              activeTab === 'webhooks' 
+                ? 'border-green-400 text-green-400' 
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            Webhooks
           </button>
         </div>
 
@@ -460,6 +496,104 @@ const GitOpsTab: React.FC = () => {
             <div>
               <div className="text-center text-gray-400 font-mono py-8">
                 Deployment history will be displayed here
+              </div>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {/* Webhooks Tab */}
+        {activeTab === 'webhooks' && (
+        <div className="space-y-4 mt-4">
+          <div className="border border-white/20 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-mono flex items-center">
+                <Zap className="w-4 h-4 mr-2" />
+                GitOps Webhook Configuration
+              </h3>
+              <button
+                onClick={() => console.log('Webhook config feature')}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-mono text-sm border border-blue-400 transition-colors"
+              >
+                Get Webhook Config
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-white font-mono mb-2">Auto-Sync Webhook</h4>
+                <p className="text-gray-400 font-mono text-sm mb-4">
+                  Configure your Git repository to send webhooks to this endpoint for automatic synchronization
+                  when changes are pushed to the base infrastructure repository.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-gray-400 font-mono text-sm">Webhook URL:</label>
+                  <div className="mt-1 flex">
+                    <input
+                      type="text"
+                      value={`${window.location.origin}/api/gitops/webhook`}
+                      readOnly
+                      className="flex-1 bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                    />
+                    <button
+                      onClick={() => copyToClipboard(`${window.location.origin}/api/gitops/webhook`)}
+                      className="ml-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white font-mono text-sm border border-gray-400 transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-gray-400 font-mono text-sm">Method:</label>
+                  <input
+                    type="text"
+                    value="POST"
+                    readOnly
+                    className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-gray-400 font-mono text-sm">Content-Type:</label>
+                  <input
+                    type="text"
+                    value="application/json"
+                    readOnly
+                    className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-gray-400 font-mono text-sm">Events:</label>
+                  <input
+                    type="text"
+                    value="push, repository"
+                    readOnly
+                    className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-white font-mono mb-2">How it works:</h4>
+                <ul className="text-gray-400 font-mono text-sm space-y-1">
+                  <li>• Push changes to your base infrastructure repository</li>
+                  <li>• Webhook automatically triggers GitOps sync</li>
+                  <li>• Only processes main/master branch pushes</li>
+                  <li>• Only syncs when manifest files (*.yaml, *.yml) are changed</li>
+                  <li>• Updates all applications with latest manifests</li>
+                </ul>
+              </div>
+
+              <div className="bg-yellow-900/20 border border-yellow-400/20 p-3">
+                <h4 className="text-yellow-400 font-mono mb-2">⚠️ Security Note:</h4>
+                <p className="text-yellow-200 font-mono text-sm">
+                  The webhook endpoint does not require authentication to allow Git services to call it.
+                  Ensure your base infrastructure repository webhook is configured with proper secrets if supported.
+                </p>
               </div>
             </div>
           </div>
