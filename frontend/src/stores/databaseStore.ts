@@ -10,7 +10,6 @@ import type {
   DatabaseType
 } from '@/types/database';
 import { DatabaseStatus } from '@/types/database';
-import type { ApiResponse } from '@/types';
 import { API_ENDPOINTS } from '@/constants';
 import { 
   mockDatabaseConnections,
@@ -23,16 +22,7 @@ import {
   mockApiResponse,
   MOCK_ENABLED
 } from '@/mocks';
-
-// Helper function to get authenticated headers
-const getAuthHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem('auth_token');
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
-};
+import { apiService, ApiError } from '@/services/api';
 
 interface DatabaseStore {
   // State
@@ -92,16 +82,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTIONS, {
-        headers: getAuthHeaders(),
-      });
-      const data: ApiResponse<DatabaseConfig[]> = await response.json();
-      
-      if (data.success) {
-        set({ connections: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to fetch connections', isLoading: false });
-      }
+      const response = await apiService.get<DatabaseConfig[]>(API_ENDPOINTS.DATABASES.CONNECTIONS);
+      set({ connections: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching connections, falling back to mock data:', error);
       // Fallback to mock data
@@ -113,162 +95,93 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   createConnection: async (config) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTIONS, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify(config),
+      const response = await apiService.post<DatabaseConfig>(API_ENDPOINTS.DATABASES.CONNECTIONS, config);
+      const { connections } = get();
+      set({ 
+        connections: [...connections, response.data],
+        isLoading: false 
       });
-      
-      const data: ApiResponse<DatabaseConfig> = await response.json();
-      
-      if (data.success) {
-        const { connections } = get();
-        set({ 
-          connections: [...connections, data.data],
-          isLoading: false 
-        });
-      } else {
-        set({ error: data.error || 'Failed to create connection', isLoading: false });
-      }
     } catch (error) {
-      console.error('Error creating connection:', error);
-      set({ error: 'Failed to create connection', isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to create connection';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
   updateConnection: async (id, config) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTION(id), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders(),
-        },
-        body: JSON.stringify(config),
+      const response = await apiService.put<DatabaseConfig>(API_ENDPOINTS.DATABASES.CONNECTION(id), config);
+      const { connections } = get();
+      set({ 
+        connections: connections.map(conn => 
+          conn.id === id ? response.data : conn
+        ),
+        isLoading: false 
       });
-      
-      const data: ApiResponse<DatabaseConfig> = await response.json();
-      
-      if (data.success) {
-        const { connections } = get();
-        set({ 
-          connections: connections.map(conn => 
-            conn.id === id ? data.data : conn
-          ),
-          isLoading: false 
-        });
-      } else {
-        set({ error: data.error || 'Failed to update connection', isLoading: false });
-      }
     } catch (error) {
-      console.error('Error updating connection:', error);
-      set({ error: 'Failed to update connection', isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to update connection';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
   deleteConnection: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTION(id), {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
+      await apiService.delete(API_ENDPOINTS.DATABASES.CONNECTION(id));
+      const { connections, selectedConnection } = get();
+      set({ 
+        connections: connections.filter(conn => conn.id !== id),
+        selectedConnection: selectedConnection === id ? null : selectedConnection,
+        isLoading: false 
       });
-      
-      const data: ApiResponse<void> = await response.json();
-      
-      if (data.success) {
-        const { connections, selectedConnection } = get();
-        set({ 
-          connections: connections.filter(conn => conn.id !== id),
-          selectedConnection: selectedConnection === id ? null : selectedConnection,
-          isLoading: false 
-        });
-      } else {
-        set({ error: data.error || 'Failed to delete connection', isLoading: false });
-      }
     } catch (error) {
-      console.error('Error deleting connection:', error);
-      set({ error: 'Failed to delete connection', isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete connection';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
   connectDatabase: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTION_CONNECT(id), {
-        method: 'POST',
+      await apiService.post(API_ENDPOINTS.DATABASES.CONNECTION_CONNECT(id));
+      const { connections } = get();
+      set({ 
+        connections: connections.map(conn => 
+          conn.id === id ? { ...conn, status: DatabaseStatus.CONNECTED } : conn
+        ),
+        isLoading: false 
       });
-      
-      const data: ApiResponse<void> = await response.json();
-      
-      if (data.success) {
-        const { connections } = get();
-        set({ 
-          connections: connections.map(conn => 
-            conn.id === id ? { ...conn, status: DatabaseStatus.CONNECTED } : conn
-          ),
-          isLoading: false 
-        });
-      } else {
-        set({ error: data.error || 'Failed to connect to database', isLoading: false });
-      }
     } catch (error) {
-      console.error('Error connecting to database:', error);
-      set({ error: 'Failed to connect to database', isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to connect to database';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
   disconnectDatabase: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTION_DISCONNECT(id), {
-        method: 'POST',
+      await apiService.post(API_ENDPOINTS.DATABASES.CONNECTION_DISCONNECT(id));
+      const { connections } = get();
+      set({ 
+        connections: connections.map(conn => 
+          conn.id === id ? { ...conn, status: DatabaseStatus.DISCONNECTED } : conn
+        ),
+        isLoading: false 
       });
-      
-      const data: ApiResponse<void> = await response.json();
-      
-      if (data.success) {
-        const { connections } = get();
-        set({ 
-          connections: connections.map(conn => 
-            conn.id === id ? { ...conn, status: DatabaseStatus.DISCONNECTED } : conn
-          ),
-          isLoading: false 
-        });
-      } else {
-        set({ error: data.error || 'Failed to disconnect from database', isLoading: false });
-      }
     } catch (error) {
-      console.error('Error disconnecting from database:', error);
-      set({ error: 'Failed to disconnect from database', isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to disconnect from database';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
   testConnection: async (config) => {
     set({ isLoading: true, error: null, testResult: null });
     try {
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTION_TEST, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
-      });
-      
-      const data: ApiResponse<TestConnectionResult> = await response.json();
-      
-      if (data.success) {
-        set({ testResult: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to test connection', isLoading: false });
-      }
+      const response = await apiService.post<TestConnectionResult>(API_ENDPOINTS.DATABASES.CONNECTION_TEST, config, false);
+      set({ testResult: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error testing connection:', error);
-      set({ error: 'Failed to test connection', isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to test connection';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -283,14 +196,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.DATABASES(connectionId));
-      const data: ApiResponse<DatabaseInfo[]> = await response.json();
-      
-      if (data.success) {
-        set({ databases: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to fetch databases', isLoading: false });
-      }
+      const response = await apiService.get<DatabaseInfo[]>(API_ENDPOINTS.DATABASES.DATABASES(connectionId), false);
+      set({ databases: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching databases, falling back to mock data:', error);
       // Fallback to mock data
@@ -312,14 +219,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.TABLES(connectionId, database));
-      const data: ApiResponse<TableInfo[]> = await response.json();
-      
-      if (data.success) {
-        set({ tables: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to fetch tables', isLoading: false });
-      }
+      const response = await apiService.get<TableInfo[]>(API_ENDPOINTS.DATABASES.TABLES(connectionId, database), false);
+      set({ tables: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching tables, falling back to mock data:', error);
       // Fallback to mock data
@@ -342,14 +243,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.COLUMNS(connectionId, database, table));
-      const data: ApiResponse<ColumnInfo[]> = await response.json();
-      
-      if (data.success) {
-        set({ columns: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to fetch columns', isLoading: false });
-      }
+      const response = await apiService.get<ColumnInfo[]>(API_ENDPOINTS.DATABASES.COLUMNS(connectionId, database, table), false);
+      set({ columns: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching columns, falling back to mock data:', error);
       // Fallback to mock data
@@ -372,21 +267,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.QUERY(connectionId), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sql, limit, offset }),
-      });
-      
-      const data: ApiResponse<QueryResult> = await response.json();
-      
-      if (data.success) {
-        set({ queryResults: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to execute query', isLoading: false });
-      }
+      const response = await apiService.post<QueryResult>(API_ENDPOINTS.DATABASES.QUERY(connectionId), { sql, limit, offset }, false);
+      set({ queryResults: response.data, isLoading: false });
     } catch (error) {
       console.error('Error executing query, falling back to mock data:', error);
       // Fallback to mock data
@@ -407,14 +289,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.STATS(connectionId));
-      const data: ApiResponse<DatabaseStats> = await response.json();
-      
-      if (data.success) {
-        set({ stats: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to fetch stats', isLoading: false });
-      }
+      const response = await apiService.get<DatabaseStats>(API_ENDPOINTS.DATABASES.STATS(connectionId), false);
+      set({ stats: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching stats, falling back to mock data:', error);
       // Fallback to mock data
@@ -434,14 +310,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.TYPES);
-      const data: ApiResponse<DatabaseType[]> = await response.json();
-      
-      if (data.success) {
-        set({ supportedTypes: data.data, isLoading: false });
-      } else {
-        set({ error: data.error || 'Failed to fetch supported types', isLoading: false });
-      }
+      const response = await apiService.get<DatabaseType[]>(API_ENDPOINTS.DATABASES.TYPES, false);
+      set({ supportedTypes: response.data, isLoading: false });
     } catch (error) {
       console.error('Error fetching supported types, falling back to mock data:', error);
       // Fallback to mock data
