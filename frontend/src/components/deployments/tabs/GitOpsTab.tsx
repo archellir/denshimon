@@ -426,17 +426,24 @@ const GitOpsTab: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          template_id: selectedTemplate.id,
-          variables: {
-            Name: deployForm.name,
-            Namespace: deployForm.namespace,
-            Image: selectedImage.full_name,
-            Replicas: deployForm.replicas,
-            'CPU.Request': deployForm.resources.cpu_request,
-            'CPU.Limit': deployForm.resources.cpu_limit,
-            'Memory.Request': deployForm.resources.memory_request,
-            'Memory.Limit': deployForm.resources.memory_limit,
-            Environment: deployForm.environment
+          application: {
+            name: deployForm.name,
+            namespace: deployForm.namespace,
+            image: selectedImage.full_name,
+            replicas: deployForm.replicas,
+            environment: deployForm.environment,
+            resources: {
+              cpu_request: deployForm.resources.cpu_request,
+              cpu_limit: deployForm.resources.cpu_limit,
+              memory_request: deployForm.resources.memory_request,
+              memory_limit: deployForm.resources.memory_limit
+            }
+          },
+          resource_type: 'Full',
+          options: {
+            service: true,
+            ingress: false,
+            autoscaling: false
           }
         })
       });
