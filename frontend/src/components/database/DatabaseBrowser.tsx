@@ -111,23 +111,6 @@ const DatabaseBrowser: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-mono">DATABASE SCHEMA BROWSER</h2>
-          <div className="text-sm font-mono opacity-60">
-            {connectedConnections.length} DATABASE{connectedConnections.length !== 1 ? 'S' : ''}
-          </div>
-        </div>
-        <button
-          onClick={() => fetchConnections()}
-          disabled={isLoading}
-          className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm disabled:opacity-50"
-        >
-          <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-          <span>REFRESH</span>
-        </button>
-      </div>
 
       {/* Filters */}
       <div className="flex items-center space-x-4 p-4 border border-white/20">
