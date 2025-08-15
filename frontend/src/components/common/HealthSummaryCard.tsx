@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react';
 import StatusIcon, { type StatusType } from './StatusIcon';
 import { Status } from '@constants';
+import { HealthCardData } from '@/types';
 
 export interface HealthMetric {
   label: string;
@@ -18,7 +19,7 @@ export interface HealthMetric {
 
 interface HealthSummaryCardProps {
   title: string;
-  icon?: any;
+  icon?: React.ComponentType<{ className?: string; size?: number }>;
   metrics: HealthMetric[];
   overallStatus?: StatusType;
   className?: string;
@@ -166,7 +167,7 @@ const calculateOverallStatus = (metrics: HealthMetric[]): StatusType => {
 export default HealthSummaryCard;
 
 // Preset health card configurations
-export const createClusterHealthCard = (data: any) => ({
+export const createClusterHealthCard = (data: HealthCardData) => ({
   title: 'Cluster Health',
   metrics: [
     {
@@ -202,7 +203,7 @@ export const createClusterHealthCard = (data: any) => ({
   ],
 });
 
-export const createApplicationHealthCard = (data: any) => ({
+export const createApplicationHealthCard = (data: HealthCardData) => ({
   title: 'Application Health',
   metrics: [
     {
@@ -236,7 +237,7 @@ export const createApplicationHealthCard = (data: any) => ({
   ],
 });
 
-export const createNetworkHealthCard = (data: any) => ({
+export const createNetworkHealthCard = (data: HealthCardData) => ({
   title: 'Network Health',
   metrics: [
     {
@@ -266,7 +267,7 @@ export const createNetworkHealthCard = (data: any) => ({
   ],
 });
 
-export const createStorageHealthCard = (data: any) => ({
+export const createStorageHealthCard = (data: HealthCardData) => ({
   title: 'Storage Health',
   metrics: [
     {
