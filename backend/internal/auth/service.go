@@ -1,3 +1,5 @@
+// Package auth provides authentication and authorization services using PASETO tokens.
+// It handles user login, token generation, validation, and session management.
 package auth
 
 import (
