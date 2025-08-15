@@ -5,6 +5,7 @@ package http
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/archellir/denshimon/internal/auth"
@@ -17,6 +18,8 @@ import (
 	"github.com/archellir/denshimon/internal/providers/certificates"
 	"github.com/archellir/denshimon/internal/providers/databases"
 	"github.com/archellir/denshimon/internal/websocket"
+	"github.com/archellir/denshimon/pkg/logger"
+	"log/slog"
 )
 
 func RegisterRoutes(
@@ -46,6 +49,19 @@ func RegisterRoutes(
 	// Initialize backup management
 	backupManager := backup.NewManager(db.DB)
 	backupHandlers := NewBackupHandlers(backupManager)
+
+	// Initialize GitOps management
+	gitopsLogger := logger.New(slog.LevelInfo)
+	baseInfraRepoURL := os.Getenv("GITOPS_BASE_REPO_URL")
+	if baseInfraRepoURL == "" {
+		baseInfraRepoURL = "https://github.com/user/base_infrastructure.git" // default value
+	}
+	localRepoPath := os.Getenv("GITOPS_LOCAL_PATH")
+	if localRepoPath == "" {
+		localRepoPath = "/tmp/base_infrastructure" // default value
+	}
+	gitopsHandlers := NewGitOpsHandler(db.DB, baseInfraRepoURL, localRepoPath, gitopsLogger)
+
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -264,6 +280,50 @@ func RegisterRoutes(
 		case r.Method == "DELETE":
 			backupHandlers.DeleteBackup(w, r)
 		default:
+			http.NotFound(w, r)
+		}
+	}))))
+
+	// GitOps endpoints (require authentication)
+	mux.HandleFunc("GET /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ListRepositories)))
+	mux.HandleFunc("POST /api/gitops/repositories", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.CreateRepository)))
+	mux.HandleFunc("POST /api/gitops/repositories/init", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.InitializeRepository)))
+	mux.HandleFunc("GET /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ListApplications)))
+	mux.HandleFunc("POST /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.CreateApplication)))
+	mux.HandleFunc("POST /api/gitops/manifests/generate", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.GenerateManifest)))
+	mux.HandleFunc("POST /api/gitops/manifests/validate", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ValidateManifest)))
+	mux.HandleFunc("GET /api/gitops/manifests/types", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.GetSupportedTypes)))
+	mux.HandleFunc("GET /api/gitops/sync/status", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.GetSyncStatus)))
+	mux.HandleFunc("POST /api/gitops/sync/start", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.StartSync)))
+	mux.HandleFunc("POST /api/gitops/sync/force", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ForceSync)))
+
+	// GitOps operations with path parameters
+	mux.Handle("/api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/sync") && r.Method == "POST" {
+			gitopsHandlers.SyncRepository(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	}))))
+
+	mux.Handle("/api/gitops/applications/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch {
+		case strings.HasSuffix(path, "/deploy") && r.Method == "POST":
+			gitopsHandlers.DeployApplication(w, r)
+		case strings.HasSuffix(path, "/history") && r.Method == "GET":
+			gitopsHandlers.GetDeploymentHistory(w, r)
+		case r.Method == "GET":
+			gitopsHandlers.GetApplication(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))))
+
+	mux.Handle("/api/gitops/sync/application/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			gitopsHandlers.SyncApplication(w, r)
+		} else {
 			http.NotFound(w, r)
 		}
 	}))))
