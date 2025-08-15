@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Rocket, RotateCcw, Trash2, Plus, Package, Settings, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Rocket, RotateCcw, Trash2, Plus, Package, Settings, X, ChevronDown, ChevronUp, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@/constants';
@@ -97,6 +97,22 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     annotations: {} as Record<string, string>
   });
 
+  // Dropdown states
+  const [imageDropdownOpen, setImageDropdownOpen] = useState(false);
+  const [namespaceDropdownOpen, setNamespaceDropdownOpen] = useState(false);
+  const [accessModeDropdownOpen, setAccessModeDropdownOpen] = useState(false);
+  const [healthCheckDropdownOpen, setHealthCheckDropdownOpen] = useState(false);
+  const [serviceTypeDropdownOpen, setServiceTypeDropdownOpen] = useState(false);
+  const [deployStrategyDropdownOpen, setDeployStrategyDropdownOpen] = useState(false);
+
+  // Dropdown refs
+  const imageDropdownRef = useRef<HTMLDivElement>(null);
+  const namespaceDropdownRef = useRef<HTMLDivElement>(null);
+  const accessModeDropdownRef = useRef<HTMLDivElement>(null);
+  const healthCheckDropdownRef = useRef<HTMLDivElement>(null);
+  const serviceTypeDropdownRef = useRef<HTMLDivElement>(null);
+  const deployStrategyDropdownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchDeployments();
     if (showDeployModal) {
@@ -191,6 +207,38 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
       setDeploying(false);
     }
   };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (imageDropdownRef.current && !imageDropdownRef.current.contains(event.target as Node)) {
+        setImageDropdownOpen(false);
+      }
+      if (namespaceDropdownRef.current && !namespaceDropdownRef.current.contains(event.target as Node)) {
+        setNamespaceDropdownOpen(false);
+      }
+      if (accessModeDropdownRef.current && !accessModeDropdownRef.current.contains(event.target as Node)) {
+        setAccessModeDropdownOpen(false);
+      }
+      if (healthCheckDropdownRef.current && !healthCheckDropdownRef.current.contains(event.target as Node)) {
+        setHealthCheckDropdownOpen(false);
+      }
+      if (serviceTypeDropdownRef.current && !serviceTypeDropdownRef.current.contains(event.target as Node)) {
+        setServiceTypeDropdownOpen(false);
+      }
+      if (deployStrategyDropdownRef.current && !deployStrategyDropdownRef.current.contains(event.target as Node)) {
+        setDeployStrategyDropdownOpen(false);
+      }
+    };
+
+    if (showDeployModal && (imageDropdownOpen || namespaceDropdownOpen || accessModeDropdownOpen || healthCheckDropdownOpen || serviceTypeDropdownOpen || deployStrategyDropdownOpen)) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDeployModal, imageDropdownOpen, namespaceDropdownOpen, accessModeDropdownOpen, healthCheckDropdownOpen, serviceTypeDropdownOpen, deployStrategyDropdownOpen]);
 
   // Modal keyboard behavior (must be after handleDeploy function)
   const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
@@ -388,21 +436,70 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
             {/* Container Image Selection at Top */}
             <div className="mb-6 pb-6 border-b border-white/30">
               <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
-              <select
-                value={selectedImage?.id || ''}
-                onChange={(e) => {
-                  const image = images.find(img => img.id === e.target.value);
-                  setSelectedImage(image || null);
-                }}
-                className="w-full bg-black border border-white text-white px-4 py-3 font-mono text-sm focus:border-green-400 transition-colors"
-              >
-                <option value="">-- SELECT AN IMAGE --</option>
-                {images.map((image) => (
-                  <option key={image.id} value={image.id}>
-                    {image.name.toUpperCase()} : {image.tag} {image.size ? `(${image.size})` : ''}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" ref={imageDropdownRef}>
+                <button
+                  onClick={() => setImageDropdownOpen(!imageDropdownOpen)}
+                  className="w-full bg-black border border-white text-white px-4 py-3 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-3">
+                    {selectedImage ? (
+                      <>
+                        <Container size={16} className="text-green-400" />
+                        <div className="text-left">
+                          <div className="font-semibold">{selectedImage.name.toUpperCase()} : {selectedImage.tag}</div>
+                          <div className="text-xs opacity-60">{selectedImage.size ? `${selectedImage.size}` : 'Container Image'}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Container size={16} className="opacity-60" />
+                        <span className="opacity-60">-- SELECT AN IMAGE --</span>
+                      </>
+                    )}
+                  </div>
+                  {imageDropdownOpen ? (
+                    <ChevronUp size={20} className="text-green-400" />
+                  ) : (
+                    <ChevronDown size={20} className="opacity-60" />
+                  )}
+                </button>
+                
+                {imageDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0 max-h-64 overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setImageDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 font-mono text-sm hover:bg-white/10 transition-colors flex items-center space-x-3 border-b border-white/20"
+                    >
+                      <Container size={16} className="opacity-60" />
+                      <span className="opacity-60">-- SELECT AN IMAGE --</span>
+                    </button>
+                    {images.map((image) => (
+                      <button
+                        key={image.id}
+                        onClick={() => {
+                          setSelectedImage(image);
+                          setImageDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center justify-between border-b border-white/10 last:border-b-0 ${
+                          selectedImage?.id === image.id ? 'bg-green-400/10 text-green-400' : ''
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <Container size={16} className="text-green-400" />
+                          <div>
+                            <div className="font-semibold">{image.name.toUpperCase()} : {image.tag}</div>
+                            <div className="text-xs opacity-60">{image.size ? `${image.size}` : 'Container Image'}</div>
+                          </div>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {selectedImage && (
                 <div className="mt-2 text-sm text-green-400 font-mono">
                   SELECTED: {selectedImage.name}:{selectedImage.tag}
@@ -434,15 +531,46 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-mono text-gray-400 mb-1">NAMESPACE</label>
-                          <select
-                            value={deployForm.namespace}
-                            onChange={(e) => setDeployForm(prev => ({...prev, namespace: e.target.value}))}
-                            className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                          >
-                            <option value="base-infra">BASE-INFRA</option>
-                            <option value="default">DEFAULT</option>
-                            <option value="kube-system">KUBE-SYSTEM</option>
-                          </select>
+                          <div className="relative" ref={namespaceDropdownRef}>
+                            <button
+                              onClick={() => setNamespaceDropdownOpen(!namespaceDropdownOpen)}
+                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <Database size={12} className="text-green-400" />
+                                <span>{deployForm.namespace.toUpperCase()}</span>
+                              </div>
+                              {namespaceDropdownOpen ? (
+                                <ChevronUp size={14} className="text-green-400" />
+                              ) : (
+                                <ChevronDown size={14} className="opacity-60" />
+                              )}
+                            </button>
+                            
+                            {namespaceDropdownOpen && (
+                              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
+                                {[
+                                  { value: 'base-infra', label: 'BASE-INFRA' },
+                                  { value: 'default', label: 'DEFAULT' },
+                                  { value: 'kube-system', label: 'KUBE-SYSTEM' }
+                                ].map(ns => (
+                                  <button
+                                    key={ns.value}
+                                    onClick={() => {
+                                      setDeployForm(prev => ({...prev, namespace: ns.value}));
+                                      setNamespaceDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
+                                      deployForm.namespace === ns.value ? 'bg-green-400/10 text-green-400' : ''
+                                    }`}
+                                  >
+                                    <Database size={12} className="text-green-400" />
+                                    <span>{ns.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <label className="block text-xs font-mono text-gray-400 mb-1">REPLICAS</label>
