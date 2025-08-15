@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getWebSocketInstance, WebSocketMessage } from '@services/websocket';
 import { WebSocketEventType, WebSocketState } from '@/constants';
+import { WebSocketCallback } from '@/types';
 
 export interface UseWebSocketOptions {
   enabled?: boolean;
@@ -12,7 +13,7 @@ export interface WebSocketConnectionState {
   reconnectAttempts: number;
 }
 
-export function useWebSocket<T = any>(
+export function useWebSocket<T = Record<string, unknown>>(
   messageType: WebSocketEventType | 'connection',
   options: UseWebSocketOptions = {}
 ) {
@@ -27,7 +28,7 @@ export function useWebSocket<T = any>(
   const subscriptionIdRef = useRef<string | null>(null);
   const wsRef = useRef(getWebSocketInstance());
 
-  const handleMessage = useCallback((receivedData: any) => {
+  const handleMessage = useCallback((receivedData: Record<string, unknown>) => {
     if (messageType === 'connection') {
       setConnectionState(receivedData);
     } else {
@@ -36,7 +37,7 @@ export function useWebSocket<T = any>(
     setError(null);
   }, [messageType]);
 
-  const handleError = useCallback((err: any) => {
+  const handleError = useCallback((err: unknown) => {
     setError(err instanceof Error ? err : new Error(String(err)));
   }, []);
 
@@ -98,7 +99,7 @@ export function useWebSocket<T = any>(
     }
   }, [handleError]);
 
-  const send = useCallback((messageData: any) => {
+  const send = useCallback((messageData: Record<string, unknown>) => {
     try {
       const ws = wsRef.current;
       ws.send({
@@ -162,7 +163,7 @@ export function useConnectionState() {
 
 // Batch subscription hook for multiple message types
 export function useMultipleWebSocket(messageTypes: WebSocketMessage['type'][]) {
-  const [data, setData] = useState<Record<string, any>>({});
+  const [data, setData] = useState<Record<string, Record<string, unknown>>>({});
   const [connectionState, setConnectionState] = useState<WebSocketConnectionState>({
     state: WebSocketState.DISCONNECTED,
     reconnectAttempts: 0
