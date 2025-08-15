@@ -18,33 +18,33 @@ type Service struct {
 }
 
 type ClusterMetrics struct {
-	Timestamp        time.Time         `json:"timestamp"`
-	TotalNodes       int               `json:"total_nodes"`
-	ReadyNodes       int               `json:"ready_nodes"`
-	TotalPods        int               `json:"total_pods"`
-	RunningPods      int               `json:"running_pods"`
-	PendingPods      int               `json:"pending_pods"`
-	FailedPods       int               `json:"failed_pods"`
-	TotalNamespaces  int               `json:"total_namespaces"`
-	CPUUsage         ResourceMetrics   `json:"cpu_usage"`
-	MemoryUsage      ResourceMetrics   `json:"memory_usage"`
-	StorageUsage     ResourceMetrics   `json:"storage_usage"`
-	NetworkMetrics   NetworkMetrics    `json:"network_metrics"`
-	NodeMetrics      []NodeMetrics     `json:"node_metrics"`
+	Timestamp        time.Time          `json:"timestamp"`
+	TotalNodes       int                `json:"total_nodes"`
+	ReadyNodes       int                `json:"ready_nodes"`
+	TotalPods        int                `json:"total_pods"`
+	RunningPods      int                `json:"running_pods"`
+	PendingPods      int                `json:"pending_pods"`
+	FailedPods       int                `json:"failed_pods"`
+	TotalNamespaces  int                `json:"total_namespaces"`
+	CPUUsage         ResourceMetrics    `json:"cpu_usage"`
+	MemoryUsage      ResourceMetrics    `json:"memory_usage"`
+	StorageUsage     ResourceMetrics    `json:"storage_usage"`
+	NetworkMetrics   NetworkMetrics     `json:"network_metrics"`
+	NodeMetrics      []NodeMetrics      `json:"node_metrics"`
 	NamespaceMetrics []NamespaceMetrics `json:"namespace_metrics"`
 }
 
 type ResourceMetrics struct {
-	Used      int64   `json:"used"`
-	Total     int64   `json:"total"`
-	Available int64   `json:"available"`
+	Used         int64   `json:"used"`
+	Total        int64   `json:"total"`
+	Available    int64   `json:"available"`
 	UsagePercent float64 `json:"usage_percent"`
 }
 
 type NetworkMetrics struct {
-	BytesReceived    int64 `json:"bytes_received"`
-	BytesTransmitted int64 `json:"bytes_transmitted"`
-	PacketsReceived  int64 `json:"packets_received"`
+	BytesReceived      int64 `json:"bytes_received"`
+	BytesTransmitted   int64 `json:"bytes_transmitted"`
+	PacketsReceived    int64 `json:"packets_received"`
 	PacketsTransmitted int64 `json:"packets_transmitted"`
 }
 
@@ -246,7 +246,7 @@ func (s *Service) calculateClusterCPU(nodes []corev1.Node) ResourceMetrics {
 		if cpu := node.Status.Allocatable[corev1.ResourceCPU]; !cpu.IsZero() {
 			total += cpu.MilliValue()
 		}
-		
+
 		// For actual usage, we'd need metrics server data
 		// For now, simulate some usage
 		cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]
@@ -274,7 +274,7 @@ func (s *Service) calculateClusterMemory(nodes []corev1.Node) ResourceMetrics {
 		if memory := node.Status.Allocatable[corev1.ResourceMemory]; !memory.IsZero() {
 			total += memory.Value()
 		}
-		
+
 		// For actual usage, we'd need metrics server data
 		// For now, simulate some usage
 		memAllocatable := node.Status.Allocatable[corev1.ResourceMemory]
@@ -302,7 +302,7 @@ func (s *Service) calculateClusterStorage(nodes []corev1.Node) ResourceMetrics {
 		if storage := node.Status.Allocatable[corev1.ResourceEphemeralStorage]; !storage.IsZero() {
 			total += storage.Value()
 		}
-		
+
 		// Simulate storage usage
 		storageAllocatable := node.Status.Allocatable[corev1.ResourceEphemeralStorage]
 		used += int64(float64(storageAllocatable.Value()) * 0.25)
@@ -355,7 +355,7 @@ func (s *Service) getNodeMetrics(ctx context.Context, node corev1.Node, pods []c
 
 func (s *Service) getNodeResourceMetrics(node corev1.Node, resourceName corev1.ResourceName) ResourceMetrics {
 	capacity := node.Status.Capacity[resourceName]
-	
+
 	total := capacity.Value()
 	if resourceName == corev1.ResourceCPU {
 		total = capacity.MilliValue()
@@ -364,7 +364,7 @@ func (s *Service) getNodeResourceMetrics(node corev1.Node, resourceName corev1.R
 	// Simulate usage (in production, would come from metrics server)
 	used := int64(float64(total) * 0.35)
 	available := total - used
-	
+
 	usagePercent := 0.0
 	if total > 0 {
 		usagePercent = float64(used) / float64(total) * 100
@@ -417,7 +417,7 @@ func (s *Service) getNamespaceMetrics(ctx context.Context, namespace corev1.Name
 
 func (s *Service) getPodMetrics(ctx context.Context, pod corev1.Pod) PodMetrics {
 	age := time.Since(pod.CreationTimestamp.Time).Truncate(time.Second).String()
-	
+
 	restartCount := int32(0)
 	for _, containerStatus := range pod.Status.ContainerStatuses {
 		restartCount += containerStatus.RestartCount
@@ -429,7 +429,7 @@ func (s *Service) getPodMetrics(ctx context.Context, pod corev1.Pod) PodMetrics 
 		Status:    string(pod.Status.Phase),
 		Node:      pod.Spec.NodeName,
 		CPUUsage: ResourceMetrics{
-			Used:         100,  // Would come from metrics server in production
+			Used:         100, // Would come from metrics server in production
 			Total:        500,
 			Available:    400,
 			UsagePercent: 20.0,
@@ -445,4 +445,3 @@ func (s *Service) getPodMetrics(ctx context.Context, pod corev1.Pod) PodMetrics 
 		IP:           pod.Status.PodIP,
 	}
 }
-

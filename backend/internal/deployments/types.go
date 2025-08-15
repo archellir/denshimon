@@ -6,23 +6,23 @@ import (
 
 // Deployment represents a deployed application in Kubernetes
 type Deployment struct {
-	ID              string                    `json:"id"`
-	Name            string                    `json:"name"`
-	Namespace       string                    `json:"namespace"`
-	Image           string                    `json:"image"`
-	RegistryID      string                    `json:"registry_id"`
-	Replicas        int32                     `json:"replicas"`
-	AvailableReplicas int32                   `json:"available_replicas"`
-	ReadyReplicas   int32                     `json:"ready_replicas"`
-	NodeSelector    map[string]string         `json:"node_selector,omitempty"`
-	Strategy        DeploymentStrategy        `json:"strategy"`
-	Status          DeploymentStatus          `json:"status"`
-	Pods            []PodInfo                 `json:"pods"`
-	NodeDistribution map[string]int           `json:"node_distribution"`
-	Resources       ResourceRequirements      `json:"resources,omitempty"`
-	Environment     map[string]string         `json:"environment,omitempty"`
-	CreatedAt       time.Time                 `json:"created_at"`
-	UpdatedAt       time.Time                 `json:"updated_at"`
+	ID                string               `json:"id"`
+	Name              string               `json:"name"`
+	Namespace         string               `json:"namespace"`
+	Image             string               `json:"image"`
+	RegistryID        string               `json:"registry_id"`
+	Replicas          int32                `json:"replicas"`
+	AvailableReplicas int32                `json:"available_replicas"`
+	ReadyReplicas     int32                `json:"ready_replicas"`
+	NodeSelector      map[string]string    `json:"node_selector,omitempty"`
+	Strategy          DeploymentStrategy   `json:"strategy"`
+	Status            DeploymentStatus     `json:"status"`
+	Pods              []PodInfo            `json:"pods"`
+	NodeDistribution  map[string]int       `json:"node_distribution"`
+	Resources         ResourceRequirements `json:"resources,omitempty"`
+	Environment       map[string]string    `json:"environment,omitempty"`
+	CreatedAt         time.Time            `json:"created_at"`
+	UpdatedAt         time.Time            `json:"updated_at"`
 }
 
 // DeploymentStrategy defines how deployments are rolled out
@@ -30,18 +30,18 @@ type DeploymentStrategy struct {
 	Type           string `json:"type"` // "RollingUpdate" or "Recreate"
 	MaxSurge       int32  `json:"max_surge,omitempty"`
 	MaxUnavailable int32  `json:"max_unavailable,omitempty"`
-	NodeSpread     bool   `json:"node_spread"`     // Spread across nodes
-	ZoneSpread     bool   `json:"zone_spread"`     // Spread across zones
+	NodeSpread     bool   `json:"node_spread"` // Spread across nodes
+	ZoneSpread     bool   `json:"zone_spread"` // Spread across zones
 }
 
 // DeploymentStatus represents the current status of a deployment
 type DeploymentStatus string
 
 const (
-	DeploymentStatusPending    DeploymentStatus = "pending"
-	DeploymentStatusRunning    DeploymentStatus = "running"
-	DeploymentStatusFailed     DeploymentStatus = "failed"
-	DeploymentStatusUpdating   DeploymentStatus = "updating"
+	DeploymentStatusPending     DeploymentStatus = "pending"
+	DeploymentStatusRunning     DeploymentStatus = "running"
+	DeploymentStatusFailed      DeploymentStatus = "failed"
+	DeploymentStatusUpdating    DeploymentStatus = "updating"
 	DeploymentStatusTerminating DeploymentStatus = "terminating"
 )
 
@@ -71,15 +71,15 @@ type ResourceList struct {
 
 // CreateDeploymentRequest represents a request to create a new deployment
 type CreateDeploymentRequest struct {
-	Name         string                   `json:"name"`
-	Namespace    string                   `json:"namespace"`
-	Image        string                   `json:"image"`
-	RegistryID   string                   `json:"registry_id"`
-	Replicas     int32                    `json:"replicas"`
-	NodeSelector map[string]string        `json:"node_selector,omitempty"`
-	Strategy     DeploymentStrategy       `json:"strategy"`
-	Resources    ResourceRequirements     `json:"resources,omitempty"`
-	Environment  map[string]string        `json:"environment,omitempty"`
+	Name         string               `json:"name"`
+	Namespace    string               `json:"namespace"`
+	Image        string               `json:"image"`
+	RegistryID   string               `json:"registry_id"`
+	Replicas     int32                `json:"replicas"`
+	NodeSelector map[string]string    `json:"node_selector,omitempty"`
+	Strategy     DeploymentStrategy   `json:"strategy"`
+	Resources    ResourceRequirements `json:"resources,omitempty"`
+	Environment  map[string]string    `json:"environment,omitempty"`
 }
 
 // ScaleDeploymentRequest represents a request to scale a deployment
@@ -97,30 +97,30 @@ type UpdateDeploymentRequest struct {
 
 // NodeInfo contains information about a Kubernetes node
 type NodeInfo struct {
-	Name      string            `json:"name"`
-	Ready     bool              `json:"ready"`
-	Roles     []string          `json:"roles"`
-	Version   string            `json:"version"`
-	OS        string            `json:"os"`
-	Arch      string            `json:"arch"`
-	Zone      string            `json:"zone,omitempty"`
-	Region    string            `json:"region,omitempty"`
-	Labels    map[string]string `json:"labels"`
-	Capacity  ResourceList      `json:"capacity"`
-	Allocatable ResourceList    `json:"allocatable"`
-	PodCount  int               `json:"pod_count"`
+	Name        string            `json:"name"`
+	Ready       bool              `json:"ready"`
+	Roles       []string          `json:"roles"`
+	Version     string            `json:"version"`
+	OS          string            `json:"os"`
+	Arch        string            `json:"arch"`
+	Zone        string            `json:"zone,omitempty"`
+	Region      string            `json:"region,omitempty"`
+	Labels      map[string]string `json:"labels"`
+	Capacity    ResourceList      `json:"capacity"`
+	Allocatable ResourceList      `json:"allocatable"`
+	PodCount    int               `json:"pod_count"`
 }
 
 // AutoScaler represents horizontal pod autoscaler configuration
 type AutoScaler struct {
-	ID               string `json:"id"`
-	DeploymentID     string `json:"deployment_id"`
-	MinReplicas      int32  `json:"min_replicas"`
-	MaxReplicas      int32  `json:"max_replicas"`
-	TargetCPUPercent *int32 `json:"target_cpu_percent,omitempty"`
-	TargetMemoryPercent *int32 `json:"target_memory_percent,omitempty"`
-	Enabled          bool   `json:"enabled"`
-	CreatedAt        time.Time `json:"created_at"`
+	ID                  string    `json:"id"`
+	DeploymentID        string    `json:"deployment_id"`
+	MinReplicas         int32     `json:"min_replicas"`
+	MaxReplicas         int32     `json:"max_replicas"`
+	TargetCPUPercent    *int32    `json:"target_cpu_percent,omitempty"`
+	TargetMemoryPercent *int32    `json:"target_memory_percent,omitempty"`
+	Enabled             bool      `json:"enabled"`
+	CreatedAt           time.Time `json:"created_at"`
 }
 
 // CreateAutoScalerRequest represents a request to create an autoscaler

@@ -86,9 +86,9 @@ func (d *KubernetesDeployer) Update(ctx context.Context, deployment Deployment) 
 	// Update resources
 	if deployment.Resources.Limits.CPU != "" || deployment.Resources.Limits.Memory != "" ||
 		deployment.Resources.Requests.CPU != "" || deployment.Resources.Requests.Memory != "" {
-		
+
 		resources := corev1.ResourceRequirements{}
-		
+
 		if deployment.Resources.Limits.CPU != "" || deployment.Resources.Limits.Memory != "" {
 			resources.Limits = make(corev1.ResourceList)
 			if deployment.Resources.Limits.CPU != "" {
@@ -98,7 +98,7 @@ func (d *KubernetesDeployer) Update(ctx context.Context, deployment Deployment) 
 				resources.Limits[corev1.ResourceMemory] = mustParseQuantity(deployment.Resources.Limits.Memory)
 			}
 		}
-		
+
 		if deployment.Resources.Requests.CPU != "" || deployment.Resources.Requests.Memory != "" {
 			resources.Requests = make(corev1.ResourceList)
 			if deployment.Resources.Requests.CPU != "" {
@@ -108,7 +108,7 @@ func (d *KubernetesDeployer) Update(ctx context.Context, deployment Deployment) 
 				resources.Requests[corev1.ResourceMemory] = mustParseQuantity(deployment.Resources.Requests.Memory)
 			}
 		}
-		
+
 		existing.Spec.Template.Spec.Containers[0].Resources = resources
 	}
 
@@ -204,7 +204,7 @@ func (d *KubernetesDeployer) buildDeploymentSpec(deployment Deployment, imagePul
 	deploymentStrategy := appsv1.DeploymentStrategy{
 		Type: appsv1.RollingUpdateDeploymentStrategyType,
 	}
-	
+
 	if deployment.Strategy.Type == "Recreate" {
 		deploymentStrategy.Type = appsv1.RecreateDeploymentStrategyType
 	} else {
@@ -224,8 +224,8 @@ func (d *KubernetesDeployer) buildDeploymentSpec(deployment Deployment, imagePul
 				Resources: resources,
 			},
 		},
-		NodeSelector:   deployment.NodeSelector,
-		RestartPolicy:  corev1.RestartPolicyAlways,
+		NodeSelector:  deployment.NodeSelector,
+		RestartPolicy: corev1.RestartPolicyAlways,
 	}
 
 	// Add image pull secret if provided
@@ -306,7 +306,7 @@ func (d *KubernetesDeployer) createImagePullSecret(ctx context.Context, namespac
 	clientset := d.k8sClient.Clientset()
 
 	secretName := fmt.Sprintf("registry-%s", registryID)
-	
+
 	// Create docker config JSON
 	dockerConfig := map[string]interface{}{
 		"auths": map[string]interface{}{

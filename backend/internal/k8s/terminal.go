@@ -18,11 +18,11 @@ import (
 
 // TerminalSession represents a WebSocket terminal session
 type TerminalSession struct {
-	conn      *websocket.Conn
-	sizeChan  chan *remotecommand.TerminalSize
-	doneChan  chan struct{}
-	ctx       context.Context
-	cancel    context.CancelFunc
+	conn     *websocket.Conn
+	sizeChan chan *remotecommand.TerminalSize
+	doneChan chan struct{}
+	ctx      context.Context
+	cancel   context.CancelFunc
 }
 
 // TerminalMessage represents messages sent over WebSocket
@@ -52,7 +52,7 @@ func NewTerminalSession(w http.ResponseWriter, r *http.Request, clientset kubern
 	}
 
 	ctx, cancel := context.WithCancel(r.Context())
-	
+
 	session := &TerminalSession{
 		conn:     conn,
 		sizeChan: make(chan *remotecommand.TerminalSize, 10),
@@ -103,7 +103,7 @@ func (c *Client) HandlePodExec(w http.ResponseWriter, r *http.Request) {
 
 	// Start the exec session
 	go session.handleExec(c, namespace, podName, containerName, []string{command})
-	
+
 	// Handle WebSocket messages
 	session.handleWebSocketMessages()
 }
@@ -114,7 +114,7 @@ func (ts *TerminalSession) handleExec(client *Client, namespace, podName, contai
 
 	// Create the exec request
 	req := ts.getExecRequest(client, namespace, podName, containerName, command)
-	
+
 	executor, err := remotecommand.NewSPDYExecutor(ts.getRestConfig(client), "POST", req.URL())
 	if err != nil {
 		ts.sendError(fmt.Sprintf("Failed to create executor: %v", err))
@@ -351,7 +351,7 @@ func (c *Client) HandleFileUpload(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status": "file upload not yet implemented"}`))
 }
 
-// HandleFileDownload handles file download from pods  
+// HandleFileDownload handles file download from pods
 func (c *Client) HandleFileDownload(w http.ResponseWriter, r *http.Request) {
 	// TODO: Implement file download using kubectl cp equivalent
 	w.Header().Set("Content-Type", "application/json")

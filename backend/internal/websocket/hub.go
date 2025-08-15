@@ -39,13 +39,13 @@ type Message struct {
 
 // Client represents a WebSocket client
 type Client struct {
-	ID         string
-	Conn       *websocket.Conn
-	Hub        *Hub
-	Send       chan Message
-	UserID     string // For authentication tracking
+	ID            string
+	Conn          *websocket.Conn
+	Hub           *Hub
+	Send          chan Message
+	UserID        string // For authentication tracking
 	Subscriptions map[MessageType]bool
-	mu         sync.RWMutex
+	mu            sync.RWMutex
 }
 
 // Hub maintains the set of active clients and broadcasts messages to the clients

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/internal/providers"
 	"github.com/google/uuid"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/archellir/denshimon/internal/k8s"
-	"github.com/archellir/denshimon/internal/providers"
 )
 
 // Service manages deployments and integrates with Kubernetes and registries
@@ -39,7 +39,7 @@ func NewService(k8sClient *k8s.Client, registryManager *providers.RegistryManage
 
 	// Initialize database tables
 	service.initDB()
-	
+
 	return service
 }
 
@@ -94,7 +94,7 @@ func (s *Service) initDB() error {
 			return fmt.Errorf("failed to create table: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -588,7 +588,7 @@ func isNodeReady(node *corev1.Node) bool {
 
 func getNodeRoles(node *corev1.Node) []string {
 	var roles []string
-	
+
 	for label := range node.Labels {
 		if strings.HasPrefix(label, "node-role.kubernetes.io/") {
 			role := strings.TrimPrefix(label, "node-role.kubernetes.io/")
@@ -597,11 +597,11 @@ func getNodeRoles(node *corev1.Node) []string {
 			}
 		}
 	}
-	
+
 	// If no roles found, default to worker
 	if len(roles) == 0 {
 		roles = append(roles, "worker")
 	}
-	
+
 	return roles
 }

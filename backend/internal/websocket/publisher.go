@@ -13,22 +13,22 @@ import (
 
 // Publisher publishes real-time data to WebSocket clients
 type Publisher struct {
-	hub           *Hub
-	k8sClient     *k8s.Client
+	hub            *Hub
+	k8sClient      *k8s.Client
 	metricsService *metrics.Service
-	ctx           context.Context
-	cancel        context.CancelFunc
+	ctx            context.Context
+	cancel         context.CancelFunc
 }
 
 // NewPublisher creates a new data publisher
 func NewPublisher(hub *Hub, k8sClient *k8s.Client, metricsService *metrics.Service) *Publisher {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Publisher{
-		hub:           hub,
-		k8sClient:     k8sClient,
+		hub:            hub,
+		k8sClient:      k8sClient,
 		metricsService: metricsService,
-		ctx:           ctx,
-		cancel:        cancel,
+		ctx:            ctx,
+		cancel:         cancel,
 	}
 }
 
@@ -67,12 +67,12 @@ func (p *Publisher) publishMetrics() {
 				// Get real metrics from Kubernetes
 				ctx := context.Background()
 				clusterMetrics, err := p.metricsService.GetClusterMetrics(ctx)
-				
+
 				// Get additional metrics that frontend expects
 				var nodeMetrics []interface{}
-				var podMetrics []interface{}  
+				var podMetrics []interface{}
 				var namespaceMetrics []interface{}
-				
+
 				if err == nil {
 					// Try to get node metrics (single VPS)
 					if nodes, nodeErr := p.k8sClient.ListNodes(ctx); nodeErr == nil {
@@ -82,7 +82,7 @@ func (p *Publisher) publishMetrics() {
 							}
 						}
 					}
-					
+
 					// Send complete metrics object that frontend expects
 					p.hub.Broadcast(MessageTypeMetrics, map[string]interface{}{
 						"cluster":    clusterMetrics,
@@ -109,7 +109,7 @@ func (p *Publisher) publishLogs() {
 		default:
 			// Random interval between 1-3 seconds
 			time.Sleep(time.Duration(1000+rand.Intn(2000)) * time.Millisecond)
-			
+
 			logEntry := p.generateMockLogEntry()
 			p.hub.Broadcast(MessageTypeLogs, logEntry)
 		}
@@ -125,7 +125,7 @@ func (p *Publisher) publishWorkflows() {
 		default:
 			// Random interval between 5-10 seconds
 			time.Sleep(time.Duration(5000+rand.Intn(5000)) * time.Millisecond)
-			
+
 			workflow := p.generateMockWorkflow()
 			p.hub.Broadcast(MessageTypeWorkflows, workflow)
 		}
@@ -141,7 +141,7 @@ func (p *Publisher) publishEvents() {
 		default:
 			// Random interval between 3-7 seconds
 			time.Sleep(time.Duration(3000+rand.Intn(4000)) * time.Millisecond)
-			
+
 			event := p.generateMockEvent()
 			p.hub.Broadcast(MessageTypeEvents, event)
 		}
@@ -173,7 +173,7 @@ func (p *Publisher) publishAlerts() {
 		default:
 			// Random interval between 10-30 seconds
 			time.Sleep(time.Duration(10000+rand.Intn(20000)) * time.Millisecond)
-			
+
 			// Only send alert 20% of the time
 			if rand.Float32() < 0.2 {
 				alert := p.generateMockAlert()
@@ -189,37 +189,37 @@ func (p *Publisher) generateMockMetrics() map[string]interface{} {
 	return map[string]interface{}{
 		"cluster": map[string]interface{}{
 			"cpu_usage": map[string]interface{}{
-				"usage_percent": 65 + rand.Float64()*20, // 65-85% (realistic for VPS)
+				"usage_percent": 65 + rand.Float64()*20,   // 65-85% (realistic for VPS)
 				"used":          5200 + rand.Int63n(1600), // 5.2-6.8 cores
-				"total":         8000, // 8 cores
+				"total":         8000,                     // 8 cores
 				"available":     1800 - rand.Int63n(1600),
 				"usage":         5.2 + rand.Float64()*1.6,
 				"unit":          "m",
 			},
 			"memory_usage": map[string]interface{}{
-				"usage_percent": 75 + rand.Float64()*15, // 75-90% (realistic for VPS)
+				"usage_percent": 75 + rand.Float64()*15,                // 75-90% (realistic for VPS)
 				"used":          12884901888 + rand.Int63n(2147483648), // 12-14GB
-				"total":         17179869184, // 16GB
+				"total":         17179869184,                           // 16GB
 				"available":     4294967296 - rand.Int63n(2147483648),
 				"usage":         12884901888 + rand.Int63n(2147483648),
 				"unit":          "bytes",
 			},
-			"ready_nodes":    1, // Single VPS
-			"total_nodes":    1,
-			"running_pods":   15 + rand.Intn(5), // 15-20 pods
-			"pending_pods":   rand.Intn(2),      // 0-1 pending
-			"failed_pods":    rand.Intn(2),      // 0-1 failed  
-			"total_pods":     20,
-			"healthy_pods":   15 + rand.Intn(5),
-			"unhealthy_pods": rand.Intn(2),
+			"ready_nodes":      1, // Single VPS
+			"total_nodes":      1,
+			"running_pods":     15 + rand.Intn(5), // 15-20 pods
+			"pending_pods":     rand.Intn(2),      // 0-1 pending
+			"failed_pods":      rand.Intn(2),      // 0-1 failed
+			"total_pods":       20,
+			"healthy_pods":     15 + rand.Intn(5),
+			"unhealthy_pods":   rand.Intn(2),
 			"total_namespaces": 5,
 		},
 		"nodes": []map[string]interface{}{
 			{
-				"name":    "vps-main",
-				"status":  "Ready",
-				"version": "v1.28.2",
-				"os":      "Ubuntu 22.04.3 LTS",
+				"name":         "vps-main",
+				"status":       "Ready",
+				"version":      "v1.28.2",
+				"os":           "Ubuntu 22.04.3 LTS",
 				"architecture": "amd64",
 				"age":          "15d",
 				"pod_count":    18,
@@ -251,7 +251,7 @@ func (p *Publisher) generateMockMetrics() map[string]interface{} {
 			},
 		},
 		"pods":       []map[string]interface{}{}, // Empty for now
-		"namespaces": []map[string]interface{}{}, // Empty for now  
+		"namespaces": []map[string]interface{}{}, // Empty for now
 		"timestamp":  time.Now().UTC().Format(time.RFC3339),
 	}
 }
@@ -260,7 +260,7 @@ func (p *Publisher) generateMockLogEntry() map[string]interface{} {
 	levels := []string{"info", "warn", "error", "debug"}
 	sources := []string{"kubernetes-api", "nginx-ingress", "application", "database", "redis"}
 	namespaces := []string{"production", "staging", "monitoring", "kube-system", "default"}
-	
+
 	messages := []string{
 		"Request processed successfully",
 		"Database connection established",
@@ -273,7 +273,7 @@ func (p *Publisher) generateMockLogEntry() map[string]interface{} {
 		"Pod scheduled successfully",
 		"Service endpoint updated",
 	}
-	
+
 	// Generate VPS-specific log entry matching frontend LogEntry interface
 	return map[string]interface{}{
 		"id":        fmt.Sprintf("%d", time.Now().UnixNano()),
@@ -297,7 +297,7 @@ func (p *Publisher) generateMockWorkflow() map[string]interface{} {
 	statuses := []string{"in_progress", "completed", "failed", "queued"}
 	conclusions := []string{"success", "failure", "neutral"}
 	repositories := []string{"web-frontend", "api-backend", "mobile-app", "data-processor"}
-	
+
 	return map[string]interface{}{
 		"id":         "workflow-" + randomStringForPublisher(8),
 		"name":       []string{"CI/CD Pipeline", "Security Scan", "Deploy to Production", "Run Tests"}[rand.Intn(4)],
@@ -337,7 +337,7 @@ func (p *Publisher) generateMockEvent() map[string]interface{} {
 	// Generate VPS-specific event matching frontend TimelineEvent interface
 	category := categories[rand.Intn(len(categories))]
 	severity := severities[rand.Intn(len(severities))]
-	
+
 	return map[string]interface{}{
 		"id":          randomStringForPublisher(16),
 		"timestamp":   time.Now().UTC().Format(time.RFC3339),
@@ -356,7 +356,7 @@ func (p *Publisher) generateMockEvent() map[string]interface{} {
 			"unit":     "pods",
 		},
 		"duration": rand.Intn(300000) + 30000, // 30s to 5min in milliseconds
-		"resolved": rand.Float32() > 0.3,       // 70% chance of being resolved
+		"resolved": rand.Float32() > 0.3,      // 70% chance of being resolved
 		"metadata": map[string]interface{}{
 			"node":       "vps-main",
 			"cluster":    "single-vps",
@@ -368,7 +368,7 @@ func (p *Publisher) generateMockEvent() map[string]interface{} {
 func (p *Publisher) generateMockPodMetrics() []map[string]interface{} {
 	pods := make([]map[string]interface{}, 0, 10)
 	namespaces := []string{"production", "staging", "monitoring", "default"}
-	
+
 	for i := 0; i < 5+rand.Intn(5); i++ {
 		pods = append(pods, map[string]interface{}{
 			"name":      "app-" + randomStringForPublisher(8),
@@ -379,14 +379,14 @@ func (p *Publisher) generateMockPodMetrics() []map[string]interface{} {
 			"node":      "node-" + randomStringForPublisher(4),
 		})
 	}
-	
+
 	return pods
 }
 
 func (p *Publisher) generateMockAlert() map[string]interface{} {
 	severities := []string{"critical", "warning", "info"}
 	sources := []string{"prometheus", "kubernetes", "application"}
-	
+
 	titles := []string{
 		"High CPU usage detected",
 		"Memory usage exceeds threshold",
@@ -395,7 +395,7 @@ func (p *Publisher) generateMockAlert() map[string]interface{} {
 		"Disk space low",
 		"Network connectivity issue",
 	}
-	
+
 	return map[string]interface{}{
 		"id":          randomStringForPublisher(16),
 		"severity":    severities[rand.Intn(len(severities))],
@@ -462,7 +462,7 @@ func (p *Publisher) publishGitOpsEvents() {
 func (p *Publisher) generateMockServiceUpdate() map[string]interface{} {
 	serviceIds := []string{"api-service", "web-frontend", "database", "redis", "nginx-ingress"}
 	statuses := []string{"healthy", "warning", "critical"}
-	
+
 	return map[string]interface{}{
 		"serviceId": serviceIds[rand.Intn(len(serviceIds))],
 		"status":    statuses[rand.Intn(len(statuses))],
@@ -474,14 +474,14 @@ func (p *Publisher) generateMockServiceUpdate() map[string]interface{} {
 			},
 		},
 		"circuitBreakerStatus": []string{"closed", "open", "half-open"}[rand.Intn(3)],
-		"timestamp":           time.Now().UTC().Format(time.RFC3339),
+		"timestamp":            time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
 func (p *Publisher) generateMockGiteaWebhook() map[string]interface{} {
 	actions := []string{"opened", "closed", "synchronized", "pushed", "created", "completed", "started"}
 	repositoryNames := []string{"k8s-configs", "app-manifests", "infrastructure", "frontend-apps", "backend-services"}
-	
+
 	return map[string]interface{}{
 		"action": actions[rand.Intn(len(actions))],
 		"repository": map[string]interface{}{
@@ -491,12 +491,12 @@ func (p *Publisher) generateMockGiteaWebhook() map[string]interface{} {
 			"html_url":  "https://gitea.company.com/company/" + repositoryNames[rand.Intn(len(repositoryNames))],
 		},
 		"workflow_run": map[string]interface{}{
-			"id":         "run-" + randomStringForPublisher(8),
-			"name":       "Build and Push Image",
-			"status":     []string{"success", "running", "failure"}[rand.Intn(3)],
-			"head_sha":   randomStringForPublisher(7),
+			"id":          "run-" + randomStringForPublisher(8),
+			"name":        "Build and Push Image",
+			"status":      []string{"success", "running", "failure"}[rand.Intn(3)],
+			"head_sha":    randomStringForPublisher(7),
 			"head_branch": []string{"main", "production", "develop"}[rand.Intn(3)],
-			"run_number": rand.Intn(100) + 1,
+			"run_number":  rand.Intn(100) + 1,
 		},
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
@@ -505,7 +505,7 @@ func (p *Publisher) generateMockGiteaWebhook() map[string]interface{} {
 func (p *Publisher) generateMockGithubWebhook() map[string]interface{} {
 	actions := []string{"push", "pull_request", "release", "create", "delete"}
 	repositoryNames := []string{"k8s-configs", "app-manifests", "infrastructure", "frontend-apps", "backend-services"}
-	
+
 	return map[string]interface{}{
 		"action": actions[rand.Intn(len(actions))],
 		"repository": map[string]interface{}{
@@ -534,7 +534,7 @@ func (p *Publisher) generateMockPipelineUpdate() map[string]interface{} {
 	updateTypes := []string{"mirror_sync", "action_status", "image_push", "deployment_status"}
 	repositoryIds := []string{"repo-1", "repo-2", "repo-3", "repo-4", "repo-5"}
 	statuses := []string{"synced", "syncing", "success", "failure", "pending", "in_progress"}
-	
+
 	return map[string]interface{}{
 		"type":          updateTypes[rand.Intn(len(updateTypes))],
 		"repository_id": repositoryIds[rand.Intn(len(repositoryIds))],
