@@ -198,26 +198,36 @@ export interface KubernetesServiceAPI {
   lastUpdated?: string;
 }
 
+export interface KubernetesPodStatus {
+  phase?: string;
+  ready?: boolean;
+  restartCount?: number;
+  podIP?: string;
+}
+
+export interface KubernetesPodSpec {
+  nodeName?: string;
+  containers?: Array<{
+    name: string;
+    image: string;
+    ready?: boolean;
+    restartCount?: number;
+    resources?: {
+      requests?: { cpu?: string; memory?: string };
+      limits?: { cpu?: string; memory?: string };
+    };
+  }>;
+}
+
 export interface KubernetesPodAPI {
   name: string;
   namespace: string;
   node?: string;
   nodeName?: string;
   phase?: string;
-  status?: string;
+  status?: KubernetesPodStatus;
   podIP?: string;
-  spec?: {
-    containers?: Array<{
-      name: string;
-      image: string;
-      ready?: boolean;
-      restartCount?: number;
-      resources?: {
-        requests?: { cpu?: string; memory?: string };
-        limits?: { cpu?: string; memory?: string };
-      };
-    }>;
-  };
+  spec?: KubernetesPodSpec;
   metadata?: {
     creationTimestamp?: string;
     labels?: Record<string, string>;
@@ -233,14 +243,19 @@ export interface KubernetesPodAPI {
   memory?: string;
 }
 
+export interface KubernetesNamespaceStatus {
+  phase?: string;
+}
+
 export interface KubernetesNamespaceAPI {
-  name: string;
-  status?: string;
+  name?: string;
+  status?: KubernetesNamespaceStatus;
   phase?: string;
   age?: string;
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
   metadata?: {
+    name?: string;
     creationTimestamp?: string;
     labels?: Record<string, string>;
     annotations?: Record<string, string>;
@@ -250,4 +265,40 @@ export interface KubernetesNamespaceAPI {
     memory?: string;
     pods?: number;
   };
+}
+
+// Kubernetes Resource types for ResourceHierarchy
+export interface KubernetesResourceMetadata {
+  name?: string;
+  namespace?: string;
+  uid?: string;
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+  creationTimestamp?: string;
+  ownerReferences?: Array<{
+    apiVersion: string;
+    kind: string;
+    name: string;
+    uid: string;
+    controller?: boolean;
+    blockOwnerDeletion?: boolean;
+  }>;
+}
+
+export interface KubernetesResourceStatus {
+  phase?: string;
+  conditions?: Array<{
+    type?: string;
+    status?: string;
+    lastTransitionTime?: string;
+    reason?: string;
+    message?: string;
+  }>;
+}
+
+export interface KubernetesResource {
+  apiVersion?: string;
+  kind?: string;
+  metadata?: KubernetesResourceMetadata;
+  status?: KubernetesResourceStatus;
 }

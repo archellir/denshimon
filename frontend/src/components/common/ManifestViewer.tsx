@@ -29,7 +29,7 @@ const ManifestViewer: FC<ManifestViewerProps> = ({
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
 
   // Convert object to YAML-like string (simplified)
-  const toYaml = (obj: ManifestData, indent = 0): string => {
+  const toYaml = (obj: unknown, indent = 0): string => {
     const spaces = '  '.repeat(indent);
     
     if (obj === null || obj === undefined) {
@@ -48,11 +48,11 @@ const ManifestViewer: FC<ManifestViewerProps> = ({
     
     if (Array.isArray(obj)) {
       if (obj.length === 0) return '[]';
-      return obj.map(item => `${spaces}- ${toYaml(item, indent + 1).replace(/^\s+/, '')}`).join('\n');
+      return (obj as unknown[]).map(item => `${spaces}- ${toYaml(item, indent + 1).replace(/^\s+/, '')}`).join('\n');
     }
     
-    if (typeof obj === 'object') {
-      const entries = Object.entries(obj);
+    if (typeof obj === 'object' && obj !== null) {
+      const entries = Object.entries(obj as Record<string, unknown>);
       if (entries.length === 0) return '{}';
       
       return entries.map(([key, value]) => {

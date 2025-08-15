@@ -337,7 +337,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       
       // Transform backend data to match frontend interface
       const transformedNamespaces = (response.data.data || response.data || []).map((ns: KubernetesNamespaceAPI) => ({
-        name: ns.name || ns.metadata?.name,
+        name: ns.name || ns.metadata?.name || 'Unknown',
         status: ns.status?.phase || 'Active',
         age: ns.age || 'Unknown',
         labels: ns.metadata?.labels || {},

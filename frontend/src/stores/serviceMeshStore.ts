@@ -101,7 +101,7 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
     
     // Subscribe to connection status
     const connectionSubId = ws.subscribe(WebSocketEventType.CONNECTION, (state) => {
-      updateConnectionState(state.state);
+      updateConnectionState(state.state as ConnectionStatus);
     });
     
     // Initial connection state
@@ -156,7 +156,7 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
         if (service.id === serviceUpdate.serviceId) {
           return {
             ...service,
-            status: serviceUpdate.status,
+            status: serviceUpdate.status ?? service.status,
             metrics: {
               ...service.metrics,
               requestRate: serviceUpdate.metrics?.requestRate ?? service.metrics.requestRate,

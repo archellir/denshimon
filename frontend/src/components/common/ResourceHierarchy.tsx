@@ -215,7 +215,9 @@ export const buildResourceHierarchy = (resources: KubernetesResource[]): Hierarc
       name: resource.metadata?.name || 'Unknown',
       kind: resource.kind || 'Unknown',
       namespace: resource.metadata?.namespace,
-      status: resource.status?.phase || resource.status?.conditions?.[0]?.type || 'Unknown',
+      status: resource.status?.phase || 
+              (Array.isArray(resource.status?.conditions) && resource.status.conditions[0]?.type) || 
+              'Unknown',
       children: [],
       metadata: {
         labels: resource.metadata?.labels,

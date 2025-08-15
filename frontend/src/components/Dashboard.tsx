@@ -219,7 +219,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   // Generate tab descriptions
   const getTabDescriptions = (primaryTab: string, secondaryTab: string) => {
     // Primary tab descriptions
-    const primaryDescriptions = {
+    const primaryDescriptions: Record<string, string> = {
       [PrimaryTab.INFRASTRUCTURE]: "Monitor and manage your Kubernetes cluster's core infrastructure components and settings.",
       [PrimaryTab.WORKLOADS]: "View and manage application workloads, pods, services, and resource relationships across namespaces.",
       [PrimaryTab.MESH]: "Configure and monitor service mesh topology, traffic flows, and inter-service communication.",
@@ -229,7 +229,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     };
 
     // Secondary tab descriptions
-    const secondaryDescriptions = {
+    const secondaryDescriptions: Record<string, Record<string, string>> = {
       [PrimaryTab.INFRASTRUCTURE]: {
         [InfrastructureTab.OVERVIEW]: "View cluster health metrics, node status, and overall infrastructure performance.",
         [InfrastructureTab.CONFIGURATION]: "Manage infrastructure-as-code with GitOps workflows, templates, and repository synchronization.",

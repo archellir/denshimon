@@ -168,7 +168,7 @@ export class DenshimonWebSocket {
     
     this.subscriptions.set(id, {
       id,
-      type: type as WebSocketMessage['type'],
+      type: type as WebSocketEventType,
       callback
     });
 

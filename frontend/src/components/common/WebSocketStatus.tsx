@@ -44,7 +44,7 @@ const WebSocketStatus: React.FC = () => {
       case 'connecting':
         return 'CONNECTING';
       case 'disconnected':
-        return connectionState.reconnectAttempts > 0 ? 'RECONNECTING' : 'OFFLINE';
+        return (connectionState.reconnectAttempts as number) > 0 ? 'RECONNECTING' : 'OFFLINE';
       case 'error':
         return 'ERROR';
       default:
@@ -59,8 +59,8 @@ const WebSocketStatus: React.FC = () => {
       case 'connecting':
         return 'Establishing connection...';
       case 'disconnected':
-        return connectionState.reconnectAttempts > 0 
-          ? `Reconnecting... (attempt ${connectionState.reconnectAttempts})`
+        return (connectionState.reconnectAttempts as number) > 0 
+          ? `Reconnecting... (attempt ${connectionState.reconnectAttempts as number})`
           : 'Real-time updates offline';
       case 'error':
         return 'Connection error - check network';
@@ -74,9 +74,9 @@ const WebSocketStatus: React.FC = () => {
       <div className={`flex items-center space-x-2 px-3 py-1 border font-mono text-xs transition-all ${getStatusColor()}`}>
         {getStatusIcon()}
         <span>{getStatusText()}</span>
-        {connectionState.reconnectAttempts > 0 && (
+        {(connectionState.reconnectAttempts as number) > 0 && (
           <span className="text-xs opacity-60">
-            ({connectionState.reconnectAttempts})
+            ({connectionState.reconnectAttempts as number})
           </span>
         )}
       </div>
@@ -88,7 +88,7 @@ const WebSocketStatus: React.FC = () => {
       </div>
 
       {/* Pulse effect when connecting/reconnecting */}
-      {(connectionState.state === 'connecting' || connectionState.reconnectAttempts > 0) && (
+      {(connectionState.state === 'connecting' || (connectionState.reconnectAttempts as number) > 0) && (
         <div className="absolute inset-0 border border-yellow-500 animate-pulse pointer-events-none"></div>
       )}
     </div>
