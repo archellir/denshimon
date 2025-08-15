@@ -15,7 +15,7 @@ import {
 export interface ResourceAction {
   id: string;
   label: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   disabled?: boolean;
   dangerous?: boolean;
   tooltip?: string;
