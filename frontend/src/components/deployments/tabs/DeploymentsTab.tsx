@@ -200,8 +200,8 @@ const DeploymentsTab = ({
       )}
 
       <DeploymentModal
-        showDeployModal={showDeployModal}
-        setShowDeployModal={setShowDeployModal}
+        isOpen={showDeployModal}
+        onClose={() => setShowDeployModal?.(false)}
       />
 
       {/* Scale Dialog */}
