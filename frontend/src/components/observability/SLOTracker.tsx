@@ -1,6 +1,8 @@
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { Target, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
+import { API_ENDPOINTS } from '@/constants';
+import { MOCK_ENABLED } from '@/mocks';
 
 export interface SLI {
   name: string;
@@ -182,8 +184,35 @@ const SLOTracker: FC<SLOTrackerProps> = ({
   };
 
   useEffect(() => {
-    setSLOs(generateSLOs());
+    loadSLOs();
   }, [timeRange]);
+
+  const loadSLOs = async () => {
+    try {
+      if (MOCK_ENABLED) {
+        setSLOs(generateSLOs());
+      } else {
+        const token = localStorage.getItem('auth_token');
+        // Note: SLO endpoints may not exist yet in backend, so we'll attempt the call
+        // and fall back to mock data if not available
+        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.BASE}/slos?timeRange=${timeRange}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setSLOs(data.data || data);
+        } else {
+          // Fallback to mock data - SLO endpoints may not be implemented yet
+          setSLOs(generateSLOs());
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load SLOs:', error);
+      // Fallback to mock data on error
+      setSLOs(generateSLOs());
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

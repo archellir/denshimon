@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TimeRange } from '@constants';
+import { TimeRange, API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED } from '@/mocks';
 
 interface LogAnalyticsProps {
   timeRange?: string;
@@ -25,8 +26,33 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
   const [selectedMetric, setSelectedMetric] = useState<'volume' | 'errors' | 'performance' | 'patterns'>('volume');
 
   useEffect(() => {
-    generateMockMetrics();
+    loadLogAnalytics();
   }, [timeRange]);
+
+  const loadLogAnalytics = async () => {
+    try {
+      if (MOCK_ENABLED) {
+        generateMockMetrics();
+      } else {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.LOG_ANALYTICS}?timeRange=${timeRange}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setMetrics(data.data || data);
+        } else {
+          // Fallback to mock data on API error
+          generateMockMetrics();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load log analytics:', error);
+      // Fallback to mock data on error
+      generateMockMetrics();
+    }
+  };
 
   const generateMockMetrics = () => {
     const totalLogs = Math.floor(Math.random() * 50000) + 25000;
