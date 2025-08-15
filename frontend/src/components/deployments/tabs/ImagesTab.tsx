@@ -1,6 +1,7 @@
 import { useEffect, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
+import { ContainerImage } from '@/types';
 
 const ImagesTab: FC = () => {
   const { 
@@ -14,7 +15,7 @@ const ImagesTab: FC = () => {
   }, [fetchImages]);
 
 
-  const handleDeploy = (image: any) => {
+  const handleDeploy = (image: ContainerImage) => {
     // This would open a deployment form modal
     console.log('Deploy image:', image);
   };
