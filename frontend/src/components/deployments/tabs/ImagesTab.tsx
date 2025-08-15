@@ -1,7 +1,8 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
 import { ContainerImage } from '@/types';
+import DeploymentForm from '../forms/DeploymentForm';
 
 const ImagesTab: FC = () => {
   const { 
@@ -9,15 +10,27 @@ const ImagesTab: FC = () => {
     loading, 
     fetchImages
   } = useDeploymentStore();
+  
+  const [showDeploymentForm, setShowDeploymentForm] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
 
   useEffect(() => {
     fetchImages();
   }, [fetchImages]);
 
-
   const handleDeploy = (image: ContainerImage) => {
-    // This would open a deployment form modal
-    console.log('Deploy image:', image);
+    setSelectedImage(image);
+    setShowDeploymentForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowDeploymentForm(false);
+    setSelectedImage(null);
+  };
+
+  const handleDeploymentSuccess = () => {
+    // Optionally refresh deployments or show success message
+    console.log('Deployment created successfully');
   };
 
   const formatSize = (bytes: number) => {
@@ -89,6 +102,14 @@ const ImagesTab: FC = () => {
             </div>
           ))}
         </div>
+      )}
+      
+      {showDeploymentForm && selectedImage && (
+        <DeploymentForm 
+          image={selectedImage}
+          onClose={handleCloseForm}
+          onSuccess={handleDeploymentSuccess}
+        />
       )}
     </>
   );
