@@ -36,22 +36,34 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   const [deploying, setDeploying] = useState(false);
   const [deployForm, setDeployForm] = useState({
     name: '',
-    namespace: 'default',
+    namespace: 'base-infra',
     replicas: 1,
     port: 8080,
     environment: {} as Record<string, string>,
+    environmentSecrets: {} as Record<string, string>,
     resources: {
-      cpu_request: '100m',
-      cpu_limit: '500m',
-      memory_request: '128Mi',
-      memory_limit: '512Mi'
+      cpu_request: '10m',
+      cpu_limit: '50m',
+      memory_request: '32Mi',
+      memory_limit: '64Mi'
+    },
+    storage: {
+      enabled: false,
+      size: '512Mi',
+      accessMode: 'ReadWriteOnce',
+      mountPath: '/data'
     },
     healthCheck: {
       enabled: true,
-      path: '/health',
+      type: 'http',
+      path: '/api/healthz',
       initialDelaySeconds: 30,
-      periodSeconds: 10
+      timeoutSeconds: 5,
+      periodSeconds: 10,
+      successThreshold: 1,
+      failureThreshold: 3
     },
+    volumeMounts: [] as Array<{name: string, mountPath: string, subPath?: string}>,
     ingress: {
       enabled: false,
       host: '',
@@ -75,6 +87,8 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     },
     security: {
       runAsNonRoot: true,
+      runAsUser: 1000,
+      runAsGroup: 1000,
       readOnlyRootFilesystem: false,
       allowPrivilegeEscalation: false
     },
@@ -181,22 +195,34 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     setSelectedImage(null);
     setDeployForm({
       name: '',
-      namespace: 'default',
+      namespace: 'base-infra',
       replicas: 1,
       port: 8080,
       environment: {},
+      environmentSecrets: {},
       resources: {
-        cpu_request: '100m',
-        cpu_limit: '500m',
-        memory_request: '128Mi',
-        memory_limit: '512Mi'
+        cpu_request: '10m',
+        cpu_limit: '50m',
+        memory_request: '32Mi',
+        memory_limit: '64Mi'
+      },
+      storage: {
+        enabled: false,
+        size: '512Mi',
+        accessMode: 'ReadWriteOnce',
+        mountPath: '/data'
       },
       healthCheck: {
         enabled: true,
-        path: '/health',
+        type: 'http',
+        path: '/api/healthz',
         initialDelaySeconds: 30,
-        periodSeconds: 10
+        timeoutSeconds: 5,
+        periodSeconds: 10,
+        successThreshold: 1,
+        failureThreshold: 3
       },
+      volumeMounts: [],
       ingress: {
         enabled: false,
         host: '',
@@ -220,6 +246,8 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
       },
       security: {
         runAsNonRoot: true,
+        runAsUser: 1000,
+        runAsGroup: 1000,
         readOnlyRootFilesystem: false,
         allowPrivilegeEscalation: false
       },
@@ -336,9 +364,9 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
       {/* Deploy Application Modal */}
       {showDeployModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-black border border-white p-6 max-w-4xl w-full mx-4 max-h-screen overflow-y-auto">
+          <div className="bg-black border border-white p-8 max-w-7xl w-full mx-4 max-h-[95vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
+              <h3 className="text-2xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
               <button
                 onClick={() => setShowDeployModal?.(false)}
                 className="p-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors"
@@ -350,7 +378,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left Column: Image Selection */}
               <div>
-                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">1. SELECT CONTAINER IMAGE</h4>
+                <h4 className="text-lg font-bold text-white mb-4 font-mono tracking-wider">1. SELECT CONTAINER IMAGE</h4>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {images.map((image) => (
                     <div
@@ -374,105 +402,210 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
 
               {/* Right Column: Configuration Form */}
               <div>
-                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">2. CONFIGURE DEPLOYMENT</h4>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <h4 className="text-lg font-bold text-white mb-4 font-mono tracking-wider">2. CONFIGURE DEPLOYMENT</h4>
+                <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
                   {/* Basic Configuration */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-mono text-gray-300 mb-1">APPLICATION NAME</label>
+                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">APPLICATION NAME</label>
                       <input
                         type="text"
                         value={deployForm.name}
                         onChange={(e) => setDeployForm(prev => ({...prev, name: e.target.value}))}
-                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                         placeholder="my-app"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-mono text-gray-300 mb-1">NAMESPACE</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">NAMESPACE</label>
+                      <select
                         value={deployForm.namespace}
                         onChange={(e) => setDeployForm(prev => ({...prev, namespace: e.target.value}))}
-                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                      />
+                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      >
+                        <option value="base-infra">BASE-INFRA</option>
+                        <option value="default">DEFAULT</option>
+                        <option value="kube-system">KUBE-SYSTEM</option>
+                      </select>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-mono text-gray-300 mb-1">REPLICAS</label>
+                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">REPLICAS</label>
                       <input
                         type="number"
                         min="1"
                         value={deployForm.replicas}
                         onChange={(e) => setDeployForm(prev => ({...prev, replicas: parseInt(e.target.value)}))}
-                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-mono text-gray-300 mb-1">PORT</label>
+                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">CONTAINER PORT</label>
                       <input
                         type="number"
                         min="1"
                         max="65535"
                         value={deployForm.port}
                         onChange={(e) => setDeployForm(prev => ({...prev, port: parseInt(e.target.value)}))}
-                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        placeholder="8080"
                       />
                     </div>
                   </div>
                   
                   {/* Resource Limits */}
                   <div>
-                    <label className="block text-xs font-mono text-gray-300 mb-2">RESOURCE LIMITS</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">RESOURCE LIMITS</label>
+                    <div className="grid grid-cols-2 gap-3">
                       <input
                         type="text"
-                        placeholder="CPU REQUEST"
+                        placeholder="CPU REQUEST (e.g., 10m)"
                         value={deployForm.resources.cpu_request}
                         onChange={(e) => setDeployForm(prev => ({
                           ...prev,
                           resources: {...prev.resources, cpu_request: e.target.value}
                         }))}
-                        className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
                       <input
                         type="text"
-                        placeholder="CPU LIMIT"
+                        placeholder="CPU LIMIT (e.g., 50m)"
                         value={deployForm.resources.cpu_limit}
                         onChange={(e) => setDeployForm(prev => ({
                           ...prev,
                           resources: {...prev.resources, cpu_limit: e.target.value}
                         }))}
-                        className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
                       <input
                         type="text"
-                        placeholder="MEMORY REQUEST"
+                        placeholder="MEMORY REQUEST (e.g., 32Mi)"
                         value={deployForm.resources.memory_request}
                         onChange={(e) => setDeployForm(prev => ({
                           ...prev,
                           resources: {...prev.resources, memory_request: e.target.value}
                         }))}
-                        className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
                       <input
                         type="text"
-                        placeholder="MEMORY LIMIT"
+                        placeholder="MEMORY LIMIT (e.g., 64Mi)"
                         value={deployForm.resources.memory_limit}
                         onChange={(e) => setDeployForm(prev => ({
                           ...prev,
                           resources: {...prev.resources, memory_limit: e.target.value}
                         }))}
-                        className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
+                    </div>
+                  </div>
+
+                  {/* Persistent Storage */}
+                  <div>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <input
+                        type="checkbox"
+                        id="storage"
+                        checked={deployForm.storage.enabled}
+                        onChange={(e) => setDeployForm(prev => ({
+                          ...prev,
+                          storage: {...prev.storage, enabled: e.target.checked}
+                        }))}
+                        className="bg-black border border-white w-4 h-4"
+                      />
+                      <label htmlFor="storage" className="text-sm font-mono text-gray-300 tracking-wider">ENABLE PERSISTENT STORAGE</label>
+                    </div>
+                    {deployForm.storage.enabled && (
+                      <div className="grid grid-cols-3 gap-3">
+                        <input
+                          type="text"
+                          placeholder="SIZE (e.g., 512Mi, 20Gi)"
+                          value={deployForm.storage.size}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            storage: {...prev.storage, size: e.target.value}
+                          }))}
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                        <select
+                          value={deployForm.storage.accessMode}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            storage: {...prev.storage, accessMode: e.target.value}
+                          }))}
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        >
+                          <option value="ReadWriteOnce">READ WRITE ONCE</option>
+                          <option value="ReadOnlyMany">READ ONLY MANY</option>
+                          <option value="ReadWriteMany">READ WRITE MANY</option>
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="MOUNT PATH (e.g., /data)"
+                          value={deployForm.storage.mountPath}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            storage: {...prev.storage, mountPath: e.target.value}
+                          }))}
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Environment Variables */}
+                  <div>
+                    <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">ENVIRONMENT VARIABLES</label>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-2">FROM SECRETS (secretKeyRef)</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <input
+                            type="text"
+                            placeholder="ENV VAR NAME"
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="text"
+                            placeholder="SECRET NAME (e.g., app-secrets)"
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="text"
+                            placeholder="SECRET KEY"
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                        </div>
+                        <button className="mt-2 px-3 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs tracking-wider">
+                          ADD SECRET REF
+                        </button>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-2">DIRECT VALUES</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            placeholder="ENV VAR NAME"
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="text"
+                            placeholder="VALUE"
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                        </div>
+                        <button className="mt-2 px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-xs tracking-wider">
+                          ADD ENV VAR
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Health Check Configuration */}
                   <div>
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center space-x-2 mb-3">
                       <input
                         type="checkbox"
                         id="healthcheck"
@@ -481,49 +614,128 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                           ...prev,
                           healthCheck: {...prev.healthCheck, enabled: e.target.checked}
                         }))}
-                        className="bg-black border border-white"
+                        className="bg-black border border-white w-4 h-4"
                       />
-                      <label htmlFor="healthcheck" className="text-xs font-mono text-gray-300 tracking-wider">ENABLE HEALTH CHECKS</label>
+                      <label htmlFor="healthcheck" className="text-sm font-mono text-gray-300 tracking-wider">ENABLE HEALTH CHECKS</label>
                     </div>
                     {deployForm.healthCheck.enabled && (
-                      <div className="grid grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          placeholder="HEALTH PATH"
-                          value={deployForm.healthCheck.path}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            healthCheck: {...prev.healthCheck, path: e.target.value}
-                          }))}
-                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                        />
-                        <input
-                          type="number"
-                          placeholder="INITIAL DELAY"
-                          value={deployForm.healthCheck.initialDelaySeconds}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            healthCheck: {...prev.healthCheck, initialDelaySeconds: parseInt(e.target.value)}
-                          }))}
-                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                        />
-                        <input
-                          type="number"
-                          placeholder="PERIOD"
-                          value={deployForm.healthCheck.periodSeconds}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            healthCheck: {...prev.healthCheck, periodSeconds: parseInt(e.target.value)}
-                          }))}
-                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                        />
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <select
+                            value={deployForm.healthCheck.type}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, type: e.target.value}
+                            }))}
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          >
+                            <option value="http">HTTP GET</option>
+                            <option value="exec">EXEC COMMAND</option>
+                            <option value="tcp">TCP SOCKET</option>
+                          </select>
+                          <input
+                            type="text"
+                            placeholder={deployForm.healthCheck.type === 'http' ? 'PATH (e.g., /api/healthz)' : deployForm.healthCheck.type === 'exec' ? 'COMMAND' : 'PORT'}
+                            value={deployForm.healthCheck.path}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, path: e.target.value}
+                            }))}
+                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                        </div>
+                        <div className="grid grid-cols-5 gap-2">
+                          <input
+                            type="number"
+                            placeholder="INITIAL DELAY"
+                            value={deployForm.healthCheck.initialDelaySeconds}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, initialDelaySeconds: parseInt(e.target.value)}
+                            }))}
+                            className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="number"
+                            placeholder="TIMEOUT"
+                            value={deployForm.healthCheck.timeoutSeconds}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, timeoutSeconds: parseInt(e.target.value)}
+                            }))}
+                            className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="number"
+                            placeholder="PERIOD"
+                            value={deployForm.healthCheck.periodSeconds}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, periodSeconds: parseInt(e.target.value)}
+                            }))}
+                            className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="number"
+                            placeholder="SUCCESS"
+                            value={deployForm.healthCheck.successThreshold}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, successThreshold: parseInt(e.target.value)}
+                            }))}
+                            className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
+                          />
+                          <input
+                            type="number"
+                            placeholder="FAILURE"
+                            value={deployForm.healthCheck.failureThreshold}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, failureThreshold: parseInt(e.target.value)}
+                            }))}
+                            className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
+                          />
+                        </div>
+                        <div className="text-xs text-gray-400 font-mono">
+                          Based on patterns from gitea (/api/healthz), postgresql (pg_isready), and timing configurations
+                        </div>
                       </div>
                     )}
                   </div>
 
+                  {/* Volume Mounts */}
+                  <div>
+                    <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">VOLUME MOUNTS</label>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <input
+                          type="text"
+                          placeholder="VOLUME NAME (e.g., timezone)"
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                        <input
+                          type="text"
+                          placeholder="MOUNT PATH (e.g., /etc/timezone)"
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                        <input
+                          type="text"
+                          placeholder="SUB PATH (optional)"
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                      </div>
+                      <button className="px-3 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs tracking-wider">
+                        ADD VOLUME MOUNT
+                      </button>
+                      <div className="text-xs text-gray-400 font-mono">
+                        Common patterns: timezone (/etc/timezone), localtime (/etc/localtime), config files, static content
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Ingress Configuration */}
                   <div>
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center space-x-2 mb-3">
                       <input
                         type="checkbox"
                         id="ingress"
@@ -676,46 +888,73 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
 
                   {/* Security Context */}
                   <div>
-                    <label className="block text-xs font-mono text-gray-300 mb-2">SECURITY CONTEXT</label>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
+                    <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">SECURITY CONTEXT</label>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <input
-                          type="checkbox"
-                          id="runAsNonRoot"
-                          checked={deployForm.security.runAsNonRoot}
+                          type="number"
+                          placeholder="USER ID (e.g., 1000)"
+                          value={deployForm.security.runAsUser}
                           onChange={(e) => setDeployForm(prev => ({
                             ...prev,
-                            security: {...prev.security, runAsNonRoot: e.target.checked}
+                            security: {...prev.security, runAsUser: parseInt(e.target.value)}
                           }))}
-                          className="bg-black border border-white"
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                         />
-                        <label htmlFor="runAsNonRoot" className="text-xs font-mono text-gray-300">RUN AS NON-ROOT</label>
+                        <input
+                          type="number"
+                          placeholder="GROUP ID (e.g., 1000)"
+                          value={deployForm.security.runAsGroup}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            security: {...prev.security, runAsGroup: parseInt(e.target.value)}
+                          }))}
+                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="readOnlyRoot"
-                          checked={deployForm.security.readOnlyRootFilesystem}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            security: {...prev.security, readOnlyRootFilesystem: e.target.checked}
-                          }))}
-                          className="bg-black border border-white"
-                        />
-                        <label htmlFor="readOnlyRoot" className="text-xs font-mono text-gray-300">READ-ONLY ROOT FILESYSTEM</label>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="runAsNonRoot"
+                            checked={deployForm.security.runAsNonRoot}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              security: {...prev.security, runAsNonRoot: e.target.checked}
+                            }))}
+                            className="bg-black border border-white w-4 h-4"
+                          />
+                          <label htmlFor="runAsNonRoot" className="text-sm font-mono text-gray-300">RUN AS NON-ROOT</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="readOnlyRoot"
+                            checked={deployForm.security.readOnlyRootFilesystem}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              security: {...prev.security, readOnlyRootFilesystem: e.target.checked}
+                            }))}
+                            className="bg-black border border-white w-4 h-4"
+                          />
+                          <label htmlFor="readOnlyRoot" className="text-sm font-mono text-gray-300">READ-ONLY ROOT FILESYSTEM</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="allowPrivEsc"
+                            checked={!deployForm.security.allowPrivilegeEscalation}
+                            onChange={(e) => setDeployForm(prev => ({
+                              ...prev,
+                              security: {...prev.security, allowPrivilegeEscalation: !e.target.checked}
+                            }))}
+                            className="bg-black border border-white w-4 h-4"
+                          />
+                          <label htmlFor="allowPrivEsc" className="text-sm font-mono text-gray-300">PREVENT PRIVILEGE ESCALATION</label>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="allowPrivEsc"
-                          checked={!deployForm.security.allowPrivilegeEscalation}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            security: {...prev.security, allowPrivilegeEscalation: !e.target.checked}
-                          }))}
-                          className="bg-black border border-white"
-                        />
-                        <label htmlFor="allowPrivEsc" className="text-xs font-mono text-gray-300">PREVENT PRIVILEGE ESCALATION</label>
+                      <div className="text-xs text-gray-400 font-mono">
+                        Based on gitea configuration: USER_UID=1000, USER_GID=1000
                       </div>
                     </div>
                   </div>
