@@ -323,10 +323,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* VPS Service Architecture */}
             <div className="lg:col-span-2 border border-white p-4">
-              <div className="border-b border-white/20 pb-2 mb-4">
-                <h3 className="font-mono text-sm text-gray-400 uppercase">VPS SERVICE ARCHITECTURE</h3>
-              </div>
-            
             {viewMode === GraphViewMode.GRAPH ? (
               <ForceGraph
                 services={filteredServices}
