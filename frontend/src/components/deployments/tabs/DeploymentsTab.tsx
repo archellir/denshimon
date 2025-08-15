@@ -2,28 +2,25 @@ import { useState, useEffect } from 'react';
 import { Rocket, RotateCcw, Trash2, X, Container, Database, Server, Globe, Shield, Activity, Scale } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
+import { ContainerImage } from '@/types';
 import { API_ENDPOINTS } from '@constants';
 import useModalKeyboard from '@hooks/useModalKeyboard';
 import CustomSelector from '@components/common/CustomSelector';
 import CustomDialog from '@components/common/CustomDialog';
 
-
-interface ContainerImage {
-  id: string;
-  name: string;
-  tag: string;
-  full_name: string;
-  repository_id: string;
-  size?: string;
-  created_at: string;
-}
-
 interface DeploymentsTabProps {
   showDeployModal?: boolean;
   setShowDeployModal?: (show: boolean) => void;
+  preselectedImage?: ContainerImage | null;
+  setPreselectedImage?: (image: ContainerImage | null) => void;
 }
 
-const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: DeploymentsTabProps) => {
+const DeploymentsTab = ({ 
+  showDeployModal = false, 
+  setShowDeployModal, 
+  preselectedImage, 
+  setPreselectedImage 
+}: DeploymentsTabProps) => {
   const { 
     deployments, 
     loading, 
@@ -123,6 +120,15 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     }
   }, [fetchDeployments, showDeployModal]);
 
+  // Handle preselected image from ImagesTab
+  useEffect(() => {
+    if (preselectedImage && showDeployModal) {
+      setSelectedImage(preselectedImage);
+      // Clear the preselected image after using it
+      setPreselectedImage?.(null);
+    }
+  }, [preselectedImage, showDeployModal, setPreselectedImage]);
+
 
   const fetchImages = async () => {
     try {
@@ -148,7 +154,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
           application: {
             name: deployForm.name,
             namespace: deployForm.namespace,
-            image: selectedImage.full_name,
+            image: selectedImage.fullName,
             replicas: deployForm.replicas,
             resources: deployForm.resources,
             environment: deployForm.environment
@@ -454,14 +460,14 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
             <div className="mb-6 pb-6 border-b border-white/30">
               <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
               <CustomSelector
-                value={selectedImage?.id || ''}
+                value={selectedImage?.fullName || ''}
                 options={images.map(image => ({
-                  value: image.id,
-                  label: `${image.name.toUpperCase()} : ${image.tag}`,
-                  description: image.size ? `${image.size}` : 'Container Image'
+                  value: image.fullName,
+                  label: `${image.repository.toUpperCase()} : ${image.tag}`,
+                  description: image.size ? `${(image.size / 1024 / 1024).toFixed(1)} MB` : 'Container Image'
                 }))}
                 onChange={(value) => {
-                  const image = images.find(img => img.id === value);
+                  const image = images.find(img => img.fullName === value);
                   setSelectedImage(image || null);
                 }}
                 placeholder="-- SELECT AN IMAGE --"
@@ -472,7 +478,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
               />
               {selectedImage && (
                 <div className="mt-2 text-sm text-green-400 font-mono">
-                  SELECTED: {selectedImage.name}:{selectedImage.tag}
+                  SELECTED: {selectedImage.repository}:{selectedImage.tag}
                 </div>
               )}
             </div>
