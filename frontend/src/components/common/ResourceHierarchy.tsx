@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from './StatusIcon';
 import { useState } from 'react';
+import { KubernetesResource } from '@/types';
 
 export interface HierarchyNode {
   id: string;
@@ -203,7 +204,7 @@ const ResourceHierarchy: FC<ResourceHierarchyProps> = ({
 export default ResourceHierarchy;
 
 // Utility function to build hierarchy from flat resource list
-export const buildResourceHierarchy = (resources: any[]): HierarchyNode[] => {
+export const buildResourceHierarchy = (resources: KubernetesResource[]): HierarchyNode[] => {
   const nodeMap = new Map<string, HierarchyNode>();
   const rootNodes: HierarchyNode[] = [];
 
@@ -236,7 +237,7 @@ export const buildResourceHierarchy = (resources: any[]): HierarchyNode[] => {
     const ownerRefs = resource.metadata?.ownerReferences || [];
     let hasParent = false;
 
-    ownerRefs.forEach((ownerRef: any) => {
+    ownerRefs.forEach((ownerRef) => {
       const parentId = ownerRef.uid;
       const parent = nodeMap.get(parentId);
       
