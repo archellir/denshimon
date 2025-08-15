@@ -4,18 +4,6 @@ import useDeploymentStore from '@/stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@/constants';
 
-interface Template {
-  id: string;
-  name: string;
-  type: string;
-  description: string;
-  variables: Array<{
-    name: string;
-    required: boolean;
-    default?: string;
-    description?: string;
-  }>;
-}
 
 interface ContainerImage {
   id: string;
@@ -43,9 +31,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   } = useDeploymentStore();
 
   // Deployment states
-  const [templates, setTemplates] = useState<Template[]>([]);
   const [images, setImages] = useState<ContainerImage[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
   const [deploying, setDeploying] = useState(false);
   const [deployForm, setDeployForm] = useState({
@@ -77,26 +63,32 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
       minReplicas: 1,
       maxReplicas: 10,
       targetCPUUtilization: 70
-    }
+    },
+    service: {
+      type: 'ClusterIP',
+      annotations: {} as Record<string, string>
+    },
+    deployment: {
+      strategy: 'RollingUpdate',
+      maxSurge: '25%',
+      maxUnavailable: '25%'
+    },
+    security: {
+      runAsNonRoot: true,
+      readOnlyRootFilesystem: false,
+      allowPrivilegeEscalation: false
+    },
+    labels: {} as Record<string, string>,
+    annotations: {} as Record<string, string>
   });
 
   useEffect(() => {
     fetchDeployments();
     if (showDeployModal) {
-      fetchTemplates();
       fetchImages();
     }
   }, [fetchDeployments, showDeployModal]);
 
-  const fetchTemplates = async () => {
-    try {
-      const response = await fetch(API_ENDPOINTS.GITOPS.TEMPLATES);
-      const data = await response.json();
-      setTemplates(data.templates || []);
-    } catch (error) {
-      console.error('Failed to fetch templates:', error);
-    }
-  };
 
   const fetchImages = async () => {
     try {
@@ -109,12 +101,12 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   };
 
   const handleDeploy = async () => {
-    if (!selectedTemplate || !selectedImage || !setShowDeployModal) return;
+    if (!selectedImage || !deployForm.name || !setShowDeployModal) return;
 
     try {
       setDeploying(true);
       
-      // Generate manifest using template
+      // Generate manifest from configuration
       const manifestResponse = await fetch(API_ENDPOINTS.GITOPS.MANIFESTS_GENERATE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -130,17 +122,24 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
           resource_type: "Full",
           options: {
             service: true,
+            serviceType: deployForm.service.type,
+            serviceAnnotations: deployForm.service.annotations,
             ingress: deployForm.ingress.enabled,
             autoscaling: deployForm.autoscaling.enabled,
             healthCheck: deployForm.healthCheck.enabled,
-            template_id: selectedTemplate.id,
             port: deployForm.port,
             healthCheckPath: deployForm.healthCheck.path,
             ingressHost: deployForm.ingress.host,
             ingressPath: deployForm.ingress.path,
             maxReplicas: deployForm.autoscaling.maxReplicas,
             minReplicas: deployForm.autoscaling.minReplicas,
-            cpuTarget: deployForm.autoscaling.targetCPUUtilization
+            cpuTarget: deployForm.autoscaling.targetCPUUtilization,
+            deploymentStrategy: deployForm.deployment.strategy,
+            maxSurge: deployForm.deployment.maxSurge,
+            maxUnavailable: deployForm.deployment.maxUnavailable,
+            securityContext: deployForm.security,
+            labels: deployForm.labels,
+            annotations: deployForm.annotations
           }
         })
       });
@@ -179,7 +178,6 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   };
 
   const resetDeployForm = () => {
-    setSelectedTemplate(null);
     setSelectedImage(null);
     setDeployForm({
       name: '',
@@ -210,7 +208,23 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
         minReplicas: 1,
         maxReplicas: 10,
         targetCPUUtilization: 70
-      }
+      },
+      service: {
+        type: 'ClusterIP',
+        annotations: {}
+      },
+      deployment: {
+        strategy: 'RollingUpdate',
+        maxSurge: '25%',
+        maxUnavailable: '25%'
+      },
+      security: {
+        runAsNonRoot: true,
+        readOnlyRootFilesystem: false,
+        allowPrivilegeEscalation: false
+      },
+      labels: {},
+      annotations: {}
     });
   };
 
@@ -333,32 +347,10 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column: Template Selection */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column: Image Selection */}
               <div>
-                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">1. SELECT TEMPLATE</h4>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      onClick={() => setSelectedTemplate(template)}
-                      className={`p-3 border cursor-pointer transition-colors ${
-                        selectedTemplate?.id === template.id
-                          ? 'border-green-400 bg-green-900/20'
-                          : 'border-white/30 hover:border-white/50'
-                      }`}
-                    >
-                      <div className="font-mono text-sm text-white">{template.name.toUpperCase()}</div>
-                      <div className="text-xs text-gray-300 font-mono">{template.type}</div>
-                      <div className="text-xs text-gray-400">{template.description}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Middle Column: Image Selection */}
-              <div>
-                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">2. SELECT CONTAINER IMAGE</h4>
+                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">1. SELECT CONTAINER IMAGE</h4>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {images.map((image) => (
                     <div
@@ -382,7 +374,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
 
               {/* Right Column: Configuration Form */}
               <div>
-                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">3. CONFIGURE DEPLOYMENT</h4>
+                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">2. CONFIGURE DEPLOYMENT</h4>
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {/* Basic Configuration */}
                   <div className="grid grid-cols-2 gap-2">
@@ -624,6 +616,109 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                       </div>
                     )}
                   </div>
+
+                  {/* Service Configuration */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
+                    <select
+                      value={deployForm.service.type}
+                      onChange={(e) => setDeployForm(prev => ({
+                        ...prev,
+                        service: {...prev.service, type: e.target.value}
+                      }))}
+                      className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                    >
+                      <option value="ClusterIP">CLUSTER IP</option>
+                      <option value="NodePort">NODE PORT</option>
+                      <option value="LoadBalancer">LOAD BALANCER</option>
+                    </select>
+                  </div>
+
+                  {/* Deployment Strategy */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
+                    <select
+                      value={deployForm.deployment.strategy}
+                      onChange={(e) => setDeployForm(prev => ({
+                        ...prev,
+                        deployment: {...prev.deployment, strategy: e.target.value}
+                      }))}
+                      className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs mb-2"
+                    >
+                      <option value="RollingUpdate">ROLLING UPDATE</option>
+                      <option value="Recreate">RECREATE</option>
+                    </select>
+                    {deployForm.deployment.strategy === 'RollingUpdate' && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="MAX SURGE"
+                          value={deployForm.deployment.maxSurge}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            deployment: {...prev.deployment, maxSurge: e.target.value}
+                          }))}
+                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        />
+                        <input
+                          type="text"
+                          placeholder="MAX UNAVAILABLE"
+                          value={deployForm.deployment.maxUnavailable}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            deployment: {...prev.deployment, maxUnavailable: e.target.value}
+                          }))}
+                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Security Context */}
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-2">SECURITY CONTEXT</label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="runAsNonRoot"
+                          checked={deployForm.security.runAsNonRoot}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            security: {...prev.security, runAsNonRoot: e.target.checked}
+                          }))}
+                          className="bg-black border border-white"
+                        />
+                        <label htmlFor="runAsNonRoot" className="text-xs font-mono text-gray-300">RUN AS NON-ROOT</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="readOnlyRoot"
+                          checked={deployForm.security.readOnlyRootFilesystem}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            security: {...prev.security, readOnlyRootFilesystem: e.target.checked}
+                          }))}
+                          className="bg-black border border-white"
+                        />
+                        <label htmlFor="readOnlyRoot" className="text-xs font-mono text-gray-300">READ-ONLY ROOT FILESYSTEM</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="allowPrivEsc"
+                          checked={!deployForm.security.allowPrivilegeEscalation}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            security: {...prev.security, allowPrivilegeEscalation: !e.target.checked}
+                          }))}
+                          className="bg-black border border-white"
+                        />
+                        <label htmlFor="allowPrivEsc" className="text-xs font-mono text-gray-300">PREVENT PRIVILEGE ESCALATION</label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -638,7 +733,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
               </button>
               <button
                 onClick={handleDeploy}
-                disabled={!selectedTemplate || !selectedImage || !deployForm.name || deploying}
+                disabled={!selectedImage || !deployForm.name || deploying}
                 className="px-6 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2 tracking-wider"
               >
                 {deploying && <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />}
