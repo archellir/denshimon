@@ -2,18 +2,18 @@ package constants
 
 // WebSocket Message Types - matching frontend WebSocketEventType
 const (
-	MessageTypeHeartbeat     = "heartbeat"
-	MessageTypeConnection    = "connection"
-	MessageTypeMetrics       = "metrics"
-	MessageTypePods          = "pods"
-	MessageTypeServices      = "services"
-	MessageTypeLogs          = "logs"
-	MessageTypeEvents        = "events"
-	MessageTypeWorkflows     = "workflows"
-	MessageTypeDeployments   = "deployments"
-	MessageTypeAlerts        = "alerts"
-	MessageTypeGiteaWebhook  = "gitea_webhook"
-	MessageTypeGithubWebhook = "github_webhook"
+	MessageTypeHeartbeat      = "heartbeat"
+	MessageTypeConnection     = "connection"
+	MessageTypeMetrics        = "metrics"
+	MessageTypePods           = "pods"
+	MessageTypeServices       = "services"
+	MessageTypeLogs           = "logs"
+	MessageTypeEvents         = "events"
+	MessageTypeWorkflows      = "workflows"
+	MessageTypeDeployments    = "deployments"
+	MessageTypeAlerts         = "alerts"
+	MessageTypeGiteaWebhook   = "gitea_webhook"
+	MessageTypeGithubWebhook  = "github_webhook"
 	MessageTypePipelineUpdate = "pipeline_update"
 )
 
@@ -73,7 +73,7 @@ const (
 // Deployment Strategy - matching frontend DeploymentStrategy enum
 const (
 	DeploymentStrategyRollingUpdate = "RollingUpdate"
-	DeploymentStrategyRecreate     = "Recreate"
+	DeploymentStrategyRecreate      = "Recreate"
 )
 
 // Deployment Actions - matching frontend DeploymentAction enum

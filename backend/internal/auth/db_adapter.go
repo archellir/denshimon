@@ -19,7 +19,7 @@ func (a *DatabaseAdapter) GetUser(username string) (*DatabaseUser, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &DatabaseUser{
 		ID:           user.ID,
 		Username:     user.Username,
@@ -35,7 +35,7 @@ func (a *DatabaseAdapter) GetUserByID(userID string) (*DatabaseUser, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &DatabaseUser{
 		ID:           user.ID,
 		Username:     user.Username,
@@ -51,7 +51,7 @@ func (a *DatabaseAdapter) CreateUser(username, passwordHash, role string) (*Data
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &DatabaseUser{
 		ID:           user.ID,
 		Username:     user.Username,
@@ -75,7 +75,7 @@ func (a *DatabaseAdapter) ListUsers() ([]*DatabaseUser, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result := make([]*DatabaseUser, len(users))
 	for i, user := range users {
 		result[i] = &DatabaseUser{
@@ -87,6 +87,6 @@ func (a *DatabaseAdapter) ListUsers() ([]*DatabaseUser, error) {
 			UpdatedAt:    user.UpdatedAt,
 		}
 	}
-	
+
 	return result, nil
 }

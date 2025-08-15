@@ -70,10 +70,10 @@ func NewService(secretKey string, redis RedisClient, db DatabaseClient) *Service
 			key[i] = byte(i)
 		}
 	}
-	
+
 	// Create PASETO symmetric key
 	pasetoKey := paseto.NewV4SymmetricKey()
-	
+
 	return &Service{
 		secretKey: key,
 		pasetoKey: pasetoKey,
@@ -84,7 +84,7 @@ func NewService(secretKey string, redis RedisClient, db DatabaseClient) *Service
 
 func (s *Service) GenerateToken(user *User, duration time.Duration) (string, error) {
 	now := time.Now()
-	
+
 	claims := TokenClaims{
 		UserID:   user.ID,
 		Username: user.Username,
@@ -105,7 +105,7 @@ func (s *Service) GenerateToken(user *User, duration time.Duration) (string, err
 
 	// Encrypt the token
 	encrypted := token.V4Encrypt(s.pasetoKey, nil)
-	
+
 	return encrypted, nil
 }
 
@@ -124,7 +124,7 @@ func (s *Service) ValidateToken(tokenString string) (*TokenClaims, error) {
 
 	// Extract claims
 	var claims TokenClaims
-	
+
 	if userID, err := token.GetString("user_id"); err == nil {
 		claims.UserID = userID
 	}
@@ -216,12 +216,12 @@ func (s *Service) HashPassword(password string) (string, error) {
 	if cost < bcrypt.MinCost {
 		cost = bcrypt.MinCost
 	}
-	
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {
 		return "", fmt.Errorf("failed to hash password: %w", err)
 	}
-	
+
 	return string(hash), nil
 }
 
@@ -235,21 +235,21 @@ func (s *Service) AuthenticateUser(username, password string) (*User, error) {
 		// Fallback to demo users if no database
 		return s.authenticateDemoUser(username, password)
 	}
-	
+
 	// Get user from database
 	dbUser, err := s.db.GetUser(username)
 	if err != nil {
 		return nil, ErrUnauthorized
 	}
-	
+
 	// Verify password
 	if err := s.VerifyPassword(dbUser.PasswordHash, password); err != nil {
 		return nil, ErrUnauthorized
 	}
-	
+
 	// Convert to auth User type with scopes
 	scopes := s.generateScopesForRole(dbUser.Role)
-	
+
 	return &User{
 		ID:       dbUser.ID,
 		Username: dbUser.Username,
@@ -300,27 +300,27 @@ func (s *Service) CreateUser(username, password, role string) (*User, error) {
 	if s.db == nil {
 		return nil, ErrUserManagementDisabled
 	}
-	
+
 	// Validate role
 	if !s.isValidRole(role) {
 		return nil, ErrInvalidRole
 	}
-	
+
 	// Hash password
 	hashedPassword, err := s.HashPassword(password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
-	
+
 	// Create user in database
 	dbUser, err := s.db.CreateUser(username, hashedPassword, role)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
-	
+
 	// Convert to auth User type
 	scopes := s.generateScopesForRole(role)
-	
+
 	return &User{
 		ID:       dbUser.ID,
 		Username: dbUser.Username,
@@ -333,12 +333,12 @@ func (s *Service) UpdateUser(userID, username, password, role string) error {
 	if s.db == nil {
 		return ErrUserManagementDisabled
 	}
-	
+
 	// Validate role
 	if !s.isValidRole(role) {
 		return ErrInvalidRole
 	}
-	
+
 	// Hash new password if provided
 	var hashedPassword string
 	if password != "" {
@@ -355,7 +355,7 @@ func (s *Service) UpdateUser(userID, username, password, role string) error {
 		}
 		hashedPassword = currentUser.PasswordHash
 	}
-	
+
 	return s.db.UpdateUser(userID, username, hashedPassword, role)
 }
 
@@ -363,7 +363,7 @@ func (s *Service) DeleteUser(userID string) error {
 	if s.db == nil {
 		return ErrUserManagementDisabled
 	}
-	
+
 	return s.db.DeleteUser(userID)
 }
 
@@ -371,12 +371,12 @@ func (s *Service) ListUsers() ([]*User, error) {
 	if s.db == nil {
 		return nil, ErrUserManagementDisabled
 	}
-	
+
 	dbUsers, err := s.db.ListUsers()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	users := make([]*User, len(dbUsers))
 	for i, dbUser := range dbUsers {
 		scopes := s.generateScopesForRole(dbUser.Role)
@@ -387,7 +387,7 @@ func (s *Service) ListUsers() ([]*User, error) {
 			Scopes:   scopes,
 		}
 	}
-	
+
 	return users, nil
 }
 
