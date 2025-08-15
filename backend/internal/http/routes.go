@@ -311,6 +311,10 @@ func RegisterRoutes(
 		switch {
 		case strings.HasSuffix(path, "/deploy") && r.Method == "POST":
 			gitopsHandlers.DeployApplication(w, r)
+		case strings.HasSuffix(path, "/rollback") && r.Method == "POST":
+			gitopsHandlers.RollbackApplication(w, r)
+		case strings.HasSuffix(path, "/rollback-targets") && r.Method == "GET":
+			gitopsHandlers.GetRollbackTargets(w, r)
 		case strings.HasSuffix(path, "/history") && r.Method == "GET":
 			gitopsHandlers.GetDeploymentHistory(w, r)
 		case r.Method == "GET":
