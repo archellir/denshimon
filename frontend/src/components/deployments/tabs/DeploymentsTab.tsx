@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Rocket, RotateCcw, Trash2, Plus, Package, Settings, X, ChevronDown, ChevronUp, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Rocket, RotateCcw, Trash2, Plus, Package, Settings, X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@/constants';
 import useModalKeyboard from '@/hooks/useModalKeyboard';
+import CyberpunkSelector from '@/components/common/CyberpunkSelector';
 
 
 interface ContainerImage {
@@ -97,21 +98,6 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     annotations: {} as Record<string, string>
   });
 
-  // Dropdown states
-  const [imageDropdownOpen, setImageDropdownOpen] = useState(false);
-  const [namespaceDropdownOpen, setNamespaceDropdownOpen] = useState(false);
-  const [accessModeDropdownOpen, setAccessModeDropdownOpen] = useState(false);
-  const [healthCheckDropdownOpen, setHealthCheckDropdownOpen] = useState(false);
-  const [serviceTypeDropdownOpen, setServiceTypeDropdownOpen] = useState(false);
-  const [deployStrategyDropdownOpen, setDeployStrategyDropdownOpen] = useState(false);
-
-  // Dropdown refs
-  const imageDropdownRef = useRef<HTMLDivElement>(null);
-  const namespaceDropdownRef = useRef<HTMLDivElement>(null);
-  const accessModeDropdownRef = useRef<HTMLDivElement>(null);
-  const healthCheckDropdownRef = useRef<HTMLDivElement>(null);
-  const serviceTypeDropdownRef = useRef<HTMLDivElement>(null);
-  const deployStrategyDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchDeployments();
@@ -208,37 +194,6 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     }
   };
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (imageDropdownRef.current && !imageDropdownRef.current.contains(event.target as Node)) {
-        setImageDropdownOpen(false);
-      }
-      if (namespaceDropdownRef.current && !namespaceDropdownRef.current.contains(event.target as Node)) {
-        setNamespaceDropdownOpen(false);
-      }
-      if (accessModeDropdownRef.current && !accessModeDropdownRef.current.contains(event.target as Node)) {
-        setAccessModeDropdownOpen(false);
-      }
-      if (healthCheckDropdownRef.current && !healthCheckDropdownRef.current.contains(event.target as Node)) {
-        setHealthCheckDropdownOpen(false);
-      }
-      if (serviceTypeDropdownRef.current && !serviceTypeDropdownRef.current.contains(event.target as Node)) {
-        setServiceTypeDropdownOpen(false);
-      }
-      if (deployStrategyDropdownRef.current && !deployStrategyDropdownRef.current.contains(event.target as Node)) {
-        setDeployStrategyDropdownOpen(false);
-      }
-    };
-
-    if (showDeployModal && (imageDropdownOpen || namespaceDropdownOpen || accessModeDropdownOpen || healthCheckDropdownOpen || serviceTypeDropdownOpen || deployStrategyDropdownOpen)) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showDeployModal, imageDropdownOpen, namespaceDropdownOpen, accessModeDropdownOpen, healthCheckDropdownOpen, serviceTypeDropdownOpen, deployStrategyDropdownOpen]);
 
   // Modal keyboard behavior (must be after handleDeploy function)
   const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
@@ -436,70 +391,23 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
             {/* Container Image Selection at Top */}
             <div className="mb-6 pb-6 border-b border-white/30">
               <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
-              <div className="relative" ref={imageDropdownRef}>
-                <button
-                  onClick={() => setImageDropdownOpen(!imageDropdownOpen)}
-                  className="w-full bg-black border border-white text-white px-4 py-3 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-3">
-                    {selectedImage ? (
-                      <>
-                        <Container size={16} className="text-green-400" />
-                        <div className="text-left">
-                          <div className="font-semibold">{selectedImage.name.toUpperCase()} : {selectedImage.tag}</div>
-                          <div className="text-xs opacity-60">{selectedImage.size ? `${selectedImage.size}` : 'Container Image'}</div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Container size={16} className="opacity-60" />
-                        <span className="opacity-60">-- SELECT AN IMAGE --</span>
-                      </>
-                    )}
-                  </div>
-                  {imageDropdownOpen ? (
-                    <ChevronUp size={20} className="text-green-400" />
-                  ) : (
-                    <ChevronDown size={20} className="opacity-60" />
-                  )}
-                </button>
-                
-                {imageDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0 max-h-64 overflow-y-auto">
-                    <button
-                      onClick={() => {
-                        setSelectedImage(null);
-                        setImageDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-3 font-mono text-sm hover:bg-white/10 transition-colors flex items-center space-x-3 border-b border-white/20"
-                    >
-                      <Container size={16} className="opacity-60" />
-                      <span className="opacity-60">-- SELECT AN IMAGE --</span>
-                    </button>
-                    {images.map((image) => (
-                      <button
-                        key={image.id}
-                        onClick={() => {
-                          setSelectedImage(image);
-                          setImageDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-3 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center justify-between border-b border-white/10 last:border-b-0 ${
-                          selectedImage?.id === image.id ? 'bg-green-400/10 text-green-400' : ''
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <Container size={16} className="text-green-400" />
-                          <div>
-                            <div className="font-semibold">{image.name.toUpperCase()} : {image.tag}</div>
-                            <div className="text-xs opacity-60">{image.size ? `${image.size}` : 'Container Image'}</div>
-                          </div>
-                        </div>
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <CyberpunkSelector
+                value={selectedImage?.id || ''}
+                options={images.map(image => ({
+                  value: image.id,
+                  label: `${image.name.toUpperCase()} : ${image.tag}`,
+                  description: image.size ? `${image.size}` : 'Container Image'
+                }))}
+                onChange={(value) => {
+                  const image = images.find(img => img.id === value);
+                  setSelectedImage(image || null);
+                }}
+                placeholder="-- SELECT AN IMAGE --"
+                icon={Container}
+                size="lg"
+                variant="detailed"
+                maxHeight="max-h-64"
+              />
               {selectedImage && (
                 <div className="mt-2 text-sm text-green-400 font-mono">
                   SELECTED: {selectedImage.name}:{selectedImage.tag}
@@ -531,46 +439,17 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-mono text-gray-400 mb-1">NAMESPACE</label>
-                          <div className="relative" ref={namespaceDropdownRef}>
-                            <button
-                              onClick={() => setNamespaceDropdownOpen(!namespaceDropdownOpen)}
-                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <Database size={12} className="text-green-400" />
-                                <span>{deployForm.namespace.toUpperCase()}</span>
-                              </div>
-                              {namespaceDropdownOpen ? (
-                                <ChevronUp size={14} className="text-green-400" />
-                              ) : (
-                                <ChevronDown size={14} className="opacity-60" />
-                              )}
-                            </button>
-                            
-                            {namespaceDropdownOpen && (
-                              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
-                                {[
-                                  { value: 'base-infra', label: 'BASE-INFRA' },
-                                  { value: 'default', label: 'DEFAULT' },
-                                  { value: 'kube-system', label: 'KUBE-SYSTEM' }
-                                ].map(ns => (
-                                  <button
-                                    key={ns.value}
-                                    onClick={() => {
-                                      setDeployForm(prev => ({...prev, namespace: ns.value}));
-                                      setNamespaceDropdownOpen(false);
-                                    }}
-                                    className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
-                                      deployForm.namespace === ns.value ? 'bg-green-400/10 text-green-400' : ''
-                                    }`}
-                                  >
-                                    <Database size={12} className="text-green-400" />
-                                    <span>{ns.label}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <CyberpunkSelector
+                            value={deployForm.namespace}
+                            options={[
+                              { value: 'base-infra', label: 'BASE-INFRA' },
+                              { value: 'default', label: 'DEFAULT' },
+                              { value: 'kube-system', label: 'KUBE-SYSTEM' }
+                            ]}
+                            onChange={(value) => setDeployForm(prev => ({...prev, namespace: value}))}
+                            icon={Database}
+                            size="sm"
+                          />
                         </div>
                         <div>
                           <label className="block text-xs font-mono text-gray-400 mb-1">REPLICAS</label>
@@ -690,53 +569,20 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                           </div>
                           <div>
                             <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
-                            <div className="relative" ref={accessModeDropdownRef}>
-                              <button
-                                onClick={() => setAccessModeDropdownOpen(!accessModeDropdownOpen)}
-                                className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <Shield size={12} className="text-green-400" />
-                                  <span>
-                                    {deployForm.storage.accessMode === 'ReadWriteOnce' ? 'READ WRITE ONCE' :
-                                     deployForm.storage.accessMode === 'ReadOnlyMany' ? 'READ ONLY MANY' :
-                                     deployForm.storage.accessMode === 'ReadWriteMany' ? 'READ WRITE MANY' : deployForm.storage.accessMode}
-                                  </span>
-                                </div>
-                                {accessModeDropdownOpen ? (
-                                  <ChevronUp size={14} className="text-green-400" />
-                                ) : (
-                                  <ChevronDown size={14} className="opacity-60" />
-                                )}
-                              </button>
-                              
-                              {accessModeDropdownOpen && (
-                                <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
-                                  {[
-                                    { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
-                                    { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
-                                    { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
-                                  ].map(mode => (
-                                    <button
-                                      key={mode.value}
-                                      onClick={() => {
-                                        setDeployForm(prev => ({
-                                          ...prev,
-                                          storage: {...prev.storage, accessMode: mode.value}
-                                        }));
-                                        setAccessModeDropdownOpen(false);
-                                      }}
-                                      className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
-                                        deployForm.storage.accessMode === mode.value ? 'bg-green-400/10 text-green-400' : ''
-                                      }`}
-                                    >
-                                      <Shield size={12} className="text-green-400" />
-                                      <span>{mode.label}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                            <CyberpunkSelector
+                              value={deployForm.storage.accessMode}
+                              options={[
+                                { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
+                                { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
+                                { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
+                              ]}
+                              onChange={(value) => setDeployForm(prev => ({
+                                ...prev,
+                                storage: {...prev.storage, accessMode: value}
+                              }))}
+                              icon={Shield}
+                              size="sm"
+                            />
                           </div>
                           <div>
                             <label className="block text-xs font-mono text-gray-400 mb-1">MOUNT PATH</label>
@@ -825,53 +671,20 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                     {deployForm.healthCheck.enabled && (
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="relative" ref={healthCheckDropdownRef}>
-                            <button
-                              onClick={() => setHealthCheckDropdownOpen(!healthCheckDropdownOpen)}
-                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <Activity size={12} className="text-green-400" />
-                                <span>
-                                  {deployForm.healthCheck.type === 'http' ? 'HTTP GET' :
-                                   deployForm.healthCheck.type === 'exec' ? 'EXEC COMMAND' :
-                                   deployForm.healthCheck.type === 'tcp' ? 'TCP SOCKET' : deployForm.healthCheck.type.toUpperCase()}
-                                </span>
-                              </div>
-                              {healthCheckDropdownOpen ? (
-                                <ChevronUp size={14} className="text-green-400" />
-                              ) : (
-                                <ChevronDown size={14} className="opacity-60" />
-                              )}
-                            </button>
-                            
-                            {healthCheckDropdownOpen && (
-                              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
-                                {[
-                                  { value: 'http', label: 'HTTP GET' },
-                                  { value: 'exec', label: 'EXEC COMMAND' },
-                                  { value: 'tcp', label: 'TCP SOCKET' }
-                                ].map(check => (
-                                  <button
-                                    key={check.value}
-                                    onClick={() => {
-                                      setDeployForm(prev => ({
-                                        ...prev,
-                                        healthCheck: {...prev.healthCheck, type: check.value}
-                                      }));
-                                      setHealthCheckDropdownOpen(false);
-                                    }}
-                                    className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
-                                      deployForm.healthCheck.type === check.value ? 'bg-green-400/10 text-green-400' : ''
-                                    }`}
-                                  >
-                                    <Activity size={12} className="text-green-400" />
-                                    <span>{check.label}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <CyberpunkSelector
+                            value={deployForm.healthCheck.type}
+                            options={[
+                              { value: 'http', label: 'HTTP GET' },
+                              { value: 'exec', label: 'EXEC COMMAND' },
+                              { value: 'tcp', label: 'TCP SOCKET' }
+                            ]}
+                            onChange={(value) => setDeployForm(prev => ({
+                              ...prev,
+                              healthCheck: {...prev.healthCheck, type: value}
+                            }))}
+                            icon={Activity}
+                            size="sm"
+                          />
                           <input
                             type="text"
                             placeholder={deployForm.healthCheck.type === 'http' ? 'PATH (e.g., /api/healthz)' : deployForm.healthCheck.type === 'exec' ? 'COMMAND' : 'PORT'}
@@ -1071,103 +884,39 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                   {/* Service Configuration */}
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
-                    <div className="relative" ref={serviceTypeDropdownRef}>
-                      <button
-                        onClick={() => setServiceTypeDropdownOpen(!serviceTypeDropdownOpen)}
-                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <Globe size={10} className="text-green-400" />
-                          <span>
-                            {deployForm.service.type === 'ClusterIP' ? 'CLUSTER IP' :
-                             deployForm.service.type === 'NodePort' ? 'NODE PORT' :
-                             deployForm.service.type === 'LoadBalancer' ? 'LOAD BALANCER' : deployForm.service.type}
-                          </span>
-                        </div>
-                        {serviceTypeDropdownOpen ? (
-                          <ChevronUp size={12} className="text-green-400" />
-                        ) : (
-                          <ChevronDown size={12} className="opacity-60" />
-                        )}
-                      </button>
-                      
-                      {serviceTypeDropdownOpen && (
-                        <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
-                          {[
-                            { value: 'ClusterIP', label: 'CLUSTER IP' },
-                            { value: 'NodePort', label: 'NODE PORT' },
-                            { value: 'LoadBalancer', label: 'LOAD BALANCER' }
-                          ].map(service => (
-                            <button
-                              key={service.value}
-                              onClick={() => {
-                                setDeployForm(prev => ({
-                                  ...prev,
-                                  service: {...prev.service, type: service.value}
-                                }));
-                                setServiceTypeDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-2 py-1 font-mono text-xs hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
-                                deployForm.service.type === service.value ? 'bg-green-400/10 text-green-400' : ''
-                              }`}
-                            >
-                              <Globe size={10} className="text-green-400" />
-                              <span>{service.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <CyberpunkSelector
+                      value={deployForm.service.type}
+                      options={[
+                        { value: 'ClusterIP', label: 'CLUSTER IP' },
+                        { value: 'NodePort', label: 'NODE PORT' },
+                        { value: 'LoadBalancer', label: 'LOAD BALANCER' }
+                      ]}
+                      onChange={(value) => setDeployForm(prev => ({
+                        ...prev,
+                        service: {...prev.service, type: value}
+                      }))}
+                      icon={Globe}
+                      size="xs"
+                    />
                   </div>
 
                   {/* Deployment Strategy */}
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
-                    <div className="relative mb-2" ref={deployStrategyDropdownRef}>
-                      <button
-                        onClick={() => setDeployStrategyDropdownOpen(!deployStrategyDropdownOpen)}
-                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <Server size={10} className="text-green-400" />
-                          <span>
-                            {deployForm.deployment.strategy === 'RollingUpdate' ? 'ROLLING UPDATE' :
-                             deployForm.deployment.strategy === 'Recreate' ? 'RECREATE' : deployForm.deployment.strategy}
-                          </span>
-                        </div>
-                        {deployStrategyDropdownOpen ? (
-                          <ChevronUp size={12} className="text-green-400" />
-                        ) : (
-                          <ChevronDown size={12} className="opacity-60" />
-                        )}
-                      </button>
-                      
-                      {deployStrategyDropdownOpen && (
-                        <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
-                          {[
-                            { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
-                            { value: 'Recreate', label: 'RECREATE' }
-                          ].map(strategy => (
-                            <button
-                              key={strategy.value}
-                              onClick={() => {
-                                setDeployForm(prev => ({
-                                  ...prev,
-                                  deployment: {...prev.deployment, strategy: strategy.value}
-                                }));
-                                setDeployStrategyDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-2 py-1 font-mono text-xs hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
-                                deployForm.deployment.strategy === strategy.value ? 'bg-green-400/10 text-green-400' : ''
-                              }`}
-                            >
-                              <Server size={10} className="text-green-400" />
-                              <span>{strategy.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <CyberpunkSelector
+                      value={deployForm.deployment.strategy}
+                      options={[
+                        { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
+                        { value: 'Recreate', label: 'RECREATE' }
+                      ]}
+                      onChange={(value) => setDeployForm(prev => ({
+                        ...prev,
+                        deployment: {...prev.deployment, strategy: value}
+                      }))}
+                      icon={Server}
+                      size="xs"
+                      className="mb-2"
+                    />
                     {deployForm.deployment.strategy === 'RollingUpdate' && (
                       <div className="grid grid-cols-2 gap-2">
                         <input
