@@ -11,18 +11,12 @@ interface DeploymentDashboardProps {
   activeTab?: string;
   showDeployModal?: boolean;
   setShowDeployModal?: (show: boolean) => void;
-  preselectedImage?: ContainerImage | null;
-  setPreselectedImage?: (image: ContainerImage | null) => void;
-  onTabChange?: (tabId: string) => void;
 }
 
 const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ 
   activeTab = DeploymentsTabEnum.DEPLOYMENTS, 
   showDeployModal, 
-  setShowDeployModal, 
-  preselectedImage, 
-  setPreselectedImage,
-  onTabChange
+  setShowDeployModal
 }) => {
   const { fetchRegistries, fetchDeployments, fetchNodes } = useDeploymentStore();
 
@@ -43,12 +37,6 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
     initializeData();
   }, [fetchRegistries, fetchDeployments, fetchNodes]);
 
-  const handleDeployImage = (image: ContainerImage) => {
-    setPreselectedImage?.(image);
-    setShowDeployModal?.(true);
-    // Switch to Deployments tab to show the modal
-    onTabChange?.(DeploymentsTabEnum.DEPLOYMENTS);
-  };
 
   // Tabs are now controlled by parent Dashboard component
 
@@ -57,14 +45,12 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
       case DeploymentsTabEnum.REGISTRIES:
         return <RegistriesTab />;
       case DeploymentsTabEnum.IMAGES:
-        return <ImagesTab onDeployImage={handleDeployImage} />;
+        return <ImagesTab />;
       case DeploymentsTabEnum.DEPLOYMENTS:
         return (
           <DeploymentsTab 
             showDeployModal={showDeployModal} 
             setShowDeployModal={setShowDeployModal}
-            preselectedImage={preselectedImage}
-            setPreselectedImage={setPreselectedImage}
           />
         );
       case DeploymentsTabEnum.HISTORY:

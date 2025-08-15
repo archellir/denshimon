@@ -11,15 +11,11 @@ import CustomDialog from '@components/common/CustomDialog';
 interface DeploymentsTabProps {
   showDeployModal?: boolean;
   setShowDeployModal?: (show: boolean) => void;
-  preselectedImage?: ContainerImage | null;
-  setPreselectedImage?: (image: ContainerImage | null) => void;
 }
 
 const DeploymentsTab = ({ 
   showDeployModal = false, 
-  setShowDeployModal, 
-  preselectedImage, 
-  setPreselectedImage 
+  setShowDeployModal
 }: DeploymentsTabProps) => {
   const { 
     deployments, 
@@ -119,15 +115,6 @@ const DeploymentsTab = ({
       fetchImages();
     }
   }, [fetchDeployments, showDeployModal]);
-
-  // Handle preselected image from ImagesTab
-  useEffect(() => {
-    if (preselectedImage && showDeployModal) {
-      setSelectedImage(preselectedImage);
-      // Clear the preselected image after using it
-      setPreselectedImage?.(null);
-    }
-  }, [preselectedImage, showDeployModal, setPreselectedImage]);
 
 
   const fetchImages = async () => {
@@ -476,11 +463,6 @@ const DeploymentsTab = ({
                 variant="detailed"
                 maxHeight="max-h-64"
               />
-              {selectedImage && (
-                <div className="mt-2 text-sm text-green-400 font-mono">
-                  SELECTED: {selectedImage.repository}:{selectedImage.tag}
-                </div>
-              )}
             </div>
 
             {/* Configuration Form in 2 Columns */}

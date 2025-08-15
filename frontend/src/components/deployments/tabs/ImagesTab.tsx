@@ -1,25 +1,21 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
-import useDeploymentStore from '@stores/deploymentStore';
+import useDeploymentStore from '@/stores/deploymentStore';
 import { ContainerImage } from '@/types';
+import DeploymentModal from '@/components/deployments/DeploymentModal';
 
-interface ImagesTabProps {
-  onDeployImage?: (image: ContainerImage) => void;
-}
-
-const ImagesTab: FC<ImagesTabProps> = ({ onDeployImage }) => {
-  const { 
-    images, 
-    loading, 
-    fetchImages
-  } = useDeploymentStore();
+const ImagesTab: FC = () => {
+  const { images, loading, fetchImages } = useDeploymentStore();
+  const [showDeployModal, setShowDeployModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
 
   useEffect(() => {
     fetchImages();
   }, [fetchImages]);
 
   const handleDeploy = (image: ContainerImage) => {
-    onDeployImage?.(image);
+    setSelectedImage(image);
+    setShowDeployModal(true);
   };
 
   const formatSize = (bytes: number) => {
@@ -92,6 +88,12 @@ const ImagesTab: FC<ImagesTabProps> = ({ onDeployImage }) => {
           ))}
         </div>
       )}
+
+      <DeploymentModal
+        isOpen={showDeployModal}
+        onClose={() => setShowDeployModal(false)}
+        preselectedImage={selectedImage}
+      />
     </>
   );
 };
