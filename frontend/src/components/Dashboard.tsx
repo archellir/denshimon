@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, type LucideIcon } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, RefreshCw, type LucideIcon } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@/components/common/StatusIcon';
 import GlobalSearch from '@/components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@/stores/webSocketMetricsStore';
@@ -76,6 +76,16 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   
   // Deployment management state
   const [showDeployModal, setShowDeployModal] = useState(false);
+  
+  // Backup management state
+  const [backupRefreshing, setBackupRefreshing] = useState(false);
+
+  const refreshBackupData = async () => {
+    setBackupRefreshing(true);
+    // Trigger backup data refresh - this will be handled by the BackupRecoveryDashboard component
+    window.dispatchEvent(new CustomEvent('refreshBackupData'));
+    setTimeout(() => setBackupRefreshing(false), 1000);
+  };
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -363,6 +373,17 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     switch (primaryTab) {
       case PrimaryTab.INFRASTRUCTURE:
         switch (secondaryTab) {
+          case InfrastructureTab.BACKUP:
+            return (
+              <button
+                onClick={refreshBackupData}
+                disabled={backupRefreshing}
+                className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black disabled:opacity-50 transition-colors font-mono text-sm"
+              >
+                <RefreshCw size={16} className={backupRefreshing ? 'animate-spin' : ''} />
+                <span>REFRESH</span>
+              </button>
+            );
           case InfrastructureTab.NODES:
             return (
               <span className="text-sm font-mono opacity-60">
