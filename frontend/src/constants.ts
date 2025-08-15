@@ -782,6 +782,18 @@ export const API_ENDPOINTS = {
     DEPLOYMENT_HISTORY: `${API_BASE_PATHS.GITOPS}/deployments`,
     DEPLOYMENT_HISTORY_BY_APP: (applicationId: string) => `${API_BASE_PATHS.GITOPS}/deployments?application_id=${applicationId}`,
     DEPLOYMENT: (id: string) => `${API_BASE_PATHS.GITOPS}/deployments/${id}`,
+    // Manifest and Template Management
+    MANIFESTS_GENERATE: `${API_BASE_PATHS.GITOPS}/manifests/generate`,
+    MANIFESTS_VALIDATE: `${API_BASE_PATHS.GITOPS}/manifests/validate`,
+    MANIFESTS_TYPES: `${API_BASE_PATHS.GITOPS}/manifests/types`,
+    TEMPLATES: `${API_BASE_PATHS.GITOPS}/templates`,
+    TEMPLATE: (id: string) => `${API_BASE_PATHS.GITOPS}/templates/${id}`,
+    // Monitoring and Alerts
+    HEALTH_METRICS: `${API_BASE_PATHS.GITOPS}/health/metrics`,
+    HEALTH_CHECK: `${API_BASE_PATHS.GITOPS}/health/check`,
+    ALERTS: `${API_BASE_PATHS.GITOPS}/alerts`,
+    ALERT_ACKNOWLEDGE: `${API_BASE_PATHS.GITOPS}/alerts/acknowledge`,
+    ALERT_RESOLVE: `${API_BASE_PATHS.GITOPS}/alerts/resolve`,
   },
   BACKUP: {
     BASE: API_BASE_PATHS.BACKUP,
