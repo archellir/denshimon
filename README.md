@@ -136,7 +136,7 @@ Perfect for teams using GitHub Actions → Gitea Registry → Kubernetes:
 graph LR
     A[GitHub Repo] --> B[GitHub Actions]
     B --> C[Gitea Registry]  
-    C --> D[K8s WebUI]
+    C --> D[Denshimon]
     D --> E[Kubernetes Cluster]
     
     B -.->|Build & Push| C
@@ -147,7 +147,7 @@ graph LR
 1. Developer pushes code to GitHub
 2. GitHub Actions builds Docker image
 3. Image pushed to Gitea private registry
-4. K8s WebUI detects changes, deploys to cluster
+4. Denshimon detects changes, deploys to cluster
 5. Monitor deployment status and metrics
 
 ### 2. **Multi-Environment Management**
@@ -288,7 +288,7 @@ GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 
 ### Integration Points  
 - **Prometheus**: Metrics scraping endpoints
-- **Grafana**: Custom dashboards for K8s WebUI metrics
+- **Grafana**: Custom dashboards for Denshimon metrics
 - **Alerting**: Webhook integration for notifications
 - **Audit Logs**: SQLite-based audit trail for compliance
 
