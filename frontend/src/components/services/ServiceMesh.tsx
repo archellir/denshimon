@@ -218,7 +218,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const overviewStats = selectedView !== 'topology' && (
     <div className="grid grid-cols-6 gap-4">
       <div className="bg-black border border-white p-4">
-        <div className="text-xs text-gray-500 uppercase mb-1">{UI_LABELS.VPS_SERVICES}</div>
+        <div className="text-xs text-gray-500 uppercase mb-1">{UI_LABELS.CONTAINER_SERVICES}</div>
         <div className="text-2xl font-mono">{data.metrics.overview.totalServices}</div>
       </div>
       <div className="bg-black border border-white p-4">
@@ -472,7 +472,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 {/* Service Dependencies */}
                 {serviceConnections.length > 0 && (
                   <div>
-                    <h5 className="font-mono text-xs font-bold mb-2">VPS DEPENDENCIES ({serviceConnections.length})</h5>
+                    <h5 className="font-mono text-xs font-bold mb-2">DEPENDENCIES ({serviceConnections.length})</h5>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {serviceConnections.slice(0, 5).map(conn => {
                         const isOutbound = conn.source === selectedService;
@@ -651,13 +651,13 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         </div>
       )}
 
-      {/* VPS Traffic Flows View */}
+      {/* Traffic Flows View */}
       {selectedView === 'flows' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Critical VPS Flows */}
+          {/* Critical Flows */}
           <div className="border border-white p-4">
             <div className="border-b border-white/20 pb-2 mb-4">
-              <h3 className="font-mono text-sm text-gray-400 uppercase">CRITICAL VPS FLOWS</h3>
+              <h3 className="font-mono text-sm text-gray-400 uppercase">CRITICAL FLOWS</h3>
             </div>
             <div className="space-y-3">
               {data.flows.filter(f => f.criticalPath).map(flow => (
@@ -689,10 +689,10 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
             </div>
           </div>
 
-          {/* All VPS Flows */}
+          {/* All Flows */}
           <div className="border border-white p-4">
             <div className="border-b border-white/20 pb-2 mb-4">
-              <h3 className="font-mono text-sm text-gray-400 uppercase">ALL VPS FLOWS</h3>
+              <h3 className="font-mono text-sm text-gray-400 uppercase">ALL FLOWS</h3>
             </div>
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {data.flows.map(flow => (

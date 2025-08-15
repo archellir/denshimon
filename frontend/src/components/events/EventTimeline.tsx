@@ -244,9 +244,9 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
       <div className="border border-white p-4 max-h-[600px] overflow-y-auto">
         {filteredData.groups.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-lg font-mono mb-2">{UI_MESSAGES.NO_VPS_EVENTS}</div>
+            <div className="text-lg font-mono mb-2">{UI_MESSAGES.NO_CONTAINER_EVENTS}</div>
             <div className="text-sm font-mono text-gray-500">
-              No VPS events match your current filters
+              No events match your current filters
             </div>
           </div>
         ) : (
