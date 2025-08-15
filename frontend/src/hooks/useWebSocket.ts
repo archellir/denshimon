@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getWebSocketInstance, WebSocketMessage } from '@services/websocket';
-import { WebSocketEventType } from '@/constants';
+import { WebSocketEventType, WebSocketState } from '@/constants';
 
 export interface UseWebSocketOptions {
   enabled?: boolean;
@@ -8,7 +8,7 @@ export interface UseWebSocketOptions {
 }
 
 export interface WebSocketConnectionState {
-  state: 'connecting' | 'connected' | 'disconnected' | 'error';
+  state: WebSocketState;
   reconnectAttempts: number;
 }
 
@@ -20,7 +20,7 @@ export function useWebSocket<T = any>(
   
   const [data, setData] = useState<T | null>(null);
   const [connectionState, setConnectionState] = useState<WebSocketConnectionState>({
-    state: 'disconnected',
+    state: WebSocketState.DISCONNECTED,
     reconnectAttempts: 0
   });
   const [error, setError] = useState<Error | null>(null);
@@ -110,9 +110,9 @@ export function useWebSocket<T = any>(
     }
   }, [messageType, handleError]);
 
-  const isConnected = connectionState.state === 'connected';
-  const isConnecting = connectionState.state === 'connecting';
-  const isError = connectionState.state === 'error';
+  const isConnected = connectionState.state === WebSocketState.CONNECTED;
+  const isConnecting = connectionState.state === WebSocketState.CONNECTING;
+  const isError = connectionState.state === WebSocketState.ERROR;
 
   return {
     data,
@@ -164,7 +164,7 @@ export function useConnectionState() {
 export function useMultipleWebSocket(messageTypes: WebSocketMessage['type'][]) {
   const [data, setData] = useState<Record<string, any>>({});
   const [connectionState, setConnectionState] = useState<WebSocketConnectionState>({
-    state: 'disconnected',
+    state: WebSocketState.DISCONNECTED,
     reconnectAttempts: 0
   });
   const subscriptionIdsRef = useRef<string[]>([]);
@@ -200,6 +200,6 @@ export function useMultipleWebSocket(messageTypes: WebSocketMessage['type'][]) {
   return {
     data,
     connectionState,
-    isConnected: connectionState.state === 'connected'
+    isConnected: connectionState.state === WebSocketState.CONNECTED
   };
 }

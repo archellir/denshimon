@@ -1,4 +1,4 @@
-import { WebSocketEventType, ServiceStatus, CircuitBreakerStatus, SERVICE_IDS } from '@/constants';
+import { WebSocketEventType, ServiceStatus, CircuitBreakerStatus, SERVICE_IDS, WebSocketState } from '@/constants';
 
 export interface WebSocketMessage {
   type: WebSocketEventType;
@@ -25,7 +25,7 @@ export class DenshimonWebSocket {
   private subscriptions: Map<string, WebSocketSubscription> = new Map();
   private reconnectAttempts = 0;
   private isReconnecting = false;
-  private connectionState: 'connecting' | 'connected' | 'disconnected' | 'error' = 'disconnected';
+  private connectionState: WebSocketState = WebSocketState.DISCONNECTED;
   private heartbeatInterval: number | null = null;
   private lastHeartbeat = 0;
 
@@ -48,13 +48,13 @@ export class DenshimonWebSocket {
   private connect(): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
 
-    this.connectionState = 'connecting';
+    this.connectionState = WebSocketState.CONNECTING;
 
     try {
       this.ws = new WebSocket(this.options.url);
       this.setupEventListeners();
     } catch (error) {
-      this.connectionState = 'error';
+      this.connectionState = WebSocketState.ERROR;
       this.scheduleReconnect();
     }
   }
@@ -63,7 +63,7 @@ export class DenshimonWebSocket {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      this.connectionState = 'connected';
+      this.connectionState = WebSocketState.CONNECTED;
       this.reconnectAttempts = 0;
       this.isReconnecting = false;
       this.startHeartbeat();
@@ -79,7 +79,7 @@ export class DenshimonWebSocket {
     };
 
     this.ws.onclose = (event) => {
-      this.connectionState = 'disconnected';
+      this.connectionState = WebSocketState.DISCONNECTED;
       this.stopHeartbeat();
       this.notifyConnectionStateChange();
       
@@ -89,7 +89,7 @@ export class DenshimonWebSocket {
     };
 
     this.ws.onerror = () => {
-      this.connectionState = 'error';
+      this.connectionState = WebSocketState.ERROR;
       this.notifyConnectionStateChange();
     };
   }
@@ -202,13 +202,13 @@ export class DenshimonWebSocket {
       this.ws = null;
     }
     this.subscriptions.clear();
-    this.connectionState = 'disconnected';
+    this.connectionState = WebSocketState.DISCONNECTED;
   }
 
 
   // Mock WebSocket for development
   private async startMockWebSocket(): Promise<void> {
-    this.connectionState = 'connected';
+    this.connectionState = WebSocketState.CONNECTED;
     this.notifyConnectionStateChange();
 
     // Import master data for consistent mock data
@@ -463,11 +463,11 @@ export class DenshimonWebSocket {
     // Simulate connection issues occasionally in development
     if (Math.random() < 0.1) { // 10% chance
       setTimeout(() => {
-        this.connectionState = 'disconnected';
+        this.connectionState = WebSocketState.DISCONNECTED;
         this.notifyConnectionStateChange();
         
         setTimeout(() => {
-          this.connectionState = 'connected';
+          this.connectionState = WebSocketState.CONNECTED;
           this.notifyConnectionStateChange();
         }, 2000);
       }, 30000 + Math.random() * 30000);
