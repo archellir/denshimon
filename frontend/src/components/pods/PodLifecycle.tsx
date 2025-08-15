@@ -26,6 +26,8 @@ import type {
   PodLifecycleEvent, 
   LifecycleTimelineEvent 
 } from '@/types/podLifecycle';
+import useWorkloadsStore from '@/stores/workloadsStore';
+import { MOCK_ENABLED } from '@/mocks';
 
 const PodLifecycle: FC = () => {
   const [timeRange, setTimeRange] = useState<string>('1h');
@@ -34,22 +36,38 @@ const PodLifecycle: FC = () => {
   const [_lifecycleEvents, setLifecycleEvents] = useState<PodLifecycleEvent[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<LifecycleTimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { pods, fetchPods, error } = useWorkloadsStore();
 
   // Fetch lifecycle data when timeRange changes
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Fetch real pod data first
+        await fetchPods();
         
-        const metrics = generatePodLifecycleMetrics(timeRange);
-        const events = generatePodLifecycleEvents(timeRange);
-        const timeline = generateLifecycleTimelineEvents(timeRange);
-        
-        setLifecycleData(metrics);
-        setLifecycleEvents(events);
-        setTimelineEvents(timeline);
+        if (MOCK_ENABLED || pods.length === 0) {
+          // Use mock data for lifecycle analysis
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          const metrics = generatePodLifecycleMetrics(timeRange);
+          const events = generatePodLifecycleEvents(timeRange);
+          const timeline = generateLifecycleTimelineEvents(timeRange);
+          
+          setLifecycleData(metrics);
+          setLifecycleEvents(events);
+          setTimelineEvents(timeline);
+        } else {
+          // In a real implementation, you would analyze the pod data here
+          // For now, we'll still use mock data but with real pod count
+          const metrics = generatePodLifecycleMetrics(timeRange);
+          const events = generatePodLifecycleEvents(timeRange);
+          const timeline = generateLifecycleTimelineEvents(timeRange);
+          
+          setLifecycleData(metrics);
+          setLifecycleEvents(events);
+          setTimelineEvents(timeline);
+        }
       } catch (error) {
         console.error('Error fetching lifecycle data:', error);
       } finally {
@@ -58,7 +76,7 @@ const PodLifecycle: FC = () => {
     };
 
     fetchData();
-  }, [timeRange]);
+  }, [timeRange, fetchPods, pods.length]);
 
   // Format churn data for charts
   const churnChartData = useMemo(() => {
@@ -163,12 +181,32 @@ const PodLifecycle: FC = () => {
     { id: 'timeline', label: 'Timeline', icon: '📅' }
   ];
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-xl font-mono mb-2 text-red-400">ERROR</div>
+          <div className="text-sm font-mono opacity-60 mb-4">{error}</div>
+          <button 
+            onClick={() => fetchPods()}
+            className="px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
+          >
+            RETRY
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading && !lifecycleData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="text-2xl font-mono mb-2">LOADING...</div>
           <div className="text-sm font-mono opacity-60">Analyzing pod lifecycle</div>
+          <div className="text-xs font-mono opacity-40 mt-2">
+            Current pods: {pods.length}
+          </div>
         </div>
       </div>
     );
@@ -200,27 +238,27 @@ const PodLifecycle: FC = () => {
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">TOTAL EVENTS</h3>
+          <h3 className="font-mono text-xs mb-2 opacity-60">TOTAL PODS</h3>
           <div className="font-mono text-lg text-green-400">
-            {lifecycleData?.totalEvents || '--'}
+            {pods.length}
           </div>
         </div>
         <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">CRASH LOOP PODS</h3>
-          <div className="font-mono text-lg text-red-400">
-            {lifecycleData?.crashLoopPods || '--'}
+          <h3 className="font-mono text-xs mb-2 opacity-60">RUNNING PODS</h3>
+          <div className="font-mono text-lg text-green-400">
+            {pods.filter(p => p.phase === 'Running').length}
           </div>
         </div>
         <div className="border border-white p-4">
           <h3 className="font-mono text-xs mb-2 opacity-60">PENDING PODS</h3>
           <div className="font-mono text-lg text-yellow-400">
-            {lifecycleData?.pendingPods || '--'}
+            {pods.filter(p => p.phase === 'Pending').length}
           </div>
         </div>
         <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">AVG LIFESPAN</h3>
-          <div className="font-mono text-lg text-cyan-400">
-            {lifecycleData ? formatDuration(lifecycleData.averagePodLifespan) : '--'}
+          <h3 className="font-mono text-xs mb-2 opacity-60">FAILED PODS</h3>
+          <div className="font-mono text-lg text-red-400">
+            {pods.filter(p => p.phase === 'Failed').length}
           </div>
         </div>
       </div>
