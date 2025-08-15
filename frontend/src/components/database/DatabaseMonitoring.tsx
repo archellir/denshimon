@@ -30,8 +30,10 @@ interface MetricCard {
 const DatabaseMonitoring: FC = () => {
   const {
     connections,
+    stats,
     isLoading,
-    fetchConnections
+    fetchConnections,
+    fetchStats
   } = useDatabaseStore();
 
   const [selectedConnection, setSelectedConnection] = useState<string>('');
@@ -55,52 +57,52 @@ const DatabaseMonitoring: FC = () => {
   );
 
   const selectedConnectionObj = connectedConnections.find(c => c.id === selectedConnection);
-  const stats = selectedConnection ? mockDatabaseStats[selectedConnection] : null;
+  const currentStats = stats || (selectedConnection ? mockDatabaseStats[selectedConnection] : null);
 
   const getMetricCards = (): MetricCard[] => {
-    if (!stats) return [];
+    if (!currentStats) return [];
 
     return [
       {
         title: 'Active Connections',
-        value: `${stats.connections.active}/${stats.connections.maxConn}`,
+        value: `${currentStats.connections.active}/${currentStats.connections.maxConn}`,
         trend: '+2.3%',
-        status: stats.connections.active / stats.connections.maxConn > 0.8 ? 'warning' : 'healthy',
+        status: currentStats.connections.active / currentStats.connections.maxConn > 0.8 ? 'warning' : 'healthy',
         icon: Users
       },
       {
         title: 'Queries/Second',
-        value: stats.performance.queriesPerSecond.toFixed(1),
+        value: currentStats.performance.queriesPerSecond.toFixed(1),
         trend: '+15.2%',
-        status: stats.performance.queriesPerSecond > 100 ? 'healthy' : 'warning',
+        status: currentStats.performance.queriesPerSecond > 100 ? 'healthy' : 'warning',
         icon: Zap
       },
       {
         title: 'Avg Query Time',
-        value: `${stats.performance.avgQueryTime.toFixed(1)}ms`,
+        value: `${currentStats.performance.avgQueryTime.toFixed(1)}ms`,
         trend: '-5.1%',
-        status: stats.performance.avgQueryTime < 50 ? 'healthy' : stats.performance.avgQueryTime < 100 ? 'warning' : 'critical',
+        status: currentStats.performance.avgQueryTime < 50 ? 'healthy' : currentStats.performance.avgQueryTime < 100 ? 'warning' : 'critical',
         icon: Clock
       },
       {
         title: 'Storage Used',
-        value: `${((stats.storage.usedSize / stats.storage.totalSize) * 100).toFixed(1)}%`,
+        value: `${((currentStats.storage.usedSize / currentStats.storage.totalSize) * 100).toFixed(1)}%`,
         trend: '+1.2%',
-        status: (stats.storage.usedSize / stats.storage.totalSize) > 0.9 ? 'critical' : (stats.storage.usedSize / stats.storage.totalSize) > 0.8 ? 'warning' : 'healthy',
+        status: (currentStats.storage.usedSize / currentStats.storage.totalSize) > 0.9 ? 'critical' : (currentStats.storage.usedSize / currentStats.storage.totalSize) > 0.8 ? 'warning' : 'healthy',
         icon: HardDrive
       },
       {
         title: 'Cache Hit Ratio',
-        value: `${stats.performance.cacheHitRatio.toFixed(1)}%`,
+        value: `${currentStats.performance.cacheHitRatio.toFixed(1)}%`,
         trend: '+0.8%',
-        status: stats.performance.cacheHitRatio > 85 ? 'healthy' : stats.performance.cacheHitRatio > 70 ? 'warning' : 'critical',
+        status: currentStats.performance.cacheHitRatio > 85 ? 'healthy' : currentStats.performance.cacheHitRatio > 70 ? 'warning' : 'critical',
         icon: TrendingUp
       },
       {
         title: 'Slow Queries',
-        value: stats.performance.slowQueries.toString(),
+        value: currentStats.performance.slowQueries.toString(),
         trend: '-25%',
-        status: stats.performance.slowQueries === 0 ? 'healthy' : stats.performance.slowQueries < 5 ? 'warning' : 'critical',
+        status: currentStats.performance.slowQueries === 0 ? 'healthy' : currentStats.performance.slowQueries < 5 ? 'warning' : 'critical',
         icon: AlertTriangle
       }
     ];
@@ -141,7 +143,12 @@ const DatabaseMonitoring: FC = () => {
             Last update: {lastRefresh.toLocaleTimeString()}
           </span>
           <button
-            onClick={() => setLastRefresh(new Date())}
+            onClick={() => {
+              setLastRefresh(new Date());
+              if (selectedConnection) {
+                fetchStats(selectedConnection);
+              }
+            }}
             disabled={isLoading}
             className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm disabled:opacity-50"
           >
@@ -158,7 +165,13 @@ const DatabaseMonitoring: FC = () => {
           <label className="font-mono text-sm">DATABASE CONNECTION:</label>
           <select
             value={selectedConnection}
-            onChange={(e) => setSelectedConnection(e.target.value)}
+            onChange={(e) => {
+              const connectionId = e.target.value;
+              setSelectedConnection(connectionId);
+              if (connectionId) {
+                fetchStats(connectionId);
+              }
+            }}
             className="bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400"
           >
             <option value="">Select Connection to Monitor</option>
@@ -184,7 +197,7 @@ const DatabaseMonitoring: FC = () => {
         </div>
       </div>
 
-      {selectedConnection && selectedConnectionObj && stats ? (
+      {selectedConnection && selectedConnectionObj && currentStats ? (
         <div className="space-y-6">
           {/* Connection Info */}
           <div className="grid grid-cols-4 gap-4">
@@ -257,24 +270,24 @@ const DatabaseMonitoring: FC = () => {
               <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Total Size</span>
-                  <span className="font-mono text-sm">{formatBytes(stats.storage.totalSize)}</span>
+                  <span className="font-mono text-sm">{formatBytes(currentStats.storage.totalSize)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Used Space</span>
-                  <span className="font-mono text-sm">{formatBytes(stats.storage.usedSize)}</span>
+                  <span className="font-mono text-sm">{formatBytes(currentStats.storage.usedSize)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Free Space</span>
-                  <span className="font-mono text-sm">{formatBytes(stats.storage.freeSize)}</span>
+                  <span className="font-mono text-sm">{formatBytes(currentStats.storage.freeSize)}</span>
                 </div>
                 <div className="w-full bg-gray-700 h-2">
                   <div 
                     className="bg-blue-400 h-2"
-                    style={{ width: `${(stats.storage.usedSize / stats.storage.totalSize) * 100}%` }}
+                    style={{ width: `${(currentStats.storage.usedSize / currentStats.storage.totalSize) * 100}%` }}
                   />
                 </div>
                 <div className="text-center font-mono text-xs opacity-60">
-                  {((stats.storage.usedSize / stats.storage.totalSize) * 100).toFixed(1)}% Used
+                  {((currentStats.storage.usedSize / currentStats.storage.totalSize) * 100).toFixed(1)}% Used
                 </div>
               </div>
             </div>
@@ -286,28 +299,28 @@ const DatabaseMonitoring: FC = () => {
               <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Active</span>
-                  <span className="font-mono text-sm text-green-400">{stats.connections.active}</span>
+                  <span className="font-mono text-sm text-green-400">{currentStats.connections.active}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Idle</span>
-                  <span className="font-mono text-sm text-yellow-400">{stats.connections.idle}</span>
+                  <span className="font-mono text-sm text-yellow-400">{currentStats.connections.idle}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Total</span>
-                  <span className="font-mono text-sm">{stats.connections.total}</span>
+                  <span className="font-mono text-sm">{currentStats.connections.total}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm">Max Connections</span>
-                  <span className="font-mono text-sm">{stats.connections.maxConn}</span>
+                  <span className="font-mono text-sm">{currentStats.connections.maxConn}</span>
                 </div>
                 <div className="w-full bg-gray-700 h-2">
                   <div 
                     className="bg-green-400 h-2"
-                    style={{ width: `${(stats.connections.active / stats.connections.maxConn) * 100}%` }}
+                    style={{ width: `${(currentStats.connections.active / currentStats.connections.maxConn) * 100}%` }}
                   />
                 </div>
                 <div className="text-center font-mono text-xs opacity-60">
-                  {((stats.connections.active / stats.connections.maxConn) * 100).toFixed(1)}% Utilization
+                  {((currentStats.connections.active / currentStats.connections.maxConn) * 100).toFixed(1)}% Utilization
                 </div>
               </div>
             </div>
@@ -342,15 +355,46 @@ const DatabaseMonitoring: FC = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-center space-x-4">
-            <button className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm">
+            <button 
+              onClick={() => {
+                if (selectedConnection) {
+                  fetchStats(selectedConnection);
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
+            >
               <Eye size={16} />
               <span>VIEW DETAILED METRICS</span>
             </button>
-            <button className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm">
+            <button 
+              onClick={() => {
+                // Navigate to performance analysis view (could integrate with observability tab)
+                console.log('Performance analysis for connection:', selectedConnection);
+              }}
+              className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
+            >
               <BarChart3 size={16} />
               <span>PERFORMANCE ANALYSIS</span>
             </button>
-            <button className="flex items-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm">
+            <button 
+              onClick={() => {
+                if (currentStats) {
+                  const reportData = {
+                    connection: selectedConnectionObj?.name,
+                    timestamp: new Date().toISOString(),
+                    metrics: currentStats
+                  };
+                  const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `database-report-${selectedConnectionObj?.name}-${Date.now()}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
+            >
               <PieChart size={16} />
               <span>EXPORT REPORT</span>
             </button>
