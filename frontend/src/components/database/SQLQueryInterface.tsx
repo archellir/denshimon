@@ -121,14 +121,12 @@ const SQLQueryInterface: FC = () => {
             value={selectedConnection}
             options={connectedConnections.map(conn => ({
               value: conn.id,
-              label: `${conn.name} (${conn.type.toUpperCase()})`,
-              description: conn.status === DatabaseStatus.CONNECTED ? 'Connected' : conn.status
+              label: `${conn.name} (${conn.type.toUpperCase()})`
             }))}
             onChange={(value) => setSelectedConnection(value)}
             placeholder="Select Database Connection"
             icon={Zap}
             size="md"
-            variant="detailed"
             className="min-w-64"
           />
           <div className="flex items-center space-x-2">

@@ -142,8 +142,7 @@ const DatabaseMonitoring: FC = () => {
             value={selectedConnection}
             options={connectedConnections.map(conn => ({
               value: conn.id,
-              label: `${conn.name} (${conn.type.toUpperCase()})`,
-              description: conn.status === DatabaseStatus.CONNECTED ? 'Connected' : conn.status
+              label: `${conn.name} (${conn.type.toUpperCase()})`
             }))}
             onChange={(value) => {
               setSelectedConnection(value);
@@ -154,7 +153,6 @@ const DatabaseMonitoring: FC = () => {
             placeholder="Select Connection to Monitor"
             icon={Zap}
             size="md"
-            variant="detailed"
             className="min-w-72"
           />
         </div>
