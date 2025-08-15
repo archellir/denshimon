@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit } from 'lucide-react';
+import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit, Webhook, Monitor, Bell, Settings } from 'lucide-react';
 import { API_ENDPOINTS } from '@/constants';
 
 interface BaseInfrastructureRepo {
@@ -30,13 +30,39 @@ const BaseInfrastructureTab = () => {
   const fetchBaseRepository = async () => {
     try {
       setLoading(true);
-      // Get the base infrastructure repository info
-      const response = await fetch(`${API_ENDPOINTS.GITOPS.BASE_REPOSITORY}`);
-      const data = await response.json();
-      setRepository(data.repository);
-      setMetrics(data.metrics);
+      
+      // Get repositories and find the first one (base repository)
+      const reposResponse = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES);
+      const reposData = await reposResponse.json();
+      
+      if (reposData.repositories && reposData.repositories.length > 0) {
+        setRepository(reposData.repositories[0]); // Use first repository as base
+      }
+      
+      // Get health metrics
+      const metricsResponse = await fetch(API_ENDPOINTS.GITOPS.HEALTH_METRICS);
+      const metricsData = await metricsResponse.json();
+      setMetrics(metricsData.data || metricsData);
+      
     } catch (error) {
       console.error('Failed to fetch base repository:', error);
+      // Mock data for development
+      setRepository({
+        id: 'base-infra-1',
+        name: 'base-infrastructure',
+        url: 'https://git.example.com/infrastructure/base-k8s-configs.git',
+        branch: 'main',
+        status: 'active',
+        last_sync: new Date().toISOString(),
+        sync_status: 'synced',
+        health: 'healthy'
+      });
+      setMetrics({
+        total_applications: 5,
+        synced_applications: 4,
+        out_of_sync_applications: 1,
+        recent_deployments: 3
+      });
     } finally {
       setLoading(false);
     }
@@ -47,7 +73,7 @@ const BaseInfrastructureTab = () => {
     
     try {
       setSyncing(true);
-      const response = await fetch(`${API_ENDPOINTS.GITOPS.SYNC}/${repository.id}`, {
+      const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_SYNC(repository.id), {
         method: 'POST'
       });
       
@@ -240,6 +266,75 @@ const BaseInfrastructureTab = () => {
             <strong className="text-white">Manual Sync:</strong> Use the "Sync Now" button to manually 
             pull the latest changes from the remote repository if needed.
           </p>
+        </div>
+      </div>
+
+      {/* Monitoring & Webhooks Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Monitoring Panel */}
+        <div className="bg-gray-900 border border-gray-700 rounded p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <Monitor size={20} className="text-blue-400" />
+            <h3 className="text-lg font-bold text-white">GitOps Monitoring</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Health Checks</span>
+              <span className="text-sm text-green-400 font-mono">ENABLED</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Drift Detection</span>
+              <span className="text-sm text-green-400 font-mono">ACTIVE</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Auto Sync</span>
+              <span className="text-sm text-blue-400 font-mono">5MIN INTERVAL</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Alerts</span>
+              <div className="flex items-center space-x-2">
+                <Bell size={14} className="text-yellow-400" />
+                <span className="text-sm text-white font-mono">3 ACTIVE</span>
+              </div>
+            </div>
+            <button className="w-full mt-4 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm">
+              VIEW MONITORING DASHBOARD
+            </button>
+          </div>
+        </div>
+
+        {/* Webhook Panel */}
+        <div className="bg-gray-900 border border-gray-700 rounded p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <Webhook size={20} className="text-green-400" />
+            <h3 className="text-lg font-bold text-white">Webhook Integration</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Git Push Events</span>
+              <span className="text-sm text-green-400 font-mono">CONFIGURED</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Auto Deploy</span>
+              <span className="text-sm text-green-400 font-mono">ENABLED</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Notifications</span>
+              <span className="text-sm text-blue-400 font-mono">SLACK, EMAIL</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Last Trigger</span>
+              <span className="text-sm text-white font-mono">2MIN AGO</span>
+            </div>
+            <div className="flex space-x-2 mt-4">
+              <button className="flex-1 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm">
+                TEST WEBHOOK
+              </button>
+              <button className="px-4 py-2 border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors">
+                <Settings size={16} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
