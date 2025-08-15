@@ -33,20 +33,24 @@ export interface DeploymentRequest {
   name: string;
   namespace: string;
   image: string;
-  registryId: string;
+  registryId?: string;
   replicas: number;
   nodeSelector?: Record<string, string>;
-  strategy: {
+  strategy?: {
     type: DeploymentStrategy;
     maxSurge?: number;
     maxUnavailable?: number;
     nodeSpread: boolean;
     zoneSpread: boolean;
   };
-  resources?: {
-    limits?: { cpu?: string; memory?: string; };
-    requests?: { cpu?: string; memory?: string; };
+  resources: {
+    limits: { cpu: string; memory: string; };
+    requests: { cpu: string; memory: string; };
   };
+  env?: Array<{ name: string; value: string }>;
+  ports?: Array<{ containerPort: number; protocol: string }>;
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
   environment?: Record<string, string>;
 }
 
