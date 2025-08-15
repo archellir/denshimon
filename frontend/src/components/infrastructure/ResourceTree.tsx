@@ -212,7 +212,10 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
       } else {
         // Fetch from multiple API endpoints to build comprehensive resource tree
         const token = localStorage.getItem('auth_token');
-        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
         
         const [
           nodesResponse,

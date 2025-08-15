@@ -11,7 +11,6 @@ import {
   Server
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { KubernetesServiceType, CommonNamespace } from '@constants';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 import useWorkloadsStore, { Service } from '@/stores/workloadsStore';
 

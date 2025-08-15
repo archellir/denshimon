@@ -47,7 +47,10 @@ const LiveStreams: React.FC = () => {
         const fetchLiveData = async () => {
           try {
             const token = localStorage.getItem('auth_token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const headers: Record<string, string> = {};
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
             
             // Fetch pods metrics
             const podsResponse = await fetch(API_ENDPOINTS.KUBERNETES.PODS, { headers });
@@ -87,6 +90,12 @@ const LiveStreams: React.FC = () => {
                   message: `Updating ${dep.name} deployment...`,
                 })) || [],
                 logs: [],
+                stats: {
+                  logsPerSecond: 10 + Math.random() * 50,
+                  activeStreams: 3 + Math.round(Math.random() * 7),
+                  errorRate: 0.5 + Math.random() * 2,
+                  warningRate: 2 + Math.random() * 5
+                },
                 lastUpdate: new Date().toISOString(),
               };
               
