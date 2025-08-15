@@ -1,5 +1,5 @@
 services:
-  # K8s WebUI - Single service with embedded SPA and SQLite database
+  # Denshimon - Single service with embedded SPA and SQLite database
   denshimon:
     build:
       context: .
@@ -16,7 +16,7 @@ services:
     volumes:
       - ~/.kube:/home/denshimon/.kube:ro  # Mount kubeconfig for K8s access
       - /var/run/docker.sock:/var/run/docker.sock:ro  # For Docker-in-Docker scenarios
-      - k8s_webui_data:/app/data  # SQLite database storage
+      - denshimon_data:/app/data  # SQLite database storage
     ports:
       - "8080:8080"
     networks:
@@ -28,7 +28,7 @@ services:
       retries: 3
 
 volumes:
-  k8s_webui_data:
+  denshimon_data:
     name: denshimon-data
 
 networks:
