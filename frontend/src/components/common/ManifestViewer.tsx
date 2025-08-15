@@ -1,12 +1,13 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { FileText, Copy, Download, Eye, EyeOff } from 'lucide-react';
+import { ManifestData } from '@/types';
 
 export type ManifestFormat = 'yaml' | 'json';
 
 interface ManifestViewerProps {
   title: string;
-  data: any;
+  data: ManifestData;
   defaultFormat?: ManifestFormat;
   className?: string;
   showFormatToggle?: boolean;
@@ -28,7 +29,7 @@ const ManifestViewer: FC<ManifestViewerProps> = ({
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
 
   // Convert object to YAML-like string (simplified)
-  const toYaml = (obj: any, indent = 0): string => {
+  const toYaml = (obj: ManifestData, indent = 0): string => {
     const spaces = '  '.repeat(indent);
     
     if (obj === null || obj === undefined) {
