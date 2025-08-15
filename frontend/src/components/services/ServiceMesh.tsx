@@ -1,24 +1,29 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch, RefreshCw } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
-import { ServiceMeshData } from '@/types/serviceMesh';
-import { generateServiceMeshData } from '@/mocks/services/mesh';
-import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType, GraphViewMode, ServiceFilterType, ServiceType, UI_LABELS, API_ENDPOINTS } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks/index';
-import { getWebSocketInstance } from '@services/websocket';
+import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, GraphViewMode, ServiceFilterType, ServiceType, UI_LABELS } from '@/constants';
+import useServiceMeshStore from '@/stores/serviceMeshStore';
 
 interface ServiceMeshProps {
   activeSecondaryTab?: string;
 }
 
 const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
-  const [data, setData] = useState<ServiceMeshData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    connectionState, 
+    fetchServiceMeshData, 
+    refreshData,
+    initializeWebSocket, 
+    cleanupWebSocket,
+    clearError
+  } = useServiceMeshStore();
+  
   const [searchQuery, setSearchQuery] = useState('');
-  const [connectionState, setConnectionState] = useState<ConnectionStatus>(ConnectionStatus.OFFLINE);
-  const subscriptionIdRef = useRef<string | null>(null);
 
   // Listen for global search navigation
   useEffect(() => {
@@ -49,114 +54,15 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   const [filterType, setFilterType] = useState<ServiceFilterType>(ServiceFilterType.ALL);
   const [viewMode, setViewMode] = useState<GraphViewMode>(GraphViewMode.GRAPH);
 
-  // Initialize WebSocket connection for live updates
+  // Initialize service mesh data and WebSocket connection
   useEffect(() => {
-    const ws = getWebSocketInstance();
-    if (!ws) return;
-
-    setIsLoading(true);
-    
-    // Subscribe to connection status
-    const connectionSubId = ws.subscribe(WebSocketEventType.CONNECTION, (state) => {
-      setConnectionState(state.state);
-    });
-    
-    // Initial connection state
-    setConnectionState(ws.getConnectionState() as ConnectionStatus);
-
-    // Subscribe to service mesh updates
-    subscriptionIdRef.current = ws.subscribe(WebSocketEventType.SERVICES, (serviceUpdate) => {
-      setData(prevData => {
-        if (!prevData) {
-          // Initial data load
-          const initialData = generateServiceMeshData();
-          return initialData;
-        }
-
-        // Update existing service data
-        const updatedServices = prevData.services.map(service => {
-          if (service.id === serviceUpdate.serviceId) {
-            return {
-              ...service,
-              status: serviceUpdate.status,
-              metrics: {
-                ...service.metrics,
-                requestRate: serviceUpdate.metrics?.requestRate ?? service.metrics.requestRate,
-                errorRate: serviceUpdate.metrics?.errorRate ?? service.metrics.errorRate,
-                latency: {
-                  ...service.metrics.latency,
-                  p95: serviceUpdate.metrics?.latency?.p95 ?? service.metrics.latency.p95
-                }
-              },
-              circuitBreaker: {
-                ...service.circuitBreaker,
-                status: serviceUpdate.circuitBreakerStatus ?? service.circuitBreaker.status,
-                lastTripped: serviceUpdate.lastTripped ?? service.circuitBreaker.lastTripped
-              }
-            };
-          }
-          return service;
-        });
-
-        return {
-          ...prevData,
-          services: updatedServices,
-          metrics: {
-            ...prevData.metrics,
-            overview: {
-              ...prevData.metrics.overview,
-              totalRequestRate: updatedServices.reduce((sum, s) => sum + s.metrics.requestRate, 0),
-              errorRate: updatedServices.reduce((sum, s, _, arr) => sum + s.metrics.errorRate / arr.length, 0),
-              avgLatency: updatedServices.reduce((sum, s, _, arr) => sum + s.metrics.latency.p95 / arr.length, 0)
-            }
-          }
-        };
-      });
-    });
-
-    // Load initial service mesh data
-    const loadInitialData = async () => {
-      try {
-        if (MOCK_ENABLED) {
-          // Use mock data in development
-          const meshData = generateServiceMeshData();
-          setData(meshData);
-        } else {
-          // Load from API
-          const token = localStorage.getItem('auth_token');
-          const response = await fetch(API_ENDPOINTS.SERVICES.MESH, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-          });
-          
-          if (response.ok) {
-            const meshData = await response.json();
-            setData(meshData);
-          } else {
-            // Fallback to mock data on API failure
-            const meshData = generateServiceMeshData();
-            setData(meshData);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load service mesh data:', error);
-        // Fallback to mock data on error
-        const meshData = generateServiceMeshData();
-        setData(meshData);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Load initial data
-    loadInitialData();
+    fetchServiceMeshData();
+    initializeWebSocket();
 
     return () => {
-      if (subscriptionIdRef.current) {
-        ws.unsubscribe(subscriptionIdRef.current);
-      }
-      ws.unsubscribe(connectionSubId);
+      cleanupWebSocket();
     };
-  }, []);
+  }, [fetchServiceMeshData, initializeWebSocket, cleanupWebSocket]);
 
   const filteredServices = useMemo(() => {
     if (!data) return [];
@@ -242,9 +148,48 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
   const isConnected = connectionState === ConnectionStatus.ONLINE;
 
+  // Error state with retry option
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <AlertTriangle size={48} className="mx-auto mb-4 text-red-400" />
+          <h3 className="text-lg font-mono mb-2">SERVICE MESH ERROR</h3>
+          <p className="font-mono text-sm opacity-60 mb-4">{error}</p>
+          <div className="flex gap-2 justify-center">
+            <button 
+              onClick={() => {
+                clearError();
+                fetchServiceMeshData();
+              }}
+              className="px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
+            >
+              RETRY
+            </button>
+            <button 
+              onClick={clearError}
+              className="px-4 py-2 border border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-black transition-colors font-mono text-sm"
+            >
+              DISMISS
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="border border-white p-4 animate-pulse">
+              <Network size={48} className="mx-auto mb-4" />
+              <p className="font-mono text-sm">LOADING SERVICE MESH...</p>
+            </div>
+          </div>
+        </div>
         <SkeletonLoader variant="card" count={6} />
         <SkeletonLoader variant="chart" count={1} />
         <SkeletonLoader variant="table" count={8} />
@@ -291,11 +236,21 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
               )}
             </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
-            <span className="text-xs font-mono text-gray-500">
-              {isConnected ? 'LIVE' : 'OFFLINE'}
-            </span>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={refreshData}
+              disabled={isLoading}
+              className="p-1 border border-white hover:bg-white hover:text-black transition-colors disabled:opacity-50"
+              title="Refresh Service Mesh Data"
+            >
+              <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
+            </button>
+            <div className="flex items-center space-x-1">
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+              <span className="text-xs font-mono text-gray-500">
+                {isConnected ? 'LIVE' : 'OFFLINE'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
