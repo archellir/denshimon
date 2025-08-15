@@ -103,7 +103,7 @@ export enum TerminalMessageType {
   DATA = 'data',
   RESIZE = 'resize',
   CLOSE = 'close',
-  ERROR = 'error'
+  ERROR = Status.ERROR
 }
 
 /**
@@ -1009,9 +1009,9 @@ export enum SortDirection {
 export enum LogLevel {
   TRACE = 'trace',
   DEBUG = 'debug',
-  INFO = 'info',
+  INFO = Status.INFO,
   WARN = 'warn',
-  ERROR = 'error',
+  ERROR = Status.ERROR,
   FATAL = 'fatal'
 }
 
@@ -1110,9 +1110,9 @@ export enum RegistryType {
  * Registry connection status
  */
 export enum RegistryStatus {
-  PENDING = 'pending',
+  PENDING = Status.PENDING,
   CONNECTED = 'connected',
-  ERROR = 'error'
+  ERROR = Status.ERROR
 }
 
 /**
@@ -1168,7 +1168,7 @@ export enum LatencyCategory {
   GOOD = 'good',
   MODERATE = 'moderate',
   SLOW = 'slow',
-  CRITICAL = 'critical'
+  CRITICAL = Status.CRITICAL
 }
 
 // ============================================================================
