@@ -1,17 +1,17 @@
 import type { NodeMetrics } from '@/types/metrics';
 import { MASTER_NODES, getMasterPodsByNode } from '@mocks/masterData';
 
-// Generate metrics for single VPS node
+// Generate metrics for cluster nodes
 const generateNodeMetrics = (): NodeMetrics[] => {
   return MASTER_NODES.map((nodeName) => {
     const podCount = getMasterPodsByNode(nodeName).length;
     
-    // Single VPS specs
+    // Node specs
     const totalCpu = 8000; // 8 vCPUs
     const totalMemory = 17179869184; // 16GB RAM
     const totalStorage = 214748364800; // 200GB disk
     
-    // Realistic usage for single VPS (higher utilization)
+    // Realistic usage for cluster node (higher utilization)
     const cpuUsed = Math.floor(totalCpu * 0.65); // 65% CPU usage
     const memoryUsed = Math.floor(totalMemory * 0.75); // 75% memory usage  
     const storageUsed = Math.floor(totalStorage * 0.45); // 45% storage used
