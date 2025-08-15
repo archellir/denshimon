@@ -322,20 +322,22 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* VPS Service Architecture */}
-            <div className="lg:col-span-2 border border-white p-4">
             {viewMode === GraphViewMode.GRAPH ? (
-              <ForceGraph
-                services={filteredServices}
-                connections={data ? data.connections : []}
-                selectedService={selectedService}
-                onServiceSelect={setSelectedService}
-                isLive={isConnected}
-                showDependencyPaths={true}
-                showCriticalPath={true}
-                showSinglePointsOfFailure={true}
-                showLatencyHeatmap={true}
-              />
+              <div className="lg:col-span-2">
+                <ForceGraph
+                  services={filteredServices}
+                  connections={data ? data.connections : []}
+                  selectedService={selectedService}
+                  onServiceSelect={setSelectedService}
+                  isLive={isConnected}
+                  showDependencyPaths={true}
+                  showCriticalPath={true}
+                  showSinglePointsOfFailure={true}
+                  showLatencyHeatmap={true}
+                />
+              </div>
             ) : (
+              <div className="lg:col-span-2 border border-white p-4">
               <div className="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto">
               {filteredServices.map(service => {
                 const isSelected = selectedService === service.id;
