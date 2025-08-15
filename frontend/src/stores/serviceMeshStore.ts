@@ -4,6 +4,7 @@ import { API_ENDPOINTS, WebSocketEventType, ConnectionStatus } from '@/constants
 import { MOCK_ENABLED } from '@/mocks';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
 import { getWebSocketInstance } from '@services/websocket';
+import { apiService, ApiError } from '@/services/api';
 
 interface ServiceMeshStore {
   // State
@@ -60,18 +61,9 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
       }
 
       // Load from API
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(API_ENDPOINTS.SERVICES.MESH, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch service mesh data: ${response.statusText}`);
-      }
-
-      const meshData = await response.json();
+      const response = await apiService.get<ServiceMeshData>(API_ENDPOINTS.SERVICES.MESH);
       set({ 
-        data: meshData, 
+        data: response.data, 
         isLoading: false,
         lastUpdated: new Date().toISOString()
       });
@@ -89,7 +81,7 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
         });
       } catch (mockError) {
         set({ 
-          error: error instanceof Error ? error.message : 'Failed to load service mesh data',
+          error: error instanceof ApiError ? error.message : 'Failed to load service mesh data',
           isLoading: false 
         });
       }
