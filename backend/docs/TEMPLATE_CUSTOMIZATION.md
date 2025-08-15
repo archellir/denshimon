@@ -66,30 +66,9 @@ Templates should automatically include:
 - Resource quotas and limits
 - Custom sidecars (logging, monitoring, service mesh proxy)
 
-### 3. Environment-Specific Templates
+### 3. Resource Profiles (Optional)
 
-#### Development Environment
-- Lower resources (100m CPU, 128Mi memory)
-- No replica requirements (1 replica)
-- Simplified configuration
-- Debug mode enabled
-- No autoscaling
-
-#### Staging Environment  
-- Medium resources (500m CPU, 512Mi memory)
-- 2 replicas minimum
-- Basic monitoring annotations
-- Autoscaling enabled (2-4 replicas)
-- Test certificates
-
-#### Production Environment
-- High resources (1000m CPU, 1Gi memory)
-- 3+ replicas minimum
-- Full monitoring and alerting annotations
-- Autoscaling enabled (3-10 replicas)
-- Production certificates
-- Backup annotations
-- Pod disruption budgets
+Since there's only one environment, resource limits are defined directly in each template with sensible defaults that can be customized during deployment.
 
 ## Implementation Plan
 
@@ -103,19 +82,12 @@ templates/
 │   ├── ingress.yaml
 │   ├── hpa.yaml
 │   └── pdb.yaml
-├── apps/
-│   ├── web-app.yaml
-│   ├── api-service.yaml
-│   ├── background-worker.yaml
-│   ├── cron-job.yaml
-│   └── database.yaml
-└── environments/
-    ├── development/
-    │   └── overrides.yaml
-    ├── staging/
-    │   └── overrides.yaml
-    └── production/
-        └── overrides.yaml
+└── apps/
+    ├── web-app.yaml
+    ├── api-service.yaml
+    ├── background-worker.yaml
+    ├── cron-job.yaml
+    └── database.yaml
 ```
 
 ### 2. Template Selection UI
@@ -129,15 +101,12 @@ When deploying from registry:
    - Cron Job
    - Database
    - Custom (blank template)
-3. **Select Environment**:
-   - Development
-   - Staging
-   - Production
-4. **Customize Generated YAML**:
+3. **Customize Generated YAML**:
    - Edit in built-in editor
+   - Adjust resource limits if needed
    - Preview changes
    - Validate manifest
-5. **Deploy & Sync**:
+4. **Deploy & Sync**:
    - Apply to Kubernetes
    - Commit to Git repository
 
@@ -171,15 +140,6 @@ CREATE TABLE IF NOT EXISTS gitops_templates (
     is_default BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS gitops_template_environments (
-    id VARCHAR(255) PRIMARY KEY,
-    template_id VARCHAR(255) NOT NULL,
-    environment VARCHAR(50) NOT NULL, -- development, staging, production
-    overrides TEXT NOT NULL, -- JSON overrides for the environment
-    FOREIGN KEY (template_id) REFERENCES gitops_templates(id) ON DELETE CASCADE,
-    UNIQUE(template_id, environment)
 );
 ```
 
