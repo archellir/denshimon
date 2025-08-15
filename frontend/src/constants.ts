@@ -773,6 +773,8 @@ export const API_ENDPOINTS = {
     APPLICATION_SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/sync`,
     APPLICATION_DEPLOY: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/deploy`,
     APPLICATION_ROLLBACK: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/rollback`,
+    APPLICATION_ROLLBACK_TARGETS: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/rollback-targets`,
+    APPLICATION_HISTORY: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/history`,
     // Deployment History
     DEPLOYMENT_HISTORY: `${API_BASE_PATHS.GITOPS}/deployments`,
     DEPLOYMENT_HISTORY_BY_APP: (applicationId: string) => `${API_BASE_PATHS.GITOPS}/deployments?application_id=${applicationId}`,
