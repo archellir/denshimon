@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/archellir/denshimon/internal/common"
 	"github.com/archellir/denshimon/internal/providers/certificates"
 )
 
@@ -19,12 +20,6 @@ func NewCertificateHandlers(manager certificates.CertificateProvider) *Certifica
 }
 
 // APIResponse represents a standard API response
-type APIResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
-	Message string      `json:"message,omitempty"`
-}
 
 // GetCertificates returns all monitored certificates
 func (h *CertificateHandlers) GetCertificates(w http.ResponseWriter, r *http.Request) {
@@ -216,27 +211,27 @@ func (h *CertificateHandlers) RefreshCertificates(w http.ResponseWriter, r *http
 func (h *CertificateHandlers) writeSuccess(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    data,
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
 
 func (h *CertificateHandlers) writeError(w http.ResponseWriter, statusCode int, message string, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: false,
 		Message: message,
 	}
-	
+
 	if err != nil {
 		response.Error = err.Error()
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
