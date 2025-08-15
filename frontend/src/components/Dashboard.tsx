@@ -645,6 +645,22 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 </button>
               </div>
             );
+          case DatabaseTab.QUERIES:
+            return (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-mono opacity-60">
+                  {connections.filter(conn => conn.status === 'connected').length} CONNECTION{connections.filter(conn => conn.status === 'connected').length !== 1 ? 'S' : ''}
+                </span>
+                <button
+                  onClick={() => fetchConnections()}
+                  disabled={databaseLoading}
+                  className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black disabled:opacity-50 transition-colors font-mono text-sm"
+                >
+                  <RefreshCw size={16} className={databaseLoading ? 'animate-spin' : ''} />
+                  <span>REFRESH</span>
+                </button>
+              </div>
+            );
           default:
             return null;
         }

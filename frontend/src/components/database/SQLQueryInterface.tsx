@@ -106,14 +106,8 @@ const SQLQueryInterface: FC = () => {
 
   return (
     <div className={`space-y-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-black p-6' : ''}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-mono">SQL QUERY INTERFACE</h2>
-          <div className="text-sm font-mono opacity-60">
-            {connectedConnections.length} CONNECTION{connectedConnections.length !== 1 ? 'S' : ''}
-          </div>
-        </div>
+      {/* Header Actions - keep only functional buttons */}
+      <div className="flex justify-end">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowHistory(!showHistory)}
