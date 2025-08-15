@@ -47,7 +47,7 @@ export interface UseModalKeyboardOptions {
  *       <div id="my-modal" className="bg-white p-6" onClick={preventClickThrough}>
  *         <h2>My Modal</h2>
  *         <form onSubmit={handleSubmit}>
- *           <input type="text" /> {/* Will auto-focus */}
+ *           <input type="text" />
  *           <button type="submit">Save (Ctrl+Enter)</button>
  *         </form>
  *       </div>
