@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, RefreshCw, type LucideIcon } from 'lucide-react';
+import { ContainerImage } from '@/types';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import CustomSelector from '@components/common/CustomSelector';
@@ -78,6 +79,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   
   // Deployment management state
   const [showDeployModal, setShowDeployModal] = useState(false);
+  const [preselectedImage, setPreselectedImage] = useState<ContainerImage | null>(null);
   
   // Backup management state
   const [backupRefreshing, setBackupRefreshing] = useState(false);
@@ -827,6 +829,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             activeTab={activeSecondaryTab}
             showDeployModal={showDeployModal}
             setShowDeployModal={setShowDeployModal}
+            preselectedImage={preselectedImage}
+            setPreselectedImage={setPreselectedImage}
           />
         )}
         
