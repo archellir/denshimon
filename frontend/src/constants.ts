@@ -86,12 +86,13 @@ export enum ConnectionStatus {
 
 /**
  * WebSocket connection states
+ * Extends ConnectionStatus with WebSocket-specific states
  */
 export enum WebSocketState {
-  CONNECTING = 'connecting',
+  CONNECTING = ConnectionStatus.CONNECTING,
   CONNECTED = 'connected',
-  DISCONNECTED = 'disconnected',
-  ERROR = 'error',
+  DISCONNECTED = ConnectionStatus.DISCONNECTED,
+  ERROR = Status.ERROR,
   RECONNECTING = 'reconnecting'
 }
 
@@ -107,12 +108,13 @@ export enum TerminalMessageType {
 
 /**
  * Alert notification severities
+ * @deprecated Use Status enum instead
  */
 export enum NotificationSeverity {
-  CRITICAL = 'critical',
-  WARNING = 'warning',
-  INFO = 'info',
-  SUCCESS = 'success'
+  CRITICAL = Status.CRITICAL,
+  WARNING = Status.WARNING,
+  INFO = Status.INFO,
+  SUCCESS = Status.SUCCESS
 }
 
 /**
@@ -158,12 +160,13 @@ export enum StorageKey {
 
 /**
  * Service status states
+ * @deprecated Use Status enum instead
  */
 export enum ServiceStatus {
-  HEALTHY = 'healthy',
-  WARNING = 'warning',
-  ERROR = 'error',
-  UNKNOWN = 'unknown'
+  HEALTHY = Status.HEALTHY,
+  WARNING = Status.WARNING,
+  ERROR = Status.ERROR,
+  UNKNOWN = Status.UNKNOWN
 }
 
 /**
@@ -1026,18 +1029,19 @@ export enum LiveStreamViewMode {
  */
 export enum DeploymentProgressStatus {
   COMPLETE = 'complete',
-  PROGRESSING = 'progressing',
+  PROGRESSING = Status.PROGRESSING,
   FAILED = 'failed'
 }
 
 /**
  * Event severity levels for observability events
+ * @deprecated Use Status enum instead
  */
 export enum EventSeverity {
-  CRITICAL = 'critical',
-  WARNING = 'warning',
-  INFO = 'info',
-  SUCCESS = 'success'
+  CRITICAL = Status.CRITICAL,
+  WARNING = Status.WARNING,
+  INFO = Status.INFO,
+  SUCCESS = Status.SUCCESS
 }
 
 /**
@@ -1115,7 +1119,7 @@ export enum RegistryStatus {
  * Deployment status for VPS deployments
  */
 export enum DeploymentStatus {
-  PENDING = 'pending',
+  PENDING = Status.PENDING,
   RUNNING = 'running',
   FAILED = 'failed',
   UPDATING = 'updating',
@@ -1463,7 +1467,7 @@ export const VALIDATION = {
 /**
  * Get status color for consistent styling across components
  */
-export const getStatusColor = (status: Status | EventSeverity | LogLevel, type: 'text' | 'border' = 'text'): string => {
+export const getStatusColor = (status: Status | LogLevel, type: 'text' | 'border' = 'text'): string => {
   const colorMap = type === 'text' ? STATUS_COLORS.TEXT : STATUS_COLORS.BORDER;
   return colorMap[status as keyof typeof colorMap] || (type === 'text' ? 'text-gray-500' : 'border-gray-500 text-gray-500');
 };
@@ -1482,10 +1486,10 @@ export const LOG_LEVEL_CONFIG = {
  * Event severity configuration for consistent styling
  */
 export const EVENT_SEVERITY_CONFIG = {
-  [EventSeverity.CRITICAL]: { color: 'border-red-500 text-red-500', icon: 'AlertCircle' },
-  [EventSeverity.WARNING]: { color: 'border-yellow-500 text-yellow-500', icon: 'AlertTriangle' },
-  [EventSeverity.INFO]: { color: 'border-blue-500 text-blue-500', icon: 'Info' },
-  [EventSeverity.SUCCESS]: { color: 'border-green-500 text-green-500', icon: 'CheckCircle' },
+  [Status.CRITICAL]: { color: 'border-red-500 text-red-500', icon: 'AlertCircle' },
+  [Status.WARNING]: { color: 'border-yellow-500 text-yellow-500', icon: 'AlertTriangle' },
+  [Status.INFO]: { color: 'border-blue-500 text-blue-500', icon: 'Info' },
+  [Status.SUCCESS]: { color: 'border-green-500 text-green-500', icon: 'CheckCircle' },
 } as const;
 
 // ============================================================================
