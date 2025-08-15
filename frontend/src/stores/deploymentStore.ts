@@ -141,9 +141,13 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, creating: true }, error: null }));
     
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(registryData),
       });
       
@@ -164,7 +168,11 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   deleteRegistry: async (id) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries/${id}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       if (!response.ok) throw new Error('Failed to delete registry');
       
       set(state => ({
@@ -202,16 +210,40 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, images: true }, error: null }));
     
     try {
-      // Filter images by selected registry
-      const { searchMockImages } = await import('@/mocks/deployments/images');
-      const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
-      const images = await mockApiResponse(searchMockImages('', registryName), 400);
-      set({ images, loading: { ...get().loading, images: false } });
+      if (MOCK_ENABLED) {
+        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
+        const images = await mockApiResponse(searchMockImages('', registryName), 400);
+        set({ images, loading: { ...get().loading, images: false } });
+      } else {
+        const token = localStorage.getItem('auth_token');
+        const url = registryId 
+          ? `${API_ENDPOINTS.DEPLOYMENTS.BASE}/images?registry=${registryId}`
+          : `${API_ENDPOINTS.DEPLOYMENTS.BASE}/images`;
+        
+        const response = await fetch(url, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        set({ images: result.data || result, loading: { ...get().loading, images: false } });
+      }
     } catch (error) {
-      set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to fetch images',
-        loading: { ...state.loading, images: false }
-      }));
+      try {
+        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
+        const images = await mockApiResponse(searchMockImages('', registryName), 400);
+        set({ images, loading: { ...get().loading, images: false }, error: null });
+      } catch (mockError) {
+        set(state => ({
+          error: error instanceof Error ? error.message : 'Failed to fetch images',
+          loading: { ...state.loading, images: false }
+        }));
+      }
     }
   },
   
@@ -219,25 +251,51 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, images: true }, error: null }));
     
     try {
-      const { searchMockImages } = await import('@/mocks/deployments/images');
-      const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
-      const images = await mockApiResponse(searchMockImages(query, registryName), 300);
-      set({ images, loading: { ...get().loading, images: false } });
+      if (MOCK_ENABLED) {
+        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
+        const images = await mockApiResponse(searchMockImages(query, registryName), 300);
+        set({ images, loading: { ...get().loading, images: false } });
+      } else {
+        const token = localStorage.getItem('auth_token');
+        const url = `${API_ENDPOINTS.DEPLOYMENTS.BASE}/images/search?q=${encodeURIComponent(query)}`;
+        
+        const response = await fetch(url, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        set({ images: result.data || result, loading: { ...get().loading, images: false } });
+      }
     } catch (error) {
-      set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to search images',
-        loading: { ...state.loading, images: false }
-      }));
+      try {
+        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
+        const images = await mockApiResponse(searchMockImages(query, registryName), 300);
+        set({ images, loading: { ...get().loading, images: false }, error: null });
+      } catch (mockError) {
+        set(state => ({
+          error: error instanceof Error ? error.message : 'Failed to search images',
+          loading: { ...state.loading, images: false }
+        }));
+      }
     }
   },
   
   getImageTags: async (registryId, repository) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/images/${registryId}/${repository}/tags`);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/images/${registryId}/${repository}/tags`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       if (!response.ok) throw new Error('Failed to get image tags');
       
       const result = await response.json();
-      return result.tags;
+      return result.tags || result.data || [];
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to get image tags' });
       return [];
@@ -249,14 +307,38 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deployments: true }, error: null }));
     
     try {
-      const { filterDeploymentsByNamespace } = await import('@/mocks/deployments/deployments');
-      const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
-      set({ deployments, loading: { ...get().loading, deployments: false } });
+      if (MOCK_ENABLED) {
+        const { filterDeploymentsByNamespace } = await import('@/mocks/deployments/deployments');
+        const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
+        set({ deployments, loading: { ...get().loading, deployments: false } });
+      } else {
+        const token = localStorage.getItem('auth_token');
+        const url = namespace && namespace !== 'all' 
+          ? `${API_ENDPOINTS.DEPLOYMENTS.BASE}?namespace=${namespace}`
+          : API_ENDPOINTS.DEPLOYMENTS.BASE;
+        
+        const response = await fetch(url, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        set({ deployments: result.data || result, loading: { ...get().loading, deployments: false } });
+      }
     } catch (error) {
-      set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to fetch deployments',
-        loading: { ...state.loading, deployments: false }
-      }));
+      try {
+        const { filterDeploymentsByNamespace } = await import('@/mocks/deployments/deployments');
+        const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
+        set({ deployments, loading: { ...get().loading, deployments: false }, error: null });
+      } catch (mockError) {
+        set(state => ({
+          error: error instanceof Error ? error.message : 'Failed to fetch deployments',
+          loading: { ...state.loading, deployments: false }
+        }));
+      }
     }
   },
   
@@ -264,9 +346,13 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deploying: true }, error: null }));
     
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BASE, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(request),
       });
       
@@ -290,9 +376,13 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   updateDeployment: async (id, updates) => {
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(updates),
       });
       
@@ -309,9 +399,13 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   scaleDeployment: async (id, replicas) => {
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/scale`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ replicas }),
       });
       
@@ -326,7 +420,11 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   deleteDeployment: async (id) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       if (!response.ok) throw new Error('Failed to delete deployment');
       
       set(state => ({
@@ -339,7 +437,11 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   restartDeployment: async (id) => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/restart`, { method: 'POST' });
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/restart`, {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       if (!response.ok) throw new Error('Failed to restart deployment');
       
       // Refresh deployment data
@@ -354,14 +456,34 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, nodes: true }, error: null }));
     
     try {
-      const { mockNodes } = await import('@/mocks/deployments/deployments');
-      const nodes = await mockApiResponse(mockNodes, 250);
-      set({ nodes, loading: { ...get().loading, nodes: false } });
+      if (MOCK_ENABLED) {
+        const { mockNodes } = await import('@/mocks/deployments/deployments');
+        const nodes = await mockApiResponse(mockNodes, 250);
+        set({ nodes, loading: { ...get().loading, nodes: false } });
+      } else {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/nodes`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        set({ nodes: result.data || result, loading: { ...get().loading, nodes: false } });
+      }
     } catch (error) {
-      set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to fetch nodes',
-        loading: { ...state.loading, nodes: false }
-      }));
+      try {
+        const { mockNodes } = await import('@/mocks/deployments/deployments');
+        const nodes = await mockApiResponse(mockNodes, 250);
+        set({ nodes, loading: { ...get().loading, nodes: false }, error: null });
+      } catch (mockError) {
+        set(state => ({
+          error: error instanceof Error ? error.message : 'Failed to fetch nodes',
+          loading: { ...state.loading, nodes: false }
+        }));
+      }
     }
   },
   
@@ -370,14 +492,34 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, history: true }, error: null }));
     
     try {
-      const { generateMockHistoryForDeployment } = await import('@/mocks/deployments/history');
-      const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
-      set({ history, loading: { ...get().loading, history: false } });
+      if (MOCK_ENABLED) {
+        const { generateMockHistoryForDeployment } = await import('@/mocks/deployments/history');
+        const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
+        set({ history, loading: { ...get().loading, history: false } });
+      } else {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${deploymentId}/history`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        set({ history: result.data || result, loading: { ...get().loading, history: false } });
+      }
     } catch (error) {
-      set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to fetch history',
-        loading: { ...state.loading, history: false }
-      }));
+      try {
+        const { generateMockHistoryForDeployment } = await import('@/mocks/deployments/history');
+        const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
+        set({ history, loading: { ...get().loading, history: false }, error: null });
+      } catch (mockError) {
+        set(state => ({
+          error: error instanceof Error ? error.message : 'Failed to fetch history',
+          loading: { ...state.loading, history: false }
+        }));
+      }
     }
   },
   
