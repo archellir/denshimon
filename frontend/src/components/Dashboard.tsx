@@ -232,7 +232,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     const secondaryDescriptions: Record<string, Record<string, string>> = {
       [PrimaryTab.INFRASTRUCTURE]: {
         [InfrastructureTab.OVERVIEW]: "View cluster health metrics, node status, and overall infrastructure performance.",
-        [InfrastructureTab.CONFIGURATION]: "Manage infrastructure-as-code with GitOps workflows, templates, and repository synchronization.",
+        [InfrastructureTab.CONFIGURATION]: "Manage the base infrastructure repository containing all Kubernetes configurations and GitOps synchronization.",
         [InfrastructureTab.NODES]: "Monitor individual cluster nodes, their resources, and operational status.",
         [InfrastructureTab.RESOURCES]: "Track CPU, memory, and storage utilization across the cluster.",
         [InfrastructureTab.STORAGE]: "Monitor storage I/O metrics, volumes, and persistent storage usage.",
@@ -255,10 +255,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         [MeshTab.GATEWAY]: "Configure API gateway settings, analyze traffic, and manage ingress rules."
       },
       [PrimaryTab.DEPLOYMENTS]: {
-        [DeploymentsTab.DEPLOYMENTS]: "View active deployments, scaling operations, and application status.",
-        [DeploymentsTab.HISTORY]: "Track deployment history, rollbacks, and change audit trails.",
-        [DeploymentsTab.IMAGES]: "Browse container images, tags, and image registry information.",
-        [DeploymentsTab.REGISTRIES]: "Manage container registries, authentication, and image repositories."
+        [DeploymentsTab.DEPLOYMENTS]: "Deploy new applications, view active deployments, and manage application lifecycle with GitOps.",
+        [DeploymentsTab.HISTORY]: "View deployment history, perform rollbacks, and track all application deployment changes.",
+        [DeploymentsTab.IMAGES]: "Browse container images, tags, and image registry information for deployments.",
+        [DeploymentsTab.REGISTRIES]: "Manage container registries, authentication, and image repositories for application deployments."
       },
       [PrimaryTab.DATABASE]: {
         [DatabaseTab.BROWSER]: "Browse database schemas, tables, and execute SQL queries interactively.",
