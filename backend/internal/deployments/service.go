@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/archellir/denshimon/internal/gitops"
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/providers"
 	"github.com/google/uuid"
@@ -22,6 +23,8 @@ type Service struct {
 	db              *sql.DB
 	deployer        *KubernetesDeployer
 	scaler          *KubernetesScaler
+	gitopsService   *gitops.Service
+	syncEngine      *gitops.SyncEngine
 }
 
 // NewService creates a new deployment service
@@ -29,12 +32,18 @@ func NewService(k8sClient *k8s.Client, registryManager *providers.RegistryManage
 	deployer := NewKubernetesDeployer(k8sClient, registryManager)
 	scaler := NewKubernetesScaler(k8sClient)
 
+	// Initialize GitOps integration
+	gitopsService := gitops.NewService(db, "", "") // URLs will be configured via environment
+	syncEngine := gitops.NewSyncEngine(gitopsService)
+
 	service := &Service{
 		k8sClient:       k8sClient,
 		registryManager: registryManager,
 		db:              db,
 		deployer:        deployer,
 		scaler:          scaler,
+		gitopsService:   gitopsService,
+		syncEngine:      syncEngine,
 	}
 
 	// Initialize database tables
@@ -565,6 +574,65 @@ func (s *Service) recordHistory(deploymentID, action, oldImage, newImage string,
 		historyID, deploymentID, action, oldImage, newImage,
 		oldReplicas, newReplicas, success, errorMsg, user, time.Now(),
 	)
+
+	// Trigger GitOps sync if deployment was successful
+	if success && s.gitopsService != nil {
+		go s.syncToGitOps(deploymentID, action, user)
+	}
+}
+
+// syncToGitOps automatically syncs deployment changes to GitOps repository
+func (s *Service) syncToGitOps(deploymentID, action, user string) {
+	ctx := context.Background()
+	
+	// Get deployment details
+	deployment, err := s.GetDeployment(ctx, deploymentID)
+	if err != nil {
+		return // silently fail for now
+	}
+
+	// Create GitOps application if it doesn't exist
+	// Convert ResourceRequirements to map[string]string for GitOps
+	resourceMap := map[string]string{}
+	if deployment.Resources.Requests.CPU != "" {
+		resourceMap["cpu_request"] = deployment.Resources.Requests.CPU
+	}
+	if deployment.Resources.Requests.Memory != "" {
+		resourceMap["memory_request"] = deployment.Resources.Requests.Memory
+	}
+	if deployment.Resources.Limits.CPU != "" {
+		resourceMap["cpu"] = deployment.Resources.Limits.CPU
+	}
+	if deployment.Resources.Limits.Memory != "" {
+		resourceMap["memory"] = deployment.Resources.Limits.Memory
+	}
+
+	gitopsApp := &gitops.Application{
+		ID:          deploymentID,
+		Name:        deployment.Name,
+		Namespace:   deployment.Namespace,
+		Image:       deployment.Image,
+		Replicas:    int(deployment.Replicas),
+		Environment: deployment.Environment,
+		Resources:   resourceMap,
+	}
+
+	// Try to create the application (will fail silently if exists)
+	s.gitopsService.CreateApplication(ctx, 
+		gitopsApp.Name, 
+		gitopsApp.Namespace, 
+		"", // repository ID will be auto-configured
+		"", // path will be auto-configured
+		gitopsApp.Image, 
+		gitopsApp.Replicas, 
+		gitopsApp.Resources, 
+		gitopsApp.Environment)
+
+	// Sync application to Git repository
+	syncConfig := gitops.DefaultSyncConfig()
+	syncConfig.CommitMessage = fmt.Sprintf("feat(%s): %s deployment %s", deployment.Namespace, action, deployment.Name)
+	
+	s.syncEngine.SyncApplicationToGit(ctx, deploymentID, syncConfig)
 }
 
 func (s *Service) updateDeploymentStatus(deployment *Deployment, k8sDeployment interface{}) {
