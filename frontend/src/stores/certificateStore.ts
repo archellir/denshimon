@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Certificate, CertificateAlert, CertificateStats, DomainConfig, CertificateStatus } from '@/types/certificates';
 import { API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
+import { apiService, ApiError } from '@/services/api';
 
 interface CertificateStore {
   // State
@@ -220,26 +221,16 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.CERTIFICATES.LIST, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch certificates: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.LIST);
       set({ 
-        certificates: data.data || [], 
+        certificates: response.data.data || response.data || [], 
         isLoading: false,
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
       console.error('Failed to fetch certificates:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch certificates',
+        error: error instanceof ApiError ? error.message : 'Failed to fetch certificates',
         isLoading: false 
       });
     }
@@ -252,18 +243,8 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.CERTIFICATES.STATS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch certificate stats: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ stats: data.data });
+      const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.STATS);
+      set({ stats: response.data.data || response.data });
     } catch (error) {
       console.error('Failed to fetch certificate stats:', error);
     }
@@ -276,18 +257,8 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.CERTIFICATES.ALERTS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch certificate alerts: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ alerts: data.data || [] });
+      const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.ALERTS);
+      set({ alerts: response.data.data || response.data || [] });
     } catch (error) {
       console.error('Failed to fetch certificate alerts:', error);
     }
@@ -300,18 +271,8 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.CERTIFICATES.DOMAINS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch domain configs: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ domains: data.data || [] });
+      const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.DOMAINS);
+      set({ domains: response.data.data || response.data || [] });
     } catch (error) {
       console.error('Failed to fetch domain configs:', error);
     }
@@ -321,23 +282,13 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const response = await fetch(`/api/certificates/check?domain=${domain}&port=${port}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to check certificate: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get<any>(`/api/certificates/check?domain=${domain}&port=${port}`);
       
       // Update the certificate in the store if check was successful
-      if (data.success && data.data.certificate) {
+      if (response.data && response.data.certificate) {
         const { certificates } = get();
         const updatedCertificates = certificates.map(cert => 
-          cert.domain === domain ? data.data.certificate : cert
+          cert.domain === domain ? response.data.certificate : cert
         );
         
         set({ 
@@ -351,7 +302,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to check certificate:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to check certificate',
+        error: error instanceof ApiError ? error.message : 'Failed to check certificate',
         isLoading: false 
       });
     }
@@ -361,16 +312,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const response = await fetch(API_ENDPOINTS.CERTIFICATES.REFRESH, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to refresh certificates: ${response.statusText}`);
-      }
+      await apiService.post(API_ENDPOINTS.CERTIFICATES.REFRESH);
 
       // Fetch updated certificates after refresh
       await get().fetchCertificates();
@@ -381,7 +323,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to refresh certificates:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to refresh certificates',
+        error: error instanceof ApiError ? error.message : 'Failed to refresh certificates',
         isLoading: false 
       });
     }
@@ -389,61 +331,32 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
 
   addDomain: async (config: DomainConfig) => {
     try {
-      const response = await fetch(API_ENDPOINTS.CERTIFICATES.DOMAINS, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(config)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to add domain: ${response.statusText}`);
-      }
+      await apiService.post(API_ENDPOINTS.CERTIFICATES.DOMAINS, config);
 
       // Refresh domains list
       await get().fetchDomains();
     } catch (error) {
       console.error('Failed to add domain:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to add domain' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to add domain' });
     }
   },
 
   removeDomain: async (domain: string) => {
     try {
-      const response = await fetch(`/api/certificates/domains?domain=${domain}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to remove domain: ${response.statusText}`);
-      }
+      await apiService.delete(`/api/certificates/domains?domain=${domain}`);
 
       // Refresh domains list and certificates
       await get().fetchDomains();
       await get().fetchCertificates();
     } catch (error) {
       console.error('Failed to remove domain:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to remove domain' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to remove domain' });
     }
   },
 
   acknowledgeAlert: async (alertId: string) => {
     try {
-      const response = await fetch(`/api/certificates/alerts/acknowledge?alert_id=${alertId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to acknowledge alert: ${response.statusText}`);
-      }
+      await apiService.post(`/api/certificates/alerts/acknowledge?alert_id=${alertId}`);
 
       // Update alert in store
       const { alerts } = get();
@@ -454,7 +367,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       set({ alerts: updatedAlerts });
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to acknowledge alert' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to acknowledge alert' });
     }
   },
 
