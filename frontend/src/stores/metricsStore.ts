@@ -11,6 +11,7 @@ import {
   MOCK_ENABLED 
 } from '@mocks/index';
 import { API_ENDPOINTS } from '@/constants';
+import { apiService, ApiError } from '@/services/api';
 
 const useMetricsStore = create<MetricsStore>()(
   subscribeWithSelector((set, get) => ({
@@ -61,24 +62,15 @@ const useMetricsStore = create<MetricsStore>()(
           return;
         }
 
-        const response = await fetch(API_ENDPOINTS.METRICS.CLUSTER, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch cluster metrics: ${response.statusText}`);
-        }
-        
-        const metrics: ClusterMetrics = await response.json();
+        const response = await apiService.get<ClusterMetrics>(API_ENDPOINTS.METRICS.CLUSTER);
         set({ 
-          clusterMetrics: metrics,
+          clusterMetrics: response.data,
           isLoading: false 
         });
       } catch (error) {
+        const errorMessage = error instanceof ApiError ? error.message : 'Unknown error';
         set({ 
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: errorMessage,
           isLoading: false 
         });
       }
@@ -110,31 +102,22 @@ const useMetricsStore = create<MetricsStore>()(
           ? `${API_ENDPOINTS.METRICS.NODES}?node=${nodeName}`
           : API_ENDPOINTS.METRICS.NODES;
           
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch node metrics: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
+        const response = await apiService.get<any>(url);
         
         if (nodeName) {
           // Single node metric
           const { nodeMetrics } = get();
           const updatedMetrics = nodeMetrics.map(node => 
-            node.name === nodeName ? data : node
+            node.name === nodeName ? response.data : node
           );
           set({ nodeMetrics: updatedMetrics });
         } else {
           // All nodes
-          set({ nodeMetrics: data.nodes || [] });
+          set({ nodeMetrics: response.data.nodes || response.data || [] });
         }
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        const errorMessage = error instanceof ApiError ? error.message : 'Unknown error';
+        set({ error: errorMessage });
       }
     },
     
@@ -170,27 +153,18 @@ const useMetricsStore = create<MetricsStore>()(
           url += `?${params.toString()}`;
         }
         
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch pod metrics: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
+        const response = await apiService.get<any>(url);
         
         if (podName) {
           // Single pod metric
-          set({ podMetrics: [data] });
+          set({ podMetrics: [response.data] });
         } else {
           // Multiple pods or summary
-          set({ podMetrics: data.pods || [] });
+          set({ podMetrics: response.data.pods || response.data || [] });
         }
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        const errorMessage = error instanceof ApiError ? error.message : 'Unknown error';
+        set({ error: errorMessage });
       }
     },
     
@@ -203,20 +177,11 @@ const useMetricsStore = create<MetricsStore>()(
           return;
         }
 
-        const response = await fetch(API_ENDPOINTS.METRICS.NAMESPACES, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch namespace metrics: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        set({ namespaceMetrics: data.namespaces || [] });
+        const response = await apiService.get<any>(API_ENDPOINTS.METRICS.NAMESPACES);
+        set({ namespaceMetrics: response.data.namespaces || response.data || [] });
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : 'Unknown error' });
+        const errorMessage = error instanceof ApiError ? error.message : 'Unknown error';
+        set({ error: errorMessage });
       }
     },
     
@@ -237,24 +202,15 @@ const useMetricsStore = create<MetricsStore>()(
           return;
         }
 
-        const response = await fetch(`/api/metrics/history?duration=${duration}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch metrics history: ${response.statusText}`);
-        }
-        
-        const history = await response.json();
+        const response = await apiService.get<MetricsHistory>(`/api/metrics/history?duration=${duration}`);
         set({ 
-          metricsHistory: history,
+          metricsHistory: response.data,
           isLoadingHistory: false 
         });
       } catch (error) {
+        const errorMessage = error instanceof ApiError ? error.message : 'Unknown error';
         set({ 
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: errorMessage,
           isLoadingHistory: false 
         });
       }
