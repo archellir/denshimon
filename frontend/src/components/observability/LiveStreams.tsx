@@ -3,6 +3,7 @@ import { Activity, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileTex
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 import { getWebSocketInstance } from '@services/websocket';
+import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES } from '@/constants';
 import RealtimeLogViewer from './RealtimeLogViewer';
 
 const LiveStreams: React.FC = () => {
@@ -10,8 +11,8 @@ const LiveStreams: React.FC = () => {
   const [_filter] = useState<TerminalFilter>({ maxLines: 100 });
   const [autoScroll] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [viewMode, setViewMode] = useState<'pods' | 'logs' | 'deployments'>('pods');
-  const [connectionState, setConnectionState] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
+  const [viewMode, setViewMode] = useState<LiveStreamViewMode>(LiveStreamViewMode.PODS);
+  const [connectionState, setConnectionState] = useState<WebSocketState>(WebSocketState.DISCONNECTED);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   // WebSocket connection status
@@ -25,7 +26,7 @@ const LiveStreams: React.FC = () => {
     });
 
     // Initial connection state
-    setConnectionState(ws.getConnectionState() as 'connected' | 'connecting' | 'disconnected' | 'error');
+    setConnectionState(ws.getConnectionState() as WebSocketState);
 
     return () => {
       ws.unsubscribe(connectionSubId);
@@ -50,7 +51,7 @@ const LiveStreams: React.FC = () => {
 
   // Auto-scroll for live logs
   useEffect(() => {
-    if (autoScroll && logsEndRef.current && viewMode === 'logs') {
+    if (autoScroll && logsEndRef.current && viewMode === LiveStreamViewMode.LOGS) {
       logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [liveData?.logs, autoScroll, viewMode]);
@@ -83,9 +84,9 @@ const LiveStreams: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'complete': return 'text-green-500';
-      case 'progressing': return 'text-blue-500';
-      case 'failed': return 'text-red-500';
+      case DeploymentProgressStatus.COMPLETE: return 'text-green-500';
+      case DeploymentProgressStatus.PROGRESSING: return 'text-blue-500';
+      case DeploymentProgressStatus.FAILED: return 'text-red-500';
       default: return 'text-gray-500';
     }
   };
@@ -103,13 +104,13 @@ const LiveStreams: React.FC = () => {
   // Connection status helpers (matching WebSocketStatus component)
   const getStatusIcon = () => {
     switch (connectionState) {
-      case 'connected':
+      case WebSocketState.CONNECTED:
         return <Wifi size={16} className="text-green-500" />;
-      case 'connecting':
+      case WebSocketState.CONNECTING:
         return <RotateCcw size={16} className="text-yellow-500 animate-spin" />;
-      case 'disconnected':
+      case WebSocketState.DISCONNECTED:
         return <WifiOff size={16} className="text-gray-500" />;
-      case 'error':
+      case WebSocketState.ERROR:
         return <AlertCircle size={16} className="text-red-500" />;
       default:
         return <WifiOff size={16} className="text-gray-500" />;
@@ -118,13 +119,13 @@ const LiveStreams: React.FC = () => {
 
   const getConnectionColor = () => {
     switch (connectionState) {
-      case 'connected':
+      case WebSocketState.CONNECTED:
         return 'border-green-500 text-green-500';
-      case 'connecting':
+      case WebSocketState.CONNECTING:
         return 'border-yellow-500 text-yellow-500';
-      case 'disconnected':
+      case WebSocketState.DISCONNECTED:
         return 'border-gray-500 text-gray-500';
-      case 'error':
+      case WebSocketState.ERROR:
         return 'border-red-500 text-red-500';
       default:
         return 'border-gray-500 text-gray-500';
@@ -133,20 +134,20 @@ const LiveStreams: React.FC = () => {
 
   const getStatusText = () => {
     switch (connectionState) {
-      case 'connected':
-        return 'LIVE';
-      case 'connecting':
-        return 'CONNECTING';
-      case 'disconnected':
-        return 'OFFLINE';
-      case 'error':
-        return 'ERROR';
+      case WebSocketState.CONNECTED:
+        return UI_MESSAGES.LIVE;
+      case WebSocketState.CONNECTING:
+        return UI_MESSAGES.CONNECTING;
+      case WebSocketState.DISCONNECTED:
+        return UI_MESSAGES.OFFLINE;
+      case WebSocketState.ERROR:
+        return UI_MESSAGES.ERROR;
       default:
-        return 'UNKNOWN';
+        return UI_MESSAGES.UNKNOWN;
     }
   };
 
-  const isConnected = connectionState === 'connected';
+  const isConnected = connectionState === WebSocketState.CONNECTED;
 
   return (
     <div className="space-y-6">
@@ -155,37 +156,37 @@ const LiveStreams: React.FC = () => {
         {/* View Mode Tabs */}
         <div className="flex gap-2">
           <button
-            onClick={() => setViewMode('pods')}
+            onClick={() => setViewMode(LiveStreamViewMode.PODS)}
             className={`px-4 py-2 font-mono text-sm transition-colors ${
-              viewMode === 'pods' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+              viewMode === LiveStreamViewMode.PODS ? 'bg-white text-black' : 'text-white hover:bg-white/10'
             }`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
-            VPS Pods
+            {UI_LABELS.VPS_PODS}
           </button>
           <button
-            onClick={() => setViewMode('logs')}
+            onClick={() => setViewMode(LiveStreamViewMode.LOGS)}
             className={`px-4 py-2 font-mono text-sm transition-colors ${
-              viewMode === 'logs' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+              viewMode === LiveStreamViewMode.LOGS ? 'bg-white text-black' : 'text-white hover:bg-white/10'
             }`}
           >
             <FileText className="w-4 h-4 inline mr-2" />
-            VPS Logs
+            {UI_LABELS.VPS_LOGS}
           </button>
           <button
-            onClick={() => setViewMode('deployments')}
+            onClick={() => setViewMode(LiveStreamViewMode.DEPLOYMENTS)}
             className={`px-4 py-2 font-mono text-sm transition-colors ${
-              viewMode === 'deployments' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+              viewMode === LiveStreamViewMode.DEPLOYMENTS ? 'bg-white text-black' : 'text-white hover:bg-white/10'
             }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-2" />
-            VPS Deployments
+            {UI_LABELS.VPS_DEPLOYMENTS}
           </button>
         </div>
         
         <div className="flex items-center gap-4">
           {/* Stream Controls - Only show on logs tab */}
-          {liveData && viewMode === 'logs' && (
+          {liveData && viewMode === LiveStreamViewMode.LOGS && (
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleStream}
@@ -199,7 +200,7 @@ const LiveStreams: React.FC = () => {
                 }`}
               >
                 {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
-                <span>{isPaused ? 'RESUME' : 'PAUSE'}</span>
+                <span>{isPaused ? UI_MESSAGES.RESUME : UI_MESSAGES.PAUSE}</span>
               </button>
               
               <button
@@ -207,7 +208,7 @@ const LiveStreams: React.FC = () => {
                 className="flex items-center space-x-2 px-4 py-2 border border-red-500 text-red-400 hover:bg-red-500 hover:text-black transition-all font-mono text-xs w-28 justify-center"
               >
                 <Square size={16} />
-                <span>CLEAR</span>
+                <span>{UI_MESSAGES.CLEAR}</span>
               </button>
             </div>
           )}
@@ -221,12 +222,12 @@ const LiveStreams: React.FC = () => {
             
             {/* Tooltip */}
             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black border border-white text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-              Real-time updates {connectionState}
+              {UI_MESSAGES.REAL_TIME_UPDATES} {connectionState}
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
             </div>
 
             {/* Pulse effect when connecting */}
-            {connectionState === 'connecting' && (
+            {connectionState === WebSocketState.CONNECTING && (
               <div className="absolute inset-0 border border-yellow-500 animate-pulse pointer-events-none"></div>
             )}
           </div>
@@ -235,10 +236,10 @@ const LiveStreams: React.FC = () => {
 
 
       {/* Top Pods View */}
-      {viewMode === 'pods' && liveData && (
+      {viewMode === LiveStreamViewMode.PODS && liveData && (
         <div className="border border-white">
           <div className="border-b border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">TOP VPS RESOURCE CONSUMING PODS</h3>
+            <h3 className="font-mono text-sm font-bold">{UI_LABELS.TOP_VPS_RESOURCE_CONSUMING_PODS}</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-sm">
@@ -246,12 +247,12 @@ const LiveStreams: React.FC = () => {
                 <tr className="border-b border-white/20">
                   <th className="text-left p-3">POD</th>
                   <th className="text-left p-3">NAMESPACE</th>
-                  <th className="text-right p-3">CPU %</th>
-                  <th className="text-center p-3">TREND</th>
-                  <th className="text-right p-3">MEMORY MB</th>
-                  <th className="text-center p-3">TREND</th>
+                  <th className="text-right p-3">{UI_LABELS.CPU} %</th>
+                  <th className="text-center p-3">{UI_LABELS.TREND}</th>
+                  <th className="text-right p-3">{UI_LABELS.MEMORY} MB</th>
+                  <th className="text-center p-3">{UI_LABELS.TREND}</th>
                   <th className="text-left p-3">STATUS</th>
-                  <th className="text-left p-3">LAST UPDATE</th>
+                  <th className="text-left p-3">{UI_LABELS.LAST_UPDATE}</th>
                 </tr>
               </thead>
               <tbody>
@@ -285,8 +286,8 @@ const LiveStreams: React.FC = () => {
                     <td className="p-3 text-center">{getTrendIcon(pod.memoryTrend)}</td>
                     <td className="p-3">
                       <span className={`px-2 py-1 text-xs ${
-                        pod.status === 'Running' ? 'bg-green-500 text-black' :
-                        pod.status === 'Pending' ? 'bg-yellow-500 text-black' :
+                        pod.status === PodStatus.RUNNING ? 'bg-green-500 text-black' :
+                        pod.status === PodStatus.PENDING ? 'bg-yellow-500 text-black' :
                         'bg-red-500 text-white'
                       }`}>
                         {pod.status}
@@ -304,17 +305,17 @@ const LiveStreams: React.FC = () => {
       )}
 
       {/* Logs View - Combined streaming logs */}
-      {viewMode === 'logs' && (
+      {viewMode === LiveStreamViewMode.LOGS && (
         <div className="h-[600px]">
           <RealtimeLogViewer maxLogs={1000} autoScroll={true} />
         </div>
       )}
 
       {/* Deployments View */}
-      {viewMode === 'deployments' && liveData && (
+      {viewMode === LiveStreamViewMode.DEPLOYMENTS && liveData && (
         <div className="space-y-4">
           <div className="border border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">Active VPS Deployments</h3>
+            <h3 className="font-mono text-sm font-bold">{UI_LABELS.ACTIVE_VPS_DEPLOYMENTS}</h3>
           </div>
           {liveData.deployments.map((deployment) => (
             <div key={`${deployment.namespace}-${deployment.name}`} className="border border-white p-4">
@@ -325,10 +326,10 @@ const LiveStreams: React.FC = () => {
                     <span className="text-gray-500 text-sm ml-2">({deployment.namespace})</span>
                   </div>
                   <div className="text-xs text-gray-400 mt-1 space-x-4">
-                    <span>Strategy: <span className="text-blue-400">{deployment.strategy}</span></span>
-                    <span>Started: <span className="text-green-400">{new Date(deployment.startTime).toLocaleTimeString()}</span></span>
+                    <span>{UI_LABELS.STRATEGY}: <span className="text-blue-400">{deployment.strategy}</span></span>
+                    <span>{UI_LABELS.STARTED}: <span className="text-green-400">{new Date(deployment.startTime).toLocaleTimeString()}</span></span>
                     {deployment.estimatedCompletion && (
-                      <span>ETA: <span className="text-yellow-400">{new Date(deployment.estimatedCompletion).toLocaleTimeString()}</span></span>
+                      <span>{UI_LABELS.ETA}: <span className="text-yellow-400">{new Date(deployment.estimatedCompletion).toLocaleTimeString()}</span></span>
                     )}
                   </div>
                 </div>
@@ -339,17 +340,17 @@ const LiveStreams: React.FC = () => {
               
               <div className="space-y-3">
                 <div className="flex justify-between text-sm font-mono">
-                  <span>Replicas: <span className="text-cyan-400">{deployment.replicas.current}/{deployment.replicas.desired}</span></span>
-                  <span>Ready: <span className="text-green-400">{deployment.replicas.ready}</span></span>
-                  <span>Updated: <span className="text-blue-400">{deployment.replicas.updated}</span></span>
-                  <span>Available: <span className="text-purple-400">{deployment.replicas.available || 0}</span></span>
+                  <span>{UI_LABELS.REPLICAS}: <span className="text-cyan-400">{deployment.replicas.current}/{deployment.replicas.desired}</span></span>
+                  <span>{UI_LABELS.READY}: <span className="text-green-400">{deployment.replicas.ready}</span></span>
+                  <span>{UI_LABELS.UPDATED}: <span className="text-blue-400">{deployment.replicas.updated}</span></span>
+                  <span>{UI_LABELS.AVAILABLE}: <span className="text-purple-400">{deployment.replicas.available || 0}</span></span>
                 </div>
                 
                 <div className="relative h-6 bg-black border border-white">
                   <div 
                     className={`absolute top-0 left-0 h-full transition-all duration-1000 ${
-                      deployment.status === 'failed' ? 'bg-red-500' : 
-                      deployment.status === 'complete' ? 'bg-green-500' : 'bg-blue-500'
+                      deployment.status === DeploymentProgressStatus.FAILED ? 'bg-red-500' : 
+                      deployment.status === DeploymentProgressStatus.COMPLETE ? 'bg-green-500' : 'bg-blue-500'
                     }`}
                     style={{ width: `${deployment.progress}%` }}
                   />
