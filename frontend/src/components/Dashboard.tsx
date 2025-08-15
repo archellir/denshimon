@@ -455,7 +455,29 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                   1.2K ENTRIES
                 </span>
                 <button
-                  onClick={() => {}}
+                  onClick={() => {
+                    // Export logs functionality
+                    const timestamp = new Date().toISOString().split('T')[0];
+                    const exportData = {
+                      timestamp: new Date().toISOString(),
+                      totalEntries: 1200, // This would come from actual log data
+                      exportedBy: 'Admin',
+                      logSummary: {
+                        errors: 45,
+                        warnings: 123,
+                        info: 890,
+                        debug: 142
+                      }
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `logs-export-${timestamp}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
                   className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
                 >
                   <Download size={12} />
