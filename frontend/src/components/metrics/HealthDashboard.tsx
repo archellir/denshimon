@@ -20,7 +20,7 @@ const generateHealthData = () => {
 
   return {
     cluster: {
-      readyNodes: 1, // Single VPS
+      readyNodes: 1, // Single node
       totalNodes: 1,
       runningPods: Math.floor(Math.random() * 5) + 15, // 15-20 pods
       totalPods: 20,
