@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { 
   Play, 
@@ -13,13 +13,12 @@ import {
   Trash2,
   Copy,
   Maximize2,
-  ChevronDown,
-  ChevronUp,
   Zap
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
 import { mockQueryHistory } from '@/mocks';
+import CustomSelector from '@/components/common/CustomSelector';
 
 const SQLQueryInterface: FC = () => {
   const {
@@ -39,29 +38,11 @@ const SQLQueryInterface: FC = () => {
   const [savedQueries, setSavedQueries] = useState<Array<{id: string, name: string, sql: string}>>([]);
   const [queryName, setQueryName] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchConnections();
   }, [fetchConnections]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [dropdownOpen]);
 
   const connectedConnections = connections.filter(conn => 
     conn.status === DatabaseStatus.CONNECTED
@@ -136,69 +117,20 @@ const SQLQueryInterface: FC = () => {
             <Database size={16} />
             <label className="font-mono text-sm">CONNECTION:</label>
           </div>
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between min-w-64"
-            >
-              <div className="flex items-center space-x-2">
-                {selectedConnection ? (
-                  <>
-                    <Zap size={12} className="text-green-400" />
-                    <span>
-                      {connectedConnections.find(conn => conn.id === selectedConnection)?.name} 
-                      ({connectedConnections.find(conn => conn.id === selectedConnection)?.type.toUpperCase()})
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Database size={12} className="opacity-60" />
-                    <span className="opacity-60">Select Database Connection</span>
-                  </>
-                )}
-              </div>
-              {dropdownOpen ? (
-                <ChevronUp size={16} className="text-green-400" />
-              ) : (
-                <ChevronDown size={16} className="opacity-60" />
-              )}
-            </button>
-            
-            {dropdownOpen && (
-              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0 max-h-48 overflow-y-auto">
-                <button
-                  onClick={() => {
-                    setSelectedConnection('');
-                    setDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 font-mono text-sm hover:bg-white/10 transition-colors flex items-center space-x-2 border-b border-white/20"
-                >
-                  <Database size={12} className="opacity-60" />
-                  <span className="opacity-60">Select Database Connection</span>
-                </button>
-                {connectedConnections.map(conn => (
-                  <button
-                    key={conn.id}
-                    onClick={() => {
-                      setSelectedConnection(conn.id);
-                      setDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center justify-between border-b border-white/10 last:border-b-0 ${
-                      selectedConnection === conn.id ? 'bg-green-400/10 text-green-400' : ''
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Zap size={12} className="text-green-400" />
-                      <span>{conn.name} ({conn.type.toUpperCase()})</span>
-                    </div>
-                    {conn.status === DatabaseStatus.CONNECTED && (
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <CustomSelector
+            value={selectedConnection}
+            options={connectedConnections.map(conn => ({
+              value: conn.id,
+              label: `${conn.name} (${conn.type.toUpperCase()})`,
+              description: conn.status === DatabaseStatus.CONNECTED ? 'Connected' : conn.status
+            }))}
+            onChange={(value) => setSelectedConnection(value)}
+            placeholder="Select Database Connection"
+            icon={Zap}
+            size="md"
+            variant="detailed"
+            className="min-w-64"
+          />
           <div className="flex items-center space-x-2">
             <label className="font-mono text-sm">LIMIT:</label>
             <input
