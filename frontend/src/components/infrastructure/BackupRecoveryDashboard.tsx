@@ -78,6 +78,21 @@ const BackupRecoveryDashboard: FC = () => {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchBackupJobs, fetchBackupHistory, fetchBackupStorage, fetchBackupStatistics, fetchActiveRecoveries, fetchAlerts]);
 
+  // Listen for external refresh events
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchBackupJobs();
+      fetchBackupHistory();
+      fetchBackupStorage();
+      fetchBackupStatistics();
+      fetchActiveRecoveries();
+      fetchAlerts();
+    };
+
+    window.addEventListener('refreshBackupData', handleRefresh);
+    return () => window.removeEventListener('refreshBackupData', handleRefresh);
+  }, [fetchBackupJobs, fetchBackupHistory, fetchBackupStorage, fetchBackupStatistics, fetchActiveRecoveries, fetchAlerts]);
+
   const getStatusColor = (status: BackupStatus) => {
     switch (status) {
       case BackupStatus.COMPLETED:
@@ -176,42 +191,6 @@ const BackupRecoveryDashboard: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-mono">BACKUP & RECOVERY</h2>
-          <div className="text-sm font-mono opacity-60">
-            {jobs.length} BACKUP JOB{jobs.length !== 1 ? 'S' : ''} | {history.length} BACKUP{history.length !== 1 ? 'S' : ''} 
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="auto-refresh-backup"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="bg-black border-white"
-            />
-            <label htmlFor="auto-refresh-backup" className="font-mono text-sm">
-              AUTO REFRESH
-            </label>
-          </div>
-          <button
-            onClick={() => {
-              fetchBackupJobs();
-              fetchBackupHistory();
-              fetchBackupStorage();
-              fetchBackupStatistics();
-            }}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm disabled:opacity-50"
-          >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-            <span>REFRESH</span>
-          </button>
-        </div>
-      </div>
 
       {/* Error Display */}
       {error && (
