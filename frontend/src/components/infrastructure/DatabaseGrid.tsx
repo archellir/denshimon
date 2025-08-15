@@ -4,7 +4,7 @@ import { Plus, Database, Eye, Trash2, Power, PowerOff, Settings, Activity } from
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus, DatabaseType } from '@/types/database';
-import { Status } from '@/constants';
+import { Status } from '@constants';
 
 interface DatabaseGridProps {
   onAddConnection: () => void;

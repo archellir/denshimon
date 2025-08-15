@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getWebSocketInstance, WebSocketMessage } from '@services/websocket';
-import { WebSocketEventType, WebSocketState } from '@/constants';
-import { WebSocketCallback } from '@/types';
+import { WebSocketEventType, WebSocketState } from '@constants';
+import type { LogEntry } from '@/types/logs';
 
 export interface UseWebSocketOptions {
   enabled?: boolean;
@@ -30,9 +30,9 @@ export function useWebSocket<T = Record<string, unknown>>(
 
   const handleMessage = useCallback((receivedData: Record<string, unknown>) => {
     if (messageType === 'connection') {
-      setConnectionState(receivedData);
+      setConnectionState(receivedData as unknown as WebSocketConnectionState);
     } else {
-      setData(receivedData);
+      setData(receivedData as unknown as T);
     }
     setError(null);
   }, [messageType]);
@@ -56,7 +56,7 @@ export function useWebSocket<T = Record<string, unknown>>(
 
       // Also subscribe to connection state changes if not already subscing to them
       if (messageType !== 'connection') {
-        const connectionSubscriptionId = ws.subscribe('connection', setConnectionState);
+        const connectionSubscriptionId = ws.subscribe('connection', (data) => setConnectionState(data as unknown as WebSocketConnectionState));
         
         return () => {
           if (subscriptionIdRef.current) {
@@ -134,7 +134,7 @@ export function useMetricsWebSocket(options?: UseWebSocketOptions) {
 }
 
 export function useLogsWebSocket(options?: UseWebSocketOptions) {
-  return useWebSocket(WebSocketEventType.LOGS, options);
+  return useWebSocket<LogEntry>(WebSocketEventType.LOGS, options);
 }
 
 export function useEventsWebSocket(options?: UseWebSocketOptions) {
@@ -187,7 +187,7 @@ export function useMultipleWebSocket(messageTypes: WebSocketMessage['type'][]) {
     });
 
     // Subscribe to connection state
-    const connectionSubscriptionId = ws.subscribe('connection', setConnectionState);
+    const connectionSubscriptionId = ws.subscribe('connection', (data) => setConnectionState(data as unknown as WebSocketConnectionState));
     subscriptionIdsRef.current.push(connectionSubscriptionId);
 
     return () => {

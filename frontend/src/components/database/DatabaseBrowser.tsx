@@ -4,7 +4,6 @@ import {
   Database, 
   Table, 
   Eye, 
-  RefreshCw, 
   ChevronRight,
   ChevronDown,
   Search,
@@ -22,7 +21,6 @@ const DatabaseBrowser: FC = () => {
     databases,
     tables,
     columns,
-    isLoading,
     error,
     fetchConnections,
     fetchDatabases,
@@ -37,7 +35,7 @@ const DatabaseBrowser: FC = () => {
   const [expandedDatabases, setExpandedDatabases] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showOnlyConnected, setShowOnlyConnected] = useState<boolean>(true);
-  const [showTableData, setShowTableData] = useState<boolean>(false);
+  const [, setShowTableData] = useState<boolean>(false);
 
   useEffect(() => {
     fetchConnections();

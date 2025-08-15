@@ -1,9 +1,9 @@
 import { useState, type FC } from 'react';
 import { X, Save } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
-import { RegistryType, RegistryStatus, CSS_CLASSES } from '@/constants';
+import useDeploymentStore from '@stores/deploymentStore';
+import { RegistryType, RegistryStatus, CSS_CLASSES } from '@constants';
 import type { Registry } from '@/types/deployments';
-import useModalKeyboard from '@/hooks/useModalKeyboard';
+import useModalKeyboard from '@hooks/useModalKeyboard';
 
 interface RegistryFormProps {
   registry?: Registry | null;
@@ -71,7 +71,7 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
   const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
     isOpen: true,
     onClose,
-    onSubmit: handleSubmit,
+    onSubmit: () => handleSubmit(new Event('submit') as any),
     canSubmit: Boolean(formData.name && formData.url && !loading),
     modalId: 'registry-modal'
   });

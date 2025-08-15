@@ -95,8 +95,8 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p style={{ color: payload[0].payload.color }}>
-            {`${payload[0].name}: ${formatBytes(payload[0].payload.bytes)}`}
+          <p style={{ color: payload[0].payload.color as string }}>
+            {`${payload[0].name}: ${formatBytes(payload[0].payload.bytes as number)}`}
           </p>
           <p className="text-white">
             {`${payload[0].payload.percentage}%`}

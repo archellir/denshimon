@@ -1,11 +1,12 @@
-import { WebSocketEventType, Status, CircuitBreakerStatus, SERVICE_IDS, WebSocketState } from '@/constants';
-import { WebSocketMessage, WebSocketCallback } from '@/types';
+import { WebSocketEventType, Status, CircuitBreakerStatus, SERVICE_IDS, WebSocketState } from '@constants';
+import { WebSocketCallback } from '@/types';
 
 export interface WebSocketMessage {
-  type: WebSocketEventType;
-  timestamp: string;
+  type: string;
   data: Record<string, unknown>;
+  timestamp?: string;
 }
+
 
 export interface WebSocketOptions {
   url: string;

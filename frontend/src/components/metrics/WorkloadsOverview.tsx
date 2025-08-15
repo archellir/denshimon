@@ -126,7 +126,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p style={{ color: payload[0].payload.color }}>
+          <p style={{ color: payload[0].payload.color as string }}>
             {`${payload[0].name}: ${payload[0].value}`}
           </p>
         </div>

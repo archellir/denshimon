@@ -19,9 +19,9 @@ import {
   RecoveryOptions,
   RestoreType
 } from '@/types/backup';
-import { API_ENDPOINTS } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks';
-import { apiService, ApiError } from '@/services/api';
+import { API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED } from '@mocks';
+import { apiService, ApiError } from '@services/api';
 
 interface BackupStore {
   // State

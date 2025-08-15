@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Rocket, RotateCcw, Trash2, Plus, Package, Settings, X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import { Rocket, RotateCcw, Trash2, X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
+import useDeploymentStore from '@stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
-import { API_ENDPOINTS } from '@/constants';
-import useModalKeyboard from '@/hooks/useModalKeyboard';
-import CustomSelector from '@/components/common/CustomSelector';
+import { API_ENDPOINTS } from '@constants';
+import useModalKeyboard from '@hooks/useModalKeyboard';
+import CustomSelector from '@components/common/CustomSelector';
 
 
 interface ContainerImage {
@@ -365,8 +365,8 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
               </div>
               <div className="text-sm text-gray-300 font-mono">
                 <div>IMAGE: {deployment.image}</div>
-                {deployment.created_at && (
-                  <div>CREATED: {new Date(deployment.created_at).toLocaleString()}</div>
+                {deployment.createdAt && (
+                  <div>CREATED: {new Date(deployment.createdAt).toLocaleString()}</div>
                 )}
               </div>
             </div>

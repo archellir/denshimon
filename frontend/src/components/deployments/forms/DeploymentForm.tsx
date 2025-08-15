@@ -1,6 +1,6 @@
 import { useState, type FC } from 'react';
 import { X, Play, Package } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import useDeploymentStore from '@stores/deploymentStore';
 import type { ContainerImage, DeploymentRequest } from '@/types/deployments';
 
 interface DeploymentFormProps {

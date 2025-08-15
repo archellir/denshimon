@@ -2,15 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { parseTimeRangeToHours } from '@utils/timeUtils';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { EventTimelineData, TimelineEvent } from '@/types/eventTimeline';
-import { generateEventTimelineData } from '@/mocks/events/timeline';
-import { MOCK_ENABLED } from '@/mocks/index';
+import { generateEventTimelineData } from '@mocks/events/timeline';
+import { MOCK_ENABLED } from '@mocks/index';
 import { 
   TimeRange, 
   Status,
   EventCategory,
   UI_MESSAGES,
   API_ENDPOINTS 
-} from '@/constants';
+} from '@constants';
 
 interface EventTimelineProps {
   timeRange?: string;

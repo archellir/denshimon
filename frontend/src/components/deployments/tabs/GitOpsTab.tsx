@@ -6,8 +6,8 @@ import {
   GitOpsDeploymentStatus,
   API_ENDPOINTS,
   UI_MESSAGES
-} from '@/constants';
-import useModalKeyboard from '@/hooks/useModalKeyboard';
+} from '@constants';
+import useModalKeyboard from '@hooks/useModalKeyboard';
 // Using standard HTML/CSS instead of shadcn components
 import { RefreshCw, GitBranch, Zap, History, RotateCcw, X, AlertTriangle, Activity, TrendingUp, CheckCircle, Plus, Package, Download, Edit, Save, Eye, GitCommit } from 'lucide-react';
 
@@ -510,8 +510,8 @@ const GitOpsTab: React.FC = () => {
             namespace: app.namespace,
             image: app.image,
             replicas: app.replicas,
-            environment: app.environment ? JSON.parse(app.environment) : {},
-            resources: app.resources ? JSON.parse(app.resources) : {}
+            environment: app.environment || {},
+            resources: app.resources || {}
           },
           resource_type: 'Full',
           options: {

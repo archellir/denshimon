@@ -1,6 +1,6 @@
 import { useState, type FC } from 'react';
 import { Trash2, TestTube, CheckCircle, XCircle, Clock, Package } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import useDeploymentStore from '@stores/deploymentStore';
 import RegistryForm from '../forms/RegistryForm';
 import type { Registry } from '@/types/deployments';
 

@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 import SkeletonLoader from '@components/common/SkeletonLoader';
-import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
+import { ChartTooltipProps, PieChartTooltipProps } from '@/types/common';
 
 interface ClusterOverviewProps {
   timeRange?: string;
@@ -96,7 +96,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p style={{ color: payload[0].payload.color }}>
+          <p style={{ color: payload[0].payload.color as string }}>
             {`${payload[0].name}: ${payload[0].value}`}
           </p>
         </div>

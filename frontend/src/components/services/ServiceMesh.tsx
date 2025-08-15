@@ -3,8 +3,8 @@ import { Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe,
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
-import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, GraphViewMode, ServiceFilterType, ServiceType, UI_LABELS } from '@/constants';
-import useServiceMeshStore from '@/stores/serviceMeshStore';
+import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, GraphViewMode, ServiceFilterType, ServiceType, UI_LABELS } from '@constants';
+import useServiceMeshStore from '@stores/serviceMeshStore';
 
 interface ServiceMeshProps {
   activeSecondaryTab?: string;

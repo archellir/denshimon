@@ -223,7 +223,7 @@ export const createApplicationHealthCard = (data: HealthCardData) => ({
     },
     {
       label: 'P95 Latency',
-      value: data.p95Latency ?? 0,
+      value: (data.p95Latency ?? 0).toString(),
       unit: 'ms',
       status: (data.p95Latency ?? 0) < 100 ? 'healthy' as StatusType : (data.p95Latency ?? 0) < 500 ? 'warning' as StatusType : 'error' as StatusType,
       trend: data.latencyTrend,
@@ -256,12 +256,12 @@ export const createNetworkHealthCard = (data: HealthCardData) => ({
     },
     {
       label: 'Connection Errors',
-      value: data.connectionErrors ?? 0,
+      value: (data.connectionErrors ?? 0).toString(),
       status: (data.connectionErrors ?? 0) === 0 ? 'healthy' as StatusType : (data.connectionErrors ?? 0) < 10 ? 'warning' as StatusType : 'error' as StatusType,
     },
     {
       label: 'Active Connections',
-      value: data.activeConnections,
+      value: (data.activeConnections ?? 0).toString(),
       status: 'healthy' as StatusType,
     },
   ],
@@ -280,12 +280,12 @@ export const createStorageHealthCard = (data: HealthCardData) => ({
     },
     {
       label: 'PVC Bound',
-      value: `${data.boundPVCs}/${data.totalPVCs}`,
-      status: data.boundPVCs === data.totalPVCs ? 'healthy' as StatusType : 'warning' as StatusType,
+      value: `${data.boundPVCs ?? 0}/${data.totalPVCs ?? 0}`,
+      status: (data.boundPVCs ?? 0) === (data.totalPVCs ?? 0) ? 'healthy' as StatusType : 'warning' as StatusType,
     },
     {
       label: 'IOPS',
-      value: data.iops,
+      value: (data.iops ?? 0).toString(),
       unit: '/s',
       status: 'healthy' as StatusType,
       trend: data.iopsTrend,

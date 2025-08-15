@@ -27,7 +27,7 @@ import type {
   LifecycleTimelineEvent 
 } from '@/types/podLifecycle';
 import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
-import useWorkloadsStore from '@/stores/workloadsStore';
+import useWorkloadsStore from '@stores/workloadsStore';
 import { MOCK_ENABLED } from '@/mocks';
 
 const PodLifecycle: FC = () => {
@@ -161,11 +161,11 @@ const PodLifecycle: FC = () => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
-          <p style={{ color: payload[0].payload.color }}>
-            {`${payload[0].name}: ${payload[0].value} (${payload[0].payload.percentage.toFixed(1)}%)`}
+          <p style={{ color: payload[0].payload.color as string }}>
+            {`${payload[0].name}: ${payload[0].value} (${(payload[0].payload as any).percentage.toFixed(1)}%)`}
           </p>
           <p className="text-white text-xs mt-1">
-            Trend: {payload[0].payload.trend}
+            Trend: {(payload[0].payload as any).trend}
           </p>
         </div>
       );

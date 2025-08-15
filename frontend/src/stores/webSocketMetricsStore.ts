@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory, WebSocketMetricsData } from '@/types/metrics';
-import { API_ENDPOINTS, WebSocketEventType } from '@/constants';
+import { API_ENDPOINTS, WebSocketEventType } from '@constants';
 import { 
   mockClusterMetrics, 
   mockNodes, 
@@ -12,7 +12,7 @@ import {
   MOCK_ENABLED 
 } from '@mocks/index';
 import { getWebSocketInstance } from '@services/websocket';
-import { apiService } from '@/services/api';
+import { apiService } from '@services/api';
 
 interface WebSocketMetricsStore extends MetricsStore {
   // WebSocket connection state

@@ -30,11 +30,11 @@
       "@stores/*": ["./src/stores/*"],
       "@types/*": ["./src/types/*"],
       "@utils/*": ["./src/utils/*"],
-      "@utils": ["./src/utils"],
       "@mocks/*": ["./src/mocks/*"],
+      "@mocks": ["./src/mocks/index"],
       "@services/*": ["./src/services/*"],
       "@hooks/*": ["./src/hooks/*"],
-      "@constants": ["./src/constants"]
+      "@constants": ["./src/constants"],
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],

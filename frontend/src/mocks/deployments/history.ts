@@ -1,5 +1,5 @@
 import type { DeploymentHistory } from '@/types/deployments';
-import { DeploymentAction } from '@/constants';
+import { DeploymentAction } from '@constants';
 import { MASTER_DEPLOYMENT_HISTORY, MASTER_APPLICATIONS } from '../masterData';
 
 // Convert master data to DeploymentHistory type

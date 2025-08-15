@@ -1,6 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import { History, CheckCircle, XCircle, User, Calendar } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import useDeploymentStore from '@stores/deploymentStore';
 
 const HistoryTab: FC = () => {
   const [selectedDeployment] = useState<string>('');

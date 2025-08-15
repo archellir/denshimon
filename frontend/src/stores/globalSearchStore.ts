@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { PrimaryTab, DeploymentsTab } from '@/constants';
+import { PrimaryTab, DeploymentsTab } from '@constants';
 
 export interface SearchResult {
   id: string;

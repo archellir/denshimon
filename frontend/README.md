@@ -95,7 +95,7 @@ pnpm preview
 Clean import paths using TypeScript path mapping:
 
 ```typescript
-import Component from '@/components/Component'
+import Component from '@components/Component'
 import { useStore } from '@stores/store'
 import type { User } from '@types/auth'
 import { formatDate } from '@utils/date'

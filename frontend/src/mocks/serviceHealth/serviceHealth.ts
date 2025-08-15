@@ -11,7 +11,7 @@ import {
   UptimeKumaHealth,
   PostgreSQLHealth
 } from '@/types/serviceHealth';
-import { Status } from '@/constants';
+import { Status } from '@constants';
 
 // Mock Service Health Data - Base Infrastructure Services
 export const mockServiceHealthData: ServiceHealth[] = [

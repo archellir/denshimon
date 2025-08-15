@@ -1,5 +1,5 @@
 import type { Deployment, NodeInfo } from '@/types/deployments';
-import { DeploymentStatus, DeploymentStrategy } from '@/constants';
+import { DeploymentStatus, DeploymentStrategy } from '@constants';
 import { MASTER_APPLICATIONS, MASTER_NODES, MASTER_PODS } from '../masterData';
 
 // Convert master data to Deployment type
@@ -43,6 +43,7 @@ export const mockDeployments: Deployment[] = MASTER_APPLICATIONS.map(app => {
     replicas: app.replicas,
     availableReplicas,
     readyReplicas,
+    updatedReplicas: readyReplicas,
     status,
     strategy: {
       type: DeploymentStrategy.ROLLING_UPDATE,

@@ -4,8 +4,8 @@ import ResourceHierarchy, { type HierarchyNode, buildResourceHierarchy } from '@
 import ManifestViewer, { generateSampleManifest } from '@components/common/ManifestViewer';
 import ResourceActions, { handleResourceAction } from '@components/common/ResourceActions';
 import SkeletonLoader from '@components/common/SkeletonLoader';
-import { API_ENDPOINTS } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks';
+import { API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED } from '@mocks/index';
 import { KubernetesResource } from '@/types';
 
 // Mock Kubernetes resources for demonstration
@@ -17,6 +17,7 @@ const generateMockResources = (): KubernetesResource[] => {
     // Namespace
     const namespaceId = `ns-${nsIndex}`;
     resources.push({
+      apiVersion: 'v1',
       kind: 'Namespace',
       metadata: {
         uid: namespaceId,
@@ -41,6 +42,7 @@ const generateMockResources = (): KubernetesResource[] => {
           namespace: ns,
           ownerReferences: [
             {
+              apiVersion: 'v1',
               uid: namespaceId,
               kind: 'Namespace',
               name: ns
@@ -72,6 +74,7 @@ const generateMockResources = (): KubernetesResource[] => {
           namespace: ns,
           ownerReferences: [
             {
+              apiVersion: 'apps/v1',
               uid: deploymentId,
               kind: 'Deployment',
               name: deploymentName
@@ -102,6 +105,7 @@ const generateMockResources = (): KubernetesResource[] => {
             namespace: ns,
             ownerReferences: [
               {
+                apiVersion: 'apps/v1',
                 uid: replicaSetId,
                 kind: 'ReplicaSet',
                 name: `${deploymentName}-abc123`
@@ -129,6 +133,7 @@ const generateMockResources = (): KubernetesResource[] => {
         namespace: ns,
         ownerReferences: [
           {
+            apiVersion: 'v1',
             uid: namespaceId,
             kind: 'Namespace',
             name: ns
@@ -158,6 +163,7 @@ const generateMockResources = (): KubernetesResource[] => {
         namespace: ns,
         ownerReferences: [
           {
+            apiVersion: 'v1',
             uid: namespaceId,
             kind: 'Namespace',
             name: ns

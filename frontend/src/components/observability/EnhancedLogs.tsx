@@ -8,8 +8,8 @@ import {
   UI_LABELS, 
   UI_MESSAGES,
   API_ENDPOINTS 
-} from '@/constants';
-import CustomSelector from '@/components/common/CustomSelector';
+} from '@constants';
+import CustomSelector from '@components/common/CustomSelector';
 
 const EnhancedLogs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);

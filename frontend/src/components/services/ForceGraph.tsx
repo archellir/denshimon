@@ -15,7 +15,7 @@ import {
   BASE_COLORS,
   MESH_ANALYSIS,
   CANVAS_CONSTANTS
-} from '@/constants';
+} from '@constants';
 
 interface ForceGraphProps {
   services: ServiceNode[];
@@ -282,13 +282,16 @@ const ForceGraph: FC<ForceGraphProps> = ({
   }, []);
 
   // Node click handler
-  const handleNodeClick = useCallback((node: GraphNode) => {
+  const handleNodeClick = useCallback((node: any) => {
     onServiceSelect(node.id === selectedService ? null : node.id);
   }, [selectedService, onServiceSelect]);
 
   // Custom node rendering
   const nodeCanvasObject = useCallback((node: ForceGraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
-    const label = node.name;
+    // Guard against undefined coordinates
+    if (node.x === undefined || node.y === undefined) return;
+    
+    const label = node.name || '';
     const fontSize = GRAPH_CONFIG.NODE.FONT_SIZE / globalScale;
     ctx.font = `${fontSize}px ${CANVAS_CONSTANTS.FONTS.JETBRAINS_MONO}`;
     
@@ -299,7 +302,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     const isSpof = showSinglePointsOfFailure && singlePointsOfFailure.includes(node.id);
     const isInDependencyPath = showDependencyPaths && dependencyPaths.some(path => path.includes(node.id));
     
-    let nodeSize = node.size;
+    let nodeSize = node.size || 5; // Default size if undefined
     if (isSelected) nodeSize *= GRAPH_CONFIG.NODE.SELECTION_MULTIPLIER;
     if (isSpof) nodeSize *= GRAPH_CONFIG.NODE.SPOF_MULTIPLIER;
     
@@ -364,7 +367,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     // Main node
     ctx.beginPath();
     ctx.arc(node.x, node.y, nodeSize, 0, 2 * Math.PI, false);
-    ctx.fillStyle = node.color;
+    ctx.fillStyle = node.color || '#6b7280';
     ctx.fill();
     
     // Node border
@@ -378,7 +381,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     ctx.textAlign = CANVAS_CONSTANTS.TEXT_ALIGN.CENTER;
     ctx.textBaseline = CANVAS_CONSTANTS.TEXT_BASELINE.MIDDLE;
     
-    const iconChar = SERVICE_ICONS[node.type as keyof typeof SERVICE_ICONS] || '●';
+    const iconChar = SERVICE_ICONS[(node.type || 'default') as keyof typeof SERVICE_ICONS] || '●';
     
     ctx.font = `${iconSize * GRAPH_CONFIG.NODE.ICON_FONT_MULTIPLIER}px ${CANVAS_CONSTANTS.FONTS.ARIAL}`;
     ctx.fillText(iconChar, node.x, node.y);
@@ -389,7 +392,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     ctx.textBaseline = CANVAS_CONSTANTS.TEXT_BASELINE.TOP;
     
     // Background for label
-    const textWidth = ctx.measureText(label).width;
+    const textWidth = ctx.measureText(label || '').width;
     ctx.fillStyle = CANVAS_CONSTANTS.COLORS.TRANSPARENT_BLACK;
     ctx.fillRect(
       node.x - textWidth / 2 - GRAPH_CONFIG.NODE.LABEL_PADDING, 
@@ -400,10 +403,10 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     // Text
     ctx.fillStyle = CANVAS_CONSTANTS.COLORS.WHITE;
-    ctx.fillText(label, node.x, node.y + nodeSize + GRAPH_CONFIG.NODE.LABEL_OFFSET);
+    ctx.fillText(label || '', node.x, node.y + nodeSize + GRAPH_CONFIG.NODE.LABEL_OFFSET);
     
     // Error rate indicator
-    if (node.metrics.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
+    if (node.metrics && node.metrics.errorRate && node.metrics.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
       ctx.beginPath();
       ctx.arc(
         node.x + nodeSize * GRAPH_CONFIG.NODE.ERROR_INDICATOR_OFFSET, 
@@ -418,16 +421,16 @@ const ForceGraph: FC<ForceGraphProps> = ({
 
   // Custom link rendering with animated traffic
   const linkCanvasObject = useCallback((link: ForceGraphLink, ctx: CanvasRenderingContext2D, globalScale: number) => {
-    const start = link.source;
-    const end = link.target;
+    const start = link.source as ForceGraphNode;
+    const end = link.target as ForceGraphNode;
     
     if (!start || !end || !start.x || !start.y || !end.x || !end.y) return;
     
     // Check if link is part of critical path or dependency path
     const isInCriticalPath = showCriticalPath && criticalPath.length > 1 && (() => {
       for (let i = 0; i < criticalPath.length - 1; i++) {
-        if ((criticalPath[i] === link.source.id && criticalPath[i + 1] === link.target.id) ||
-            (criticalPath[i] === link.target.id && criticalPath[i + 1] === link.source.id)) {
+        if ((criticalPath[i] === start.id && criticalPath[i + 1] === end.id) ||
+            (criticalPath[i] === end.id && criticalPath[i + 1] === start.id)) {
           return true;
         }
       }
@@ -436,8 +439,8 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     const isInDependencyPath = showDependencyPaths && selectedService && dependencyPaths.some(path => {
       for (let i = 0; i < path.length - 1; i++) {
-        if ((path[i] === link.source.id && path[i + 1] === link.target.id) ||
-            (path[i] === link.target.id && path[i + 1] === link.source.id)) {
+        if ((path[i] === start.id && path[i + 1] === end.id) ||
+            (path[i] === end.id && path[i + 1] === start.id)) {
           return true;
         }
       }
@@ -446,7 +449,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     // Link color based on protocol, health, and dependency analysis
     let linkColor: string = CANVAS_CONSTANTS.COLORS.WHITE_30;
-    let lineWidth = Math.max(link.value, GRAPH_CONFIG.TRAFFIC.MIN_LINK_WIDTH) / globalScale;
+    let lineWidth = Math.max(link.value || 1, GRAPH_CONFIG.TRAFFIC.MIN_LINK_WIDTH) / globalScale;
     
     if (isInCriticalPath) {
       linkColor = BASE_COLORS.YELLOW + '80';
@@ -454,7 +457,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     } else if (isInDependencyPath) {
       linkColor = BASE_COLORS.CYAN + '60';
       lineWidth = Math.max(lineWidth * GRAPH_CONFIG.TRAFFIC.DEPENDENCY_LINK_WIDTH_MULTIPLIER, 1.5 / globalScale);
-    } else if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
+    } else if ((link.errorRate || 0) > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
       linkColor = CANVAS_CONSTANTS.COLORS.ERROR_RED_60;
     } else if (link.mTLS) {
       linkColor = CANVAS_CONSTANTS.COLORS.MTLS_GREEN_60;
@@ -479,7 +482,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
     
     // Animated traffic particles
     if (isLive) {
-      const particleCount = Math.ceil(link.value / 2);
+      const particleCount = Math.ceil((link.value || 1) / 2);
       const dx = end.x - start.x;
       const dy = end.y - start.y;
       
@@ -497,9 +500,9 @@ const ForceGraph: FC<ForceGraphProps> = ({
         ctx.arc(x, y, glowSize, 0, 2 * Math.PI);
         
         let particleColor: string = TRAFFIC_COLORS.HEALTHY;
-        if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
+        if ((link.errorRate || 0) > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_HIGH) {
           particleColor = TRAFFIC_COLORS.ERROR;
-        } else if (link.errorRate > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_MEDIUM) {
+        } else if ((link.errorRate || 0) > GRAPH_CONFIG.TRAFFIC.ERROR_THRESHOLD_MEDIUM) {
           particleColor = TRAFFIC_COLORS.WARNING;
         } else if (link.mTLS) {
           particleColor = TRAFFIC_COLORS.MTLS;

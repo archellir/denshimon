@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit, Webhook, Monitor, Bell, Settings } from 'lucide-react';
-import { API_ENDPOINTS } from '@/constants';
+import { API_ENDPOINTS } from '@constants';
 
 interface BaseInfrastructureRepo {
   id: string;

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { API_ENDPOINTS } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks';
+import { API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED } from '@mocks';
 import { KubernetesServiceAPI, KubernetesPodAPI, KubernetesNamespaceAPI } from '@/types';
-import { apiService } from '@/services/api';
+import { apiService } from '@services/api';
 
 export interface Service {
   id: string;
@@ -51,6 +51,9 @@ export interface Pod {
   }>;
   status: string;
   created: string;
+  cpu?: number;
+  memory?: number;
+  lastUpdate?: string;
 }
 
 export interface Namespace {

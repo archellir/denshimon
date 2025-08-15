@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { Certificate, CertificateAlert, CertificateStats, DomainConfig, CertificateStatus } from '@/types/certificates';
-import { API_ENDPOINTS } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks';
-import { apiService, ApiError } from '@/services/api';
+import { API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED } from '@mocks';
+import { apiService, ApiError } from '@services/api';
 
 interface CertificateStore {
   // State

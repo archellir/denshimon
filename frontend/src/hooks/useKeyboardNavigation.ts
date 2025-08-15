@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { PrimaryTab } from '@/constants';
+import { PrimaryTab } from '@constants';
 
 interface KeyboardNavigationConfig {
   onTabSwitch?: (tabId: string) => void;

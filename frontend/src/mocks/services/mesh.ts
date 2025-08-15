@@ -1,6 +1,6 @@
 import { ServiceMeshData, ServiceNode, ServiceConnection, APIEndpoint, TrafficFlow, ServiceMeshMetrics } from '@/types/serviceMesh';
 import { MASTER_SERVICES } from '@mocks/masterData';
-import { NetworkProtocol } from '@/constants';
+import { NetworkProtocol } from '@constants';
 
 const generateServiceId = (name: string, namespace: string) => `${namespace}-${name}`;
 

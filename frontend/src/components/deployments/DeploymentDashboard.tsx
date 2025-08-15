@@ -1,10 +1,10 @@
 import { useEffect, type FC } from 'react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import useDeploymentStore from '@stores/deploymentStore';
 import RegistriesTab from './tabs/RegistriesTab';
 import ImagesTab from './tabs/ImagesTab';
 import DeploymentsTab from './tabs/DeploymentsTab';
 import HistoryTab from './tabs/HistoryTab';
-import { DeploymentsTab as DeploymentsTabEnum } from '@/constants';
+import { DeploymentsTab as DeploymentsTabEnum } from '@constants';
 
 interface DeploymentDashboardProps {
   activeTab?: string;

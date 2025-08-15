@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { Target, TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from 'lucide-react';
-import { API_ENDPOINTS } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks';
+import { API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED } from '@mocks';
 
 export interface SLI {
   name: string;

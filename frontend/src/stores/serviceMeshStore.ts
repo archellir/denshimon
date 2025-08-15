@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { ServiceMeshData, ServiceUpdateData } from '@/types/serviceMesh';
-import { API_ENDPOINTS, WebSocketEventType, ConnectionStatus } from '@/constants';
-import { MOCK_ENABLED } from '@/mocks';
-import { generateServiceMeshData } from '@/mocks/services/mesh';
+import { API_ENDPOINTS, WebSocketEventType, ConnectionStatus } from '@constants';
+import { MOCK_ENABLED } from '@mocks';
+import { generateServiceMeshData } from '@mocks/services/mesh';
 import { getWebSocketInstance } from '@services/websocket';
-import { apiService, ApiError } from '@/services/api';
+import { apiService, ApiError } from '@services/api';
 
 interface ServiceMeshStore {
   // State

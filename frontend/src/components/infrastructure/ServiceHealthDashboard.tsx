@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import useServiceHealthStore from '@stores/serviceHealthStore';
 import { ServiceHealth, ServiceType } from '@/types/serviceHealth';
-import { Status } from '@/constants';
+import { Status } from '@constants';
 
 const ServiceHealthDashboard: FC = () => {
   const {

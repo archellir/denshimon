@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { TerminalMessageType, StorageKey } from '@/constants';
+import { TerminalMessageType, StorageKey } from '@constants';
 import { TerminalData } from '@/types';
 
 export interface TerminalMessage {
@@ -91,7 +91,7 @@ export const useTerminal = (): UseTerminalReturn => {
               setOutput(prev => prev + message.data);
               break;
             case TerminalMessageType.ERROR:
-              setError(message.data);
+              setError(message.data as string);
               break;
             default:
               console.warn('Unknown terminal message type:', message.type);

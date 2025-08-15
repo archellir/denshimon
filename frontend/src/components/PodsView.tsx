@@ -4,8 +4,8 @@ import { Server, AlertCircle, CheckCircle, Terminal, X } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
-import { API_ENDPOINTS } from '@/constants'
-import { apiService, ApiError } from '@/services/api'
+import { API_ENDPOINTS } from '@constants'
+import { apiService, ApiError } from '@services/api'
 
 interface Container {
   name: string

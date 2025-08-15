@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Download, RefreshCw, Table, Filter, Search } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
-import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
+import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@mocks/terminal/liveData';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
-import { Pod } from '@/stores/workloadsStore';
+import { Pod } from '@stores/workloadsStore';
 import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 
@@ -205,9 +205,9 @@ const Logs: React.FC = () => {
       align: 'right' as const,
       render: (pod: Pod) => (
         <span className={`font-mono text-sm ${
-          pod.cpu > 80 ? 'text-red-500' : pod.cpu > 60 ? 'text-yellow-500' : ''
+          (pod.cpu || 0) > 80 ? 'text-red-500' : (pod.cpu || 0) > 60 ? 'text-yellow-500' : ''
         }`}>
-          {pod.cpu.toFixed(1)}
+          {(pod.cpu || 0).toFixed(1)}
         </span>
       ),
     },
@@ -225,9 +225,9 @@ const Logs: React.FC = () => {
       align: 'right' as const,
       render: (pod: Pod) => (
         <span className={`font-mono text-sm ${
-          pod.memory > 3000 ? 'text-red-500' : pod.memory > 2000 ? 'text-yellow-500' : ''
+          (pod.memory || 0) > 3000 ? 'text-red-500' : (pod.memory || 0) > 2000 ? 'text-yellow-500' : ''
         }`}>
-          {pod.memory.toFixed(0)}
+          {(pod.memory || 0).toFixed(0)}
         </span>
       ),
     },
@@ -244,7 +244,7 @@ const Logs: React.FC = () => {
       width: 120,
       render: (pod: Pod) => (
         <span className="text-gray-500 font-mono text-sm">
-          {new Date(pod.lastUpdate).toLocaleTimeString()}
+          {pod.lastUpdate ? new Date(pod.lastUpdate).toLocaleTimeString() : 'N/A'}
         </span>
       ),
     },

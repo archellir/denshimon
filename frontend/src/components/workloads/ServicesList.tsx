@@ -13,7 +13,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 import SkeletonLoader from '@components/common/SkeletonLoader';
-import useWorkloadsStore, { Service } from '@/stores/workloadsStore';
+import useWorkloadsStore, { Service } from '@stores/workloadsStore';
 
 
 interface ServicesListProps {
@@ -74,7 +74,7 @@ const ServicesList: FC<ServicesListProps> = ({
       }
 
       if (sortBy === 'age') {
-        return sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
+        return sortOrder === 'asc' ? (valueA as number) - (valueB as number) : (valueB as number) - (valueA as number);
       }
       
       const comparison = valueA.toString().localeCompare(valueB.toString());

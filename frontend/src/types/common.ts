@@ -52,28 +52,7 @@ export interface SettingsUpdateValue {
   value: string | number | boolean | Record<string, unknown>;
 }
 
-// Resource tree node interface
-export interface KubernetesResource {
-  kind: string;
-  apiVersion: string;
-  metadata: {
-    name: string;
-    namespace?: string;
-    uid?: string;
-    labels?: Record<string, string>;
-    annotations?: Record<string, string>;
-    ownerReferences?: Array<{
-      apiVersion: string;
-      kind: string;
-      name: string;
-      uid: string;
-      controller?: boolean;
-      blockOwnerDeletion?: boolean;
-    }>;
-  };
-  spec?: Record<string, unknown>;
-  status?: Record<string, unknown>;
-}
+// Resource tree node interface - removed duplicate, using the one at end of file
 
 // Database row data interface
 export interface DatabaseRowData {
@@ -93,6 +72,13 @@ export interface ForceGraphNode {
   vy?: number;
   fx?: number | null;
   fy?: number | null;
+  type?: string;
+  metrics?: {
+    requestRate?: number;
+    errorRate?: number;
+    latency?: number;
+  };
+  circuitBreaker?: string;
 }
 
 export interface ForceGraphLink {
@@ -100,6 +86,10 @@ export interface ForceGraphLink {
   target: string | ForceGraphNode;
   value?: number;
   color?: string;
+  errorRate?: number;
+  mTLS?: boolean;
+  encrypted?: boolean;
+  protocol?: string;
 }
 
 // Generic API response transformation helpers
@@ -125,36 +115,36 @@ export interface HealthCardData {
   runningPods?: number;
   totalPods?: number;
   cpuUsage?: number;
-  cpuTrend?: string;
+  cpuTrend?: 'up' | 'down' | 'stable';
   cpuTrendValue?: number;
   memoryUsage?: number;
-  memoryTrend?: string;
+  memoryTrend?: 'up' | 'down' | 'stable';
   memoryTrendValue?: number;
   requestRate?: number;
-  requestTrend?: string;
+  requestTrend?: 'up' | 'down' | 'stable';
   errorRate?: number;
-  errorTrend?: string;
+  errorTrend?: 'up' | 'down' | 'stable';
   p95Latency?: number;
-  latencyTrend?: string;
+  latencyTrend?: 'up' | 'down' | 'stable';
   availability?: number;
   ingressRate?: number;
-  ingressTrend?: string;
+  ingressTrend?: 'up' | 'down' | 'stable';
   egressRate?: number;
-  egressTrend?: string;
+  egressTrend?: 'up' | 'down' | 'stable';
   connectionErrors?: number;
-  connectionErrorsTrend?: string;
+  connectionErrorsTrend?: 'up' | 'down' | 'stable';
   latency?: number;
   throughput?: number;
-  throughputTrend?: string;
+  throughputTrend?: 'up' | 'down' | 'stable';
   storageUsage?: number;
-  storageUsageTrend?: string;
+  storageUsageTrend?: 'up' | 'down' | 'stable';
   iops?: number;
-  iopsTrend?: string;
+  iopsTrend?: 'up' | 'down' | 'stable';
   availableCapacity?: number;
-  capacityTrend?: string;
+  capacityTrend?: 'up' | 'down' | 'stable';
   activeConnections?: number;
   volumeUsage?: number;
-  volumeTrend?: string;
+  volumeTrend?: 'up' | 'down' | 'stable';
   boundPVCs?: number;
   totalPVCs?: number;
 }
@@ -241,6 +231,14 @@ export interface KubernetesPodAPI {
   age?: string;
   cpu?: string;
   memory?: string;
+  metrics?: {
+    cpuUsage?: number;
+    memoryUsage?: number;
+    networkRx?: number;
+    networkTx?: number;
+    diskRead?: number;
+    diskWrite?: number;
+  };
 }
 
 export interface KubernetesNamespaceStatus {

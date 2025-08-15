@@ -7,8 +7,8 @@ import {
   ServiceType,
   AlertType
 } from '@/types/serviceHealth';
-import { API_ENDPOINTS, Status } from '@/constants';
-import { apiService, ApiError } from '@/services/api';
+import { API_ENDPOINTS, Status } from '@constants';
+import { apiService, ApiError } from '@services/api';
 
 interface ServiceHealthStore {
   services: ServiceHealth[];

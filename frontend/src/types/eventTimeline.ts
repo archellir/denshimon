@@ -1,4 +1,4 @@
-import { Status, EventCategory } from '@/constants';
+import { Status, EventCategory } from '@constants';
 export { EventCategory };
 
 export interface TimelineEvent {

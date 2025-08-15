@@ -1,6 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import useDeploymentStore from '@stores/deploymentStore';
 import { ContainerImage } from '@/types';
 import DeploymentForm from '../forms/DeploymentForm';
 

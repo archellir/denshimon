@@ -1,4 +1,4 @@
-import { Status } from '@/constants';
+import { Status } from '@constants';
 import type { NotificationData } from '@components/common/NotificationToast';
 
 export interface CreateNotificationOptions {

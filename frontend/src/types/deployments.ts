@@ -1,4 +1,4 @@
-import { RegistryType, RegistryStatus, DeploymentStatus, DeploymentStrategy, DeploymentAction } from '@/constants';
+import { RegistryType, RegistryStatus, DeploymentStatus, DeploymentStrategy, DeploymentAction } from '@constants';
 
 export interface Registry {
   id: string;
@@ -63,6 +63,7 @@ export interface Deployment {
   replicas: number;
   availableReplicas: number;
   readyReplicas: number;
+  updatedReplicas: number;
   nodeSelector?: Record<string, string>;
   strategy: {
     type: DeploymentStrategy;

@@ -4,7 +4,7 @@
 
 import { mockPods } from '@mocks/k8s/pods';
 import { MASTER_SERVICES, MASTER_NAMESPACES } from '@mocks/masterData';
-import { API_ENDPOINTS } from '@/constants';
+import { API_ENDPOINTS } from '@constants';
 
 // Convert mockPods to the expected API format
 const convertPodMetricsToApiFormat = (pods: typeof mockPods) => {

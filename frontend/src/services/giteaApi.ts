@@ -3,7 +3,7 @@
  * Communicates with backend Gitea API endpoints
  */
 
-import { API_ENDPOINTS, GiteaPullRequestState, GiteaWorkflowStatus, GiteaWorkflowConclusion } from '@/constants';
+import { API_ENDPOINTS, GiteaPullRequestState, GiteaWorkflowStatus, GiteaWorkflowConclusion } from '@constants';
 
 export interface GiteaRepository {
   id: number;

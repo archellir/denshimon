@@ -9,7 +9,6 @@ import {
   Users,
   AlertTriangle,
   TrendingUp,
-  RefreshCw,
   Eye,
   BarChart3,
   PieChart,
@@ -17,8 +16,8 @@ import {
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
-import { mockDatabaseStats } from '@/mocks';
-import CustomSelector from '@/components/common/CustomSelector';
+import { mockDatabaseStats } from '@mocks/database';
+import CustomSelector from '@components/common/CustomSelector';
 
 interface MetricCard {
   title: string;
@@ -32,14 +31,13 @@ const DatabaseMonitoring: FC = () => {
   const {
     connections,
     stats,
-    isLoading,
     fetchConnections,
     fetchStats
   } = useDatabaseStore();
 
   const [selectedConnection, setSelectedConnection] = useState<string>('');
   const [refreshInterval, setRefreshInterval] = useState<number>(30);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [_, setLastRefresh] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchConnections();

@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
-import { mockQueryHistory } from '@/mocks';
-import CustomSelector from '@/components/common/CustomSelector';
+import { mockQueryHistory } from '@mocks/database';
+import CustomSelector from '@components/common/CustomSelector';
 
 const SQLQueryInterface: FC = () => {
   const {

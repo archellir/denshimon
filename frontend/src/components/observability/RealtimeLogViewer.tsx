@@ -1,22 +1,10 @@
 import { useState, useEffect, useRef, FC } from 'react';
 import { Filter, AlertCircle, Info, AlertTriangle, Bug, Layers, Globe } from 'lucide-react';
 import { getWebSocketInstance } from '@services/websocket';
-import { WebSocketEventType } from '@/constants';
-import CustomSelector from '@/components/common/CustomSelector';
+import { WebSocketEventType, WebSocketState } from '@constants';
+import CustomSelector from '@components/common/CustomSelector';
+import type { LogEntry } from '@/types/logs';
 
-interface LogEntry {
-  id: string;
-  timestamp: string;
-  level: 'info' | 'warn' | 'error' | 'debug';
-  source: string;
-  namespace: string;
-  message: string;
-  metadata?: {
-    pod?: string;
-    namespace?: string;
-    node?: string;
-  };
-}
 
 interface RealtimeLogViewerProps {
   maxLogs?: number;
@@ -44,21 +32,20 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
     if (!ws) return;
 
     // Subscribe to connection status
-    const connectionSubId = ws.subscribe(WebSocketEventType.CONNECTION, (state) => {
-      setIsConnected(state.state === 'connected');
+    const connectionSubId = ws.subscribe(WebSocketEventType.CONNECTION, (state: any) => {
+      setIsConnected(state.state === WebSocketState.CONNECTED);
     });
 
     // Subscribe to logs
     if (!isPaused) {
       subscriptionIdRef.current = ws.subscribe(WebSocketEventType.LOGS, (logData) => {
         const newLog: LogEntry = {
-          id: logData.id || Date.now().toString(),
-          timestamp: logData.timestamp,
-          level: logData.level,
-          source: logData.source,
-          namespace: logData.namespace,
-          message: logData.message,
-          metadata: logData.metadata
+          id: (logData as any).id || Date.now().toString(),
+          timestamp: (logData as any).timestamp,
+          level: (logData as any).level,
+          source: (logData as any).source,
+          message: (logData as any).message,
+          metadata: (logData as any).metadata
         };
 
         setLogs(prevLogs => {
@@ -88,13 +75,13 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
   // Filter logs
   const filteredLogs = logs.filter(log => {
     if (filter.level !== 'all' && log.level !== filter.level) return false;
-    if (filter.namespace !== 'all' && log.namespace !== filter.namespace) return false;
+    if (filter.namespace !== 'all' && log.metadata?.namespace !== filter.namespace) return false;
     if (filter.search && !log.message.toLowerCase().includes(filter.search.toLowerCase())) return false;
     return true;
   });
 
   // Get unique namespaces from logs
-  const namespaces = Array.from(new Set(logs.map(log => log.namespace)));
+  const namespaces = Array.from(new Set(logs.map(log => log.metadata?.namespace).filter(Boolean)));
 
   const getLevelIcon = (level: string) => {
     switch (level) {
@@ -152,7 +139,7 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
               value={filter.namespace}
               options={[
                 { value: 'all', label: 'ALL NAMESPACES' },
-                ...namespaces.map(ns => ({ value: ns, label: ns }))
+                ...namespaces.map(ns => ({ value: ns!, label: ns! }))
               ]}
               onChange={(value) => setFilter({ ...filter, namespace: value })}
               placeholder="Select Namespace"
@@ -231,7 +218,7 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
 
               {/* Namespace */}
               <div className="flex-shrink-0 text-purple-400">
-                [{log.namespace}]
+                [{log.metadata?.namespace || 'unknown'}]
               </div>
 
               {/* Source */}

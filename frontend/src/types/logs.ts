@@ -1,4 +1,4 @@
-import { LogLevel, LogSource } from '@/constants';
+import { LogLevel, LogSource } from '@constants';
 
 export interface LogEntry {
   id: string;

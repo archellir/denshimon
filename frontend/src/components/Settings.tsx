@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { Save, RefreshCw, Database, Shield, Monitor, Bell } from 'lucide-react';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
-import { StorageKey } from '@/constants';
+import { StorageKey } from '@constants';
 
 interface SettingsData {
   // Metrics settings

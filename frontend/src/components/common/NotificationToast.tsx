@@ -1,6 +1,6 @@
 import { useState, useEffect, FC } from 'react';
 import { X, AlertTriangle, AlertCircle, Info, CheckCircle } from 'lucide-react';
-import { Status, STATUS_COLORS } from '@/constants';
+import { Status, STATUS_COLORS } from '@constants';
 
 export interface NotificationData {
   id: string;

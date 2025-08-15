@@ -1,5 +1,5 @@
 import { TimelineEvent, EventGroup, EventTimelineData, EventCategory } from '@/types/eventTimeline';
-import { Status } from '@/constants';
+import { Status } from '@constants';
 
 const EVENT_TEMPLATES = {
   node: {

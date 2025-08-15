@@ -33,7 +33,6 @@ const BackupRecoveryDashboard: FC = () => {
     storage,
     statistics,
     alerts,
-    isLoading,
     error,
     fetchBackupJobs,
     fetchBackupHistory,
@@ -50,7 +49,7 @@ const BackupRecoveryDashboard: FC = () => {
 
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'jobs' | 'history' | 'storage'>('jobs');
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh] = useState(true);
 
   // Load initial data
   useEffect(() => {

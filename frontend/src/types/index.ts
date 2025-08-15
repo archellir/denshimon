@@ -32,7 +32,7 @@ export {
   DeploymentAction,
   PrimaryTab,
   DatabaseTab
-} from '@/constants';
+} from '@constants';
 
 // Common UI types
 export interface ModalProps {
@@ -45,7 +45,7 @@ export interface SelectOption {
   label: string;
 }
 
-import { SortDirection } from '@/constants';
+import { SortDirection } from '@constants';
 
 export interface FilterState {
   search: string;

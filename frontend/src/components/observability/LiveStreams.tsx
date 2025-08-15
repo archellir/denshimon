@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText, Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
-import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
+import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@mocks/terminal/liveData';
 import { getWebSocketInstance } from '@services/websocket';
-import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, API_ENDPOINTS } from '@/constants';
+import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, API_ENDPOINTS } from '@constants';
 import { MOCK_ENABLED } from '@/mocks';
 import { KubernetesPodAPI, Deployment } from '@/types';
 import RealtimeLogViewer from './RealtimeLogViewer';
@@ -24,7 +24,7 @@ const LiveStreams: React.FC = () => {
 
     // Subscribe to connection status
     const connectionSubId = ws.subscribe('connection', (state) => {
-      setConnectionState(state.state);
+      setConnectionState((state as any).state);
     });
 
     // Initial connection state
@@ -73,7 +73,7 @@ const LiveStreams: React.FC = () => {
                   status: pod.status || PodStatus.RUNNING,
                   lastUpdate: new Date().toISOString(),
                 })) || [],
-                deployments: deploymentsData.data?.filter((dep: Deployment) => dep.status === 'updating' || dep.status === 'progressing').map((dep: Deployment) => ({
+                deployments: deploymentsData.data?.filter((dep: Deployment) => dep.status === 'updating').map((dep: Deployment) => ({
                   name: dep.name,
                   namespace: dep.namespace,
                   status: dep.status === 'updating' ? DeploymentProgressStatus.PROGRESSING : DeploymentProgressStatus.PROGRESSING,

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RegistryStatus, API_ENDPOINTS } from '@/constants';
+import { RegistryStatus, API_ENDPOINTS } from '@constants';
 import type {
   Registry,
   ContainerImage,
@@ -10,8 +10,8 @@ import type {
 } from '@/types/deployments';
 
 // Import mock utilities  
-import { mockApiResponse, mockRegistries, MOCK_ENABLED } from '@/mocks';
-import { apiService, ApiError } from '@/services/api';
+import { mockApiResponse, mockRegistries, MOCK_ENABLED } from '@mocks';
+import { apiService, ApiError } from '@services/api';
 
 interface DeploymentStore {
   // State
@@ -161,7 +161,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   testRegistry: async (id) => {
     try {
-      const { generateMockRegistryTest } = await import('@/mocks/deployments/registries');
+      const { generateMockRegistryTest } = await import('@mocks/deployments/registries');
       const success = await mockApiResponse(generateMockRegistryTest(id), 500);
       
       // Update registry status
@@ -187,7 +187,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const { searchMockImages } = await import('@mocks/deployments/images');
         const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
         const images = await mockApiResponse(searchMockImages('', registryName), 400);
         set({ images, loading: { ...get().loading, images: false } });
@@ -201,7 +201,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       }
     } catch (error) {
       try {
-        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const { searchMockImages } = await import('@mocks/deployments/images');
         const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
         const images = await mockApiResponse(searchMockImages('', registryName), 400);
         set({ images, loading: { ...get().loading, images: false }, error: null });
@@ -219,7 +219,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const { searchMockImages } = await import('@mocks/deployments/images');
         const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
         const images = await mockApiResponse(searchMockImages(query, registryName), 300);
         set({ images, loading: { ...get().loading, images: false } });
@@ -240,7 +240,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       }
     } catch (error) {
       try {
-        const { searchMockImages } = await import('@/mocks/deployments/images');
+        const { searchMockImages } = await import('@mocks/deployments/images');
         const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
         const images = await mockApiResponse(searchMockImages(query, registryName), 300);
         set({ images, loading: { ...get().loading, images: false }, error: null });
@@ -275,7 +275,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const { filterDeploymentsByNamespace } = await import('@/mocks/deployments/deployments');
+        const { filterDeploymentsByNamespace } = await import('@mocks/deployments/deployments');
         const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
         set({ deployments, loading: { ...get().loading, deployments: false } });
       } else {
@@ -297,7 +297,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       }
     } catch (error) {
       try {
-        const { filterDeploymentsByNamespace } = await import('@/mocks/deployments/deployments');
+        const { filterDeploymentsByNamespace } = await import('@mocks/deployments/deployments');
         const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
         set({ deployments, loading: { ...get().loading, deployments: false }, error: null });
       } catch (mockError) {
@@ -382,7 +382,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const { mockNodes } = await import('@/mocks/deployments/deployments');
+        const { mockNodes } = await import('@mocks/deployments/deployments');
         const nodes = await mockApiResponse(mockNodes, 250);
         set({ nodes, loading: { ...get().loading, nodes: false } });
       } else {
@@ -400,7 +400,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       }
     } catch (error) {
       try {
-        const { mockNodes } = await import('@/mocks/deployments/deployments');
+        const { mockNodes } = await import('@mocks/deployments/deployments');
         const nodes = await mockApiResponse(mockNodes, 250);
         set({ nodes, loading: { ...get().loading, nodes: false }, error: null });
       } catch (mockError) {
@@ -418,7 +418,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const { generateMockHistoryForDeployment } = await import('@/mocks/deployments/history');
+        const { generateMockHistoryForDeployment } = await import('@mocks/deployments/history');
         const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
         set({ history, loading: { ...get().loading, history: false } });
       } else {
@@ -436,7 +436,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       }
     } catch (error) {
       try {
-        const { generateMockHistoryForDeployment } = await import('@/mocks/deployments/history');
+        const { generateMockHistoryForDeployment } = await import('@mocks/deployments/history');
         const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
         set({ history, loading: { ...get().loading, history: false }, error: null });
       } catch (mockError) {

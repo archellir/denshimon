@@ -10,8 +10,8 @@ import {
   mockApiResponse,
   MOCK_ENABLED 
 } from '@mocks/index';
-import { API_ENDPOINTS } from '@/constants';
-import { apiService, ApiError } from '@/services/api';
+import { API_ENDPOINTS } from '@constants';
+import { apiService, ApiError } from '@services/api';
 
 const useMetricsStore = create<MetricsStore>()(
   subscribeWithSelector((set, get) => ({

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { getWebSocketInstance } from '@services/websocket';
 import { notificationService } from '@services/notifications';
-import { WebSocketEventType, Status, DASHBOARD_SECTIONS } from '@/constants';
+import { WebSocketEventType, Status, DASHBOARD_SECTIONS } from '@constants';
 import useSettingsStore from '@stores/settingsStore';
 
 interface AlertData {
@@ -24,7 +24,8 @@ export const useAlertNotifications = () => {
     const ws = getWebSocketInstance();
     if (!ws) return;
 
-    subscriptionIdRef.current = ws.subscribe(WebSocketEventType.ALERTS, (alertData: AlertData) => {
+    subscriptionIdRef.current = ws.subscribe(WebSocketEventType.ALERTS, (data: Record<string, unknown>) => {
+      const alertData = data as unknown as AlertData;
       if (!isSectionVisible(DASHBOARD_SECTIONS.NOTIFICATIONS)) {
         return;
       }
