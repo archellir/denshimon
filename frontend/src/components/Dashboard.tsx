@@ -214,6 +214,72 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   useEffect(() => {
     onSecondaryTabChange?.(activeSecondaryTab);
   }, [activeSecondaryTab, onSecondaryTabChange]);
+
+  // Generate tab descriptions
+  const getTabDescriptions = (primaryTab: string, secondaryTab: string) => {
+    // Primary tab descriptions
+    const primaryDescriptions = {
+      [PrimaryTab.INFRASTRUCTURE]: "Monitor and manage your Kubernetes cluster's core infrastructure components and settings.",
+      [PrimaryTab.WORKLOADS]: "View and manage application workloads, pods, services, and resource relationships across namespaces.",
+      [PrimaryTab.MESH]: "Configure and monitor service mesh topology, traffic flows, and inter-service communication.",
+      [PrimaryTab.DEPLOYMENTS]: "Deploy applications, manage container images, and track deployment history across registries.",
+      [PrimaryTab.DATABASE]: "Browse databases, execute queries, monitor connections, and manage database operations.",
+      [PrimaryTab.OBSERVABILITY]: "Analyze logs, monitor system events, track service health, and view real-time analytics."
+    };
+
+    // Secondary tab descriptions
+    const secondaryDescriptions = {
+      [PrimaryTab.INFRASTRUCTURE]: {
+        [InfrastructureTab.OVERVIEW]: "View cluster health metrics, node status, and overall infrastructure performance.",
+        [InfrastructureTab.CONFIGURATION]: "Manage infrastructure-as-code with GitOps workflows, templates, and repository synchronization.",
+        [InfrastructureTab.NODES]: "Monitor individual cluster nodes, their resources, and operational status.",
+        [InfrastructureTab.RESOURCES]: "Track CPU, memory, and storage utilization across the cluster.",
+        [InfrastructureTab.STORAGE]: "Monitor storage I/O metrics, volumes, and persistent storage usage.",
+        [InfrastructureTab.NETWORK]: "Analyze network traffic patterns, connectivity, and bandwidth utilization.",
+        [InfrastructureTab.CERTIFICATES]: "Manage TLS certificates, monitor expiration dates, and certificate health.",
+        [InfrastructureTab.BACKUP]: "Configure backup strategies, monitor backup status, and manage recovery operations."
+      },
+      [PrimaryTab.WORKLOADS]: {
+        [WorkloadsTab.OVERVIEW]: "View workload distribution, resource usage, and application health across the cluster.",
+        [WorkloadsTab.HIERARCHY]: "Explore resource relationships and dependencies between pods, services, and deployments.",
+        [WorkloadsTab.PODS]: "Monitor individual pod status, logs, and debug running containers.",
+        [WorkloadsTab.SERVICES]: "Manage Kubernetes services, endpoints, and load balancing configurations.",
+        [WorkloadsTab.NAMESPACES]: "View namespace-specific metrics, quotas, and resource isolation."
+      },
+      [PrimaryTab.MESH]: {
+        [MeshTab.TOPOLOGY]: "Visualize service mesh topology and inter-service communication patterns.",
+        [MeshTab.SERVICES]: "Manage service mesh configurations, policies, and service registration.",
+        [MeshTab.ENDPOINTS]: "Monitor service endpoints, health checks, and connectivity status.",
+        [MeshTab.FLOWS]: "Analyze traffic flows, routing rules, and network policies.",
+        [MeshTab.GATEWAY]: "Configure API gateway settings, analyze traffic, and manage ingress rules."
+      },
+      [PrimaryTab.DEPLOYMENTS]: {
+        [DeploymentsTab.DEPLOYMENTS]: "View active deployments, scaling operations, and application status.",
+        [DeploymentsTab.HISTORY]: "Track deployment history, rollbacks, and change audit trails.",
+        [DeploymentsTab.IMAGES]: "Browse container images, tags, and image registry information.",
+        [DeploymentsTab.REGISTRIES]: "Manage container registries, authentication, and image repositories."
+      },
+      [PrimaryTab.DATABASE]: {
+        [DatabaseTab.BROWSER]: "Browse database schemas, tables, and execute SQL queries interactively.",
+        [DatabaseTab.MONITORING]: "Monitor database performance, connections, and query execution metrics.",
+        [DatabaseTab.QUERIES]: "Create, save, and execute SQL queries with syntax highlighting and results.",
+        [DatabaseTab.CONNECTIONS]: "Manage database connections, credentials, and connection pooling."
+      },
+      [PrimaryTab.OBSERVABILITY]: {
+        [ObservabilityTab.SERVICE_HEALTH]: "Monitor service health, SLA metrics, and system reliability indicators.",
+        [ObservabilityTab.STREAMS]: "View real-time log streams and live system events as they occur.",
+        [ObservabilityTab.LOGS]: "Search, filter, and analyze historical log data across all services.",
+        [ObservabilityTab.ANALYTICS]: "Generate insights from log data with patterns, trends, and anomaly detection.",
+        [ObservabilityTab.EVENTS]: "Track system events, alerts, and operational changes in timeline view."
+      }
+    };
+
+    return {
+      primary: primaryDescriptions[primaryTab] || "Manage system operations and monitor cluster resources.",
+      secondary: secondaryDescriptions[primaryTab]?.[secondaryTab] || "View detailed information and manage specific resources."
+    };
+  };
+
   const {
     clusterMetrics,
     error,
@@ -586,6 +652,22 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 {/* Item counts and action buttons will be rendered here per tab */}
                 {renderSecondaryTabActions(activePrimaryTab, activeSecondaryTab)}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab Descriptions */}
+      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
+        <div className="bg-gray-900/50 border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="space-y-2">
+              <p className="text-gray-300 font-mono text-sm">
+                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).primary}
+              </p>
+              <p className="text-gray-400 font-mono text-sm">
+                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).secondary}
+              </p>
             </div>
           </div>
         </div>
