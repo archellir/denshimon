@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory } from '@/types/metrics';
+import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory, WebSocketMetricsData } from '@/types/metrics';
 import { API_ENDPOINTS, WebSocketEventType } from '@/constants';
 import { 
   mockClusterMetrics, 
@@ -73,12 +73,13 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
           }
 
           // Subscribe to metrics updates
-          metricsSubscriptionId = ws.subscribe(WebSocketEventType.METRICS, (data) => {
+          metricsSubscriptionId = ws.subscribe(WebSocketEventType.METRICS, (data: Record<string, unknown>) => {
+            const metricsData = data as WebSocketMetricsData;
             set({ 
-              clusterMetrics: data.cluster,
-              nodeMetrics: data.nodes || [],
-              podMetrics: data.pods || [],
-              namespaceMetrics: data.namespaces || [],
+              clusterMetrics: metricsData.cluster || null,
+              nodeMetrics: metricsData.nodes || [],
+              podMetrics: metricsData.pods || [],
+              namespaceMetrics: metricsData.namespaces || [],
               error: null
             });
           });
