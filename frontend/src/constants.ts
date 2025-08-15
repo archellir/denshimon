@@ -775,6 +775,9 @@ export const API_ENDPOINTS = {
     APPLICATION_ROLLBACK: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/rollback`,
     APPLICATION_ROLLBACK_TARGETS: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/rollback-targets`,
     APPLICATION_HISTORY: (id: string) => `${API_BASE_PATHS.GITOPS}/applications/${id}/history`,
+    // Webhook Support
+    WEBHOOK: `${API_BASE_PATHS.GITOPS}/webhook`,
+    WEBHOOK_CONFIG: `${API_BASE_PATHS.GITOPS}/webhook/config`,
     // Deployment History
     DEPLOYMENT_HISTORY: `${API_BASE_PATHS.GITOPS}/deployments`,
     DEPLOYMENT_HISTORY_BY_APP: (applicationId: string) => `${API_BASE_PATHS.GITOPS}/deployments?application_id=${applicationId}`,
