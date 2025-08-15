@@ -39,7 +39,8 @@ export enum Status {
   // Final states
   UNKNOWN = 'unknown',
   SUSPENDED = 'suspended',
-  MISSING = 'missing'
+  MISSING = 'missing',
+  DOWN = 'down'
 }
 
 /**
@@ -106,16 +107,7 @@ export enum TerminalMessageType {
   ERROR = Status.ERROR
 }
 
-/**
- * Alert notification severities
- * @deprecated Use Status enum instead
- */
-export enum NotificationSeverity {
-  CRITICAL = Status.CRITICAL,
-  WARNING = Status.WARNING,
-  INFO = Status.INFO,
-  SUCCESS = Status.SUCCESS
-}
+// NotificationSeverity removed - use Status enum instead
 
 /**
  * Form field types
@@ -158,16 +150,7 @@ export enum StorageKey {
   SETTINGS = 'denshimon_settings'
 }
 
-/**
- * Service status states
- * @deprecated Use Status enum instead
- */
-export enum ServiceStatus {
-  HEALTHY = Status.HEALTHY,
-  WARNING = Status.WARNING,
-  ERROR = Status.ERROR,
-  UNKNOWN = Status.UNKNOWN
-}
+// ServiceStatus removed - use Status enum instead
 
 /**
  * Circuit breaker states
@@ -364,7 +347,8 @@ export const STATUS_COLORS = {
     [Status.DEGRADED]: 'text-yellow-500',
     [Status.PROGRESSING]: 'text-blue-500',
     [Status.SUSPENDED]: 'text-gray-500',
-    [Status.MISSING]: 'text-gray-500'
+    [Status.MISSING]: 'text-gray-500',
+    [Status.DOWN]: 'text-red-600'
   },
   BORDER: {
     [Status.CRITICAL]: 'border-red-500 text-red-500',
@@ -378,7 +362,8 @@ export const STATUS_COLORS = {
     [Status.DEGRADED]: 'border-yellow-500 text-yellow-500',
     [Status.PROGRESSING]: 'border-blue-500 text-blue-500',
     [Status.SUSPENDED]: 'border-gray-500 text-gray-500',
-    [Status.MISSING]: 'border-gray-500 text-gray-500'
+    [Status.MISSING]: 'border-gray-500 text-gray-500',
+    [Status.DOWN]: 'border-red-600 text-red-600'
   }
 } as const;
 
@@ -1033,16 +1018,7 @@ export enum DeploymentProgressStatus {
   FAILED = 'failed'
 }
 
-/**
- * Event severity levels for observability events
- * @deprecated Use Status enum instead
- */
-export enum EventSeverity {
-  CRITICAL = Status.CRITICAL,
-  WARNING = Status.WARNING,
-  INFO = Status.INFO,
-  SUCCESS = Status.SUCCESS
-}
+// EventSeverity removed - use Status enum instead
 
 /**
  * Event categories for system events and observability

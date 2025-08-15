@@ -6,7 +6,7 @@ import { generateEventTimelineData } from '@/mocks/events/timeline';
 import { MOCK_ENABLED } from '@/mocks/index';
 import { 
   TimeRange, 
-  EventSeverity,
+  Status,
   EventCategory,
   UI_MESSAGES,
   API_ENDPOINTS 
@@ -19,7 +19,7 @@ interface EventTimelineProps {
 const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWENTY_FOUR_HOURS }) => {
   const [data, setData] = useState<EventTimelineData | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
-  const [selectedSeverities, setSelectedSeverities] = useState<EventSeverity[]>([]);
+  const [selectedSeverities, setSelectedSeverities] = useState<Status[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -48,10 +48,10 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
             statistics: {
               total: apiData.events?.length || 0,
               bySeverity: {
-                critical: 0,
-                warning: 0,
-                info: 0,
-                success: 0
+                [Status.CRITICAL]: 0,
+                [Status.WARNING]: 0,
+                [Status.INFO]: 0,
+                [Status.SUCCESS]: 0
               },
               byCategory: {
                 node: 0,
@@ -68,7 +68,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
             },
             filters: {
               categories: [EventCategory.NODE, EventCategory.POD, EventCategory.SERVICE, EventCategory.CONFIG, EventCategory.SECURITY, EventCategory.NETWORK, EventCategory.STORAGE],
-              severities: [EventSeverity.CRITICAL, EventSeverity.WARNING, EventSeverity.INFO, EventSeverity.SUCCESS],
+              severities: [Status.CRITICAL, Status.WARNING, Status.INFO, Status.SUCCESS],
               timeRange: `${parseTimeRangeToHours(timeRange)}h`
             }
           };
@@ -127,12 +127,12 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     };
   }, [data, selectedCategories, selectedSeverities]);
 
-  const getSeverityIcon = (severity: EventSeverity) => {
+  const getSeverityIcon = (severity: Status) => {
     switch (severity) {
-      case EventSeverity.CRITICAL: return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case EventSeverity.WARNING: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case EventSeverity.INFO: return <Info className="w-4 h-4 text-blue-500" />;
-      case EventSeverity.SUCCESS: return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case Status.CRITICAL: return <AlertCircle className="w-4 h-4 text-red-500" />;
+      case Status.WARNING: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case Status.INFO: return <Info className="w-4 h-4 text-blue-500" />;
+      case Status.SUCCESS: return <CheckCircle className="w-4 h-4 text-green-500" />;
     }
   };
 
@@ -148,12 +148,12 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     }
   };
 
-  const getSeverityColor = (severity: EventSeverity) => {
+  const getSeverityColor = (severity: Status) => {
     switch (severity) {
-      case EventSeverity.CRITICAL: return 'border-red-500 text-red-500';
-      case EventSeverity.WARNING: return 'border-yellow-500 text-yellow-500';
-      case EventSeverity.INFO: return 'border-blue-500 text-blue-500';
-      case EventSeverity.SUCCESS: return 'border-green-500 text-green-500';
+      case Status.CRITICAL: return 'border-red-500 text-red-500';
+      case Status.WARNING: return 'border-yellow-500 text-yellow-500';
+      case Status.INFO: return 'border-blue-500 text-blue-500';
+      case Status.SUCCESS: return 'border-green-500 text-green-500';
     }
   };
 
@@ -191,7 +191,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     }
   };
 
-  const toggleSeverity = (severity: EventSeverity) => {
+  const toggleSeverity = (severity: Status) => {
     if (selectedSeverities.includes(severity)) {
       setSelectedSeverities(selectedSeverities.filter(s => s !== severity));
     } else {
@@ -214,7 +214,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         <div className="flex gap-4">
           <div className="flex gap-2 items-center">
             <span className="text-xs font-mono text-gray-500">SEVERITY:</span>
-            {([EventSeverity.CRITICAL, EventSeverity.WARNING, EventSeverity.INFO, EventSeverity.SUCCESS] as EventSeverity[]).map(severity => (
+            {([Status.CRITICAL, Status.WARNING, Status.INFO, Status.SUCCESS] as Status[]).map(severity => (
               <button
                 key={severity}
                 onClick={() => toggleSeverity(severity)}
@@ -309,7 +309,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
                     {group.events.map((event) => (
                       <div
                         key={event.id}
-                        className={`border ${getSeverityColor(event.severity).split(' ')[0]} p-3 bg-black`}
+                        className={`border ${getSeverityColor(event.severity)?.split(' ')[0] || 'border-gray-500'} p-3 bg-black`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">

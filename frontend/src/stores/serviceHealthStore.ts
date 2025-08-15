@@ -5,8 +5,8 @@ import {
   InfrastructureStatus, 
   InfrastructureAlert,
   ServiceType,
-  ServiceStatus,
-  AlertSeverity,
+  // ServiceStatus, // deprecated - using Status from constants
+  // AlertSeverity, // deprecated - using Status from constants
   GiteaHealth,
   FilebrowserHealth,
   UmamiHealth,
@@ -14,7 +14,7 @@ import {
   UptimeKumaHealth,
   PostgreSQLHealth
 } from '@/types/serviceHealth';
-import { API_ENDPOINTS } from '@/constants';
+import { API_ENDPOINTS, Status } from '@/constants';
 
 interface ServiceHealthStore {
   // State
@@ -42,7 +42,7 @@ const mockServices: ServiceHealth[] = [
     id: 'gitea-service',
     name: 'Gitea',
     type: ServiceType.GITEA,
-    status: ServiceStatus.HEALTHY,
+    status: Status.HEALTHY,
     url: 'https://git.arcbjorn.com',
     lastChecked: '2024-01-20T15:30:00Z',
     responseTime: 145,
@@ -69,7 +69,7 @@ const mockServices: ServiceHealth[] = [
     id: 'filebrowser-service',
     name: 'Filebrowser',
     type: ServiceType.FILEBROWSER,
-    status: ServiceStatus.HEALTHY,
+    status: Status.HEALTHY,
     url: 'https://server.arcbjorn.com',
     lastChecked: '2024-01-20T15:30:00Z',
     responseTime: 89,
@@ -92,7 +92,7 @@ const mockServices: ServiceHealth[] = [
         id: 'fb-storage-warning',
         serviceId: 'filebrowser-service',
         type: 'resource',
-        severity: AlertSeverity.WARNING,
+        severity: Status.WARNING,
         message: 'Storage usage approaching 80% capacity',
         timestamp: '2024-01-20T14:15:00Z',
         acknowledged: false
@@ -103,7 +103,7 @@ const mockServices: ServiceHealth[] = [
     id: 'umami-service',
     name: 'Umami',
     type: ServiceType.UMAMI,
-    status: ServiceStatus.HEALTHY,
+    status: Status.HEALTHY,
     url: 'https://analytics.arcbjorn.com',
     lastChecked: '2024-01-20T15:30:00Z',
     responseTime: 203,
@@ -127,7 +127,7 @@ const mockServices: ServiceHealth[] = [
     id: 'memos-service',
     name: 'Memos',
     type: ServiceType.MEMOS,
-    status: ServiceStatus.WARNING,
+    status: Status.WARNING,
     url: 'https://memos.arcbjorn.com',
     lastChecked: '2024-01-20T15:30:00Z',
     responseTime: 456,
@@ -150,7 +150,7 @@ const mockServices: ServiceHealth[] = [
         id: 'memos-sync-slow',
         serviceId: 'memos-service',
         type: 'performance',
-        severity: AlertSeverity.WARNING,
+        severity: Status.WARNING,
         message: 'Note synchronization taking longer than usual',
         timestamp: '2024-01-20T15:20:00Z',
         acknowledged: false
@@ -161,7 +161,7 @@ const mockServices: ServiceHealth[] = [
     id: 'uptime-kuma-service',
     name: 'Uptime Kuma',
     type: ServiceType.UPTIME_KUMA,
-    status: ServiceStatus.HEALTHY,
+    status: Status.HEALTHY,
     url: 'https://uptime.arcbjorn.com',
     lastChecked: '2024-01-20T15:30:00Z',
     responseTime: 134,
@@ -185,7 +185,7 @@ const mockServices: ServiceHealth[] = [
         id: 'uptime-monitor-down',
         serviceId: 'uptime-kuma-service',
         type: 'connectivity',
-        severity: AlertSeverity.CRITICAL,
+        severity: Status.CRITICAL,
         message: 'External service monitor is down',
         timestamp: '2024-01-20T14:45:00Z',
         acknowledged: false
@@ -196,7 +196,7 @@ const mockServices: ServiceHealth[] = [
     id: 'postgresql-service',
     name: 'PostgreSQL',
     type: ServiceType.POSTGRESQL,
-    status: ServiceStatus.HEALTHY,
+    status: Status.HEALTHY,
     lastChecked: '2024-01-20T15:30:00Z',
     responseTime: 23,
     uptime: 99.9,
@@ -230,7 +230,7 @@ const mockStats: ServiceHealthStats = {
 };
 
 const mockInfrastructureStatus: InfrastructureStatus = {
-  overall: ServiceStatus.HEALTHY,
+  overall: Status.HEALTHY,
   services: mockServices,
   domainAccessibility: [
     {
@@ -313,7 +313,7 @@ const mockAlerts: InfrastructureAlert[] = [
   {
     id: 'fb-storage-alert',
     type: 'service',
-    severity: AlertSeverity.WARNING,
+    severity: Status.WARNING,
     message: 'Filebrowser storage usage approaching 80% capacity',
     timestamp: '2024-01-20T14:15:00Z',
     acknowledged: false,
@@ -322,7 +322,7 @@ const mockAlerts: InfrastructureAlert[] = [
   {
     id: 'memos-sync-alert',
     type: 'service',
-    severity: AlertSeverity.WARNING,
+    severity: Status.WARNING,
     message: 'Memos note synchronization running slower than usual',
     timestamp: '2024-01-20T15:20:00Z',
     acknowledged: false,
@@ -331,7 +331,7 @@ const mockAlerts: InfrastructureAlert[] = [
   {
     id: 'uptime-monitor-alert',
     type: 'service',
-    severity: AlertSeverity.CRITICAL,
+    severity: Status.CRITICAL,
     message: 'Uptime Kuma reports external service monitor down',
     timestamp: '2024-01-20T14:45:00Z',
     acknowledged: false,
@@ -340,7 +340,7 @@ const mockAlerts: InfrastructureAlert[] = [
   {
     id: 'ssl-expiring-alert',
     type: 'domain',
-    severity: AlertSeverity.CRITICAL,
+    severity: Status.CRITICAL,
     message: 'SSL certificate for server.arcbjorn.com expires in 5 days',
     timestamp: '2024-01-20T14:30:00Z',
     acknowledged: false,

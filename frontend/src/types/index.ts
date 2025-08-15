@@ -20,7 +20,7 @@ export {
   ViewType,
   LogLevel,
   LogSource,
-  EventSeverity,
+  // EventSeverity, // deprecated - use Status from constants
   EventCategory,
   RegistryType,
   RegistryStatus,

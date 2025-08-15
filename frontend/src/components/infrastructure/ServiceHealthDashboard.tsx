@@ -24,7 +24,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 import useServiceHealthStore from '@stores/serviceHealthStore';
-import { ServiceHealth, ServiceStatus, ServiceType, AlertSeverity } from '@/types/serviceHealth';
+import { ServiceHealth, ServiceType } from '@/types/serviceHealth';
+import { Status } from '@/constants';
 
 const ServiceHealthDashboard: FC = () => {
   const {
@@ -67,34 +68,34 @@ const ServiceHealthDashboard: FC = () => {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchServiceHealth, fetchInfrastructureStatus, fetchAlerts]);
 
-  const getStatusColor = (status: ServiceStatus) => {
+  const getStatusColor = (status: Status) => {
     switch (status) {
-      case ServiceStatus.HEALTHY:
+      case Status.HEALTHY:
         return 'border-green-400 text-green-400';
-      case ServiceStatus.WARNING:
+      case Status.WARNING:
         return 'border-yellow-400 text-yellow-400';
-      case ServiceStatus.CRITICAL:
+      case Status.CRITICAL:
         return 'border-red-400 text-red-400';
-      case ServiceStatus.DOWN:
+      case Status.DOWN:
         return 'border-red-600 text-red-600';
-      case ServiceStatus.UNKNOWN:
+      case Status.UNKNOWN:
         return 'border-gray-400 text-gray-400';
       default:
         return 'border-white';
     }
   };
 
-  const getStatusIcon = (status: ServiceStatus) => {
+  const getStatusIcon = (status: Status) => {
     switch (status) {
-      case ServiceStatus.HEALTHY:
+      case Status.HEALTHY:
         return <CheckCircle size={16} className="text-green-400" />;
-      case ServiceStatus.WARNING:
+      case Status.WARNING:
         return <AlertTriangle size={16} className="text-yellow-400" />;
-      case ServiceStatus.CRITICAL:
+      case Status.CRITICAL:
         return <AlertTriangle size={16} className="text-red-400" />;
-      case ServiceStatus.DOWN:
+      case Status.DOWN:
         return <XCircle size={16} className="text-red-600" />;
-      case ServiceStatus.UNKNOWN:
+      case Status.UNKNOWN:
         return <Clock size={16} className="text-gray-400" />;
       default:
         return <Server size={16} />;
@@ -323,9 +324,9 @@ const ServiceHealthDashboard: FC = () => {
             {alerts.filter(a => !a.acknowledged).slice(0, 5).map((alert) => (
               <div key={alert.id} className="flex items-center justify-between py-2 border-b border-yellow-400/20 last:border-b-0">
                 <div className="flex items-center space-x-3">
-                  {alert.severity === AlertSeverity.CRITICAL ? (
+                  {alert.severity === Status.CRITICAL ? (
                     <AlertTriangle size={16} className="text-red-400" />
-                  ) : alert.severity === AlertSeverity.WARNING ? (
+                  ) : alert.severity === Status.WARNING ? (
                     <AlertTriangle size={16} className="text-yellow-400" />
                   ) : (
                     <Clock size={16} className="text-blue-400" />
@@ -515,11 +516,11 @@ const ServiceHealthDashboard: FC = () => {
                     {selectedSvc.alerts.map((alert) => (
                       <div key={alert.id} className="flex items-center justify-between py-2 border-b border-yellow-400/20 last:border-b-0">
                         <div className="flex items-center space-x-3">
-                          <AlertTriangle size={16} className={alert.severity === AlertSeverity.CRITICAL ? 'text-red-400' : 'text-yellow-400'} />
+                          <AlertTriangle size={16} className={alert.severity === Status.CRITICAL ? 'text-red-400' : 'text-yellow-400'} />
                           <span className="font-mono text-sm">{alert.message}</span>
                           <span className="font-mono text-xs opacity-60">{formatDate(alert.timestamp)}</span>
                         </div>
-                        <span className={`px-2 py-1 font-mono text-xs ${alert.severity === AlertSeverity.CRITICAL ? 'border-red-400 text-red-400' : 'border-yellow-400 text-yellow-400'} border`}>
+                        <span className={`px-2 py-1 font-mono text-xs ${alert.severity === Status.CRITICAL ? 'border-red-400 text-red-400' : 'border-yellow-400 text-yellow-400'} border`}>
                           {alert.severity.toUpperCase()}
                         </span>
                       </div>

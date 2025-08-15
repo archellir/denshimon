@@ -5,7 +5,7 @@ import {
   CircuitBreakerStatus, 
   NetworkProtocol, 
   ServiceType as MeshServiceType,
-  ServiceStatus,
+  Status,
   SERVICE_TYPE_COLORS, 
   TRAFFIC_COLORS, 
   LATENCY_HEATMAP_COLORS,
@@ -185,11 +185,11 @@ const ForceGraph: FC<ForceGraphProps> = ({
     }
     
     switch (service.status) {
-      case ServiceStatus.ERROR:
+      case Status.ERROR:
         return BASE_COLORS.RED;
-      case ServiceStatus.WARNING:
+      case Status.WARNING:
         return BASE_COLORS.YELLOW;
-      case ServiceStatus.HEALTHY:
+      case Status.HEALTHY:
         return SERVICE_TYPE_COLORS[service.type as keyof typeof SERVICE_TYPE_COLORS] || BASE_COLORS.GRAY;
       default:
         return BASE_COLORS.GRAY;

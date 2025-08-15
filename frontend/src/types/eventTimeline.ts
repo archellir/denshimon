@@ -1,11 +1,12 @@
-import { EventSeverity, EventCategory } from '@/constants';
-export { EventSeverity, EventCategory };
+import { Status, EventCategory } from '@/constants';
+export { EventCategory };
+// EventSeverity is deprecated - use Status instead
 
 export interface TimelineEvent {
   id: string;
   timestamp: string;
   category: EventCategory;
-  severity: EventSeverity;
+  severity: Status;
   title: string;
   description: string;
   source: {
@@ -40,7 +41,7 @@ export interface EventTimelineData {
   groups: EventGroup[];
   statistics: {
     total: number;
-    bySeverity: Record<EventSeverity, number>;
+    bySeverity: Partial<Record<Status, number>>;
     byCategory: Record<EventCategory, number>;
     recentTrend: 'increasing' | 'decreasing' | 'stable';
     averageResolutionTime: number; // in minutes
@@ -48,7 +49,7 @@ export interface EventTimelineData {
   };
   filters: {
     categories: EventCategory[];
-    severities: EventSeverity[];
+    severities: Status[];
     timeRange: string;
     search?: string;
   };

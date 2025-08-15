@@ -1,4 +1,5 @@
-import { TimelineEvent, EventGroup, EventTimelineData, EventSeverity, EventCategory } from '@/types/eventTimeline';
+import { TimelineEvent, EventGroup, EventTimelineData, EventCategory } from '@/types/eventTimeline';
+import { Status } from '@/constants';
 
 const EVENT_TEMPLATES = {
   node: {
@@ -146,7 +147,7 @@ const generateEvent = (hoursAgo: number): TimelineEvent => {
   const category = categories[Math.floor(Math.random() * categories.length)];
   const categoryTemplates = EVENT_TEMPLATES[category];
   
-  const severities = Object.keys(categoryTemplates) as EventSeverity[];
+  const severities = Object.keys(categoryTemplates) as Status[];
   const severity = severities[Math.floor(Math.random() * severities.length)];
   const templates = categoryTemplates[severity as keyof typeof categoryTemplates];
   
@@ -156,7 +157,7 @@ const generateEvent = (hoursAgo: number): TimelineEvent => {
       id: generateEventId(),
       timestamp: new Date(Date.now() - hoursAgo * 3600000 - Math.random() * 3600000).toISOString(),
       category: EventCategory.POD,
-      severity: EventSeverity.INFO,
+      severity: Status.INFO,
       title: 'Generic Event',
       description: 'A generic cluster event occurred',
       source: {
@@ -250,11 +251,11 @@ export const generateEventTimelineData = (hours: number = 24): EventTimelineData
   groups.sort((a, b) => new Date(b.hour).getTime() - new Date(a.hour).getTime());
   
   // Calculate statistics
-  const bySeverity: Record<EventSeverity, number> = {
-    critical: events.filter(e => e.severity === 'critical').length,
-    warning: events.filter(e => e.severity === 'warning').length,
-    info: events.filter(e => e.severity === 'info').length,
-    success: events.filter(e => e.severity === 'success').length,
+  const bySeverity: Partial<Record<Status, number>> = {
+    [Status.CRITICAL]: events.filter(e => e.severity === Status.CRITICAL).length,
+    [Status.WARNING]: events.filter(e => e.severity === Status.WARNING).length,
+    [Status.INFO]: events.filter(e => e.severity === Status.INFO).length,
+    [Status.SUCCESS]: events.filter(e => e.severity === Status.SUCCESS).length,
   };
   
   const byCategory: Record<EventCategory, number> = {
@@ -294,11 +295,11 @@ export const generateEventTimelineData = (hours: number = 24): EventTimelineData
       byCategory,
       recentTrend,
       averageResolutionTime,
-      unresolvedCritical: events.filter(e => e.severity === EventSeverity.CRITICAL && !e.resolved).length,
+      unresolvedCritical: events.filter(e => e.severity === Status.CRITICAL && !e.resolved).length,
     },
     filters: {
       categories: Object.keys(EVENT_TEMPLATES) as EventCategory[],
-      severities: [EventSeverity.CRITICAL, EventSeverity.WARNING, EventSeverity.INFO, EventSeverity.SUCCESS],
+      severities: [Status.CRITICAL, Status.WARNING, Status.INFO, Status.SUCCESS],
       timeRange: `${hours}h`,
     },
   };

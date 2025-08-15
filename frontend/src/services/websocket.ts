@@ -1,4 +1,4 @@
-import { WebSocketEventType, ServiceStatus, CircuitBreakerStatus, SERVICE_IDS, WebSocketState } from '@/constants';
+import { WebSocketEventType, Status, CircuitBreakerStatus, SERVICE_IDS, WebSocketState } from '@/constants';
 
 export interface WebSocketMessage {
   type: WebSocketEventType;
@@ -380,12 +380,12 @@ export class DenshimonWebSocket {
 
       services: () => {
         const serviceId = SERVICE_IDS[Math.floor(Math.random() * SERVICE_IDS.length)];
-        const statuses = Object.values(ServiceStatus);
+        const statuses = [Status.HEALTHY, Status.WARNING, Status.ERROR, Status.UNKNOWN];
         const cbStatuses = Object.values(CircuitBreakerStatus);
         
         return {
           serviceId,
-          status: Math.random() > 0.8 ? statuses[Math.floor(Math.random() * statuses.length)] : ServiceStatus.HEALTHY,
+          status: Math.random() > 0.8 ? statuses[Math.floor(Math.random() * statuses.length)] : Status.HEALTHY,
           metrics: {
             requestRate: Math.max(10, Math.floor(Math.random() * 500)),
             errorRate: Math.random() * 5,

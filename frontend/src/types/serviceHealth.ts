@@ -1,8 +1,10 @@
+import { Status } from '@/constants';
+
 export interface ServiceHealth {
   id: string;
   name: string;
   type: ServiceType;
-  status: ServiceStatus;
+  status: Status;
   url?: string;
   lastChecked: string;
   responseTime?: number;
@@ -20,13 +22,7 @@ export enum ServiceType {
   POSTGRESQL = 'postgresql'
 }
 
-export enum ServiceStatus {
-  HEALTHY = 'healthy',
-  WARNING = 'warning',
-  CRITICAL = 'critical',
-  DOWN = 'down',
-  UNKNOWN = 'unknown'
-}
+// ServiceStatus is now deprecated - use Status enum from constants instead
 
 export interface ServiceMetrics {
   // Common metrics
@@ -46,7 +42,7 @@ export interface ServiceAlert {
   id: string;
   serviceId: string;
   type: AlertType;
-  severity: AlertSeverity;
+  severity: Status;
   message: string;
   timestamp: string;
   acknowledged: boolean;
@@ -60,11 +56,7 @@ export enum AlertType {
   CONFIGURATION = 'configuration'
 }
 
-export enum AlertSeverity {
-  INFO = 'info',
-  WARNING = 'warning', 
-  CRITICAL = 'critical'
-}
+// AlertSeverity is now deprecated - use Status enum from constants instead
 
 // Service-specific interfaces
 
@@ -174,7 +166,7 @@ export interface PostgreSQLMetrics extends ServiceMetrics {
 // Infrastructure status interfaces
 
 export interface InfrastructureStatus {
-  overall: ServiceStatus;
+  overall: Status;
   services: ServiceHealth[];
   domainAccessibility: DomainAccessibilityCheck[];
   ingressRules: IngressRuleStatus[];
@@ -225,7 +217,7 @@ export interface ServiceHealthStats {
 export interface InfrastructureAlert {
   id: string;
   type: 'service' | 'domain' | 'ingress' | 'network';
-  severity: AlertSeverity;
+  severity: Status;
   message: string;
   timestamp: string;
   acknowledged: boolean;
