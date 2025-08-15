@@ -449,13 +449,13 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, showHelp, setShowHelp }
             {/* Help Toggle Arrow */}
             <button
               onClick={() => setShowHelp(!showHelp)}
-              className="ml-2 p-1 hover:bg-white/10 transition-colors rounded"
+              className="ml-2 p-1 border border-gray-600 hover:border-white/50 hover:bg-white/10 transition-colors rounded"
               title={showHelp ? "Hide tab explanations" : "Show tab explanations"}
             >
               {showHelp ? (
-                <ChevronDown size={16} strokeWidth={2.5} className="text-gray-400 hover:text-white" />
+                <ChevronDown size={16} strokeWidth={2.5} className="text-white hover:text-gray-200" />
               ) : (
-                <ChevronRight size={16} strokeWidth={2.5} className="text-gray-400 hover:text-white" />
+                <ChevronRight size={16} strokeWidth={2.5} className="text-white hover:text-gray-200" />
               )}
             </button>
           </div>
