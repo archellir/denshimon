@@ -665,6 +665,29 @@ const GitOpsTab: React.FC = () => {
     fetchData();
   }, []);
 
+  // ESC key handler for closing modals
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showDeployModal) {
+          setShowDeployModal(false);
+        } else if (showRollbackModal) {
+          setShowRollbackModal(false);
+        }
+      }
+    };
+
+    if (showDeployModal || showRollbackModal) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [showDeployModal, showRollbackModal]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
