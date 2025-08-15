@@ -104,6 +104,39 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   })
   const navigate = useNavigate()
   const { isSectionVisible } = useSettingsStore()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  // Determine if timeframe selector should be visible based on current page
+  const shouldShowTimeFrameSelector = () => {
+    const currentPath = location.pathname.replace('/', '')
+    const currentSecondaryTab = searchParams.get('tab') || ''
+
+    // Infrastructure tabs that need timeframe selector
+    if (currentPath === PrimaryTab.INFRASTRUCTURE) {
+      return [
+        InfrastructureTab.OVERVIEW,
+        InfrastructureTab.NETWORK,
+        InfrastructureTab.RESOURCES,
+        InfrastructureTab.STORAGE
+      ].includes(currentSecondaryTab)
+    }
+
+    // Workloads tabs that need timeframe selector
+    if (currentPath === PrimaryTab.WORKLOADS) {
+      return currentSecondaryTab === WorkloadsTab.OVERVIEW
+    }
+
+    // Observability tabs that need timeframe selector
+    if (currentPath === PrimaryTab.OBSERVABILITY) {
+      return [
+        ObservabilityTab.LOGS,
+        ObservabilityTab.ANALYTICS
+      ].includes(currentSecondaryTab)
+    }
+
+    return false
+  }
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -206,7 +239,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
           <h1 className="text-xl font-bold">DENSHIMON</h1>
           <div className="flex items-center space-x-4">
             {/* Global Time Range Selector */}
-            {isSectionVisible(DASHBOARD_SECTIONS.TIME_RANGE_SELECTOR) && (
+            {isSectionVisible(DASHBOARD_SECTIONS.TIME_RANGE_SELECTOR) && shouldShowTimeFrameSelector() && (
               <div className="flex items-center space-x-2">
                 <Clock size={16} />
                 <div className="flex space-x-0 border border-white">
