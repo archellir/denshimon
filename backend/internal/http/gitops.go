@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/archellir/denshimon/internal/gitops"
 	"github.com/archellir/denshimon/pkg/response"
@@ -471,4 +472,103 @@ func (h *GitOpsHandler) GetRollbackTargets(w http.ResponseWriter, r *http.Reques
 	}
 
 	response.SendSuccess(w, targets)
+}
+
+// ProcessWebhook handles incoming Git webhook notifications for auto-sync
+func (h *GitOpsHandler) ProcessWebhook(w http.ResponseWriter, r *http.Request) {
+	var payload gitops.WebhookPayload
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		h.logger.Error("failed to decode webhook payload", "error", err)
+		response.SendError(w, http.StatusBadRequest, "Invalid webhook payload")
+		return
+	}
+
+	// Validate webhook payload
+	if payload.Repository.FullName == "" || payload.Ref == "" {
+		h.logger.Error("incomplete webhook payload", "repository", payload.Repository.FullName, "ref", payload.Ref)
+		response.SendError(w, http.StatusBadRequest, "Incomplete webhook payload")
+		return
+	}
+
+	h.logger.Info("received webhook", 
+		"repository", payload.Repository.FullName,
+		"ref", payload.Ref,
+		"pusher", payload.Pusher.Name)
+
+	// Process webhook in background to avoid timeout
+	go func() {
+		ctx := context.Background()
+		result := &gitops.WebhookSyncResult{
+			Repository:  payload.Repository.FullName,
+			Branch:      strings.TrimPrefix(payload.Ref, "refs/heads/"),
+			CommitHash:  payload.After,
+			ProcessedAt: time.Now(),
+		}
+
+		if err := h.syncEngine.ProcessWebhook(ctx, &payload); err != nil {
+			h.logger.Error("webhook processing failed", "error", err, "repository", payload.Repository.FullName)
+			result.Error = err.Error()
+		} else {
+			result.Triggered = true
+			// Count synced applications
+			apps, err := h.service.ListApplications(ctx)
+			if err == nil {
+				result.SyncedApps = len(apps)
+			}
+		}
+
+		h.logger.Info("webhook processing completed", 
+			"repository", result.Repository,
+			"triggered", result.Triggered,
+			"synced_apps", result.SyncedApps)
+	}()
+
+	// Return immediate response to avoid webhook timeout
+	response.SendSuccess(w, map[string]string{
+		"status":     "received",
+		"repository": payload.Repository.FullName,
+		"ref":        payload.Ref,
+		"processed":  "async",
+	})
+}
+
+// ConfigureWebhook provides webhook configuration details
+func (h *GitOpsHandler) ConfigureWebhook(w http.ResponseWriter, r *http.Request) {
+	config := map[string]interface{}{
+		"webhook_url": "/api/gitops/webhook",
+		"method":      "POST",
+		"content_type": "application/json",
+		"events": []string{
+			"push",
+			"repository",
+		},
+		"description": "GitOps auto-sync webhook for base infrastructure repository",
+		"example_payload": map[string]interface{}{
+			"repository": map[string]string{
+				"name":           "base_infrastructure",
+				"full_name":      "org/base_infrastructure", 
+				"clone_url":      "https://github.com/org/base_infrastructure.git",
+				"default_branch": "main",
+			},
+			"ref":    "refs/heads/main",
+			"before": "0000000000000000000000000000000000000000",
+			"after":  "abcdef1234567890abcdef1234567890abcdef12",
+			"commits": []map[string]interface{}{
+				{
+					"id":       "abcdef1234567890abcdef1234567890abcdef12",
+					"message":  "feat(k8s): update deployment manifests",
+					"modified": []string{"k8s/production/api.yaml"},
+					"added":    []string{},
+					"removed":  []string{},
+				},
+			},
+			"pusher": map[string]string{
+				"name":  "user",
+				"email": "user@example.com",
+			},
+		},
+	}
+
+	response.SendSuccess(w, config)
 }
