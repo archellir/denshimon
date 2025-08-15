@@ -48,7 +48,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
         return {
           time: format(new Date(podPoint.timestamp), 'HH:mm'),
           pods: podPoint.value || 0,
-          // Add CPU utilization trend for single VPS context
+          // Add CPU utilization trend for cluster context
           cpu: metricsHistory.cpu?.[index]?.value || 0,
         };
       }).filter(Boolean);
@@ -163,9 +163,9 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
     return (
       <div className="space-y-6">
 
-        {/* VPS Workload Performance */}
+        {/* Workload Performance */}
         <div className="border border-white p-4 h-96">
-          <h3 className="font-mono text-sm mb-4">VPS WORKLOAD PERFORMANCE</h3>
+          <h3 className="font-mono text-sm mb-4">WORKLOAD PERFORMANCE</h3>
           <div className="h-80">
             {isLoadingHistory ? (
               <div className="h-full">
@@ -223,7 +223,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
           </div>
         </div>
 
-        {/* VPS Workload Analysis */}
+        {/* Workload Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Pod Status */}
           <div className="border border-white p-4">
@@ -305,11 +305,11 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
             </div>
           </div>
 
-          {/* VPS Resource Breakdown */}
+          {/* Resource Breakdown */}
           <div className="border border-white p-4">
-            <h3 className="font-mono text-sm mb-4">VPS RESOURCE UTILIZATION</h3>
+            <h3 className="font-mono text-sm mb-4">RESOURCE UTILIZATION</h3>
             <div className="space-y-4 mt-6">
-              {/* Resource bars for single VPS */}
+              {/* Resource bars for cluster */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-mono text-xs">CPU BY WORKLOADS</span>
@@ -363,7 +363,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
 
         {/* Namespace Distribution */}
         <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">VPS WORKLOAD ORGANIZATION</h3>
+          <h3 className="font-mono text-sm mb-4">WORKLOAD ORGANIZATION</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={namespaceData} margin={{ top: 5, right: 30, left: -35, bottom: 5 }}>
@@ -385,7 +385,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
           </div>
         </div>
 
-        {/* VPS Deployment Summary */}
+        {/* Deployment Summary */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="border border-white p-4 text-center">
             <div className="font-mono text-2xl text-green-400">
