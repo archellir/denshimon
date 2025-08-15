@@ -8,7 +8,7 @@ import {
   UI_MESSAGES
 } from '@/constants';
 // Using standard HTML/CSS instead of shadcn components
-import { RefreshCw, GitBranch, Zap, History, RotateCcw, X } from 'lucide-react';
+import { RefreshCw, GitBranch, Zap, History, RotateCcw, X, AlertTriangle, Activity, TrendingUp, CheckCircle } from 'lucide-react';
 
 interface GitOpsRepository {
   id: string;
@@ -67,6 +67,41 @@ interface SyncStatus {
   git_status: string;
 }
 
+interface Alert {
+  id: string;
+  type: string;
+  severity: string;
+  title: string;
+  message: string;
+  metadata: Record<string, string>;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  resolved_at?: string;
+}
+
+interface HealthMetrics {
+  total_repositories: number;
+  healthy_repositories: number;
+  total_applications: number;
+  healthy_applications: number;
+  synced_applications: number;
+  out_of_sync_applications: number;
+  failed_deployments: number;
+  recent_sync_failures: number;
+  active_alerts: number;
+  critical_alerts: number;
+  last_sync_time?: string;
+  repository_health: Record<string, string>;
+  application_health: Record<string, string>;
+  sync_trends: Array<{
+    timestamp: string;
+    success_rate: number;
+    sync_count: number;
+    failure_count: number;
+  }>;
+}
+
 const GitOpsTab: React.FC = () => {
   const [repositories, setRepositories] = useState<GitOpsRepository[]>([]);
   const [applications, setApplications] = useState<GitOpsApplication[]>([]);
@@ -77,6 +112,8 @@ const GitOpsTab: React.FC = () => {
   // const [webhookConfig, setWebhookConfig] = useState<any>(null);
   // const [showWebhookConfig, setShowWebhookConfig] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  const [healthMetrics, setHealthMetrics] = useState<HealthMetrics | null>(null);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('applications');
@@ -84,10 +121,12 @@ const GitOpsTab: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [reposRes, appsRes, syncRes] = await Promise.all([
+      const [reposRes, appsRes, syncRes, healthRes, alertsRes] = await Promise.all([
         fetch(API_ENDPOINTS.GITOPS.REPOSITORIES),
         fetch(API_ENDPOINTS.GITOPS.APPLICATIONS),
-        fetch(API_ENDPOINTS.GITOPS.BASE + '/sync/status')
+        fetch(API_ENDPOINTS.GITOPS.BASE + '/sync/status'),
+        fetch(API_ENDPOINTS.GITOPS.HEALTH_METRICS),
+        fetch(API_ENDPOINTS.GITOPS.ALERTS)
       ]);
 
       if (reposRes.ok) {
@@ -103,6 +142,16 @@ const GitOpsTab: React.FC = () => {
       if (syncRes.ok) {
         const syncData = await syncRes.json();
         setSyncStatus(syncData.data);
+      }
+
+      if (healthRes.ok) {
+        const healthData = await healthRes.json();
+        setHealthMetrics(healthData.data);
+      }
+
+      if (alertsRes.ok) {
+        const alertsData = await alertsRes.json();
+        setAlerts(alertsData.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch GitOps data:', error);
@@ -207,6 +256,90 @@ const GitOpsTab: React.FC = () => {
       // Could add a toast notification here
       console.log('Copied to clipboard');
     });
+  };
+
+  const handleAcknowledgeAlert = async (alertId: string) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GITOPS.ALERT_ACKNOWLEDGE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alert_id: alertId })
+      });
+
+      if (response.ok) {
+        // Refresh alerts list
+        const alertsRes = await fetch(API_ENDPOINTS.GITOPS.ALERTS);
+        if (alertsRes.ok) {
+          const alertsData = await alertsRes.json();
+          setAlerts(alertsData.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to acknowledge alert:', error);
+    }
+  };
+
+  const handleResolveAlert = async (alertId: string) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GITOPS.ALERT_RESOLVE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alert_id: alertId })
+      });
+
+      if (response.ok) {
+        // Refresh alerts list
+        const alertsRes = await fetch(API_ENDPOINTS.GITOPS.ALERTS);
+        if (alertsRes.ok) {
+          const alertsData = await alertsRes.json();
+          setAlerts(alertsData.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to resolve alert:', error);
+    }
+  };
+
+  const handleTriggerHealthCheck = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GITOPS.HEALTH_CHECK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {
+        // Refresh data after health check
+        await fetchData();
+      }
+    } catch (error) {
+      console.error('Failed to trigger health check:', error);
+    }
+  };
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return <AlertTriangle className="w-4 h-4 text-red-400" />;
+      case 'warning':
+        return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
+      case 'info':
+        return <Activity className="w-4 h-4 text-blue-400" />;
+      default:
+        return <Activity className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'border-red-400 bg-red-900/20';
+      case 'warning':
+        return 'border-yellow-400 bg-yellow-900/20';
+      case 'info':
+        return 'border-blue-400 bg-blue-900/20';
+      default:
+        return 'border-gray-400 bg-gray-900/20';
+    }
   };
 
   const getStatusBadge = (status: string, type: 'repository' | 'application' | 'deployment' = 'repository') => {
@@ -355,6 +488,16 @@ const GitOpsTab: React.FC = () => {
             }`}
           >
             Webhooks
+          </button>
+          <button
+            onClick={() => setActiveTab('monitoring')}
+            className={`px-4 py-2 font-mono border-b-2 transition-colors ${
+              activeTab === 'monitoring' 
+                ? 'border-green-400 text-green-400' 
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            Monitoring
           </button>
         </div>
 
@@ -597,6 +740,184 @@ const GitOpsTab: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+        )}
+
+        {/* Monitoring Tab */}
+        {activeTab === 'monitoring' && (
+        <div className="space-y-6 mt-4">
+          {/* Health Overview */}
+          {healthMetrics && (
+            <div className="border border-white/20 p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-mono flex items-center">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  GitOps Health Overview
+                </h3>
+                <button
+                  onClick={handleTriggerHealthCheck}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-mono text-sm border border-blue-400 transition-colors flex items-center"
+                >
+                  <Activity className="w-3 h-3 mr-1" />
+                  Run Health Check
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="text-center">
+                  <div className="text-2xl font-mono text-green-400">{healthMetrics.total_repositories}</div>
+                  <div className="text-xs text-gray-400 font-mono">Total Repositories</div>
+                  <div className="text-xs text-green-400 font-mono">{healthMetrics.healthy_repositories} Healthy</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-mono text-blue-400">{healthMetrics.total_applications}</div>
+                  <div className="text-xs text-gray-400 font-mono">Total Applications</div>
+                  <div className="text-xs text-blue-400 font-mono">{healthMetrics.healthy_applications} Healthy</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-mono text-green-400">{healthMetrics.synced_applications}</div>
+                  <div className="text-xs text-gray-400 font-mono">Synced Apps</div>
+                  <div className="text-xs text-yellow-400 font-mono">{healthMetrics.out_of_sync_applications} Out of Sync</div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-2xl font-mono ${healthMetrics.active_alerts > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                    {healthMetrics.active_alerts}
+                  </div>
+                  <div className="text-xs text-gray-400 font-mono">Active Alerts</div>
+                  <div className="text-xs text-red-400 font-mono">{healthMetrics.critical_alerts} Critical</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="text-white font-mono text-sm mb-2">Recent Failures</div>
+                  <div className="text-2xl font-mono text-red-400">{healthMetrics.failed_deployments}</div>
+                  <div className="text-xs text-gray-400 font-mono">Last 24 hours</div>
+                </div>
+                <div>
+                  <div className="text-white font-mono text-sm mb-2">Sync Failures</div>
+                  <div className="text-2xl font-mono text-yellow-400">{healthMetrics.recent_sync_failures}</div>
+                  <div className="text-xs text-gray-400 font-mono">Last 24 hours</div>
+                </div>
+                <div>
+                  <div className="text-white font-mono text-sm mb-2">Last Sync</div>
+                  <div className="text-sm font-mono text-white">
+                    {healthMetrics.last_sync_time 
+                      ? new Date(healthMetrics.last_sync_time).toLocaleString()
+                      : 'Never'
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Active Alerts */}
+          <div className="border border-white/20 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-mono flex items-center">
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Active Alerts ({alerts.length})
+              </h3>
+            </div>
+            
+            {alerts.length === 0 ? (
+              <div className="text-center text-gray-400 font-mono py-8 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 mr-2 text-green-400" />
+                No active alerts - all systems healthy
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {alerts.map((alert) => (
+                  <div key={alert.id} className={`border p-3 ${getSeverityColor(alert.severity)}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          {getSeverityIcon(alert.severity)}
+                          <span className="text-white font-mono text-sm font-semibold">{alert.title}</span>
+                          <span className="px-2 py-1 bg-gray-700 text-gray-300 font-mono text-xs uppercase">
+                            {alert.severity}
+                          </span>
+                          <span className="px-2 py-1 bg-gray-600 text-gray-300 font-mono text-xs">
+                            {alert.type.replace('_', ' ').toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-gray-300 font-mono text-sm mb-2">{alert.message}</p>
+                        <div className="flex items-center space-x-4 text-xs font-mono text-gray-400">
+                          <span>Created: {new Date(alert.created_at).toLocaleString()}</span>
+                          {alert.metadata && Object.keys(alert.metadata).length > 0 && (
+                            <div className="space-x-2">
+                              {Object.entries(alert.metadata).map(([key, value]) => (
+                                <span key={key} className="text-yellow-400">
+                                  {key}: {value}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 ml-4">
+                        {alert.status === 'active' && (
+                          <button
+                            onClick={() => handleAcknowledgeAlert(alert.id)}
+                            className="px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white font-mono text-xs border border-yellow-400 transition-colors"
+                          >
+                            Acknowledge
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleResolveAlert(alert.id)}
+                          className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-mono text-xs border border-green-400 transition-colors"
+                        >
+                          Resolve
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Repository Health */}
+          {healthMetrics && Object.keys(healthMetrics.repository_health).length > 0 && (
+            <div className="border border-white/20 p-4">
+              <h3 className="text-white font-mono mb-4 flex items-center">
+                <GitBranch className="w-4 h-4 mr-2" />
+                Repository Health
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Object.entries(healthMetrics.repository_health).map(([name, status]) => (
+                  <div key={name} className="flex items-center justify-between p-2 border border-white/10">
+                    <span className="text-white font-mono text-sm">{name}</span>
+                    <span className={`px-2 py-1 font-mono text-xs border ${getStatusBadge(status, 'repository').props.className}`}>
+                      {status.toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Application Health */}
+          {healthMetrics && Object.keys(healthMetrics.application_health).length > 0 && (
+            <div className="border border-white/20 p-4">
+              <h3 className="text-white font-mono mb-4 flex items-center">
+                <Zap className="w-4 h-4 mr-2" />
+                Application Health
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Object.entries(healthMetrics.application_health).map(([name, health]) => (
+                  <div key={name} className="flex items-center justify-between p-2 border border-white/10">
+                    <span className="text-white font-mono text-sm">{name}</span>
+                    <span className={`px-2 py-1 font-mono text-xs border ${getStatusBadge(health, 'application').props.className}`}>
+                      {health.toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         )}
       </div>
