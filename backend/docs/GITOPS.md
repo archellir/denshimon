@@ -267,17 +267,19 @@ curl http://localhost:8080/api/gitops/manifests/types
 ### 🔄 In Progress
 - End-to-end workflow testing with real repositories
 
-### 📋 Planned Features  
-- **Rollback Functionality**: Revert to previous Git commits
-- **Webhook Integration**: Auto-sync on Git repository changes
-- **Advanced Monitoring**: GitOps-specific metrics and alerts
-- **Multi-Repository Support**: Support multiple base infrastructure repos
-- **Template Customization**: Custom manifest templates per application
+### ✅ Completed Features (Current Version)
+- **Rollback Functionality**: ✅ Revert to previous Git commits via UI
+- **Webhook Integration**: ✅ Auto-sync on Git repository changes
+- **Advanced Monitoring**: ✅ GitOps-specific metrics and alerts dashboard
+- **Template Customization**: ✅ Custom manifest templates per application type
+- **Deploy from Registry**: ✅ Template-based deployment from container images
+- **Manifest Editor**: ✅ In-browser Kubernetes configuration editing
+- **Git Sync UI**: ✅ Manual sync controls for applications
 
-### 🧹 Cleanup Tasks
-- Remove redundant API endpoints per implementation plan
-- Performance optimization for Git operations
-- Enhanced error handling and retry logic
+### 🚀 Future Enhancements
+- Performance optimization for Git operations with large repositories
+- Enhanced error handling and retry logic for network failures  
+- Multi-Repository Support for complex deployment scenarios
 
 ## Contributing
 
