@@ -757,6 +757,9 @@ export const API_ENDPOINTS = {
   },
   GITOPS: {
     BASE: API_BASE_PATHS.GITOPS,
+    // Base Infrastructure Repository (single repo)
+    BASE_REPOSITORY: `${API_BASE_PATHS.GITOPS}/base-repository`,
+    SYNC: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}/sync`,
     // Repository Management
     REPOSITORIES: `${API_BASE_PATHS.GITOPS}/repositories`,
     REPOSITORY: (id: string) => `${API_BASE_PATHS.GITOPS}/repositories/${id}`,

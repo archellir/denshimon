@@ -32,7 +32,7 @@ import EnhancedLogs from '@components/observability/EnhancedLogs';
 import LiveStreams from '@components/observability/LiveStreams';
 import LogAnalytics from '@components/observability/LogAnalytics';
 import DeploymentDashboard from '@components/deployments/DeploymentDashboard';
-import GitOpsTab from '@components/deployments/tabs/GitOpsTab';
+import BaseInfrastructureTab from '@components/infrastructure/BaseInfrastructureTab';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
@@ -683,7 +683,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             <ClusterOverview timeRange={timeRange} />
           </div>
         )}
-        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <GitOpsTab />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <BaseInfrastructureTab />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NODES && <NodeList />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.RESOURCES && <ResourceCharts timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.STORAGE && <StorageIOMetrics timeRange={timeRange} />}

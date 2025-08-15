@@ -2,7 +2,7 @@ import { useEffect, type FC } from 'react';
 import useDeploymentStore from '@/stores/deploymentStore';
 import RegistriesTab from './tabs/RegistriesTab';
 import ImagesTab from './tabs/ImagesTab';
-import DeploymentsTab from './tabs/DeploymentsTab';
+import EnhancedDeploymentsTab from './tabs/EnhancedDeploymentsTab';
 import HistoryTab from './tabs/HistoryTab';
 import { DeploymentsTab as DeploymentsTabEnum } from '@/constants';
 
@@ -39,11 +39,11 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = Deploym
       case DeploymentsTabEnum.IMAGES:
         return <ImagesTab />;
       case DeploymentsTabEnum.DEPLOYMENTS:
-        return <DeploymentsTab />;
+        return <EnhancedDeploymentsTab />;
       case DeploymentsTabEnum.HISTORY:
         return <HistoryTab />;
       default:
-        return <DeploymentsTab />;
+        return <EnhancedDeploymentsTab />;
     }
   };
 
