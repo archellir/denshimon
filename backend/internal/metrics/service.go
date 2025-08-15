@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/archellir/denshimon/internal/k8s"
@@ -104,7 +104,7 @@ func NewService(k8sClient *k8s.Client) *Service {
 		if metricsClient, err := metricsclient.NewForConfig(k8sClient.Config()); err == nil {
 			s.metricsClient = metricsClient
 		} else {
-			log.Printf("Failed to create metrics client: %v", err)
+			slog.Warn("Failed to create metrics client", "error", err)
 		}
 	}
 
