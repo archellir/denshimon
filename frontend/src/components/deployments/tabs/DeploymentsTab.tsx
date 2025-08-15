@@ -4,18 +4,6 @@ import useDeploymentStore from '@/stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@/constants';
 
-interface Template {
-  id: string;
-  name: string;
-  type: string;
-  description: string;
-  variables: Array<{
-    name: string;
-    required: boolean;
-    default?: string;
-    description?: string;
-  }>;
-}
 
 interface ContainerImage {
   id: string;
@@ -43,9 +31,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   } = useDeploymentStore();
 
   // Deployment states
-  const [templates, setTemplates] = useState<Template[]>([]);
   const [images, setImages] = useState<ContainerImage[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
   const [deploying, setDeploying] = useState(false);
   const [deployForm, setDeployForm] = useState({
@@ -83,20 +69,9 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   useEffect(() => {
     fetchDeployments();
     if (showDeployModal) {
-      fetchTemplates();
       fetchImages();
     }
   }, [fetchDeployments, showDeployModal]);
-
-  const fetchTemplates = async () => {
-    try {
-      const response = await fetch(API_ENDPOINTS.GITOPS.TEMPLATES);
-      const data = await response.json();
-      setTemplates(data.templates || []);
-    } catch (error) {
-      console.error('Failed to fetch templates:', error);
-    }
-  };
 
   const fetchImages = async () => {
     try {
@@ -109,48 +84,12 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   };
 
   const handleDeploy = async () => {
-    if (!selectedTemplate || !selectedImage || !setShowDeployModal) return;
+    if (!selectedImage || !setShowDeployModal) return;
 
     try {
       setDeploying(true);
       
-      // Generate manifest
-      const manifestResponse = await fetch(API_ENDPOINTS.GITOPS.MANIFESTS_GENERATE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          template_id: selectedTemplate.id,
-          variables: {
-            Name: deployForm.name,
-            Namespace: deployForm.namespace,
-            Image: selectedImage.full_name,
-            Replicas: deployForm.replicas,
-            Port: deployForm.port,
-            'CPU.Request': deployForm.resources.cpu_request,
-            'CPU.Limit': deployForm.resources.cpu_limit,
-            'Memory.Request': deployForm.resources.memory_request,
-            'Memory.Limit': deployForm.resources.memory_limit,
-            'HealthCheck.Path': deployForm.healthCheck.path,
-            'Ingress.Host': deployForm.ingress.host,
-            'Ingress.Path': deployForm.ingress.path,
-            MaxReplicas: deployForm.autoscaling.maxReplicas,
-            Environment: deployForm.environment
-          },
-          options: {
-            service: true,
-            ingress: deployForm.ingress.enabled,
-            autoscaling: deployForm.autoscaling.enabled
-          }
-        })
-      });
-
-      if (!manifestResponse.ok) {
-        throw new Error('Failed to generate manifest');
-      }
-
-      const manifestData = await manifestResponse.json();
-
-      // Create and deploy application
+      // Create and deploy application directly without templates
       const createResponse = await fetch(API_ENDPOINTS.GITOPS.APPLICATIONS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -159,9 +98,12 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
           namespace: deployForm.namespace,
           image: selectedImage.full_name,
           replicas: deployForm.replicas,
+          port: deployForm.port,
           environment: deployForm.environment,
           resources: deployForm.resources,
-          manifest: manifestData.data.manifest
+          healthCheck: deployForm.healthCheck,
+          ingress: deployForm.ingress,
+          autoscaling: deployForm.autoscaling
         })
       });
 
@@ -169,6 +111,9 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
         setShowDeployModal(false);
         resetDeployForm();
         await fetchDeployments(); // Refresh deployments list
+      } else {
+        const errorData = await createResponse.json();
+        console.error('Failed to deploy application:', errorData);
       }
     } catch (error) {
       console.error('Failed to deploy application:', error);
@@ -178,7 +123,6 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   };
 
   const resetDeployForm = () => {
-    setSelectedTemplate(null);
     setSelectedImage(null);
     setDeployForm({
       name: '',
@@ -333,58 +277,33 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column: Template & Image Selection */}
-              <div className="space-y-6">
-                {/* Template Selection */}
-                <div>
-                  <h4 className="font-bold text-white mb-3 font-mono tracking-wider">1. SELECT TEMPLATE</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {templates.map((template) => (
-                      <div
-                        key={template.id}
-                        onClick={() => setSelectedTemplate(template)}
-                        className={`p-3 border cursor-pointer transition-colors ${
-                          selectedTemplate?.id === template.id
-                            ? 'border-blue-400 bg-blue-900/20'
-                            : 'border-white/30 hover:border-white/50'
-                        }`}
-                      >
-                        <div className="font-mono text-sm text-white">{template.name.toUpperCase()}</div>
-                        <div className="text-xs text-gray-300 font-mono">{template.type.toUpperCase()}</div>
-                        <div className="text-xs text-gray-400 mt-1">{template.description}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Image Selection */}
-                <div>
-                  <h4 className="font-bold text-white mb-3 font-mono tracking-wider">2. SELECT CONTAINER IMAGE</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {images.map((image) => (
-                      <div
-                        key={image.id}
-                        onClick={() => setSelectedImage(image)}
-                        className={`p-3 border cursor-pointer transition-colors ${
-                          selectedImage?.id === image.id
-                            ? 'border-green-400 bg-green-900/20'
-                            : 'border-white/30 hover:border-white/50'
-                        }`}
-                      >
-                        <div className="font-mono text-sm text-white">{image.name.toUpperCase()}</div>
-                        <div className="text-xs text-gray-300 font-mono">{image.tag}</div>
-                        {image.size && (
-                          <div className="text-xs text-gray-400">SIZE: {image.size}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              {/* Left Column: Image Selection */}
+              <div>
+                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">1. SELECT CONTAINER IMAGE</h4>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {images.map((image) => (
+                    <div
+                      key={image.id}
+                      onClick={() => setSelectedImage(image)}
+                      className={`p-3 border cursor-pointer transition-colors ${
+                        selectedImage?.id === image.id
+                          ? 'border-green-400 bg-green-900/20'
+                          : 'border-white/30 hover:border-white/50'
+                      }`}
+                    >
+                      <div className="font-mono text-sm text-white">{image.name.toUpperCase()}</div>
+                      <div className="text-xs text-gray-300 font-mono">{image.tag}</div>
+                      {image.size && (
+                        <div className="text-xs text-gray-400">SIZE: {image.size}</div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Right Column: Configuration Form */}
               <div>
-                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">3. CONFIGURE DEPLOYMENT</h4>
+                <h4 className="font-bold text-white mb-3 font-mono tracking-wider">2. CONFIGURE DEPLOYMENT</h4>
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {/* Basic Configuration */}
                   <div className="grid grid-cols-2 gap-2">
@@ -640,7 +559,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
               </button>
               <button
                 onClick={handleDeploy}
-                disabled={!selectedTemplate || !selectedImage || !deployForm.name || deploying}
+                disabled={!selectedImage || !deployForm.name || deploying}
                 className="px-6 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2 tracking-wider"
               >
                 {deploying && <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />}
