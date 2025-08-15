@@ -85,10 +85,10 @@ const NodeList: FC = () => {
       <div className="text-center py-12">
         <Server size={48} className="mx-auto mb-4 opacity-40" />
         <h3 className="text-lg font-mono mb-2">
-          {searchQuery ? `NO NODES MATCHING "${searchQuery}"` : 'VPS NOT FOUND'}
+          {searchQuery ? `NO NODES MATCHING "${searchQuery}"` : 'NO NODES FOUND'}
         </h3>
         <p className="font-mono text-sm opacity-60">
-          {searchQuery ? 'Clear search to view your VPS.' : 'VPS node is not available.'}
+          {searchQuery ? 'Clear search to view nodes.' : 'No nodes are available.'}
         </p>
       </div>
     );
