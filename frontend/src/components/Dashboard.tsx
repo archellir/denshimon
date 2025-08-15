@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, RefreshCw, type LucideIcon } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@/components/common/StatusIcon';
 import GlobalSearch from '@/components/common/GlobalSearch';
+import CustomSelector from '@/components/common/CustomSelector';
 import useWebSocketMetricsStore from '@/stores/webSocketMetricsStore';
 import useDeploymentStore from '@/stores/deploymentStore';
 import useDatabaseStore from '@/stores/databaseStore';
@@ -409,44 +410,59 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <span className="text-sm font-mono opacity-60">
                   {clusterMetrics ? `${clusterMetrics.total_pods} PODS` : 'CONNECTING...'}
                 </span>
-                <select
+                <CustomSelector
                   value={selectedNamespace}
-                  onChange={(e) => setSelectedNamespace(e.target.value)}
-                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
-                >
-                  <option value="all">ALL NAMESPACES</option>
-                  <option value="default">DEFAULT</option>
-                  <option value="denshimon-test">DENSHIMON-TEST</option>
-                  <option value="monitoring">MONITORING</option>
-                  <option value="production">PRODUCTION</option>
-                </select>
+                  options={[
+                    { value: 'all', label: 'ALL NAMESPACES' },
+                    { value: 'default', label: 'DEFAULT' },
+                    { value: 'denshimon-test', label: 'DENSHIMON-TEST' },
+                    { value: 'monitoring', label: 'MONITORING' },
+                    { value: 'production', label: 'PRODUCTION' }
+                  ]}
+                  onChange={(value) => setSelectedNamespace(value)}
+                  placeholder="Select Namespace"
+                  icon={Database}
+                  size="xs"
+                  variant="compact"
+                  className="min-w-36"
+                />
               </>
             );
           case WorkloadsTab.SERVICES:
             return (
               <>
                 <span className="text-sm font-mono opacity-60">SERVICES</span>
-                <select
+                <CustomSelector
                   value={selectedNamespace}
-                  onChange={(e) => setSelectedNamespace(e.target.value)}
-                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
-                >
-                  <option value="all">ALL NAMESPACES</option>
-                  <option value="default">DEFAULT</option>
-                  <option value="monitoring">MONITORING</option>
-                  <option value="production">PRODUCTION</option>
-                </select>
-                <select
+                  options={[
+                    { value: 'all', label: 'ALL NAMESPACES' },
+                    { value: 'default', label: 'DEFAULT' },
+                    { value: 'monitoring', label: 'MONITORING' },
+                    { value: 'production', label: 'PRODUCTION' }
+                  ]}
+                  onChange={(value) => setSelectedNamespace(value)}
+                  placeholder="Select Namespace"
+                  icon={Database}
+                  size="xs"
+                  variant="compact"
+                  className="min-w-36"
+                />
+                <CustomSelector
                   value={selectedServiceType}
-                  onChange={(e) => setSelectedServiceType(e.target.value)}
-                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
-                >
-                  <option value="all">ALL TYPES</option>
-                  <option value="ClusterIP">CLUSTER IP</option>
-                  <option value="NodePort">NODE PORT</option>
-                  <option value="LoadBalancer">LOAD BALANCER</option>
-                  <option value="ExternalName">EXTERNAL NAME</option>
-                </select>
+                  options={[
+                    { value: 'all', label: 'ALL TYPES' },
+                    { value: 'ClusterIP', label: 'CLUSTER IP' },
+                    { value: 'NodePort', label: 'NODE PORT' },
+                    { value: 'LoadBalancer', label: 'LOAD BALANCER' },
+                    { value: 'ExternalName', label: 'EXTERNAL NAME' }
+                  ]}
+                  onChange={(value) => setSelectedServiceType(value)}
+                  placeholder="Select Type"
+                  icon={Network}
+                  size="xs"
+                  variant="compact"
+                  className="min-w-32"
+                />
                 <div className="flex border border-white">
                   <button
                     onClick={() => setServiceViewMode('cards')}
@@ -465,17 +481,22 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                     <List size={12} />
                   </button>
                 </div>
-                <select
+                <CustomSelector
                   value={serviceSortBy}
-                  onChange={(e) => setServiceSortBy(e.target.value)}
-                  className="bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:outline-none focus:border-green-400"
-                >
-                  <option value="name">SORT: NAME</option>
-                  <option value="namespace">SORT: NAMESPACE</option>
-                  <option value="type">SORT: TYPE</option>
-                  <option value="age">SORT: AGE</option>
-                  <option value="endpoints">SORT: ENDPOINTS</option>
-                </select>
+                  options={[
+                    { value: 'name', label: 'SORT: NAME' },
+                    { value: 'namespace', label: 'SORT: NAMESPACE' },
+                    { value: 'type', label: 'SORT: TYPE' },
+                    { value: 'age', label: 'SORT: AGE' },
+                    { value: 'endpoints', label: 'SORT: ENDPOINTS' }
+                  ]}
+                  onChange={(value) => setServiceSortBy(value)}
+                  placeholder="Sort By"
+                  icon={List}
+                  size="xs"
+                  variant="compact"
+                  className="min-w-32"
+                />
                 <button
                   onClick={() => setServiceSortOrder(serviceSortOrder === 'asc' ? 'desc' : 'asc')}
                   className="px-2 py-1 border border-white font-mono text-xs hover:bg-white hover:text-black transition-colors"
