@@ -1,6 +1,5 @@
 import { Status, EventCategory } from '@/constants';
 export { EventCategory };
-// EventSeverity is deprecated - use Status instead
 
 export interface TimelineEvent {
   id: string;
@@ -17,11 +16,11 @@ export interface TimelineEvent {
   impact?: {
     affected: number;
     total: number;
-    unit: string; // pods, nodes, services, etc.
+    unit: string;
   };
-  duration?: number; // in milliseconds
+  duration?: number;
   resolved?: boolean;
-  relatedEvents?: string[]; // IDs of related events
+  relatedEvents?: string[];
   metadata?: Record<string, any>;
 }
 
@@ -44,7 +43,7 @@ export interface EventTimelineData {
     bySeverity: Partial<Record<Status, number>>;
     byCategory: Record<EventCategory, number>;
     recentTrend: 'increasing' | 'decreasing' | 'stable';
-    averageResolutionTime: number; // in minutes
+    averageResolutionTime: number;
     unresolvedCritical: number;
   };
   filters: {

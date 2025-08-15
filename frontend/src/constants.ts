@@ -1,51 +1,19 @@
-/**
- * Application Constants
- * Centralized constants and enums to avoid duplication throughout the codebase
- * 
- * Organization:
- * 1. Core Status System (universal statuses)
- * 2. Domain-Specific Enums (logs, events, deployments, etc.)
- * 3. UI Constants (labels, messages, time ranges)
- * 4. API Configuration (endpoints, websocket events)
- * 5. Styling and Display (colors, layouts, graphs)
- */
-
-// ============================================================================
-// CORE STATUS SYSTEM - Universal status enums used across all components
-// ============================================================================
-
-/**
- * Universal status enum - consolidated from HealthStatus, AlertSeverity
- * This covers all status scenarios across the application
- */
 export enum Status {
-  // Health states
   HEALTHY = 'healthy',
   DEGRADED = 'degraded',
-  
-  // Severity levels
   CRITICAL = 'critical',
   WARNING = 'warning',
   ERROR = 'error',
-  
-  // Informational states  
   INFO = 'info',
   SUCCESS = 'success',
-  
-  // Processing states
   PENDING = 'pending',
   PROGRESSING = 'progressing',
-  
-  // Final states
   UNKNOWN = 'unknown',
   SUSPENDED = 'suspended',
   MISSING = 'missing',
   DOWN = 'down'
 }
 
-/**
- * Sync-specific statuses for GitOps
- */
 export enum SyncStatus {
   SYNCED = 'synced',
   OUT_OF_SYNC = 'out_of_sync',
@@ -54,9 +22,6 @@ export enum SyncStatus {
   UNKNOWN = Status.UNKNOWN
 }
 
-/**
- * Pod lifecycle states
- */
 export enum PodStatus {
   RUNNING = 'Running',
   PENDING = 'Pending',
@@ -66,18 +31,12 @@ export enum PodStatus {
   UNKNOWN = Status.UNKNOWN
 }
 
-/**
- * Node readiness states
- */
 export enum NodeStatus {
   READY = 'ready',
   NOT_READY = 'notready',
   UNKNOWN = Status.UNKNOWN
 }
 
-/**
- * Network connection states
- */
 export enum ConnectionStatus {
   ONLINE = 'online',
   OFFLINE = 'offline',
@@ -85,10 +44,6 @@ export enum ConnectionStatus {
   DISCONNECTED = 'disconnected'
 }
 
-/**
- * WebSocket connection states
- * Extends ConnectionStatus with WebSocket-specific states
- */
 export enum WebSocketState {
   CONNECTING = ConnectionStatus.CONNECTING,
   CONNECTED = 'connected',
@@ -97,9 +52,6 @@ export enum WebSocketState {
   RECONNECTING = 'reconnecting'
 }
 
-/**
- * Terminal/session message types
- */
 export enum TerminalMessageType {
   DATA = 'data',
   RESIZE = 'resize',
@@ -109,9 +61,6 @@ export enum TerminalMessageType {
 
 // NotificationSeverity removed - use Status enum instead
 
-/**
- * Form field types
- */
 export enum FormFieldType {
   TEXT = 'text',
   PASSWORD = 'password',
@@ -122,9 +71,6 @@ export enum FormFieldType {
   TEXTAREA = 'textarea'
 }
 
-/**
- * Common form field names
- */
 export enum FormFieldName {
   USERNAME = 'username',
   PASSWORD = 'password',
@@ -137,9 +83,6 @@ export enum FormFieldName {
   DESCRIPTION = 'description'
 }
 
-/**
- * Common storage keys for localStorage/sessionStorage
- */
 export enum StorageKey {
   AUTH_TOKEN = 'auth_token',
   USERNAME = 'username',
@@ -152,9 +95,6 @@ export enum StorageKey {
 
 // ServiceStatus removed - use Status enum instead
 
-/**
- * Circuit breaker states
- */
 export enum CircuitBreakerStatus {
   CLOSED = 'closed',
   OPEN = 'open',
@@ -169,9 +109,7 @@ export enum NetworkProtocol {
 }
 
 
-// ============================================================================
 // TIME RANGE ENUMS
-// ============================================================================
 
 export enum TimeRange {
   FIVE_MINUTES = '5m',
@@ -207,9 +145,7 @@ export const DEFAULT_TIME_RANGES = [
   { value: TimeRange.THIRTY_DAYS, label: TIME_RANGE_LABELS[TimeRange.THIRTY_DAYS] }
 ];
 
-// ============================================================================
 // HTTP METHOD ENUMS
-// ============================================================================
 
 export enum HttpMethod {
   GET = 'GET',
@@ -221,9 +157,7 @@ export enum HttpMethod {
   OPTIONS = 'OPTIONS'
 }
 
-// ============================================================================
 // KUBERNETES ENUMS
-// ============================================================================
 
 export enum KubernetesServiceType {
   CLUSTER_IP = 'ClusterIP',
@@ -244,9 +178,7 @@ export enum ReclaimPolicy {
   RECYCLE = 'Recycle'
 }
 
-// ============================================================================
 // APPLICATION TABS AND NAVIGATION
-// ============================================================================
 
 export enum PrimaryTab {
   DEPLOYMENTS = 'deployments',
@@ -305,9 +237,7 @@ export enum ObservabilityTab {
   EVENTS = 'events'
 }
 
-// ============================================================================
 // NAMESPACE ENUMS
-// ============================================================================
 
 export enum CommonNamespace {
   PRODUCTION = 'production',
@@ -323,17 +253,10 @@ export enum CommonNamespace {
   INTERNAL = 'internal'
 }
 
-// ============================================================================
 // TAILWIND COLOR CONSTANTS
-// ============================================================================
 
-// ============================================================================
 // UNIFIED COLOR SYSTEM - Consolidated from TAILWIND_COLORS and COLORS
-// ============================================================================
 
-/**
- * Status-based colors using the unified Status enum
- */
 export const STATUS_COLORS = {
   TEXT: {
     [Status.CRITICAL]: 'text-red-500',
@@ -367,9 +290,6 @@ export const STATUS_COLORS = {
   }
 } as const;
 
-/**
- * Protocol-specific colors
- */
 export const PROTOCOL_COLORS = {
   TEXT: {
     [NetworkProtocol.HTTP]: 'text-blue-500',
@@ -387,9 +307,6 @@ export const PROTOCOL_COLORS = {
   }
 } as const;
 
-/**
- * HTTP Method colors
- */
 export const METHOD_COLORS = {
   [HttpMethod.GET]: 'border-green-500 text-green-500',
   [HttpMethod.POST]: 'border-blue-500 text-blue-500',
@@ -400,18 +317,13 @@ export const METHOD_COLORS = {
   [HttpMethod.OPTIONS]: 'border-gray-500 text-gray-500'
 } as const;
 
-/**
- * Direction colors for traffic flow
- */
 export const DIRECTION_COLORS = {
   OUTBOUND: 'text-blue-400',
   INBOUND: 'text-green-400'
 } as const;
 
 
-// ============================================================================
 // UI MESSAGE CONSTANTS
-// ============================================================================
 
 export const UI_MESSAGES = {
   // Loading states
@@ -504,9 +416,7 @@ export const UI_MESSAGES = {
   UNSAVED_CHANGES: 'You have unsaved changes. Continue?'
 } as const;
 
-// ============================================================================
 // CONSOLIDATED UI LABELS - Merged from LABELS, QUICK_STATS_LABELS, etc.
-// ============================================================================
 
 export const UI_LABELS = {
   // Primary Navigation
@@ -616,9 +526,7 @@ export const UI_LABELS = {
 } as const;
 
 
-// ============================================================================
 // MOCK DATA AND PERFORMANCE THRESHOLDS - Consolidated
-// ============================================================================
 
 export const SERVICE_IDS = [
   'svc-auth',
@@ -671,9 +579,7 @@ export const THRESHOLDS = {
 
 
 
-// ============================================================================
 // DASHBOARD SETTINGS
-// ============================================================================
 
 export const DASHBOARD_SECTIONS = {
   QUICK_STATS: 'quickStats',
@@ -730,9 +636,7 @@ export const DASHBOARD_TAB_LABELS = {
   [PrimaryTab.OBSERVABILITY]: UI_LABELS.OBSERVABILITY,
 } as const;
 
-// ============================================================================
 // API ENDPOINTS - Consolidated with base paths to reduce duplication
-// ============================================================================
 
 export const API_BASE_PATHS = {
   AUTH: '/api/auth',
@@ -905,9 +809,7 @@ export const API_ENDPOINTS = {
   }
 } as const;
 
-// ============================================================================
 // WEBSOCKET EVENT TYPES
-// ============================================================================
 
 export enum WebSocketEventType {
   HEARTBEAT = 'heartbeat',
@@ -930,9 +832,7 @@ export enum WebSocketEventType {
   DEPLOYMENT_STATUS = 'deployment_status'
 }
 
-// ============================================================================
 // GITEA ENUMS
-// ============================================================================
 
 export enum GiteaPullRequestState {
   OPEN = 'open',
@@ -953,9 +853,7 @@ export enum GiteaWorkflowConclusion {
   SKIPPED = 'skipped'
 }
 
-// ============================================================================
 // CHART TYPES
-// ============================================================================
 
 export enum ChartType {
   LINE = 'line',
@@ -967,9 +865,7 @@ export enum ChartType {
   MONOTONE = 'monotone'
 }
 
-// ============================================================================
 // VIEW TYPES
-// ============================================================================
 
 export enum ViewType {
   TABLE = 'table',
@@ -978,18 +874,14 @@ export enum ViewType {
   GRID = 'grid'
 }
 
-// ============================================================================
 // SORT DIRECTIONS
-// ============================================================================
 
 export enum SortDirection {
   ASC = 'asc',
   DESC = 'desc'
 }
 
-// ============================================================================
 // LOG LEVELS AND OBSERVABILITY ENUMS
-// ============================================================================
 
 export enum LogLevel {
   TRACE = 'trace',
@@ -1000,18 +892,12 @@ export enum LogLevel {
   FATAL = 'fatal'
 }
 
-/**
- * LiveStreams view mode types
- */
 export enum LiveStreamViewMode {
   PODS = 'pods',
   LOGS = 'logs',
   DEPLOYMENTS = 'deployments'
 }
 
-/**
- * Deployment progress status types
- */
 export enum DeploymentProgressStatus {
   COMPLETE = 'complete',
   PROGRESSING = Status.PROGRESSING,
@@ -1020,9 +906,6 @@ export enum DeploymentProgressStatus {
 
 // EventSeverity removed - use Status enum instead
 
-/**
- * Event categories for system events and observability
- */
 export enum EventCategory {
   NODE = 'node',
   POD = 'pod',
@@ -1033,9 +916,6 @@ export enum EventCategory {
   STORAGE = 'storage'
 }
 
-/**
- * Log source types for VPS services
- */
 export enum LogSource {
   KUBERNETES_API = 'kubernetes-api',
   NGINX_INGRESS = 'nginx-ingress',
@@ -1046,9 +926,7 @@ export enum LogSource {
   SYSTEM = 'system'
 }
 
-// ============================================================================
 // APPLICATION SERVICE TYPES (Mesh/Architecture)
-// ============================================================================
 
 export enum ServiceType {
   FRONTEND = 'frontend',
@@ -1068,13 +946,8 @@ export enum ServiceFilterType {
   GATEWAY = 'gateway'
 }
 
-// ============================================================================
 // DEPLOYMENT AND REGISTRY ENUMS
-// ============================================================================
 
-/**
- * Container registry types supported by the platform
- */
 export enum RegistryType {
   DOCKERHUB = 'dockerhub',
   GITEA = 'gitea',
@@ -1082,18 +955,12 @@ export enum RegistryType {
   GENERIC = 'generic'
 }
 
-/**
- * Registry connection status
- */
 export enum RegistryStatus {
   PENDING = Status.PENDING,
   CONNECTED = 'connected',
   ERROR = Status.ERROR
 }
 
-/**
- * Deployment status for VPS deployments
- */
 export enum DeploymentStatus {
   PENDING = Status.PENDING,
   RUNNING = 'running',
@@ -1102,17 +969,11 @@ export enum DeploymentStatus {
   TERMINATING = 'terminating'
 }
 
-/**
- * Deployment strategy types
- */
 export enum DeploymentStrategy {
   ROLLING_UPDATE = 'RollingUpdate',
   RECREATE = 'Recreate'
 }
 
-/**
- * Deployment history action types
- */
 export enum DeploymentAction {
   CREATE = 'create',
   UPDATE = 'update',
@@ -1121,9 +982,7 @@ export enum DeploymentAction {
   RESTART = 'restart'
 }
 
-// ============================================================================
 // GRAPH VISUALIZATION ENUMS
-// ============================================================================
 
 export enum GraphViewMode {
   GRAPH = 'graph',
@@ -1147,9 +1006,7 @@ export enum LatencyCategory {
   CRITICAL = Status.CRITICAL
 }
 
-// ============================================================================
 // UNIFIED COLOR SYSTEM - Consolidated colors organized by purpose
-// ============================================================================
 
 export const COLORS = {
   // Core color palette
@@ -1243,9 +1100,7 @@ export const SERVICE_ICONS = {
   [ServiceType.SIDECAR]: '◆'
 } as const;
 
-// ============================================================================
 // GRAPH CONFIGURATION
-// ============================================================================
 
 export const GRAPH_CONFIG = {
   NODE: {
@@ -1322,9 +1177,7 @@ export const GRAPH_CONFIG = {
   }
 } as const;
 
-// ============================================================================
 // SERVICE MESH ANALYSIS CONSTANTS
-// ============================================================================
 
 export const MESH_ANALYSIS = {
   SPOF_DETECTION: {
@@ -1343,9 +1196,7 @@ export const MESH_ANALYSIS = {
   }
 } as const;
 
-// ============================================================================
 // CSS CLASS CONSTANTS
-// ============================================================================
 
 export const CSS_CLASSES = {
   FORM: {
@@ -1357,9 +1208,7 @@ export const CSS_CLASSES = {
   }
 } as const;
 
-// ============================================================================
 // CANVAS AND FONT CONSTANTS
-// ============================================================================
 
 export const CANVAS_CONSTANTS = {
   FONTS: {
@@ -1379,9 +1228,7 @@ export const CANVAS_CONSTANTS = {
   }
 } as const;
 
-// ============================================================================
 // SIZE CONSTANTS
-// ============================================================================
 
 export const SIZES = {
   ICON: {
@@ -1395,9 +1242,7 @@ export const SIZES = {
   }
 } as const;
 
-// ============================================================================
 // KEYBOARD SHORTCUTS
-// ============================================================================
 
 export const KEYBOARD_SHORTCUTS = {
   SEARCH: '/',
@@ -1412,9 +1257,7 @@ export const KEYBOARD_SHORTCUTS = {
   OBSERVABILITY: 'o'
 } as const;
 
-// ============================================================================
 // DEFAULT VALUES
-// ============================================================================
 
 export const DEFAULTS = {
   TIME_RANGE: TimeRange.ONE_HOUR,
@@ -1425,9 +1268,7 @@ export const DEFAULTS = {
   PAGINATION_PAGE_SIZE: 10
 } as const;
 
-// ============================================================================
 // VALIDATION CONSTANTS
-// ============================================================================
 
 export const VALIDATION = {
   MIN_PASSWORD_LENGTH: 8,
@@ -1436,21 +1277,13 @@ export const VALIDATION = {
   MAX_LABEL_VALUE_LENGTH: 63
 } as const;
 
-// ============================================================================
 // UTILITY FUNCTIONS FOR CONSTANTS
-// ============================================================================
 
-/**
- * Get status color for consistent styling across components
- */
 export const getStatusColor = (status: Status | LogLevel, type: 'text' | 'border' = 'text'): string => {
   const colorMap = type === 'text' ? STATUS_COLORS.TEXT : STATUS_COLORS.BORDER;
   return colorMap[status as keyof typeof colorMap] || (type === 'text' ? 'text-gray-500' : 'border-gray-500 text-gray-500');
 };
 
-/**
- * Get log level icon and color mapping
- */
 export const LOG_LEVEL_CONFIG = {
   [LogLevel.ERROR]: { color: 'text-red-400 border-red-400 bg-red-900/10', icon: 'AlertCircle' },
   [LogLevel.WARN]: { color: 'text-yellow-400 border-yellow-400 bg-yellow-900/10', icon: 'AlertTriangle' },
@@ -1458,9 +1291,6 @@ export const LOG_LEVEL_CONFIG = {
   [LogLevel.DEBUG]: { color: 'text-gray-400 border-gray-400 bg-gray-900/10', icon: 'Bug' },
 } as const;
 
-/**
- * Event severity configuration for consistent styling
- */
 export const EVENT_SEVERITY_CONFIG = {
   [Status.CRITICAL]: { color: 'border-red-500 text-red-500', icon: 'AlertCircle' },
   [Status.WARNING]: { color: 'border-yellow-500 text-yellow-500', icon: 'AlertTriangle' },
@@ -1468,9 +1298,7 @@ export const EVENT_SEVERITY_CONFIG = {
   [Status.SUCCESS]: { color: 'border-green-500 text-green-500', icon: 'CheckCircle' },
 } as const;
 
-// ============================================================================
 // UNIT CONSTANTS
-// ============================================================================
 
 export const UNITS = {
   BYTES: ['B', 'KB', 'MB', 'GB', 'TB', 'PB'],

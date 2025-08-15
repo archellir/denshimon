@@ -5,8 +5,6 @@ import {
   InfrastructureStatus, 
   InfrastructureAlert,
   ServiceType,
-  // ServiceStatus, // deprecated - using Status from constants
-  // AlertSeverity, // deprecated - using Status from constants
   GiteaHealth,
   FilebrowserHealth,
   UmamiHealth,
@@ -17,7 +15,6 @@ import {
 import { API_ENDPOINTS, Status } from '@/constants';
 
 interface ServiceHealthStore {
-  // State
   services: ServiceHealth[];
   stats: ServiceHealthStats | null;
   infrastructureStatus: InfrastructureStatus | null;
@@ -25,8 +22,6 @@ interface ServiceHealthStore {
   isLoading: boolean;
   error: string | null;
   lastUpdated: string | null;
-
-  // Actions
   fetchServiceHealth: () => Promise<void>;
   fetchInfrastructureStatus: () => Promise<void>;
   fetchAlerts: () => Promise<void>;
@@ -36,7 +31,6 @@ interface ServiceHealthStore {
   clearError: () => void;
 }
 
-// Mock data for development
 const mockServices: ServiceHealth[] = [
   {
     id: 'gitea-service',
@@ -64,7 +58,7 @@ const mockServices: ServiceHealth[] = [
       registrySize: 2147483648 // ~2GB
     },
     alerts: []
-  } as GiteaHealth,
+  },
   {
     id: 'filebrowser-service',
     name: 'Filebrowser',
@@ -98,7 +92,7 @@ const mockServices: ServiceHealth[] = [
         acknowledged: false
       }
     ]
-  } as FilebrowserHealth,
+  },
   {
     id: 'umami-service',
     name: 'Umami',
@@ -122,7 +116,7 @@ const mockServices: ServiceHealth[] = [
       cacheHitRatio: 94.2
     },
     alerts: []
-  } as UmamiHealth,
+  },
   {
     id: 'memos-service',
     name: 'Memos',
@@ -156,7 +150,7 @@ const mockServices: ServiceHealth[] = [
         acknowledged: false
       }
     ]
-  } as MemosHealth,
+  },
   {
     id: 'uptime-kuma-service',
     name: 'Uptime Kuma',
@@ -191,7 +185,7 @@ const mockServices: ServiceHealth[] = [
         acknowledged: false
       }
     ]
-  } as UptimeKumaHealth,
+  },
   {
     id: 'postgresql-service',
     name: 'PostgreSQL',
@@ -217,7 +211,7 @@ const mockServices: ServiceHealth[] = [
       lastBackup: '2024-01-20T06:00:00Z'
     },
     alerts: []
-  } as PostgreSQLHealth
+  }
 ];
 
 const mockStats: ServiceHealthStats = {
@@ -349,7 +343,6 @@ const mockAlerts: InfrastructureAlert[] = [
 ];
 
 const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
-  // Initial state
   services: mockServices,
   stats: mockStats,
   infrastructureStatus: mockInfrastructureStatus,
@@ -357,15 +350,12 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
   isLoading: false,
   error: null,
   lastUpdated: new Date().toISOString(),
-
-  // Actions
   fetchServiceHealth: async () => {
     set({ isLoading: true, error: null });
     
     try {
-      // In development, use mock data
       if (import.meta.env.DEV) {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 500));
         set({ 
           services: mockServices,
           stats: mockStats,
@@ -402,7 +392,6 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
 
   fetchInfrastructureStatus: async () => {
     try {
-      // In development, use mock data
       if (import.meta.env.DEV) {
         set({ infrastructureStatus: mockInfrastructureStatus });
         return;
@@ -427,7 +416,6 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
 
   fetchAlerts: async () => {
     try {
-      // In development, use mock data
       if (import.meta.env.DEV) {
         set({ alerts: mockAlerts });
         return;
@@ -465,7 +453,6 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         throw new Error(`Failed to refresh services: ${response.statusText}`);
       }
 
-      // Fetch updated data after refresh
       await get().fetchServiceHealth();
       await get().fetchInfrastructureStatus();
       await get().fetchAlerts();
@@ -493,7 +480,6 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         throw new Error(`Failed to acknowledge alert: ${response.statusText}`);
       }
 
-      // Update alert in store
       const { alerts } = get();
       const updatedAlerts = alerts.map(alert => 
         alert.id === alertId ? { ...alert, acknowledged: true } : alert

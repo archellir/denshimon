@@ -33,7 +33,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         const timelineData = generateEventTimelineData(hours);
         setData(timelineData);
       } else {
-        // Load from API
         const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.EVENTS}?timeRange=${timeRange}&limit=100`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -41,10 +40,9 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         
         if (response.ok) {
           const apiData = await response.json();
-          // Convert API response to EventTimelineData format
-          const timelineData: EventTimelineData = {
+            const timelineData: EventTimelineData = {
             events: apiData.events || [],
-            groups: [], // Will be calculated in filteredData
+            groups: [],
             statistics: {
               total: apiData.events?.length || 0,
               bySeverity: {
@@ -74,15 +72,13 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
           };
           setData(timelineData);
         } else {
-          // Fallback to mock data on API failure
-          const hours = parseTimeRangeToHours(timeRange);
+            const hours = parseTimeRangeToHours(timeRange);
           const timelineData = generateEventTimelineData(hours);
           setData(timelineData);
         }
       }
     } catch (error) {
       console.error('Failed to load timeline data:', error);
-      // Fallback to mock data on error
       const hours = parseTimeRangeToHours(timeRange);
       const timelineData = generateEventTimelineData(hours);
       setData(timelineData);
@@ -99,7 +95,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
       return matchesCategory && matchesSeverity;
     });
 
-    // Regroup filtered events
     const groupMap = new Map<string, TimelineEvent[]>();
     filteredEvents.forEach(event => {
       const hour = new Date(event.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';
@@ -138,13 +133,13 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
 
   const getCategoryIcon = (category: EventCategory) => {
     switch (category) {
-      case EventCategory.NODE: return <Server className="w-4 h-4" />; // VPS node events
-      case EventCategory.POD: return <Package className="w-4 h-4" />; // VPS pod events
-      case EventCategory.SERVICE: return <Activity className="w-4 h-4" />; // VPS service events
-      case EventCategory.CONFIG: return <Settings className="w-4 h-4" />; // VPS config events
-      case EventCategory.SECURITY: return <Shield className="w-4 h-4" />; // VPS security events
-      case EventCategory.NETWORK: return <Network className="w-4 h-4" />; // VPS network events
-      case EventCategory.STORAGE: return <HardDrive className="w-4 h-4" />; // VPS storage events
+      case EventCategory.NODE: return <Server className="w-4 h-4" />;
+      case EventCategory.POD: return <Package className="w-4 h-4" />;
+      case EventCategory.SERVICE: return <Activity className="w-4 h-4" />;
+      case EventCategory.CONFIG: return <Settings className="w-4 h-4" />;
+      case EventCategory.SECURITY: return <Shield className="w-4 h-4" />;
+      case EventCategory.NETWORK: return <Network className="w-4 h-4" />;
+      case EventCategory.STORAGE: return <HardDrive className="w-4 h-4" />;
     }
   };
 
@@ -207,8 +202,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
 
   return (
     <div className="space-y-6">
-
-      {/* Filters */}
       <div className="space-y-4">
 
         <div className="flex gap-4">
@@ -248,7 +241,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         </div>
       </div>
 
-      {/* Timeline */}
       <div className="border border-white p-4 max-h-[600px] overflow-y-auto">
         {filteredData.groups.length === 0 ? (
           <div className="text-center py-8">
@@ -261,10 +253,8 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
           <div className="space-y-4">
             {filteredData.groups.map((group) => (
               <div key={group.hour} className="border-l-2 border-white pl-4 relative">
-                {/* Timeline dot */}
                 <div className="absolute -left-2 top-0 w-3 h-3 bg-white border-2 border-black rounded-full" />
                 
-                {/* Group header */}
                 <button
                   onClick={() => toggleGroup(group.hour)}
                   className="w-full text-left hover:bg-white/5 transition-colors p-2 -ml-2"
@@ -303,7 +293,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
                   </div>
                 </button>
                 
-                {/* Events */}
                 {expandedGroups.has(group.hour) && (
                   <div className="mt-2 space-y-2">
                     {group.events.map((event) => (

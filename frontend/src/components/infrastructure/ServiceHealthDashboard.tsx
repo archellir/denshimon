@@ -48,14 +48,12 @@ const ServiceHealthDashboard: FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [showInfrastructureDetails, setShowInfrastructureDetails] = useState(false);
 
-  // Load initial data
   useEffect(() => {
     fetchServiceHealth();
     fetchInfrastructureStatus();
     fetchAlerts();
   }, [fetchServiceHealth, fetchInfrastructureStatus, fetchAlerts]);
 
-  // Auto-refresh every 2 minutes
   useEffect(() => {
     if (!autoRefresh) return;
 
@@ -63,7 +61,7 @@ const ServiceHealthDashboard: FC = () => {
       fetchServiceHealth();
       fetchInfrastructureStatus();
       fetchAlerts();
-    }, 2 * 60 * 1000); // 2 minutes
+    }, 2 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [autoRefresh, fetchServiceHealth, fetchInfrastructureStatus, fetchAlerts]);
@@ -209,7 +207,6 @@ const ServiceHealthDashboard: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h2 className="text-xl font-mono">SERVICE HEALTH MONITORING</h2>
@@ -248,7 +245,6 @@ const ServiceHealthDashboard: FC = () => {
         </div>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="p-4 border border-red-400 bg-red-900/20 text-red-400 font-mono text-sm flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -264,7 +260,6 @@ const ServiceHealthDashboard: FC = () => {
         </div>
       )}
 
-      {/* Statistics Cards */}
       {stats && (
         <div className="grid grid-cols-5 gap-4">
           <div className="border border-green-400 p-4 text-green-400">
@@ -314,7 +309,6 @@ const ServiceHealthDashboard: FC = () => {
         </div>
       )}
 
-      {/* Active Alerts */}
       {alerts.length > 0 && (
         <div className="border border-yellow-400 bg-yellow-900/10">
           <div className="bg-yellow-400/10 p-3 border-b border-yellow-400">
@@ -347,7 +341,6 @@ const ServiceHealthDashboard: FC = () => {
         </div>
       )}
 
-      {/* Services Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {services.map((service) => (
           <div
@@ -414,7 +407,6 @@ const ServiceHealthDashboard: FC = () => {
         ))}
       </div>
 
-      {/* Service Details Modal */}
       {selectedSvc && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <div className="bg-black border border-white max-w-6xl w-full max-h-screen overflow-y-auto">
@@ -432,7 +424,6 @@ const ServiceHealthDashboard: FC = () => {
             </div>
             
             <div className="p-6 space-y-6">
-              {/* Basic Info */}
               <div className="grid grid-cols-3 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -490,7 +481,6 @@ const ServiceHealthDashboard: FC = () => {
                 </div>
               </div>
 
-              {/* Metrics Grid */}
               <div className="border border-white/20 p-4">
                 <h4 className="font-mono text-sm mb-4">SERVICE METRICS</h4>
                 <div className="grid grid-cols-4 gap-4">
@@ -506,7 +496,6 @@ const ServiceHealthDashboard: FC = () => {
                 </div>
               </div>
 
-              {/* Service Alerts */}
               {selectedSvc.alerts.length > 0 && (
                 <div className="border border-yellow-400 bg-yellow-900/10">
                   <div className="bg-yellow-400/10 p-3 border-b border-yellow-400">
@@ -533,7 +522,6 @@ const ServiceHealthDashboard: FC = () => {
         </div>
       )}
 
-      {/* Infrastructure Status Modal */}
       {showInfrastructureDetails && infrastructureStatus && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <div className="bg-black border border-white max-w-6xl w-full max-h-screen overflow-y-auto">
@@ -548,7 +536,6 @@ const ServiceHealthDashboard: FC = () => {
             </div>
             
             <div className="p-6 space-y-6">
-              {/* Domain Accessibility */}
               <div className="border border-white/20 p-4">
                 <h4 className="font-mono text-sm mb-4">DOMAIN ACCESSIBILITY</h4>
                 <div className="space-y-2">
@@ -577,7 +564,6 @@ const ServiceHealthDashboard: FC = () => {
                 </div>
               </div>
 
-              {/* Ingress Rules */}
               <div className="border border-white/20 p-4">
                 <h4 className="font-mono text-sm mb-4">INGRESS RULES</h4>
                 <div className="space-y-2">
@@ -599,7 +585,6 @@ const ServiceHealthDashboard: FC = () => {
                 </div>
               </div>
 
-              {/* Network Policies */}
               <div className="border border-white/20 p-4">
                 <h4 className="font-mono text-sm mb-4">NETWORK POLICIES</h4>
                 <div className="space-y-2">
@@ -625,7 +610,6 @@ const ServiceHealthDashboard: FC = () => {
         </div>
       )}
 
-      {/* Last Updated */}
       {lastUpdated && (
         <div className="text-center text-xs font-mono opacity-60">
           Last updated: {formatDate(lastUpdated)}
