@@ -8,7 +8,7 @@ import {
   UI_MESSAGES
 } from '@/constants';
 // Using standard HTML/CSS instead of shadcn components
-import { RefreshCw, GitBranch, Zap, History, RotateCcw, X, AlertTriangle, Activity, TrendingUp, CheckCircle } from 'lucide-react';
+import { RefreshCw, GitBranch, Zap, History, RotateCcw, X, AlertTriangle, Activity, TrendingUp, CheckCircle, Plus, Package, Download } from 'lucide-react';
 
 interface GitOpsRepository {
   id: string;
@@ -102,6 +102,34 @@ interface HealthMetrics {
   }>;
 }
 
+interface Template {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  content: string;
+  variables: Array<{
+    name: string;
+    required?: boolean;
+    default?: any;
+    description?: string;
+  }>;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface RegistryImage {
+  id: string;
+  name: string;
+  tag: string;
+  full_name: string;
+  repository_id: string;
+  size: number;
+  created_at: string;
+  updated_at: string;
+}
+
 const GitOpsTab: React.FC = () => {
   const [repositories, setRepositories] = useState<GitOpsRepository[]>([]);
   const [applications, setApplications] = useState<GitOpsApplication[]>([]);
@@ -117,6 +145,24 @@ const GitOpsTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('applications');
+  const [showDeployModal, setShowDeployModal] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [registryImages, setRegistryImages] = useState<RegistryImage[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [selectedImage, setSelectedImage] = useState<RegistryImage | null>(null);
+  const [deployForm, setDeployForm] = useState({
+    name: '',
+    namespace: 'default',
+    replicas: 1,
+    environment: {} as Record<string, string>,
+    resources: {
+      cpu_request: '100m',
+      cpu_limit: '500m',
+      memory_request: '128Mi',
+      memory_limit: '512Mi'
+    }
+  });
+  const [deploying, setDeploying] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -316,6 +362,124 @@ const GitOpsTab: React.FC = () => {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GITOPS.TEMPLATES);
+      if (response.ok) {
+        const data = await response.json();
+        setTemplates(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch templates:', error);
+    }
+  };
+
+  const fetchRegistryImages = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GITEA.IMAGES);
+      if (response.ok) {
+        const data = await response.json();
+        setRegistryImages(data.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch registry images:', error);
+    }
+  };
+
+  const handleShowDeployModal = async () => {
+    setShowDeployModal(true);
+    await Promise.all([fetchTemplates(), fetchRegistryImages()]);
+  };
+
+  const handleSelectTemplate = (template: Template) => {
+    setSelectedTemplate(template);
+    // Pre-fill form with template defaults
+    if (template.variables) {
+      const defaultValues: any = {};
+      template.variables.forEach(variable => {
+        if (variable.default !== undefined) {
+          defaultValues[variable.name.toLowerCase()] = variable.default;
+        }
+      });
+      setDeployForm(prev => ({
+        ...prev,
+        ...defaultValues
+      }));
+    }
+  };
+
+  const handleDeployFromRegistry = async () => {
+    if (!selectedTemplate || !selectedImage) return;
+
+    try {
+      setDeploying(true);
+      
+      // Generate manifest first
+      const manifestResponse = await fetch(API_ENDPOINTS.GITOPS.MANIFESTS_GENERATE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template_id: selectedTemplate.id,
+          variables: {
+            Name: deployForm.name,
+            Namespace: deployForm.namespace,
+            Image: selectedImage.full_name,
+            Replicas: deployForm.replicas,
+            'CPU.Request': deployForm.resources.cpu_request,
+            'CPU.Limit': deployForm.resources.cpu_limit,
+            'Memory.Request': deployForm.resources.memory_request,
+            'Memory.Limit': deployForm.resources.memory_limit,
+            Environment: deployForm.environment
+          }
+        })
+      });
+
+      if (!manifestResponse.ok) {
+        throw new Error('Failed to generate manifest');
+      }
+
+      const manifestData = await manifestResponse.json();
+
+      // Create application
+      const createResponse = await fetch(API_ENDPOINTS.GITOPS.APPLICATIONS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: deployForm.name,
+          namespace: deployForm.namespace,
+          image: selectedImage.full_name,
+          replicas: deployForm.replicas,
+          environment: deployForm.environment,
+          resources: deployForm.resources,
+          manifest: manifestData.data.manifest
+        })
+      });
+
+      if (createResponse.ok) {
+        setShowDeployModal(false);
+        setSelectedTemplate(null);
+        setSelectedImage(null);
+        setDeployForm({
+          name: '',
+          namespace: 'default',
+          replicas: 1,
+          environment: {},
+          resources: {
+            cpu_request: '100m',
+            cpu_limit: '500m',
+            memory_request: '128Mi',
+            memory_limit: '512Mi'
+          }
+        });
+        await fetchData(); // Refresh applications list
+      }
+    } catch (error) {
+      console.error('Failed to deploy application:', error);
+    } finally {
+      setDeploying(false);
+    }
+  };
+
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -504,11 +668,28 @@ const GitOpsTab: React.FC = () => {
         {/* Applications Tab */}
         {activeTab === 'applications' && (
         <div className="space-y-4 mt-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-white font-mono">Applications ({applications.length})</h3>
+            <button
+              onClick={handleShowDeployModal}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-mono border border-green-400 transition-colors flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Deploy from Registry
+            </button>
+          </div>
           {applications.length === 0 ? (
             <div className="border border-white/20 p-8 text-center">
               <div className="text-gray-400 font-mono">No GitOps applications found</div>
-              <button className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-mono border border-green-400 transition-colors">
-                Create Application
+              <p className="text-sm text-gray-500 font-mono mt-2">
+                Deploy your first application from a container registry using templates
+              </p>
+              <button
+                onClick={handleShowDeployModal}
+                className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-mono border border-green-400 transition-colors flex items-center mx-auto"
+              >
+                <Package className="w-4 h-4 mr-2" />
+                Deploy from Registry
               </button>
             </div>
           ) : (
@@ -921,6 +1102,208 @@ const GitOpsTab: React.FC = () => {
         </div>
         )}
       </div>
+
+      {/* Deploy from Registry Modal */}
+      {showDeployModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-black border border-white/20 p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-mono text-white flex items-center">
+                <Download className="w-5 h-5 mr-2" />
+                Deploy from Registry
+              </h3>
+              <button
+                onClick={() => setShowDeployModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Template Selection */}
+              <div>
+                <h4 className="text-white font-mono mb-3">1. Select Template</h4>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {templates.map((template) => (
+                    <div
+                      key={template.id}
+                      onClick={() => handleSelectTemplate(template)}
+                      className={`border p-3 cursor-pointer transition-colors ${
+                        selectedTemplate?.id === template.id
+                          ? 'border-green-400 bg-green-900/20'
+                          : 'border-white/20 hover:border-white/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-white font-mono text-sm">{template.name}</h5>
+                        <span className="px-2 py-1 bg-gray-700 text-gray-300 font-mono text-xs">
+                          {template.type.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-gray-400 font-mono text-xs mt-1">{template.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Registry Image Selection */}
+              <div>
+                <h4 className="text-white font-mono mb-3">2. Select Image</h4>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {registryImages.map((image) => (
+                    <div
+                      key={image.id}
+                      onClick={() => setSelectedImage(image)}
+                      className={`border p-3 cursor-pointer transition-colors ${
+                        selectedImage?.id === image.id
+                          ? 'border-blue-400 bg-blue-900/20'
+                          : 'border-white/20 hover:border-white/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-white font-mono text-sm">{image.name}:{image.tag}</h5>
+                        <span className="text-gray-400 font-mono text-xs">
+                          {(image.size / 1024 / 1024).toFixed(1)} MB
+                        </span>
+                      </div>
+                      <p className="text-gray-400 font-mono text-xs mt-1">{image.full_name}</p>
+                      <p className="text-gray-500 font-mono text-xs">
+                        Created: {new Date(image.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Configuration Form */}
+            {selectedTemplate && selectedImage && (
+              <div className="mt-6 border-t border-white/20 pt-6">
+                <h4 className="text-white font-mono mb-4">3. Configure Deployment</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">Application Name *</label>
+                    <input
+                      type="text"
+                      value={deployForm.name}
+                      onChange={(e) => setDeployForm(prev => ({ ...prev, name: e.target.value }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                      placeholder="my-app"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">Namespace</label>
+                    <input
+                      type="text"
+                      value={deployForm.namespace}
+                      onChange={(e) => setDeployForm(prev => ({ ...prev, namespace: e.target.value }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                      placeholder="default"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">Replicas</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={deployForm.replicas}
+                      onChange={(e) => setDeployForm(prev => ({ ...prev, replicas: parseInt(e.target.value) || 1 }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">CPU Request</label>
+                    <input
+                      type="text"
+                      value={deployForm.resources.cpu_request}
+                      onChange={(e) => setDeployForm(prev => ({ 
+                        ...prev, 
+                        resources: { ...prev.resources, cpu_request: e.target.value }
+                      }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                      placeholder="100m"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">CPU Limit</label>
+                    <input
+                      type="text"
+                      value={deployForm.resources.cpu_limit}
+                      onChange={(e) => setDeployForm(prev => ({ 
+                        ...prev, 
+                        resources: { ...prev.resources, cpu_limit: e.target.value }
+                      }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                      placeholder="500m"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">Memory Request</label>
+                    <input
+                      type="text"
+                      value={deployForm.resources.memory_request}
+                      onChange={(e) => setDeployForm(prev => ({ 
+                        ...prev, 
+                        resources: { ...prev.resources, memory_request: e.target.value }
+                      }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                      placeholder="128Mi"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 font-mono text-sm">Memory Limit</label>
+                    <input
+                      type="text"
+                      value={deployForm.resources.memory_limit}
+                      onChange={(e) => setDeployForm(prev => ({ 
+                        ...prev, 
+                        resources: { ...prev.resources, memory_limit: e.target.value }
+                      }))}
+                      className="mt-1 w-full bg-gray-900 border border-white/20 text-white font-mono text-sm px-3 py-2"
+                      placeholder="512Mi"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-between">
+                  <div className="text-sm font-mono text-gray-400">
+                    Template: <span className="text-green-400">{selectedTemplate.name}</span> • 
+                    Image: <span className="text-blue-400">{selectedImage.full_name}</span>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowDeployModal(false)}
+                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-mono border border-gray-400 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeployFromRegistry}
+                      disabled={deploying || !deployForm.name}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-mono border border-green-400 transition-colors flex items-center"
+                    >
+                      {deploying ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Deploying...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Deploy Application
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Rollback Modal */}
       {showRollbackModal && selectedApp && (
