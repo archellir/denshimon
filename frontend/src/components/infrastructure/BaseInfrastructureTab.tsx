@@ -125,16 +125,16 @@ const BaseInfrastructureTab = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400 font-mono">Loading base infrastructure repository...</div>
+      <div className="flex items-center justify-center h-64 bg-black border border-white">
+        <div className="text-white font-mono tracking-wider">LOADING BASE INFRASTRUCTURE REPOSITORY...</div>
       </div>
     );
   }
 
   if (!repository) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-red-400 font-mono">Failed to load base infrastructure repository</div>
+      <div className="flex items-center justify-center h-64 bg-black border border-red-400">
+        <div className="text-red-400 font-mono tracking-wider uppercase">FAILED TO LOAD BASE INFRASTRUCTURE REPOSITORY</div>
       </div>
     );
   }
@@ -142,22 +142,22 @@ const BaseInfrastructureTab = () => {
   return (
     <div className="space-y-6">
       {/* Repository Status Header */}
-      <div className="bg-gray-900 border border-gray-700 rounded p-6">
+      <div className="bg-black border border-white p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <GitBranch size={24} className="text-blue-400" />
+            <GitBranch size={24} className="text-green-400" />
             <div>
-              <h2 className="text-xl font-bold text-white">{repository.name}</h2>
-              <p className="text-sm text-gray-400 font-mono">{repository.url}</p>
+              <h2 className="text-xl font-bold text-white font-mono tracking-wider uppercase">{repository.name}</h2>
+              <p className="text-sm text-gray-300 font-mono">{repository.url}</p>
             </div>
           </div>
           <button
             onClick={syncRepository}
             disabled={syncing}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded transition-colors font-mono text-sm"
+            className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm tracking-wider uppercase"
           >
             <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
-            <span>{syncing ? 'Syncing...' : 'Sync Now'}</span>
+            <span>{syncing ? 'SYNCING...' : 'SYNC NOW'}</span>
           </button>
         </div>
       </div>
@@ -165,34 +165,34 @@ const BaseInfrastructureTab = () => {
       {/* Repository Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Status Card */}
-        <div className="bg-gray-900 border border-gray-700 rounded p-4">
-          <h3 className="text-sm font-bold text-gray-300 mb-3">Repository Status</h3>
+        <div className="bg-black border border-white p-4">
+          <h3 className="text-sm font-bold text-white mb-3 font-mono tracking-wider uppercase">REPOSITORY STATUS</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Status</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">STATUS</span>
               <div className="flex items-center space-x-2">
                 {(() => {
                   const StatusIcon = getStatusIcon(repository.status);
                   return <StatusIcon size={16} className={getStatusColor(repository.status)} />;
                 })()}
-                <span className={`text-sm font-mono ${getStatusColor(repository.status)}`}>
+                <span className={`text-sm font-mono tracking-wider uppercase ${getStatusColor(repository.status)}`}>
                   {repository.status}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Branch</span>
-              <span className="text-sm text-white font-mono">{repository.branch}</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">BRANCH</span>
+              <span className="text-sm text-white font-mono tracking-wider uppercase">{repository.branch}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Sync Status</span>
-              <span className={`text-sm font-mono ${getStatusColor(repository.sync_status)}`}>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">SYNC STATUS</span>
+              <span className={`text-sm font-mono tracking-wider uppercase ${getStatusColor(repository.sync_status)}`}>
                 {repository.sync_status}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Health</span>
-              <span className={`text-sm font-mono ${getStatusColor(repository.health)}`}>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">HEALTH</span>
+              <span className={`text-sm font-mono tracking-wider uppercase ${getStatusColor(repository.health)}`}>
                 {repository.health}
               </span>
             </div>
@@ -200,31 +200,31 @@ const BaseInfrastructureTab = () => {
         </div>
 
         {/* Sync Information */}
-        <div className="bg-gray-900 border border-gray-700 rounded p-4">
-          <h3 className="text-sm font-bold text-gray-300 mb-3">Sync Information</h3>
+        <div className="bg-black border border-white p-4">
+          <h3 className="text-sm font-bold text-white mb-3 font-mono tracking-wider uppercase">SYNC INFORMATION</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Last Sync</span>
-              <span className="text-sm text-white font-mono">
+              <span className="text-sm text-gray-300 font-mono tracking-wider">LAST SYNC</span>
+              <span className="text-sm text-white font-mono tracking-wider">
                 {repository.last_sync 
-                  ? new Date(repository.last_sync).toLocaleString()
-                  : 'Never'
+                  ? new Date(repository.last_sync).toLocaleString().toUpperCase()
+                  : 'NEVER'
                 }
               </span>
             </div>
             {metrics && (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Total Apps</span>
-                  <span className="text-sm text-white font-mono">{metrics.total_applications}</span>
+                  <span className="text-sm text-gray-300 font-mono tracking-wider">TOTAL APPS</span>
+                  <span className="text-sm text-white font-mono tracking-wider">{metrics.total_applications}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Synced</span>
-                  <span className="text-sm text-green-400 font-mono">{metrics.synced_applications}</span>
+                  <span className="text-sm text-gray-300 font-mono tracking-wider">SYNCED</span>
+                  <span className="text-sm text-green-400 font-mono tracking-wider">{metrics.synced_applications}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Out of Sync</span>
-                  <span className="text-sm text-yellow-400 font-mono">{metrics.out_of_sync_applications}</span>
+                  <span className="text-sm text-gray-300 font-mono tracking-wider">OUT OF SYNC</span>
+                  <span className="text-sm text-yellow-400 font-mono tracking-wider">{metrics.out_of_sync_applications}</span>
                 </div>
               </>
             )}
@@ -232,105 +232,85 @@ const BaseInfrastructureTab = () => {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gray-900 border border-gray-700 rounded p-4">
-          <h3 className="text-sm font-bold text-gray-300 mb-3">Recent Activity</h3>
+        <div className="bg-black border border-white p-4">
+          <h3 className="text-sm font-bold text-white mb-3 font-mono tracking-wider uppercase">RECENT ACTIVITY</h3>
           <div className="space-y-3">
             {metrics && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Recent Deployments</span>
-                <span className="text-sm text-white font-mono">{metrics.recent_deployments}</span>
+                <span className="text-sm text-gray-300 font-mono tracking-wider">RECENT DEPLOYMENTS</span>
+                <span className="text-sm text-white font-mono tracking-wider">{metrics.recent_deployments}</span>
               </div>
             )}
-            <div className="flex items-center space-x-2 text-sm text-gray-400">
+            <div className="flex items-center space-x-2 text-sm text-gray-300">
               <GitCommit size={14} />
-              <span>All Kubernetes configurations managed in base repository</span>
+              <span className="font-mono tracking-wider">ALL KUBERNETES CONFIGURATIONS MANAGED IN BASE REPOSITORY</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Information Panel */}
-      <div className="bg-gray-900 border border-gray-700 rounded p-6">
-        <h3 className="text-lg font-bold text-white mb-4">Base Infrastructure Repository</h3>
-        <div className="space-y-3 text-sm text-gray-300">
-          <p>
-            This repository contains all Kubernetes configurations for your infrastructure.
-            Applications deployed through the Deployments tab automatically commit their manifests here.
-          </p>
-          <p>
-            <strong className="text-white">GitOps Workflow:</strong> When you deploy applications, 
-            their Kubernetes manifests are generated and committed to this repository. 
-            Your GitOps operator (ArgoCD, Flux, etc.) automatically syncs these changes to your cluster.
-          </p>
-          <p>
-            <strong className="text-white">Manual Sync:</strong> Use the "Sync Now" button to manually 
-            pull the latest changes from the remote repository if needed.
-          </p>
         </div>
       </div>
 
       {/* Monitoring & Webhooks Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monitoring Panel */}
-        <div className="bg-gray-900 border border-gray-700 rounded p-6">
+        <div className="bg-black border border-white p-6">
           <div className="flex items-center space-x-3 mb-4">
             <Monitor size={20} className="text-blue-400" />
-            <h3 className="text-lg font-bold text-white">GitOps Monitoring</h3>
+            <h3 className="text-lg font-bold text-white font-mono tracking-wider uppercase">GITOPS MONITORING</h3>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Health Checks</span>
-              <span className="text-sm text-green-400 font-mono">ENABLED</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">HEALTH CHECKS</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">ENABLED</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Drift Detection</span>
-              <span className="text-sm text-green-400 font-mono">ACTIVE</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">DRIFT DETECTION</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">ACTIVE</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Auto Sync</span>
-              <span className="text-sm text-blue-400 font-mono">5MIN INTERVAL</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">AUTO SYNC</span>
+              <span className="text-sm text-blue-400 font-mono tracking-wider">5MIN INTERVAL</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Alerts</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">ALERTS</span>
               <div className="flex items-center space-x-2">
                 <Bell size={14} className="text-yellow-400" />
-                <span className="text-sm text-white font-mono">3 ACTIVE</span>
+                <span className="text-sm text-white font-mono tracking-wider">3 ACTIVE</span>
               </div>
             </div>
-            <button className="w-full mt-4 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm">
+            <button className="w-full mt-4 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm tracking-wider uppercase">
               VIEW MONITORING DASHBOARD
             </button>
           </div>
         </div>
 
         {/* Webhook Panel */}
-        <div className="bg-gray-900 border border-gray-700 rounded p-6">
+        <div className="bg-black border border-white p-6">
           <div className="flex items-center space-x-3 mb-4">
             <Webhook size={20} className="text-green-400" />
-            <h3 className="text-lg font-bold text-white">Webhook Integration</h3>
+            <h3 className="text-lg font-bold text-white font-mono tracking-wider uppercase">WEBHOOK INTEGRATION</h3>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Git Push Events</span>
-              <span className="text-sm text-green-400 font-mono">CONFIGURED</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">GIT PUSH EVENTS</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">CONFIGURED</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Auto Deploy</span>
-              <span className="text-sm text-green-400 font-mono">ENABLED</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">AUTO DEPLOY</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">ENABLED</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Notifications</span>
-              <span className="text-sm text-blue-400 font-mono">SLACK, EMAIL</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">NOTIFICATIONS</span>
+              <span className="text-sm text-blue-400 font-mono tracking-wider">SLACK, EMAIL</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Last Trigger</span>
-              <span className="text-sm text-white font-mono">2MIN AGO</span>
+              <span className="text-sm text-gray-300 font-mono tracking-wider">LAST TRIGGER</span>
+              <span className="text-sm text-white font-mono tracking-wider">2MIN AGO</span>
             </div>
             <div className="flex space-x-2 mt-4">
-              <button className="flex-1 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm">
+              <button className="flex-1 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm tracking-wider uppercase">
                 TEST WEBHOOK
               </button>
-              <button className="px-4 py-2 border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors">
+              <button className="px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors">
                 <Settings size={16} />
               </button>
             </div>
