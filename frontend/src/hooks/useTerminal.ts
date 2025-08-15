@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { TerminalMessageType, StorageKey } from '@/constants';
 
 export interface TerminalMessage {
-  type: 'data' | 'resize' | 'close' | 'error';
+  type: TerminalMessageType;
   data: any;
 }
 
@@ -41,7 +42,7 @@ export const useTerminal = (): UseTerminalReturn => {
     setIsConnecting(true);
     setError(null);
 
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem(StorageKey.AUTH_TOKEN);
     if (!token) {
       setError('Authentication token not found');
       setIsConnecting(false);
@@ -85,10 +86,10 @@ export const useTerminal = (): UseTerminalReturn => {
           const message: TerminalMessage = JSON.parse(event.data);
           
           switch (message.type) {
-            case 'data':
+            case TerminalMessageType.DATA:
               setOutput(prev => prev + message.data);
               break;
-            case 'error':
+            case TerminalMessageType.ERROR:
               setError(message.data);
               break;
             default:
@@ -143,7 +144,7 @@ export const useTerminal = (): UseTerminalReturn => {
   const sendInput = useCallback((input: string) => {
     if (wsRef.current && isConnected) {
       const message: TerminalMessage = {
-        type: 'data',
+        type: TerminalMessageType.DATA,
         data: input
       };
       wsRef.current.send(JSON.stringify(message));
@@ -153,7 +154,7 @@ export const useTerminal = (): UseTerminalReturn => {
   const resize = useCallback((rows: number, cols: number) => {
     if (wsRef.current && isConnected) {
       const message: TerminalMessage = {
-        type: 'resize',
+        type: TerminalMessageType.RESIZE,
         data: { rows, cols }
       };
       wsRef.current.send(JSON.stringify(message));
