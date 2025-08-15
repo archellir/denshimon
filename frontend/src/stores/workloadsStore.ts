@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
 import { KubernetesServiceAPI, KubernetesPodAPI, KubernetesNamespaceAPI } from '@/types';
+import { apiService } from '@/services/api';
 
 export interface Service {
   id: string;
@@ -269,23 +270,14 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
         return;
       }
 
-      const token = localStorage.getItem('auth_token');
       const url = namespace && namespace !== 'all'
         ? `${API_ENDPOINTS.KUBERNETES.PODS}?namespace=${namespace}`
         : API_ENDPOINTS.KUBERNETES.PODS;
       
-      const response = await fetch(url, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch pods: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get<any>(url);
       
       // Transform backend data to match frontend interface
-      const transformedPods = (data.data || data || []).map((pod: KubernetesPodAPI) => ({
+      const transformedPods = (response.data.data || response.data || []).map((pod: KubernetesPodAPI) => ({
         id: `${pod.name}-${pod.namespace}`,
         name: pod.name,
         namespace: pod.namespace,
@@ -341,19 +333,10 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
         return;
       }
 
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(API_ENDPOINTS.KUBERNETES.NAMESPACES, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch namespaces: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get<any>(API_ENDPOINTS.KUBERNETES.NAMESPACES);
       
       // Transform backend data to match frontend interface
-      const transformedNamespaces = (data.data || data || []).map((ns: KubernetesNamespaceAPI) => ({
+      const transformedNamespaces = (response.data.data || response.data || []).map((ns: KubernetesNamespaceAPI) => ({
         name: ns.name || ns.metadata?.name,
         status: ns.status?.phase || 'Active',
         age: ns.age || 'Unknown',
