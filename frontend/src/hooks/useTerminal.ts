@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TerminalMessageType, StorageKey } from '@/constants';
+import { TerminalData } from '@/types';
 
 export interface TerminalMessage {
   type: TerminalMessageType;
-  data: any;
+  data: string | TerminalData | { rows: number; cols: number };
 }
 
 export interface TerminalOptions {
