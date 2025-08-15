@@ -8,7 +8,7 @@ import {
   UI_MESSAGES
 } from '@/constants';
 // Using standard HTML/CSS instead of shadcn components
-import { RefreshCw, GitBranch, Zap, History, RotateCcw, X, AlertTriangle, Activity, TrendingUp, CheckCircle, Plus, Package, Download } from 'lucide-react';
+import { RefreshCw, GitBranch, Zap, History, RotateCcw, X, AlertTriangle, Activity, TrendingUp, CheckCircle, Plus, Package, Download, Edit, Save, Eye, GitCommit } from 'lucide-react';
 
 interface GitOpsRepository {
   id: string;
@@ -163,6 +163,13 @@ const GitOpsTab: React.FC = () => {
     }
   });
   const [deploying, setDeploying] = useState(false);
+  const [showManifestEditor, setShowManifestEditor] = useState(false);
+  const [selectedAppForEdit, setSelectedAppForEdit] = useState<GitOpsApplication | null>(null);
+  const [manifestContent, setManifestContent] = useState('');
+  const [originalManifest, setOriginalManifest] = useState('');
+  const [editMode, setEditMode] = useState<'view' | 'edit'>('view');
+  const [saving, setSaving] = useState(false);
+  const [syncingApps, setSyncingApps] = useState<Set<string>>(new Set());
 
   const fetchData = async () => {
     try {
@@ -480,6 +487,116 @@ const GitOpsTab: React.FC = () => {
     }
   };
 
+  const handleShowManifestEditor = async (app: GitOpsApplication) => {
+    setSelectedAppForEdit(app);
+    setEditMode('view');
+    
+    try {
+      // Generate current manifest for the application
+      const response = await fetch(API_ENDPOINTS.GITOPS.MANIFESTS_GENERATE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          application: {
+            name: app.name,
+            namespace: app.namespace,
+            image: app.image,
+            replicas: app.replicas,
+            environment: app.environment ? JSON.parse(app.environment) : {},
+            resources: app.resources ? JSON.parse(app.resources) : {}
+          },
+          resource_type: 'Full',
+          options: {
+            service: true,
+            ingress: true,
+            autoscaling: false
+          }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const manifest = data.data.manifest || '';
+        setManifestContent(manifest);
+        setOriginalManifest(manifest);
+        setShowManifestEditor(true);
+      }
+    } catch (error) {
+      console.error('Failed to generate manifest:', error);
+    }
+  };
+
+  const handleSaveManifest = async () => {
+    if (!selectedAppForEdit) return;
+
+    try {
+      setSaving(true);
+      
+      // Validate manifest first
+      const validateResponse = await fetch(API_ENDPOINTS.GITOPS.MANIFESTS_VALIDATE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manifest: manifestContent })
+      });
+
+      if (!validateResponse.ok) {
+        throw new Error('Invalid manifest format');
+      }
+
+      // Update application with new manifest
+      const updateResponse = await fetch(API_ENDPOINTS.GITOPS.APPLICATION(selectedAppForEdit.id), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manifest: manifestContent,
+          updated_by: 'user'
+        })
+      });
+
+      if (updateResponse.ok) {
+        setOriginalManifest(manifestContent);
+        setEditMode('view');
+        await fetchData(); // Refresh applications list
+      }
+    } catch (error) {
+      console.error('Failed to save manifest:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    setManifestContent(originalManifest);
+    setEditMode('view');
+  };
+
+  const handleSyncToGit = async (app: GitOpsApplication) => {
+    try {
+      setSyncingApps(prev => new Set([...prev, app.id]));
+      
+      const response = await fetch(API_ENDPOINTS.GITOPS.APPLICATION_SYNC(app.id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          commit_message: `Update ${app.name} configuration`,
+          auto_deploy: false
+        })
+      });
+
+      if (response.ok) {
+        await fetchData(); // Refresh applications list
+      }
+    } catch (error) {
+      console.error('Failed to sync application to Git:', error);
+    } finally {
+      setSyncingApps(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(app.id);
+        return newSet;
+      });
+    }
+  };
+
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -725,6 +842,27 @@ const GitOpsTab: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleSyncToGit(app)}
+                        disabled={syncingApps.has(app.id)}
+                        className="px-3 py-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-mono text-sm border border-green-400 transition-colors flex items-center"
+                        title="Sync configuration to Git repository"
+                      >
+                        {syncingApps.has(app.id) ? (
+                          <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <GitCommit className="w-3 h-3 mr-1" />
+                        )}
+                        {syncingApps.has(app.id) ? 'Syncing...' : 'Sync to Git'}
+                      </button>
+                      <button
+                        onClick={() => handleShowManifestEditor(app)}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-mono text-sm border border-blue-400 transition-colors flex items-center"
+                        title="Edit Kubernetes configuration"
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit Config
+                      </button>
                       <button
                         onClick={() => handleShowRollback(app)}
                         className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-mono text-sm border border-yellow-400 transition-colors flex items-center"
@@ -1102,6 +1240,121 @@ const GitOpsTab: React.FC = () => {
         </div>
         )}
       </div>
+
+      {/* Manifest Editor Modal */}
+      {showManifestEditor && selectedAppForEdit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-black border border-white/20 p-6 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-mono text-white flex items-center">
+                <Edit className="w-5 h-5 mr-2" />
+                Edit Configuration - {selectedAppForEdit.name}
+              </h3>
+              <div className="flex items-center space-x-2">
+                <div className="flex border border-white/20">
+                  <button
+                    onClick={() => setEditMode('view')}
+                    className={`px-3 py-1 font-mono text-sm transition-colors ${
+                      editMode === 'view' 
+                        ? 'bg-blue-600 text-white border-blue-400' 
+                        : 'bg-gray-800 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Eye className="w-3 h-3 mr-1 inline" />
+                    View
+                  </button>
+                  <button
+                    onClick={() => setEditMode('edit')}
+                    className={`px-3 py-1 font-mono text-sm transition-colors ${
+                      editMode === 'edit' 
+                        ? 'bg-green-600 text-white border-green-400' 
+                        : 'bg-gray-800 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Edit className="w-3 h-3 mr-1 inline" />
+                    Edit
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowManifestEditor(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="mb-3 text-sm font-mono text-gray-400">
+                Kubernetes manifest for {selectedAppForEdit.name} in {selectedAppForEdit.namespace} namespace
+              </div>
+              
+              {editMode === 'view' ? (
+                <div className="flex-1 overflow-auto">
+                  <pre className="bg-gray-900 border border-white/20 p-4 text-sm font-mono text-white whitespace-pre-wrap">
+                    {manifestContent}
+                  </pre>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col">
+                  <textarea
+                    value={manifestContent}
+                    onChange={(e) => setManifestContent(e.target.value)}
+                    className="flex-1 bg-gray-900 border border-white/20 text-white font-mono text-sm p-4 resize-none focus:outline-none focus:border-green-400"
+                    placeholder="Enter Kubernetes YAML manifest..."
+                    style={{ fontFamily: 'monospace', minHeight: '400px' }}
+                  />
+                  <div className="mt-3 text-xs font-mono text-gray-500">
+                    Tip: Use standard Kubernetes YAML format. Changes will be validated before saving.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-between items-center border-t border-white/20 pt-4">
+              <div className="text-sm font-mono text-gray-400">
+                Image: <span className="text-blue-400">{selectedAppForEdit.image}</span> • 
+                Replicas: <span className="text-green-400">{selectedAppForEdit.replicas}</span>
+              </div>
+              <div className="flex space-x-3">
+                {editMode === 'edit' && manifestContent !== originalManifest && (
+                  <button
+                    onClick={handleDiscardChanges}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-mono border border-gray-400 transition-colors"
+                  >
+                    Discard Changes
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowManifestEditor(false)}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-mono border border-gray-400 transition-colors"
+                >
+                  Close
+                </button>
+                {editMode === 'edit' && (
+                  <button
+                    onClick={handleSaveManifest}
+                    disabled={saving || manifestContent === originalManifest}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-mono border border-green-400 transition-colors flex items-center"
+                  >
+                    {saving ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Deploy from Registry Modal */}
       {showDeployModal && (
