@@ -1,4 +1,4 @@
-# K8s WebUI Frontend
+# Denshimon Frontend
 
 Modern React SPA with cyberpunk aesthetics for Kubernetes and GitOps management.
 

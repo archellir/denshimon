@@ -1,4 +1,4 @@
-# K8s WebUI Backend
+# Denshimon Backend
 
 Go backend service that provides REST APIs for Kubernetes management, GitOps operations, and monitoring.
 
