@@ -11,6 +11,7 @@ import type {
 
 // Import mock utilities  
 import { mockApiResponse, mockRegistries, MOCK_ENABLED } from '@/mocks';
+import { apiService, ApiError } from '@/services/api';
 
 interface DeploymentStore {
   // State
@@ -110,18 +111,8 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         const registries = await mockApiResponse(mockRegistries, 300);
         set({ registries, loading: { ...get().loading, registries: false } });
       } else {
-        // Real API call
-        const token = localStorage.getItem('auth_token');
-        const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const registries = await response.json();
-        set({ registries, loading: { ...get().loading, registries: false } });
+        const response = await apiService.get<Registry[]>(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`);
+        set({ registries: response.data, loading: { ...get().loading, registries: false } });
       }
     } catch (error) {
       // Fallback to mock data on error
@@ -129,8 +120,9 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         const registries = await mockApiResponse(mockRegistries, 300);
         set({ registries, loading: { ...get().loading, registries: false }, error: null });
       } catch (mockError) {
+        const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch registries';
         set(state => ({
-          error: error instanceof Error ? error.message : 'Failed to fetch registries',
+          error: errorMessage,
           loading: { ...state.loading, registries: false }
         }));
       }
@@ -141,26 +133,15 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, creating: true }, error: null }));
     
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(registryData),
-      });
-      
-      if (!response.ok) throw new Error('Failed to add registry');
-      
-      const registry = await response.json();
+      const response = await apiService.post<Registry>(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`, registryData);
       set(state => ({
-        registries: [...state.registries, registry],
+        registries: [...state.registries, response.data],
         loading: { ...state.loading, creating: false }
       }));
     } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to add registry';
       set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to add registry',
+        error: errorMessage,
         loading: { ...state.loading, creating: false }
       }));
     }
@@ -168,18 +149,13 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   deleteRegistry: async (id) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries/${id}`, {
-        method: 'DELETE',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      if (!response.ok) throw new Error('Failed to delete registry');
-      
+      await apiService.delete(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries/${id}`);
       set(state => ({
         registries: state.registries.filter(r => r.id !== id)
       }));
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to delete registry' });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete registry';
+      set({ error: errorMessage });
     }
   },
   
@@ -216,21 +192,12 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         const images = await mockApiResponse(searchMockImages('', registryName), 400);
         set({ images, loading: { ...get().loading, images: false } });
       } else {
-        const token = localStorage.getItem('auth_token');
         const url = registryId 
           ? `${API_ENDPOINTS.DEPLOYMENTS.BASE}/images?registry=${registryId}`
           : `${API_ENDPOINTS.DEPLOYMENTS.BASE}/images`;
         
-        const response = await fetch(url, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        set({ images: result.data || result, loading: { ...get().loading, images: false } });
+        const response = await apiService.get<ContainerImage[]>(url);
+        set({ images: response.data, loading: { ...get().loading, images: false } });
       }
     } catch (error) {
       try {
@@ -346,28 +313,17 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deploying: true }, error: null }));
     
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BASE, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(request),
-      });
-      
-      if (!response.ok) throw new Error('Failed to create deployment');
-      
-      const deployment = await response.json();
+      const response = await apiService.post<Deployment>(API_ENDPOINTS.DEPLOYMENTS.BASE, request);
       set(state => ({
-        deployments: [...state.deployments, deployment],
+        deployments: [...state.deployments, response.data],
         loading: { ...state.loading, deploying: false }
       }));
       
-      return deployment;
+      return response.data;
     } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to create deployment';
       set(state => ({
-        error: error instanceof Error ? error.message : 'Failed to create deployment',
+        error: errorMessage,
         loading: { ...state.loading, deploying: false }
       }));
       throw error;
@@ -376,78 +332,47 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   updateDeployment: async (id, updates) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(updates),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update deployment');
-      
-      const deployment = await response.json();
+      const response = await apiService.put<Deployment>(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, updates);
       set(state => ({
-        deployments: state.deployments.map(d => d.id === id ? deployment : d)
+        deployments: state.deployments.map(d => d.id === id ? response.data : d)
       }));
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to update deployment' });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to update deployment';
+      set({ error: errorMessage });
     }
   },
   
   scaleDeployment: async (id, replicas) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/scale`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ replicas }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to scale deployment');
-      
+      await apiService.patch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/scale`, { replicas });
       // Refresh deployment data
       get().fetchDeployments();
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to scale deployment' });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to scale deployment';
+      set({ error: errorMessage });
     }
   },
   
   deleteDeployment: async (id) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, {
-        method: 'DELETE',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      if (!response.ok) throw new Error('Failed to delete deployment');
-      
+      await apiService.delete(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`);
       set(state => ({
         deployments: state.deployments.filter(d => d.id !== id)
       }));
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to delete deployment' });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete deployment';
+      set({ error: errorMessage });
     }
   },
   
   restartDeployment: async (id) => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/restart`, {
-        method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      if (!response.ok) throw new Error('Failed to restart deployment');
-      
+      await apiService.post(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/restart`);
       // Refresh deployment data
       get().fetchDeployments();
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to restart deployment' });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to restart deployment';
+      set({ error: errorMessage });
     }
   },
   
