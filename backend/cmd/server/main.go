@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/archellir/denshimon/internal/api"
+	httphandlers "github.com/archellir/denshimon/internal/http"
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/database"
 	"github.com/archellir/denshimon/internal/k8s"
@@ -75,7 +75,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// API routes
-	api.RegisterRoutes(mux, authService, k8sClient, db, wsHub)
+	httphandlers.RegisterRoutes(mux, authService, k8sClient, db, wsHub)
 
 	// Health check endpoint
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
