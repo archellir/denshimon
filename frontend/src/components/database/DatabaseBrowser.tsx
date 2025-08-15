@@ -37,6 +37,7 @@ const DatabaseBrowser: FC = () => {
   const [expandedDatabases, setExpandedDatabases] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showOnlyConnected, setShowOnlyConnected] = useState<boolean>(true);
+  const [showTableData, setShowTableData] = useState<boolean>(false);
 
   useEffect(() => {
     fetchConnections();
@@ -253,11 +254,33 @@ const DatabaseBrowser: FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="flex items-center space-x-1 px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-xs">
+                  <button 
+                    onClick={() => {
+                      // This could integrate with the SQL Query Interface to show table data
+                      console.log('Viewing data for table:', selectedTable);
+                      setShowTableData(true);
+                    }}
+                    className="flex items-center space-x-1 px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-xs"
+                  >
                     <Eye size={12} />
                     <span>VIEW DATA</span>
                   </button>
-                  <button className="flex items-center space-x-1 px-3 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs">
+                  <button 
+                    onClick={() => {
+                      // Navigate to analytics or generate insights about the table
+                      const table = tables.find(t => t.name === selectedTable);
+                      if (table) {
+                        console.log('Analyzing table:', {
+                          name: table.name,
+                          rowCount: table.rowCount,
+                          size: table.size,
+                          columns: columns.length
+                        });
+                        // Could show analysis modal or navigate to metrics
+                      }
+                    }}
+                    className="flex items-center space-x-1 px-3 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
+                  >
                     <BarChart3 size={12} />
                     <span>ANALYZE</span>
                   </button>
