@@ -453,9 +453,9 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, showHelp, setShowHelp }
               title={showHelp ? "Hide tab explanations" : "Show tab explanations"}
             >
               {showHelp ? (
-                <ChevronDown size={14} className="text-gray-400 hover:text-white" />
+                <ChevronDown size={16} strokeWidth={2.5} className="text-gray-400 hover:text-white" />
               ) : (
-                <ChevronRight size={14} className="text-gray-400 hover:text-white" />
+                <ChevronRight size={16} strokeWidth={2.5} className="text-gray-400 hover:text-white" />
               )}
             </button>
           </div>
