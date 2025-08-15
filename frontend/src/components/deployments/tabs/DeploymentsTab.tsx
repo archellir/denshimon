@@ -375,187 +375,218 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column: Image Selection */}
-              <div>
-                <h4 className="text-lg font-bold text-white mb-4 font-mono tracking-wider">1. SELECT CONTAINER IMAGE</h4>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {images.map((image) => (
-                    <div
-                      key={image.id}
-                      onClick={() => setSelectedImage(image)}
-                      className={`p-3 border cursor-pointer transition-colors ${
-                        selectedImage?.id === image.id
-                          ? 'border-green-400 bg-green-900/20'
-                          : 'border-white/30 hover:border-white/50'
-                      }`}
-                    >
-                      <div className="font-mono text-sm text-white">{image.name.toUpperCase()}</div>
-                      <div className="text-xs text-gray-300 font-mono">{image.tag}</div>
-                      {image.size && (
-                        <div className="text-xs text-gray-400">SIZE: {image.size}</div>
-                      )}
-                    </div>
-                  ))}
+            {/* Container Image Selection at Top */}
+            <div className="mb-6 pb-6 border-b border-white/30">
+              <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
+              <select
+                value={selectedImage?.id || ''}
+                onChange={(e) => {
+                  const image = images.find(img => img.id === e.target.value);
+                  setSelectedImage(image || null);
+                }}
+                className="w-full bg-black border border-white text-white px-4 py-3 font-mono text-sm focus:border-green-400 transition-colors"
+              >
+                <option value="">-- SELECT AN IMAGE --</option>
+                {images.map((image) => (
+                  <option key={image.id} value={image.id}>
+                    {image.name.toUpperCase()} : {image.tag} {image.size ? `(${image.size})` : ''}
+                  </option>
+                ))}
+              </select>
+              {selectedImage && (
+                <div className="mt-2 text-sm text-green-400 font-mono">
+                  SELECTED: {selectedImage.name}:{selectedImage.tag}
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* Right Column: Configuration Form */}
-              <div>
-                <h4 className="text-lg font-bold text-white mb-4 font-mono tracking-wider">2. CONFIGURE DEPLOYMENT</h4>
-                <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+            {/* Configuration Form in 2 Columns */}
+            <div className="space-y-6">
+              <h4 className="text-lg font-bold text-white font-mono tracking-wider">CONFIGURATION</h4>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-2">
+                {/* Left Column */}
+                <div className="space-y-6">
                   {/* Basic Configuration */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">APPLICATION NAME</label>
-                      <input
-                        type="text"
-                        value={deployForm.name}
-                        onChange={(e) => setDeployForm(prev => ({...prev, name: e.target.value}))}
-                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                        placeholder="my-app"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">NAMESPACE</label>
-                      <select
-                        value={deployForm.namespace}
-                        onChange={(e) => setDeployForm(prev => ({...prev, namespace: e.target.value}))}
-                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      >
-                        <option value="base-infra">BASE-INFRA</option>
-                        <option value="default">DEFAULT</option>
-                        <option value="kube-system">KUBE-SYSTEM</option>
-                      </select>
+                  <div>
+                    <h5 className="text-sm font-bold text-gray-300 mb-3 font-mono tracking-wider border-b border-white/20 pb-2">BASIC</h5>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">APPLICATION NAME</label>
+                        <input
+                          type="text"
+                          value={deployForm.name}
+                          onChange={(e) => setDeployForm(prev => ({...prev, name: e.target.value}))}
+                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          placeholder="my-app"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-mono text-gray-400 mb-1">NAMESPACE</label>
+                          <select
+                            value={deployForm.namespace}
+                            onChange={(e) => setDeployForm(prev => ({...prev, namespace: e.target.value}))}
+                            className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          >
+                            <option value="base-infra">BASE-INFRA</option>
+                            <option value="default">DEFAULT</option>
+                            <option value="kube-system">KUBE-SYSTEM</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-mono text-gray-400 mb-1">REPLICAS</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={deployForm.replicas}
+                            onChange={(e) => setDeployForm(prev => ({...prev, replicas: parseInt(e.target.value)}))}
+                            className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">CONTAINER PORT</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="65535"
+                          value={deployForm.port}
+                          onChange={(e) => setDeployForm(prev => ({...prev, port: parseInt(e.target.value)}))}
+                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          placeholder="8080"
+                        />
+                      </div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">REPLICAS</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={deployForm.replicas}
-                        onChange={(e) => setDeployForm(prev => ({...prev, replicas: parseInt(e.target.value)}))}
-                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-mono text-gray-300 mb-2 tracking-wider">CONTAINER PORT</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="65535"
-                        value={deployForm.port}
-                        onChange={(e) => setDeployForm(prev => ({...prev, port: parseInt(e.target.value)}))}
-                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                        placeholder="8080"
-                      />
-                    </div>
-                  </div>
-                  
                   {/* Resource Limits */}
                   <div>
-                    <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">RESOURCE LIMITS</label>
+                    <h5 className="text-sm font-bold text-gray-300 mb-3 font-mono tracking-wider border-b border-white/20 pb-2">RESOURCES</h5>
                     <div className="grid grid-cols-2 gap-3">
-                      <input
-                        type="text"
-                        placeholder="CPU REQUEST (e.g., 10m)"
-                        value={deployForm.resources.cpu_request}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          resources: {...prev.resources, cpu_request: e.target.value}
-                        }))}
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="text"
-                        placeholder="CPU LIMIT (e.g., 50m)"
-                        value={deployForm.resources.cpu_limit}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          resources: {...prev.resources, cpu_limit: e.target.value}
-                        }))}
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="text"
-                        placeholder="MEMORY REQUEST (e.g., 32Mi)"
-                        value={deployForm.resources.memory_request}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          resources: {...prev.resources, memory_request: e.target.value}
-                        }))}
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="text"
-                        placeholder="MEMORY LIMIT (e.g., 64Mi)"
-                        value={deployForm.resources.memory_limit}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          resources: {...prev.resources, memory_limit: e.target.value}
-                        }))}
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      />
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">CPU REQUEST</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 10m"
+                          value={deployForm.resources.cpu_request}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            resources: {...prev.resources, cpu_request: e.target.value}
+                          }))}
+                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">CPU LIMIT</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 50m"
+                          value={deployForm.resources.cpu_limit}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            resources: {...prev.resources, cpu_limit: e.target.value}
+                          }))}
+                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">MEMORY REQUEST</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 32Mi"
+                          value={deployForm.resources.memory_request}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            resources: {...prev.resources, memory_request: e.target.value}
+                          }))}
+                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">MEMORY LIMIT</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 64Mi"
+                          value={deployForm.resources.memory_limit}
+                          onChange={(e) => setDeployForm(prev => ({
+                            ...prev,
+                            resources: {...prev.resources, memory_limit: e.target.value}
+                          }))}
+                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* Persistent Storage */}
                   <div>
-                    <div className="flex items-center space-x-2 mb-3">
-                      <input
-                        type="checkbox"
-                        id="storage"
-                        checked={deployForm.storage.enabled}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          storage: {...prev.storage, enabled: e.target.checked}
-                        }))}
-                        className="bg-black border border-white w-4 h-4"
-                      />
-                      <label htmlFor="storage" className="text-sm font-mono text-gray-300 tracking-wider">ENABLE PERSISTENT STORAGE</label>
-                    </div>
-                    {deployForm.storage.enabled && (
-                      <div className="grid grid-cols-3 gap-3">
+                    <h5 className="text-sm font-bold text-gray-300 mb-3 font-mono tracking-wider border-b border-white/20 pb-2">STORAGE</h5>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
                         <input
-                          type="text"
-                          placeholder="SIZE (e.g., 512Mi, 20Gi)"
-                          value={deployForm.storage.size}
+                          type="checkbox"
+                          id="storage"
+                          checked={deployForm.storage.enabled}
                           onChange={(e) => setDeployForm(prev => ({
                             ...prev,
-                            storage: {...prev.storage, size: e.target.value}
+                            storage: {...prev.storage, enabled: e.target.checked}
                           }))}
-                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          className="bg-black border border-white w-4 h-4"
                         />
-                        <select
-                          value={deployForm.storage.accessMode}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            storage: {...prev.storage, accessMode: e.target.value}
-                          }))}
-                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                        >
-                          <option value="ReadWriteOnce">READ WRITE ONCE</option>
-                          <option value="ReadOnlyMany">READ ONLY MANY</option>
-                          <option value="ReadWriteMany">READ WRITE MANY</option>
-                        </select>
-                        <input
-                          type="text"
-                          placeholder="MOUNT PATH (e.g., /data)"
-                          value={deployForm.storage.mountPath}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            storage: {...prev.storage, mountPath: e.target.value}
-                          }))}
-                          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                        />
+                        <label htmlFor="storage" className="text-sm font-mono text-gray-300">ENABLE PERSISTENT VOLUME</label>
                       </div>
-                    )}
+                      {deployForm.storage.enabled && (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs font-mono text-gray-400 mb-1">SIZE</label>
+                            <input
+                              type="text"
+                              placeholder="e.g., 512Mi, 20Gi"
+                              value={deployForm.storage.size}
+                              onChange={(e) => setDeployForm(prev => ({
+                                ...prev,
+                                storage: {...prev.storage, size: e.target.value}
+                              }))}
+                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
+                            <select
+                              value={deployForm.storage.accessMode}
+                              onChange={(e) => setDeployForm(prev => ({
+                                ...prev,
+                                storage: {...prev.storage, accessMode: e.target.value}
+                              }))}
+                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                            >
+                              <option value="ReadWriteOnce">READ WRITE ONCE</option>
+                              <option value="ReadOnlyMany">READ ONLY MANY</option>
+                              <option value="ReadWriteMany">READ WRITE MANY</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-mono text-gray-400 mb-1">MOUNT PATH</label>
+                            <input
+                              type="text"
+                              placeholder="e.g., /data"
+                              value={deployForm.storage.mountPath}
+                              onChange={(e) => setDeployForm(prev => ({
+                                ...prev,
+                                storage: {...prev.storage, mountPath: e.target.value}
+                              }))}
+                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                </div>
 
-                  {/* Environment Variables */}
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {/* Service & Networking */}
                   <div>
                     <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">ENVIRONMENT VARIABLES</label>
                     <div className="space-y-3">
