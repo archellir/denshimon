@@ -85,7 +85,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   });
 
   useEffect(() => {
-    if (showDeployModal) {
+    if (isOpen) {
       fetchImages();
       if (preselectedImage) {
         setSelectedImage(preselectedImage);
