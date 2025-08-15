@@ -176,7 +176,7 @@ CREATE INDEX IF NOT EXISTS idx_backup_alerts_job_id ON backup_alerts(job_id);
 
 -- Insert default settings
 INSERT INTO settings (key, value, description) VALUES 
-    ('app_name', '"K8s WebUI"', 'Application name'),
+    ('app_name', '"Denshimon"', 'Application name'),
     ('theme', '"cyberpunk"', 'UI theme'),
     ('default_namespace', '"default"', 'Default Kubernetes namespace'),
     ('log_level', '"info"', 'Application log level'),
