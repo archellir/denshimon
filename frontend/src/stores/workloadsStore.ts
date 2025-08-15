@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
+import { KubernetesServiceAPI, KubernetesPodAPI, KubernetesNamespaceAPI } from '@/types';
 
 export interface Service {
   id: string;
@@ -211,7 +212,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       const data = await response.json();
       
       // Transform backend data to match frontend interface
-      const transformedServices = (data.data || data || []).map((svc: any) => ({
+      const transformedServices = (data.data || data || []).map((svc: KubernetesServiceAPI) => ({
         id: `${svc.name}-${svc.namespace}`,
         name: svc.name,
         namespace: svc.namespace,
@@ -284,7 +285,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       const data = await response.json();
       
       // Transform backend data to match frontend interface
-      const transformedPods = (data.data || data || []).map((pod: any) => ({
+      const transformedPods = (data.data || data || []).map((pod: KubernetesPodAPI) => ({
         id: `${pod.name}-${pod.namespace}`,
         name: pod.name,
         namespace: pod.namespace,
@@ -295,7 +296,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
         node: pod.spec?.nodeName || pod.node || 'Unknown',
         ip: pod.status?.podIP || pod.ip,
         labels: pod.metadata?.labels || {},
-        containers: pod.spec?.containers?.map((container: any) => ({
+        containers: pod.spec?.containers?.map((container) => ({
           name: container.name,
           image: container.image,
           ready: container.ready || false,
@@ -352,7 +353,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       const data = await response.json();
       
       // Transform backend data to match frontend interface
-      const transformedNamespaces = (data.data || data || []).map((ns: any) => ({
+      const transformedNamespaces = (data.data || data || []).map((ns: KubernetesNamespaceAPI) => ({
         name: ns.name || ns.metadata?.name,
         status: ns.status?.phase || 'Active',
         age: ns.age || 'Unknown',
