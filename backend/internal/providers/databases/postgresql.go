@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	
+
 	_ "github.com/lib/pq"
 )
 
@@ -30,25 +30,25 @@ func (p *PostgreSQLProvider) Type() DatabaseType {
 // Connect establishes a connection to PostgreSQL
 func (p *PostgreSQLProvider) Connect(ctx context.Context, config DatabaseConfig) error {
 	p.config = config
-	
+
 	dsn := p.buildConnectionString(config)
-	
+
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to open database connection: %w", err)
 	}
-	
+
 	// Test the connection
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
-	
+
 	// Set connection pool settings
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(time.Hour)
-	
+
 	p.db = db
 	return nil
 }
@@ -64,7 +64,7 @@ func (p *PostgreSQLProvider) Disconnect(ctx context.Context) error {
 // TestConnection tests the database connection
 func (p *PostgreSQLProvider) TestConnection(ctx context.Context, config DatabaseConfig) (*TestConnectionResult, error) {
 	start := time.Now()
-	
+
 	dsn := p.buildConnectionString(config)
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -75,7 +75,7 @@ func (p *PostgreSQLProvider) TestConnection(ctx context.Context, config Database
 		}, nil
 	}
 	defer db.Close()
-	
+
 	// Test connection and get version
 	var version string
 	err = db.QueryRowContext(ctx, "SELECT version()").Scan(&version)
@@ -86,7 +86,7 @@ func (p *PostgreSQLProvider) TestConnection(ctx context.Context, config Database
 			ResponseTime: time.Since(start),
 		}, nil
 	}
-	
+
 	return &TestConnectionResult{
 		Success:      true,
 		ResponseTime: time.Since(start),
@@ -99,7 +99,7 @@ func (p *PostgreSQLProvider) GetDatabases(ctx context.Context) ([]DatabaseInfo, 
 	if p.db == nil {
 		return nil, fmt.Errorf("not connected to database")
 	}
-	
+
 	query := `
 		SELECT 
 			d.datname as name,
@@ -114,18 +114,18 @@ func (p *PostgreSQLProvider) GetDatabases(ctx context.Context) ([]DatabaseInfo, 
 		WHERE d.datistemplate = false
 		ORDER BY d.datname
 	`
-	
+
 	rows, err := p.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var databases []DatabaseInfo
 	for rows.Next() {
 		var db DatabaseInfo
 		var encoding int
-		
+
 		err := rows.Scan(
 			&db.Name,
 			&db.Size,
@@ -137,14 +137,14 @@ func (p *PostgreSQLProvider) GetDatabases(ctx context.Context) ([]DatabaseInfo, 
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Get connection count for this database
 		connQuery := `SELECT count(*) FROM pg_stat_activity WHERE datname = $1`
 		p.db.QueryRowContext(ctx, connQuery, db.Name).Scan(&db.ConnectionCount)
-		
+
 		databases = append(databases, db)
 	}
-	
+
 	return databases, nil
 }
 
@@ -153,7 +153,7 @@ func (p *PostgreSQLProvider) GetTables(ctx context.Context, database string) ([]
 	if p.db == nil {
 		return nil, fmt.Errorf("not connected to database")
 	}
-	
+
 	query := `
 		SELECT 
 			t.table_name,
@@ -169,19 +169,19 @@ func (p *PostgreSQLProvider) GetTables(ctx context.Context, database string) ([]
 			AND t.table_schema NOT IN ('information_schema', 'pg_catalog')
 		ORDER BY t.table_schema, t.table_name
 	`
-	
+
 	rows, err := p.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var tables []TableInfo
 	for rows.Next() {
 		var table TableInfo
 		var tableType string
 		var comment sql.NullString
-		
+
 		err := rows.Scan(
 			&table.Name,
 			&table.Schema,
@@ -193,15 +193,15 @@ func (p *PostgreSQLProvider) GetTables(ctx context.Context, database string) ([]
 		if err != nil {
 			return nil, err
 		}
-		
+
 		table.Type = tableType
 		if comment.Valid {
 			table.Comment = comment.String
 		}
-		
+
 		tables = append(tables, table)
 	}
-	
+
 	return tables, nil
 }
 
@@ -210,7 +210,7 @@ func (p *PostgreSQLProvider) GetColumns(ctx context.Context, database, table str
 	if p.db == nil {
 		return nil, fmt.Errorf("not connected to database")
 	}
-	
+
 	query := `
 		SELECT 
 			c.column_name,
@@ -253,19 +253,19 @@ func (p *PostgreSQLProvider) GetColumns(ctx context.Context, database, table str
 		WHERE c.table_name = $1
 		ORDER BY c.ordinal_position
 	`
-	
+
 	rows, err := p.db.QueryContext(ctx, query, table)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var columns []ColumnInfo
 	for rows.Next() {
 		var col ColumnInfo
 		var defaultVal sql.NullString
 		var comment sql.NullString
-		
+
 		err := rows.Scan(
 			&col.Name,
 			&col.Type,
@@ -282,17 +282,17 @@ func (p *PostgreSQLProvider) GetColumns(ctx context.Context, database, table str
 		if err != nil {
 			return nil, err
 		}
-		
+
 		if defaultVal.Valid {
 			col.Default = defaultVal.String
 		}
 		if comment.Valid {
 			col.Comment = comment.String
 		}
-		
+
 		columns = append(columns, col)
 	}
-	
+
 	return columns, nil
 }
 
@@ -301,9 +301,9 @@ func (p *PostgreSQLProvider) ExecuteQuery(ctx context.Context, req QueryRequest)
 	if p.db == nil {
 		return nil, fmt.Errorf("not connected to database")
 	}
-	
+
 	start := time.Now()
-	
+
 	// Add LIMIT if specified
 	query := req.SQL
 	if req.Limit > 0 {
@@ -312,7 +312,7 @@ func (p *PostgreSQLProvider) ExecuteQuery(ctx context.Context, req QueryRequest)
 	if req.Offset > 0 {
 		query += fmt.Sprintf(" OFFSET %d", req.Offset)
 	}
-	
+
 	rows, err := p.db.QueryContext(ctx, query)
 	if err != nil {
 		return &QueryResult{
@@ -321,7 +321,7 @@ func (p *PostgreSQLProvider) ExecuteQuery(ctx context.Context, req QueryRequest)
 		}, nil
 	}
 	defer rows.Close()
-	
+
 	// Get column names
 	columns, err := rows.Columns()
 	if err != nil {
@@ -330,7 +330,7 @@ func (p *PostgreSQLProvider) ExecuteQuery(ctx context.Context, req QueryRequest)
 			Duration: time.Since(start),
 		}, nil
 	}
-	
+
 	// Read all rows
 	var results [][]interface{}
 	for rows.Next() {
@@ -339,24 +339,24 @@ func (p *PostgreSQLProvider) ExecuteQuery(ctx context.Context, req QueryRequest)
 		for i := range values {
 			valuePtrs[i] = &values[i]
 		}
-		
+
 		if err := rows.Scan(valuePtrs...); err != nil {
 			return &QueryResult{
 				Error:    err.Error(),
 				Duration: time.Since(start),
 			}, nil
 		}
-		
+
 		// Convert byte arrays to strings
 		for i, val := range values {
 			if b, ok := val.([]byte); ok {
 				values[i] = string(b)
 			}
 		}
-		
+
 		results = append(results, values)
 	}
-	
+
 	return &QueryResult{
 		Columns:  columns,
 		Rows:     results,
@@ -370,20 +370,20 @@ func (p *PostgreSQLProvider) GetTableData(ctx context.Context, req TableDataRequ
 	if p.db == nil {
 		return nil, fmt.Errorf("not connected to database")
 	}
-	
+
 	query := fmt.Sprintf("SELECT * FROM %s", req.Table)
 	if req.Schema != "" {
 		query = fmt.Sprintf("SELECT * FROM %s.%s", req.Schema, req.Table)
 	}
-	
+
 	if req.Where != "" {
 		query += fmt.Sprintf(" WHERE %s", req.Where)
 	}
-	
+
 	if req.Order != "" {
 		query += fmt.Sprintf(" ORDER BY %s", req.Order)
 	}
-	
+
 	return p.ExecuteQuery(ctx, QueryRequest{
 		SQL:    query,
 		Limit:  req.Limit,
@@ -396,27 +396,27 @@ func (p *PostgreSQLProvider) UpdateRow(ctx context.Context, req RowUpdateRequest
 	if p.db == nil {
 		return fmt.Errorf("not connected to database")
 	}
-	
+
 	var setParts []string
 	var args []interface{}
 	argIndex := 1
-	
+
 	for col, val := range req.Values {
 		setParts = append(setParts, fmt.Sprintf("%s = $%d", col, argIndex))
 		args = append(args, val)
 		argIndex++
 	}
-	
+
 	tableName := req.Table
 	if req.Schema != "" {
 		tableName = req.Schema + "." + req.Table
 	}
-	
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE %s", 
-		tableName, 
-		strings.Join(setParts, ", "), 
+
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE %s",
+		tableName,
+		strings.Join(setParts, ", "),
 		req.Where)
-	
+
 	_, err := p.db.ExecContext(ctx, query, args...)
 	return err
 }
@@ -426,14 +426,14 @@ func (p *PostgreSQLProvider) DeleteRow(ctx context.Context, req RowDeleteRequest
 	if p.db == nil {
 		return fmt.Errorf("not connected to database")
 	}
-	
+
 	tableName := req.Table
 	if req.Schema != "" {
 		tableName = req.Schema + "." + req.Table
 	}
-	
+
 	query := fmt.Sprintf("DELETE FROM %s WHERE %s", tableName, req.Where)
-	
+
 	_, err := p.db.ExecContext(ctx, query)
 	return err
 }
@@ -443,29 +443,29 @@ func (p *PostgreSQLProvider) InsertRow(ctx context.Context, req RowInsertRequest
 	if p.db == nil {
 		return fmt.Errorf("not connected to database")
 	}
-	
+
 	var columns []string
 	var placeholders []string
 	var args []interface{}
 	argIndex := 1
-	
+
 	for col, val := range req.Values {
 		columns = append(columns, col)
 		placeholders = append(placeholders, "$"+strconv.Itoa(argIndex))
 		args = append(args, val)
 		argIndex++
 	}
-	
+
 	tableName := req.Table
 	if req.Schema != "" {
 		tableName = req.Schema + "." + req.Table
 	}
-	
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", 
+
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
 		tableName,
 		strings.Join(columns, ", "),
 		strings.Join(placeholders, ", "))
-	
+
 	_, err := p.db.ExecContext(ctx, query, args...)
 	return err
 }
@@ -475,9 +475,9 @@ func (p *PostgreSQLProvider) GetStats(ctx context.Context) (*DatabaseStats, erro
 	if p.db == nil {
 		return nil, fmt.Errorf("not connected to database")
 	}
-	
+
 	stats := &DatabaseStats{}
-	
+
 	// Connection stats
 	var activeConns, idleConns, totalConns, maxConns int
 	err := p.db.QueryRowContext(ctx, `
@@ -490,7 +490,7 @@ func (p *PostgreSQLProvider) GetStats(ctx context.Context) (*DatabaseStats, erro
 		WHERE name = 'max_connections'
 		GROUP BY setting
 	`).Scan(&activeConns, &idleConns, &totalConns, &maxConns)
-	
+
 	if err == nil {
 		stats.Connections = ConnectionStats{
 			Active:  activeConns,
@@ -499,7 +499,7 @@ func (p *PostgreSQLProvider) GetStats(ctx context.Context) (*DatabaseStats, erro
 			MaxConn: maxConns,
 		}
 	}
-	
+
 	// Storage stats
 	var totalSize, usedSize int64
 	err = p.db.QueryRowContext(ctx, `
@@ -509,7 +509,7 @@ func (p *PostgreSQLProvider) GetStats(ctx context.Context) (*DatabaseStats, erro
 		FROM pg_database 
 		WHERE datistemplate = false
 	`).Scan(&totalSize, &usedSize)
-	
+
 	if err == nil {
 		stats.Storage = StorageStats{
 			TotalSize: totalSize,
@@ -517,7 +517,7 @@ func (p *PostgreSQLProvider) GetStats(ctx context.Context) (*DatabaseStats, erro
 			FreeSize:  0, // PostgreSQL doesn't have a direct free space concept
 		}
 	}
-	
+
 	// Performance stats - simplified for now
 	stats.Performance = PerformanceStats{
 		QueriesPerSecond: 0, // Would need more complex monitoring
@@ -525,7 +525,7 @@ func (p *PostgreSQLProvider) GetStats(ctx context.Context) (*DatabaseStats, erro
 		SlowQueries:      0,
 		CacheHitRatio:    0,
 	}
-	
+
 	return stats, nil
 }
 
@@ -534,10 +534,10 @@ func (p *PostgreSQLProvider) IsConnected() bool {
 	if p.db == nil {
 		return false
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	
+
 	return p.db.PingContext(ctx) == nil
 }
 
@@ -549,7 +549,7 @@ func (p *PostgreSQLProvider) GetConnectionInfo() *DatabaseConfig {
 // buildConnectionString builds a PostgreSQL connection string from config
 func (p *PostgreSQLProvider) buildConnectionString(config DatabaseConfig) string {
 	var parts []string
-	
+
 	if config.Host != "" {
 		parts = append(parts, fmt.Sprintf("host=%s", config.Host))
 	}
@@ -570,6 +570,6 @@ func (p *PostgreSQLProvider) buildConnectionString(config DatabaseConfig) string
 	} else {
 		parts = append(parts, "sslmode=disable")
 	}
-	
+
 	return strings.Join(parts, " ")
 }

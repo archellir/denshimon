@@ -211,7 +211,7 @@ func (m *Manager) completeJob(jobID, historyID string) {
 		UPDATE backup_history SET status = ?, size = ?, duration = ?, 
 		       location = ?, checksum = ?, verification_status = ?
 		WHERE id = ?
-	`, StatusCompleted, size, duration, fmt.Sprintf("/backups/%s.tar.gz", historyID), 
+	`, StatusCompleted, size, duration, fmt.Sprintf("/backups/%s.tar.gz", historyID),
 		fmt.Sprintf("sha256:%s", uuid.New().String()[:16]), VerificationVerified, historyID)
 }
 
@@ -278,26 +278,26 @@ func (m *Manager) GetStorage() ([]*Storage, error) {
 	// For now, return mock data as this would typically integrate with actual storage backends
 	return []*Storage{
 		{
-			ID:           "storage-local",
-			Name:         "Local Storage",
-			Type:         StorageTypeLocal,
-			Location:     "/var/backups",
-			Available:    107374182400, // 100GB
-			Used:         64424509440,  // 60GB
-			Total:        171798691840, // 160GB
-			BackupCount:  42,
-			Status:       StorageStatusAvailable,
+			ID:          "storage-local",
+			Name:        "Local Storage",
+			Type:        StorageTypeLocal,
+			Location:    "/var/backups",
+			Available:   107374182400, // 100GB
+			Used:        64424509440,  // 60GB
+			Total:       171798691840, // 160GB
+			BackupCount: 42,
+			Status:      StorageStatusAvailable,
 		},
 		{
-			ID:           "storage-s3",
-			Name:         "S3 Backup Bucket",
-			Type:         StorageTypeS3,
-			Location:     "s3://backups",
-			Available:    5497558138880, // 5TB
-			Used:         1099511627776,  // 1TB
-			Total:        6597069766656,  // 6TB
-			BackupCount:  128,
-			Status:       StorageStatusAvailable,
+			ID:          "storage-s3",
+			Name:        "S3 Backup Bucket",
+			Type:        StorageTypeS3,
+			Location:    "s3://backups",
+			Available:   5497558138880, // 5TB
+			Used:        1099511627776, // 1TB
+			Total:       6597069766656, // 6TB
+			BackupCount: 128,
+			Status:      StorageStatusAvailable,
 		},
 	}, nil
 }
@@ -524,11 +524,11 @@ func (m *Manager) simulateRecovery(recoveryID string) {
 
 	for i, status := range statuses {
 		time.Sleep(2 * time.Second)
-		
+
 		progress := &RecoveryProgress{
 			Percentage:    (i + 1) * 20,
 			BytesRestored: int64((i + 1) * 20971520), // 20MB per step
-			TotalBytes:    104857600,                  // 100MB total
+			TotalBytes:    104857600,                 // 100MB total
 			FilesRestored: (i + 1) * 10,
 			TotalFiles:    50,
 		}

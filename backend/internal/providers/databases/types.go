@@ -24,47 +24,47 @@ const (
 
 // DatabaseConfig holds the configuration for a database connection
 type DatabaseConfig struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Type        DatabaseType           `json:"type"`
-	Host        string                 `json:"host,omitempty"`
-	Port        int                    `json:"port,omitempty"`
-	Database    string                 `json:"database,omitempty"`
-	Username    string                 `json:"username,omitempty"`
-	Password    string                 `json:"password,omitempty"`
-	SSLMode     string                 `json:"ssl_mode,omitempty"`
-	FilePath    string                 `json:"file_path,omitempty"`
-	Extra       map[string]interface{} `json:"extra,omitempty"`
-	Status      DatabaseStatus         `json:"status"`
-	LastTested  *time.Time             `json:"last_tested,omitempty"`
-	Error       string                 `json:"error,omitempty"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	ID         string                 `json:"id"`
+	Name       string                 `json:"name"`
+	Type       DatabaseType           `json:"type"`
+	Host       string                 `json:"host,omitempty"`
+	Port       int                    `json:"port,omitempty"`
+	Database   string                 `json:"database,omitempty"`
+	Username   string                 `json:"username,omitempty"`
+	Password   string                 `json:"password,omitempty"`
+	SSLMode    string                 `json:"ssl_mode,omitempty"`
+	FilePath   string                 `json:"file_path,omitempty"`
+	Extra      map[string]interface{} `json:"extra,omitempty"`
+	Status     DatabaseStatus         `json:"status"`
+	LastTested *time.Time             `json:"last_tested,omitempty"`
+	Error      string                 `json:"error,omitempty"`
+	CreatedAt  time.Time              `json:"created_at"`
+	UpdatedAt  time.Time              `json:"updated_at"`
 }
 
 // DatabaseInfo represents metadata about a database
 type DatabaseInfo struct {
-	Name          string    `json:"name"`
-	Size          int64     `json:"size"`
-	TableCount    int       `json:"table_count"`
-	Owner         string    `json:"owner,omitempty"`
-	Encoding      string    `json:"encoding,omitempty"`
-	Collation     string    `json:"collation,omitempty"`
-	ConnectionCount int     `json:"connection_count,omitempty"`
-	CreatedAt     *time.Time `json:"created_at,omitempty"`
+	Name            string     `json:"name"`
+	Size            int64      `json:"size"`
+	TableCount      int        `json:"table_count"`
+	Owner           string     `json:"owner,omitempty"`
+	Encoding        string     `json:"encoding,omitempty"`
+	Collation       string     `json:"collation,omitempty"`
+	ConnectionCount int        `json:"connection_count,omitempty"`
+	CreatedAt       *time.Time `json:"created_at,omitempty"`
 }
 
 // TableInfo represents metadata about a database table
 type TableInfo struct {
-	Name         string    `json:"name"`
-	Schema       string    `json:"schema,omitempty"`
-	RowCount     int64     `json:"row_count"`
-	Size         int64     `json:"size"`
-	Type         string    `json:"type"`
-	Owner        string    `json:"owner,omitempty"`
-	CreatedAt    *time.Time `json:"created_at,omitempty"`
-	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
-	Comment      string    `json:"comment,omitempty"`
+	Name      string     `json:"name"`
+	Schema    string     `json:"schema,omitempty"`
+	RowCount  int64      `json:"row_count"`
+	Size      int64      `json:"size"`
+	Type      string     `json:"type"`
+	Owner     string     `json:"owner,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	Comment   string     `json:"comment,omitempty"`
 }
 
 // ColumnInfo represents metadata about a table column
@@ -111,10 +111,10 @@ type TableDataRequest struct {
 
 // RowUpdateRequest represents a request to update a table row
 type RowUpdateRequest struct {
-	Table       string                 `json:"table"`
-	Schema      string                 `json:"schema,omitempty"`
-	Where       string                 `json:"where"`
-	Values      map[string]interface{} `json:"values"`
+	Table  string                 `json:"table"`
+	Schema string                 `json:"schema,omitempty"`
+	Where  string                 `json:"where"`
+	Values map[string]interface{} `json:"values"`
 }
 
 // RowDeleteRequest represents a request to delete a table row
@@ -133,17 +133,17 @@ type RowInsertRequest struct {
 
 // DatabaseStats represents database performance statistics
 type DatabaseStats struct {
-	Connections    ConnectionStats `json:"connections"`
-	Performance    PerformanceStats `json:"performance"`
-	Storage        StorageStats    `json:"storage"`
+	Connections ConnectionStats  `json:"connections"`
+	Performance PerformanceStats `json:"performance"`
+	Storage     StorageStats     `json:"storage"`
 }
 
 // ConnectionStats represents connection statistics
 type ConnectionStats struct {
-	Active    int `json:"active"`
-	Idle      int `json:"idle"`
-	Total     int `json:"total"`
-	MaxConn   int `json:"max_conn"`
+	Active  int `json:"active"`
+	Idle    int `json:"idle"`
+	Total   int `json:"total"`
+	MaxConn int `json:"max_conn"`
 }
 
 // PerformanceStats represents performance statistics
@@ -156,9 +156,9 @@ type PerformanceStats struct {
 
 // StorageStats represents storage statistics
 type StorageStats struct {
-	TotalSize     int64 `json:"total_size"`
-	UsedSize      int64 `json:"used_size"`
-	FreeSize      int64 `json:"free_size"`
+	TotalSize      int64 `json:"total_size"`
+	UsedSize       int64 `json:"used_size"`
+	FreeSize       int64 `json:"free_size"`
 	TablespaceSize int64 `json:"tablespace_size,omitempty"`
 }
 

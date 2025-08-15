@@ -4,21 +4,21 @@ import "time"
 
 // Job represents a backup job configuration
 type Job struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Type      JobType   `json:"type"`
-	Source    Source    `json:"source"`
-	Schedule  Schedule  `json:"schedule"`
-	Status    Status    `json:"status"`
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Type      JobType    `json:"type"`
+	Source    Source     `json:"source"`
+	Schedule  Schedule   `json:"schedule"`
+	Status    Status     `json:"status"`
 	LastRun   *time.Time `json:"lastRun,omitempty"`
 	NextRun   *time.Time `json:"nextRun,omitempty"`
-	Retention Retention `json:"retention"`
-	Size      *int64    `json:"size,omitempty"`
-	Duration  *int      `json:"duration,omitempty"`
-	Error     string    `json:"error,omitempty"`
-	Metadata  Metadata  `json:"metadata"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Retention Retention  `json:"retention"`
+	Size      *int64     `json:"size,omitempty"`
+	Duration  *int       `json:"duration,omitempty"`
+	Error     string     `json:"error,omitempty"`
+	Metadata  Metadata   `json:"metadata"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
 }
 
 // JobType represents the type of backup
@@ -35,12 +35,12 @@ const (
 type Source string
 
 const (
-	SourcePostgreSQL      Source = "postgresql"
-	SourceSQLite          Source = "sqlite"
+	SourcePostgreSQL       Source = "postgresql"
+	SourceSQLite           Source = "sqlite"
 	SourcePersistentVolume Source = "persistent_volume"
-	SourceGiteaData       Source = "gitea_data"
-	SourceFilebrowserData Source = "filebrowser_data"
-	SourceConfigFiles     Source = "config_files"
+	SourceGiteaData        Source = "gitea_data"
+	SourceFilebrowserData  Source = "filebrowser_data"
+	SourceConfigFiles      Source = "config_files"
 )
 
 // Status represents the backup job status
@@ -58,11 +58,11 @@ const (
 
 // Schedule represents the backup schedule
 type Schedule struct {
-	Enabled           bool       `json:"enabled"`
-	Cron              string     `json:"cron"`
-	Timezone          string     `json:"timezone"`
-	LastScheduledRun  *time.Time `json:"lastScheduledRun,omitempty"`
-	NextScheduledRun  *time.Time `json:"nextScheduledRun,omitempty"`
+	Enabled          bool       `json:"enabled"`
+	Cron             string     `json:"cron"`
+	Timezone         string     `json:"timezone"`
+	LastScheduledRun *time.Time `json:"lastScheduledRun,omitempty"`
+	NextScheduledRun *time.Time `json:"nextScheduledRun,omitempty"`
 }
 
 // Retention represents the backup retention policy
@@ -76,12 +76,12 @@ type Retention struct {
 
 // Metadata contains backup-specific metadata
 type Metadata struct {
-	Database        string          `json:"database,omitempty"`
-	Tables          []string        `json:"tables,omitempty"`
-	VolumePath      string          `json:"volumePath,omitempty"`
-	CompressionType CompressionType `json:"compressionType,omitempty"`
-	EncryptionEnabled bool          `json:"encryptionEnabled"`
-	Checksum        string          `json:"checksum,omitempty"`
+	Database          string          `json:"database,omitempty"`
+	Tables            []string        `json:"tables,omitempty"`
+	VolumePath        string          `json:"volumePath,omitempty"`
+	CompressionType   CompressionType `json:"compressionType,omitempty"`
+	EncryptionEnabled bool            `json:"encryptionEnabled"`
+	Checksum          string          `json:"checksum,omitempty"`
 }
 
 // CompressionType represents compression method
@@ -147,16 +147,16 @@ const (
 
 // Recovery represents a recovery operation
 type Recovery struct {
-	ID              string          `json:"id"`
-	BackupID        string          `json:"backupId"`
-	RestorePointID  string          `json:"restorePointId,omitempty"`
-	Status          RecoveryStatus  `json:"status"`
-	StartTime       time.Time       `json:"startTime"`
-	EndTime         *time.Time      `json:"endTime,omitempty"`
-	TargetLocation  string          `json:"targetLocation"`
-	Options         RecoveryOptions `json:"options"`
-	Progress        *RecoveryProgress `json:"progress,omitempty"`
-	Error           string          `json:"error,omitempty"`
+	ID             string            `json:"id"`
+	BackupID       string            `json:"backupId"`
+	RestorePointID string            `json:"restorePointId,omitempty"`
+	Status         RecoveryStatus    `json:"status"`
+	StartTime      time.Time         `json:"startTime"`
+	EndTime        *time.Time        `json:"endTime,omitempty"`
+	TargetLocation string            `json:"targetLocation"`
+	Options        RecoveryOptions   `json:"options"`
+	Progress       *RecoveryProgress `json:"progress,omitempty"`
+	Error          string            `json:"error,omitempty"`
 }
 
 // RecoveryStatus represents recovery operation status
@@ -175,18 +175,18 @@ const (
 
 // RecoveryOptions represents recovery configuration
 type RecoveryOptions struct {
-	OverwriteExisting         bool     `json:"overwriteExisting"`
-	VerifyAfterRestore        bool     `json:"verifyAfterRestore"`
-	StopServicesBeforeRestore bool     `json:"stopServicesBeforeRestore"`
-	RestorePermissions        bool     `json:"restorePermissions"`
+	OverwriteExisting          bool     `json:"overwriteExisting"`
+	VerifyAfterRestore         bool     `json:"verifyAfterRestore"`
+	StopServicesBeforeRestore  bool     `json:"stopServicesBeforeRestore"`
+	RestorePermissions         bool     `json:"restorePermissions"`
 	RestoreToAlternateLocation *string  `json:"restoreToAlternateLocation,omitempty"`
-	SelectedTables            []string `json:"selectedTables,omitempty"`
-	SelectedFiles             []string `json:"selectedFiles,omitempty"`
+	SelectedTables             []string `json:"selectedTables,omitempty"`
+	SelectedFiles              []string `json:"selectedFiles,omitempty"`
 }
 
 // RecoveryProgress represents recovery operation progress
 type RecoveryProgress struct {
-	Percentage              int    `json:"percentage"`
+	Percentage             int    `json:"percentage"`
 	BytesRestored          int64  `json:"bytesRestored"`
 	TotalBytes             int64  `json:"totalBytes"`
 	FilesRestored          int    `json:"filesRestored"`
@@ -232,16 +232,16 @@ const (
 
 // Statistics represents backup system statistics
 type Statistics struct {
-	TotalBackups         int                    `json:"totalBackups"`
-	TotalSize            int64                  `json:"totalSize"`
-	SuccessRate          float64                `json:"successRate"`
-	AverageDuration      int                    `json:"averageDuration"`
-	LastSuccessfulBackup *time.Time             `json:"lastSuccessfulBackup,omitempty"`
-	LastFailedBackup     *time.Time             `json:"lastFailedBackup,omitempty"`
-	BackupsByType        map[JobType]int        `json:"backupsByType"`
-	BackupsBySource      map[Source]int         `json:"backupsBySource"`
-	DailyBackupTrend     []BackupTrend          `json:"dailyBackupTrend"`
-	StorageUsageTrend    []StorageTrend         `json:"storageUsageTrend"`
+	TotalBackups         int             `json:"totalBackups"`
+	TotalSize            int64           `json:"totalSize"`
+	SuccessRate          float64         `json:"successRate"`
+	AverageDuration      int             `json:"averageDuration"`
+	LastSuccessfulBackup *time.Time      `json:"lastSuccessfulBackup,omitempty"`
+	LastFailedBackup     *time.Time      `json:"lastFailedBackup,omitempty"`
+	BackupsByType        map[JobType]int `json:"backupsByType"`
+	BackupsBySource      map[Source]int  `json:"backupsBySource"`
+	DailyBackupTrend     []BackupTrend   `json:"dailyBackupTrend"`
+	StorageUsageTrend    []StorageTrend  `json:"storageUsageTrend"`
 }
 
 // BackupTrend represents daily backup statistics
@@ -261,13 +261,13 @@ type StorageTrend struct {
 
 // Alert represents a backup system alert
 type Alert struct {
-	ID            string      `json:"id"`
-	Type          AlertType   `json:"type"`
-	Severity      Severity    `json:"severity"`
-	Message       string      `json:"message"`
-	Timestamp     time.Time   `json:"timestamp"`
-	JobID         string      `json:"jobId,omitempty"`
-	Acknowledged  bool        `json:"acknowledged"`
+	ID           string    `json:"id"`
+	Type         AlertType `json:"type"`
+	Severity     Severity  `json:"severity"`
+	Message      string    `json:"message"`
+	Timestamp    time.Time `json:"timestamp"`
+	JobID        string    `json:"jobId,omitempty"`
+	Acknowledged bool      `json:"acknowledged"`
 }
 
 // AlertType represents type of backup alert
@@ -275,7 +275,7 @@ type AlertType string
 
 const (
 	AlertTypeBackupFailed             AlertType = "backup_failed"
-	AlertTypeVerificationFailed      AlertType = "verification_failed"
+	AlertTypeVerificationFailed       AlertType = "verification_failed"
 	AlertTypeStorageFull              AlertType = "storage_full"
 	AlertTypeRetentionPolicyViolation AlertType = "retention_policy_violation"
 	AlertTypeScheduleMissed           AlertType = "schedule_missed"

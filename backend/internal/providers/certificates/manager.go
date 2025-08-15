@@ -26,7 +26,7 @@ func NewManager() *Manager {
 
 	// Initialize with default base infrastructure domains
 	manager.initializeDefaultDomains()
-	
+
 	return manager
 }
 
@@ -180,7 +180,7 @@ func (m *Manager) RefreshAllCertificates() error {
 			// Create unreachable alert
 			m.createUnreachableAlert(domain.Domain, check.ErrorMessage)
 		}
-		
+
 		// Update last check time
 		now := time.Now()
 		domainConfig := m.domains[domain.Domain]
@@ -198,10 +198,10 @@ func (m *Manager) GetCertificateStats() (*CertificateStats, error) {
 	defer m.mutex.RUnlock()
 
 	stats := &CertificateStats{}
-	
+
 	for _, cert := range m.certificates {
 		stats.Total++
-		
+
 		switch cert.Status {
 		case StatusValid:
 			stats.Valid++
@@ -225,7 +225,7 @@ func (m *Manager) GetCertificateStats() (*CertificateStats, error) {
 func (m *Manager) AddDomainConfig(config DomainConfig) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	m.domains[config.Domain] = config
 	return nil
 }
@@ -234,17 +234,17 @@ func (m *Manager) AddDomainConfig(config DomainConfig) error {
 func (m *Manager) RemoveDomainConfig(domain string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	delete(m.domains, domain)
 	delete(m.certificates, domain)
-	
+
 	// Remove related alerts
 	for alertID, alert := range m.alerts {
 		if alert.Domain == domain {
 			delete(m.alerts, alertID)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -252,12 +252,12 @@ func (m *Manager) RemoveDomainConfig(domain string) error {
 func (m *Manager) GetDomainConfigs() ([]DomainConfig, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
-	
+
 	configs := make([]DomainConfig, 0, len(m.domains))
 	for _, config := range m.domains {
 		configs = append(configs, config)
 	}
-	
+
 	return configs, nil
 }
 
@@ -265,14 +265,14 @@ func (m *Manager) GetDomainConfigs() ([]DomainConfig, error) {
 func (m *Manager) GetAlerts() ([]CertificateAlert, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
-	
+
 	alerts := make([]CertificateAlert, 0, len(m.alerts))
 	for _, alert := range m.alerts {
 		if !alert.Acknowledged {
 			alerts = append(alerts, *alert)
 		}
 	}
-	
+
 	return alerts, nil
 }
 
@@ -280,28 +280,28 @@ func (m *Manager) GetAlerts() ([]CertificateAlert, error) {
 func (m *Manager) AcknowledgeAlert(alertID string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	if alert, exists := m.alerts[alertID]; exists {
 		alert.Acknowledged = true
 		return nil
 	}
-	
+
 	return fmt.Errorf("alert %s not found", alertID)
 }
 
 // updateAlertsForCertificate creates/updates alerts for a certificate
 func (m *Manager) updateAlertsForCertificate(cert *Certificate) {
 	alertID := fmt.Sprintf("%s-expiry", cert.Domain)
-	
+
 	// Remove existing expiry alert if certificate is valid
 	if cert.Status == StatusValid {
 		delete(m.alerts, alertID)
 		return
 	}
-	
+
 	// Create/update expiry alert
 	var alertType, severity, message string
-	
+
 	switch cert.Status {
 	case StatusExpiringCritical:
 		alertType = "expiration"
@@ -320,7 +320,7 @@ func (m *Manager) updateAlertsForCertificate(cert *Certificate) {
 		severity = "critical"
 		message = fmt.Sprintf("SSL certificate for %s is invalid", cert.Domain)
 	}
-	
+
 	m.alerts[alertID] = &CertificateAlert{
 		ID:           alertID,
 		Domain:       cert.Domain,
@@ -335,12 +335,12 @@ func (m *Manager) updateAlertsForCertificate(cert *Certificate) {
 // createUnreachableAlert creates an alert for unreachable domains
 func (m *Manager) createUnreachableAlert(domain string, errorMessage *string) {
 	alertID := fmt.Sprintf("%s-unreachable", domain)
-	
+
 	message := fmt.Sprintf("Unable to check SSL certificate for %s", domain)
 	if errorMessage != nil {
 		message = fmt.Sprintf("Unable to check SSL certificate for %s: %s", domain, *errorMessage)
 	}
-	
+
 	m.alerts[alertID] = &CertificateAlert{
 		ID:           alertID,
 		Domain:       domain,

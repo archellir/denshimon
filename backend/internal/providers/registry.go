@@ -34,11 +34,11 @@ func (r *ProviderRegistry) CreateProvider(providerType string, config RegistryCo
 	r.mu.RLock()
 	factory, exists := r.providers[providerType]
 	r.mu.RUnlock()
-	
+
 	if !exists {
 		return nil, fmt.Errorf("unknown provider type: %s", providerType)
 	}
-	
+
 	return factory(config)
 }
 
@@ -46,7 +46,7 @@ func (r *ProviderRegistry) CreateProvider(providerType string, config RegistryCo
 func (r *ProviderRegistry) ListProviderTypes() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	types := make([]string, 0, len(r.providers))
 	for t := range r.providers {
 		types = append(types, t)
@@ -75,15 +75,15 @@ func (m *RegistryManager) AddRegistry(ctx context.Context, reg Registry) error {
 	if err != nil {
 		return fmt.Errorf("failed to create provider: %w", err)
 	}
-	
+
 	if err := provider.Connect(ctx, reg.Config); err != nil {
 		return fmt.Errorf("failed to connect to registry: %w", err)
 	}
-	
+
 	m.mu.Lock()
 	m.providers[reg.ID] = provider
 	m.mu.Unlock()
-	
+
 	return nil
 }
 
@@ -91,12 +91,12 @@ func (m *RegistryManager) AddRegistry(ctx context.Context, reg Registry) error {
 func (m *RegistryManager) GetProvider(registryID string) (RegistryProvider, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	provider, exists := m.providers[registryID]
 	if !exists {
 		return nil, fmt.Errorf("registry not found: %s", registryID)
 	}
-	
+
 	return provider, nil
 }
 
@@ -111,7 +111,7 @@ func (m *RegistryManager) RemoveRegistry(registryID string) {
 func (m *RegistryManager) ListRegistries() []string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	ids := make([]string, 0, len(m.providers))
 	for id := range m.providers {
 		ids = append(ids, id)
