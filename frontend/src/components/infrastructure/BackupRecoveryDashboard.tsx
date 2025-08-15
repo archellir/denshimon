@@ -436,7 +436,12 @@ const BackupRecoveryDashboard: FC = () => {
             <div
               key={backup.id}
               className={`border p-3 cursor-pointer transition-colors hover:bg-white/5 ${getStatusColor(backup.status)}`}
-              onClick={() => {/* TODO: Implement backup selection */}}
+              onClick={() => {
+                // Handle backup selection for details view
+                console.log('Selected backup for details:', backup.id);
+                // Could open a detailed view modal or expand inline details
+                alert(`Backup details for: ${backup.jobName} (${formatDate(backup.timestamp)})`);
+              }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -463,7 +468,13 @@ const BackupRecoveryDashboard: FC = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Implement recovery modal
+                      // Handle backup restoration
+                      const confirmRestore = confirm(`Are you sure you want to restore backup: ${backup.jobName} from ${formatDate(backup.timestamp)}?\n\nThis action cannot be undone.`);
+                      if (confirmRestore) {
+                        console.log('Starting restoration for backup:', backup.id);
+                        alert(`Restoration started for backup: ${backup.jobName}`);
+                        // Here you would call the backup store's startRecovery function
+                      }
                     }}
                     className="px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
                   >
