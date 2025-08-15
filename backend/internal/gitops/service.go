@@ -141,15 +141,6 @@ type TemplateVariable struct {
 	Description string `json:"description,omitempty"`
 }
 
-// TemplateEnvironment represents environment-specific overrides
-type TemplateEnvironment struct {
-	ID          string            `json:"id"`
-	TemplateID  string            `json:"template_id"`
-	Environment string            `json:"environment"` // development, staging, production
-	Overrides   map[string]string `json:"overrides"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
-}
 
 // InitializeRepository initializes the GitOps repository
 func (s *Service) InitializeRepository() error {
@@ -918,33 +909,6 @@ func (s *Service) GetTemplate(ctx context.Context, templateID string) (*Template
 	return &template, nil
 }
 
-// GetTemplateWithEnvironment returns a template with environment-specific overrides
-func (s *Service) GetTemplateWithEnvironment(ctx context.Context, templateID, environment string) (*Template, map[string]string, error) {
-	template, err := s.GetTemplate(ctx, templateID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var overridesJSON string
-	err = s.db.QueryRowContext(ctx, `
-		SELECT overrides 
-		FROM gitops_template_environments
-		WHERE template_id = ? AND environment = ?`, 
-		templateID, environment).Scan(&overridesJSON)
-	
-	if err != nil && err != sql.ErrNoRows {
-		return nil, nil, fmt.Errorf("failed to get environment overrides: %w", err)
-	}
-
-	overrides := make(map[string]string)
-	if err != sql.ErrNoRows {
-		if err := json.Unmarshal([]byte(overridesJSON), &overrides); err != nil {
-			return nil, nil, fmt.Errorf("failed to unmarshal overrides: %w", err)
-		}
-	}
-
-	return template, overrides, nil
-}
 
 // CreateTemplate creates a new template
 func (s *Service) CreateTemplate(ctx context.Context, name, templateType, description, content string, variables []TemplateVariable) (*Template, error) {
@@ -1002,22 +966,3 @@ func (s *Service) DeleteTemplate(ctx context.Context, templateID string) error {
 	return nil
 }
 
-// SetEnvironmentOverrides sets environment-specific overrides for a template
-func (s *Service) SetEnvironmentOverrides(ctx context.Context, templateID, environment string, overrides map[string]string) error {
-	overridesJSON, _ := json.Marshal(overrides)
-	id := uuid.New().String()
-
-	_, err := s.db.ExecContext(ctx, `
-		INSERT INTO gitops_template_environments (id, template_id, environment, overrides, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)
-		ON CONFLICT(template_id, environment) DO UPDATE SET
-			overrides = excluded.overrides,
-			updated_at = excluded.updated_at`,
-		id, templateID, environment, string(overridesJSON), time.Now(), time.Now())
-	
-	if err != nil {
-		return fmt.Errorf("failed to set environment overrides: %w", err)
-	}
-
-	return nil
-}
