@@ -79,6 +79,47 @@ type DeploymentRecord struct {
 	DeployedAt    time.Time         `json:"deployed_at"`
 }
 
+// Alert represents a GitOps monitoring alert
+type Alert struct {
+	ID          string            `json:"id"`
+	Type        string            `json:"type"` // sync_failure, deployment_failure, repository_unreachable, drift_detected
+	Severity    string            `json:"severity"` // critical, warning, info
+	Title       string            `json:"title"`
+	Message     string            `json:"message"`
+	Metadata    map[string]string `json:"metadata"`
+	Status      string            `json:"status"` // active, acknowledged, resolved
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+	ResolvedAt  *time.Time        `json:"resolved_at,omitempty"`
+}
+
+// HealthMetrics represents GitOps health metrics
+type HealthMetrics struct {
+	TotalRepositories      int                    `json:"total_repositories"`
+	HealthyRepositories    int                    `json:"healthy_repositories"`
+	TotalApplications      int                    `json:"total_applications"`
+	HealthyApplications    int                    `json:"healthy_applications"`
+	SyncedApplications     int                    `json:"synced_applications"`
+	OutOfSyncApplications  int                    `json:"out_of_sync_applications"`
+	FailedDeployments      int                    `json:"failed_deployments"`
+	RecentSyncFailures     int                    `json:"recent_sync_failures"`
+	ActiveAlerts           int                    `json:"active_alerts"`
+	CriticalAlerts         int                    `json:"critical_alerts"`
+	LastSyncTime           *time.Time             `json:"last_sync_time,omitempty"`
+	AverageSyncDuration    *time.Duration         `json:"average_sync_duration,omitempty"`
+	RepositoryHealth       map[string]string      `json:"repository_health"`
+	ApplicationHealth      map[string]string      `json:"application_health"`
+	SyncTrends             []SyncTrendPoint       `json:"sync_trends"`
+}
+
+// SyncTrendPoint represents a point in sync trend data
+type SyncTrendPoint struct {
+	Timestamp    time.Time `json:"timestamp"`
+	SuccessRate  float64   `json:"success_rate"`
+	SyncCount    int       `json:"sync_count"`
+	FailureCount int       `json:"failure_count"`
+}
+
 // InitializeRepository initializes the GitOps repository
 func (s *Service) InitializeRepository() error {
 	return s.gitClient.Clone()
@@ -504,4 +545,289 @@ func (s *Service) generateDeploymentManifest(app *Application) (string, error) {
 	}
 	
 	return s.GenerateFullManifest(app, options)
+}
+
+// CreateAlert creates a new monitoring alert
+func (s *Service) CreateAlert(ctx context.Context, alertType, severity, title, message string, metadata map[string]string) (*Alert, error) {
+	alert := &Alert{
+		ID:        uuid.New().String(),
+		Type:      alertType,
+		Severity:  severity,
+		Title:     title,
+		Message:   message,
+		Metadata:  metadata,
+		Status:    "active",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	metadataJSON, _ := json.Marshal(alert.Metadata)
+
+	_, err := s.db.ExecContext(ctx, `
+		INSERT INTO gitops_alerts (id, type, severity, title, message, metadata, status, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		alert.ID, alert.Type, alert.Severity, alert.Title, alert.Message,
+		string(metadataJSON), alert.Status, alert.CreatedAt, alert.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create alert: %w", err)
+	}
+
+	return alert, nil
+}
+
+// ListAlerts returns all active alerts
+func (s *Service) ListAlerts(ctx context.Context) ([]Alert, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT id, type, severity, title, message, metadata, status, created_at, updated_at, resolved_at
+		FROM gitops_alerts
+		WHERE status IN ('active', 'acknowledged')
+		ORDER BY created_at DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list alerts: %w", err)
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var alert Alert
+		var metadataJSON string
+		var resolvedAt *time.Time
+
+		err := rows.Scan(&alert.ID, &alert.Type, &alert.Severity, &alert.Title,
+			&alert.Message, &metadataJSON, &alert.Status, &alert.CreatedAt, &alert.UpdatedAt, &resolvedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan alert: %w", err)
+		}
+
+		json.Unmarshal([]byte(metadataJSON), &alert.Metadata)
+		alert.ResolvedAt = resolvedAt
+		alerts = append(alerts, alert)
+	}
+
+	return alerts, nil
+}
+
+// AcknowledgeAlert acknowledges an alert
+func (s *Service) AcknowledgeAlert(ctx context.Context, alertID string) error {
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE gitops_alerts 
+		SET status = 'acknowledged', updated_at = ?
+		WHERE id = ?`,
+		time.Now(), alertID)
+	if err != nil {
+		return fmt.Errorf("failed to acknowledge alert: %w", err)
+	}
+
+	return nil
+}
+
+// ResolveAlert resolves an alert
+func (s *Service) ResolveAlert(ctx context.Context, alertID string) error {
+	now := time.Now()
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE gitops_alerts 
+		SET status = 'resolved', updated_at = ?, resolved_at = ?
+		WHERE id = ?`,
+		now, now, alertID)
+	if err != nil {
+		return fmt.Errorf("failed to resolve alert: %w", err)
+	}
+
+	return nil
+}
+
+// GetHealthMetrics returns GitOps health metrics
+func (s *Service) GetHealthMetrics(ctx context.Context) (*HealthMetrics, error) {
+	metrics := &HealthMetrics{
+		RepositoryHealth:  make(map[string]string),
+		ApplicationHealth: make(map[string]string),
+		SyncTrends:        make([]SyncTrendPoint, 0),
+	}
+
+	// Get repository counts
+	err := s.db.QueryRowContext(ctx, `
+		SELECT 
+			COUNT(*) as total,
+			COUNT(CASE WHEN status = 'active' THEN 1 END) as healthy
+		FROM gitops_repositories`).Scan(&metrics.TotalRepositories, &metrics.HealthyRepositories)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repository metrics: %w", err)
+	}
+
+	// Get application counts
+	err = s.db.QueryRowContext(ctx, `
+		SELECT 
+			COUNT(*) as total,
+			COUNT(CASE WHEN health = 'healthy' THEN 1 END) as healthy,
+			COUNT(CASE WHEN sync_status = 'synced' THEN 1 END) as synced,
+			COUNT(CASE WHEN sync_status = 'out_of_sync' THEN 1 END) as out_of_sync
+		FROM gitops_applications`).Scan(&metrics.TotalApplications, &metrics.HealthyApplications,
+		&metrics.SyncedApplications, &metrics.OutOfSyncApplications)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get application metrics: %w", err)
+	}
+
+	// Get deployment failure count (last 24 hours)
+	err = s.db.QueryRowContext(ctx, `
+		SELECT COUNT(*) 
+		FROM gitops_deployments 
+		WHERE status = 'failed' AND deployed_at > datetime('now', '-1 day')`).Scan(&metrics.FailedDeployments)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get deployment failure metrics: %w", err)
+	}
+
+	// Get sync failure count (last 24 hours) 
+	err = s.db.QueryRowContext(ctx, `
+		SELECT COUNT(*) 
+		FROM gitops_deployments 
+		WHERE status = 'failed' AND message LIKE '%sync%' AND deployed_at > datetime('now', '-1 day')`).Scan(&metrics.RecentSyncFailures)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sync failure metrics: %w", err)
+	}
+
+	// Get alert counts
+	err = s.db.QueryRowContext(ctx, `
+		SELECT 
+			COUNT(*) as total,
+			COUNT(CASE WHEN severity = 'critical' THEN 1 END) as critical
+		FROM gitops_alerts 
+		WHERE status = 'active'`).Scan(&metrics.ActiveAlerts, &metrics.CriticalAlerts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get alert metrics: %w", err)
+	}
+
+	// Get last sync time
+	var lastSyncTime *time.Time
+	err = s.db.QueryRowContext(ctx, `
+		SELECT MAX(last_sync) 
+		FROM gitops_repositories 
+		WHERE last_sync IS NOT NULL`).Scan(&lastSyncTime)
+	if err == nil {
+		metrics.LastSyncTime = lastSyncTime
+	}
+
+	// Get repository health
+	repoRows, err := s.db.QueryContext(ctx, `
+		SELECT name, status FROM gitops_repositories`)
+	if err == nil {
+		defer repoRows.Close()
+		for repoRows.Next() {
+			var name, status string
+			if err := repoRows.Scan(&name, &status); err == nil {
+				metrics.RepositoryHealth[name] = status
+			}
+		}
+	}
+
+	// Get application health
+	appRows, err := s.db.QueryContext(ctx, `
+		SELECT name, health FROM gitops_applications`)
+	if err == nil {
+		defer appRows.Close()
+		for appRows.Next() {
+			var name, health string
+			if err := appRows.Scan(&name, &health); err == nil {
+				metrics.ApplicationHealth[name] = health
+			}
+		}
+	}
+
+	// Get sync trends (last 24 hours in 4-hour intervals)
+	trendRows, err := s.db.QueryContext(ctx, `
+		SELECT 
+			datetime(deployed_at, 'start of hour', printf('-%d hours', (strftime('%H', deployed_at) % 4))) as interval_start,
+			COUNT(*) as total_syncs,
+			COUNT(CASE WHEN status = 'deployed' THEN 1 END) as successful_syncs,
+			COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_syncs
+		FROM gitops_deployments 
+		WHERE deployed_at > datetime('now', '-1 day')
+		GROUP BY interval_start
+		ORDER BY interval_start`)
+	if err == nil {
+		defer trendRows.Close()
+		for trendRows.Next() {
+			var intervalStart time.Time
+			var totalSyncs, successfulSyncs, failedSyncs int
+			if err := trendRows.Scan(&intervalStart, &totalSyncs, &successfulSyncs, &failedSyncs); err == nil {
+				successRate := float64(successfulSyncs) / float64(totalSyncs) * 100
+				if totalSyncs == 0 {
+					successRate = 100.0
+				}
+				
+				metrics.SyncTrends = append(metrics.SyncTrends, SyncTrendPoint{
+					Timestamp:    intervalStart,
+					SuccessRate:  successRate,
+					SyncCount:    totalSyncs,
+					FailureCount: failedSyncs,
+				})
+			}
+		}
+	}
+
+	return metrics, nil
+}
+
+// MonitorHealth performs health checks and creates alerts as needed
+func (s *Service) MonitorHealth(ctx context.Context) error {
+	// Check repository connectivity
+	repos, err := s.ListRepositories(ctx)
+	if err != nil {
+		s.CreateAlert(ctx, "repository_check_failed", "warning", "Repository Check Failed",
+			"Failed to check repository health", map[string]string{"error": err.Error()})
+		return err
+	}
+
+	for _, repo := range repos {
+		// Check if repository is reachable
+		if err := s.gitClient.IsReachable(); err != nil {
+			s.CreateAlert(ctx, "repository_unreachable", "critical", "Repository Unreachable",
+				fmt.Sprintf("Repository %s is unreachable", repo.Name),
+				map[string]string{"repository": repo.Name, "error": err.Error()})
+		}
+
+		// Check if repository hasn't synced recently (last 6 hours)
+		if repo.LastSync != nil && time.Since(*repo.LastSync) > 6*time.Hour {
+			s.CreateAlert(ctx, "sync_outdated", "warning", "Sync Outdated",
+				fmt.Sprintf("Repository %s hasn't synced in over 6 hours", repo.Name),
+				map[string]string{"repository": repo.Name, "last_sync": repo.LastSync.String()})
+		}
+	}
+
+	// Check application health
+	apps, err := s.ListApplications(ctx)
+	if err != nil {
+		s.CreateAlert(ctx, "application_check_failed", "warning", "Application Check Failed",
+			"Failed to check application health", map[string]string{"error": err.Error()})
+		return err
+	}
+
+	for _, app := range apps {
+		// Check if application is unhealthy
+		if app.Health == "degraded" || app.Health == "missing" {
+			s.CreateAlert(ctx, "application_unhealthy", "critical", "Application Unhealthy",
+				fmt.Sprintf("Application %s is %s", app.Name, app.Health),
+				map[string]string{"application": app.Name, "health": app.Health, "namespace": app.Namespace})
+		}
+
+		// Check if application is out of sync
+		if app.SyncStatus == "out_of_sync" {
+			s.CreateAlert(ctx, "drift_detected", "warning", "Configuration Drift Detected",
+				fmt.Sprintf("Application %s is out of sync with Git", app.Name),
+				map[string]string{"application": app.Name, "namespace": app.Namespace})
+		}
+	}
+
+	// Check for recent deployment failures
+	failureCount := 0
+	err = s.db.QueryRowContext(ctx, `
+		SELECT COUNT(*) 
+		FROM gitops_deployments 
+		WHERE status = 'failed' AND deployed_at > datetime('now', '-1 hour')`).Scan(&failureCount)
+	if err == nil && failureCount > 3 {
+		s.CreateAlert(ctx, "deployment_failure", "critical", "High Deployment Failure Rate",
+			fmt.Sprintf("%d deployments failed in the last hour", failureCount),
+			map[string]string{"failure_count": fmt.Sprintf("%d", failureCount)})
+	}
+
+	return nil
 }
