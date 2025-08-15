@@ -5,14 +5,23 @@ import ImagesTab from './tabs/ImagesTab';
 import DeploymentsTab from './tabs/DeploymentsTab';
 import HistoryTab from './tabs/HistoryTab';
 import { DeploymentsTab as DeploymentsTabEnum } from '@constants';
+import { ContainerImage } from '@/types';
 
 interface DeploymentDashboardProps {
   activeTab?: string;
   showDeployModal?: boolean;
   setShowDeployModal?: (show: boolean) => void;
+  preselectedImage?: ContainerImage | null;
+  setPreselectedImage?: (image: ContainerImage | null) => void;
 }
 
-const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = DeploymentsTabEnum.DEPLOYMENTS, showDeployModal, setShowDeployModal }) => {
+const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ 
+  activeTab = DeploymentsTabEnum.DEPLOYMENTS, 
+  showDeployModal, 
+  setShowDeployModal, 
+  preselectedImage, 
+  setPreselectedImage 
+}) => {
   const { fetchRegistries, fetchDeployments, fetchNodes } = useDeploymentStore();
 
   // Initialize data on mount
@@ -32,6 +41,11 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = Deploym
     initializeData();
   }, [fetchRegistries, fetchDeployments, fetchNodes]);
 
+  const handleDeployImage = (image: ContainerImage) => {
+    setPreselectedImage?.(image);
+    setShowDeployModal?.(true);
+  };
+
   // Tabs are now controlled by parent Dashboard component
 
   const renderTabContent = () => {
@@ -39,9 +53,16 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = Deploym
       case DeploymentsTabEnum.REGISTRIES:
         return <RegistriesTab />;
       case DeploymentsTabEnum.IMAGES:
-        return <ImagesTab />;
+        return <ImagesTab onDeployImage={handleDeployImage} />;
       case DeploymentsTabEnum.DEPLOYMENTS:
-        return <DeploymentsTab showDeployModal={showDeployModal} setShowDeployModal={setShowDeployModal} />;
+        return (
+          <DeploymentsTab 
+            showDeployModal={showDeployModal} 
+            setShowDeployModal={setShowDeployModal}
+            preselectedImage={preselectedImage}
+            setPreselectedImage={setPreselectedImage}
+          />
+        );
       case DeploymentsTabEnum.HISTORY:
         return <HistoryTab />;
       default:
