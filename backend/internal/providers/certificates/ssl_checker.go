@@ -1,6 +1,8 @@
 package certificates
 
 import (
+	"crypto/ecdsa"
+	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/tls"
 	"crypto/x509"
@@ -57,7 +59,7 @@ func (s *SSLChecker) CheckCertificate(domain string, port int) (*CertificateChec
 
 	// Process the leaf certificate (first in chain)
 	cert := certs[0]
-	
+
 	// Create certificate chain info
 	chain := make([]CertificateChainInfo, len(certs))
 	for i, c := range certs {
@@ -72,19 +74,16 @@ func (s *SSLChecker) CheckCertificate(domain string, port int) (*CertificateChec
 
 	// Calculate fingerprint
 	fingerprint := fmt.Sprintf("%x", sha1.Sum(cert.Raw))
-	
+
 	// Determine key size
 	keySize := 0
 	switch pub := cert.PublicKey.(type) {
-	case *x509.PublicKey:
-		// RSA key
-		if rsaKey, ok := pub.(*x509.PublicKey); ok {
-			if rsaPubKey, ok := rsaKey.(*interface{}).(interface{ Size() int }); ok {
-				keySize = rsaPubKey.Size() * 8
-			}
-		}
+	case *rsa.PublicKey:
+		keySize = pub.Size() * 8
+	case *ecdsa.PublicKey:
+		keySize = pub.Curve.Params().BitSize
 	default:
-		keySize = cert.PublicKeyAlgorithm.String() // fallback
+		keySize = 0 // unknown
 	}
 
 	// Create certificate object
@@ -147,20 +146,20 @@ func (s *SSLChecker) IsExpiringSoon(cert *x509.Certificate, days int) bool {
 // GetCertificateStatus determines the status of a certificate
 func (s *SSLChecker) GetCertificateStatus(cert *x509.Certificate) CertificateStatus {
 	now := time.Now()
-	
+
 	if now.After(cert.NotAfter) {
 		return StatusExpired
 	}
-	
+
 	daysUntilExpiry := int(cert.NotAfter.Sub(now).Hours() / 24)
-	
+
 	if daysUntilExpiry <= 7 {
 		return StatusExpiringCritical
 	}
-	
+
 	if daysUntilExpiry <= 30 {
 		return StatusExpiringSoon
 	}
-	
+
 	return StatusValid
 }
