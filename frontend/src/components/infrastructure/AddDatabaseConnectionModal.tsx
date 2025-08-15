@@ -60,7 +60,7 @@ const AddDatabaseConnectionModal: FC<AddDatabaseConnectionModalProps> = ({ isOpe
     }
   }, [testResult]);
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = (field: keyof FormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setHasTestedSuccessfully(false); // Reset test status when form changes
   };
