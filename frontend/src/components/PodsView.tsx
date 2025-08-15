@@ -106,12 +106,16 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
 
 
   const filteredAndSortedPods = useMemo(() => {
+    if (!pods || !Array.isArray(pods)) {
+      return []
+    }
+
     let filtered = selectedNamespace === 'all' 
       ? pods 
       : pods.filter(pod => pod.namespace === selectedNamespace)
 
     // Apply search filter
-    if (searchQuery) {
+    if (searchQuery && filtered) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(pod => 
         pod.name.toLowerCase().includes(query) ||
@@ -120,6 +124,10 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
         pod.node?.toLowerCase().includes(query) ||
         pod.ip?.toLowerCase().includes(query)
       )
+    }
+
+    if (!filtered || !Array.isArray(filtered)) {
+      return []
     }
 
     return filtered.sort((a, b) => {
