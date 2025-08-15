@@ -57,8 +57,8 @@ export enum SyncStatus {
  * Pod lifecycle states
  */
 export enum PodStatus {
-  RUNNING = 'running',
-  PENDING = Status.PENDING,
+  RUNNING = 'Running',
+  PENDING = 'Pending',
   FAILED = 'failed',
   SUCCEEDED = 'succeeded',
   TERMINATING = 'terminating',
@@ -82,6 +82,78 @@ export enum ConnectionStatus {
   OFFLINE = 'offline',
   CONNECTING = 'connecting',
   DISCONNECTED = 'disconnected'
+}
+
+/**
+ * WebSocket connection states
+ */
+export enum WebSocketState {
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  DISCONNECTED = 'disconnected',
+  ERROR = 'error',
+  RECONNECTING = 'reconnecting'
+}
+
+/**
+ * Terminal/session message types
+ */
+export enum TerminalMessageType {
+  DATA = 'data',
+  RESIZE = 'resize',
+  CLOSE = 'close',
+  ERROR = 'error'
+}
+
+/**
+ * Alert notification severities
+ */
+export enum NotificationSeverity {
+  CRITICAL = 'critical',
+  WARNING = 'warning',
+  INFO = 'info',
+  SUCCESS = 'success'
+}
+
+/**
+ * Form field types
+ */
+export enum FormFieldType {
+  TEXT = 'text',
+  PASSWORD = 'password',
+  EMAIL = 'email',
+  NUMBER = 'number',
+  SELECT = 'select',
+  CHECKBOX = 'checkbox',
+  TEXTAREA = 'textarea'
+}
+
+/**
+ * Common form field names
+ */
+export enum FormFieldName {
+  USERNAME = 'username',
+  PASSWORD = 'password',
+  EMAIL = 'email',
+  TOKEN = 'token',
+  API_KEY = 'api_key',
+  NAME = 'name',
+  URL = 'url',
+  TYPE = 'type',
+  DESCRIPTION = 'description'
+}
+
+/**
+ * Common storage keys for localStorage/sessionStorage
+ */
+export enum StorageKey {
+  AUTH_TOKEN = 'auth_token',
+  USERNAME = 'username',
+  USER_PREFERENCES = 'user_preferences',
+  DASHBOARD_CONFIG = 'dashboard_config',
+  THEME = 'theme',
+  LAST_VISITED_TABS = 'last_visited_tabs',
+  SETTINGS = 'denshimon_settings'
 }
 
 /**
@@ -396,13 +468,52 @@ export const UI_MESSAGES = {
   LOGOUT: 'LOGOUT',
   CLOSE: 'CLOSE',
   SAVE: 'SAVE',
+  SAVING: 'SAVING...',
   CANCEL: 'CANCEL',
   DELETE: 'DELETE',
   EDIT: 'EDIT',
+  ADD: 'ADD',
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  SUBMIT: 'SUBMIT',
   REFRESH: 'REFRESH',
   CLEAR_FILTERS: 'CLEAR FILTERS',
   EXPAND_ALL: 'EXPAND ALL',
-  COLLAPSE_ALL: 'COLLAPSE ALL'
+  COLLAPSE_ALL: 'COLLAPSE ALL',
+  RESUME: 'RESUME',
+  PAUSE: 'PAUSE',
+  CLEAR: 'CLEAR',
+  
+  // Connection states
+  CONNECTING: 'CONNECTING...',
+  CONNECTED: 'CONNECTED',
+  DISCONNECTED: 'DISCONNECTED',
+  RECONNECTING: 'RECONNECTING...',
+  CONNECTION_LOST: 'CONNECTION LOST',
+  CONNECTION_RESTORED: 'CONNECTION RESTORED',
+  LIVE: 'LIVE',
+  OFFLINE: 'OFFLINE',
+  UNKNOWN: 'UNKNOWN',
+  REAL_TIME_UPDATES: 'Real-time updates',
+  
+  // Form validation
+  REQUIRED_FIELD: 'This field is required',
+  INVALID_EMAIL: 'Invalid email address',
+  INVALID_URL: 'Invalid URL format',
+  PASSWORD_TOO_SHORT: 'Password must be at least 8 characters',
+  
+  // Generic responses
+  OPERATION_SUCCESSFUL: 'Operation completed successfully',
+  OPERATION_FAILED: 'Operation failed',
+  UNAUTHORIZED: 'Unauthorized access',
+  FORBIDDEN: 'Access forbidden',
+  NOT_FOUND: 'Resource not found',
+  INTERNAL_ERROR: 'Internal server error',
+  
+  // Confirmation messages
+  CONFIRM_DELETE: 'Are you sure you want to delete this item?',
+  CONFIRM_LOGOUT: 'Are you sure you want to logout?',
+  UNSAVED_CHANGES: 'You have unsaved changes. Continue?'
 } as const;
 
 // ============================================================================
@@ -458,6 +569,19 @@ export const UI_LABELS = {
   VPS_SERVICE_ARCHITECTURE: 'VPS SERVICE ARCHITECTURE',
   VPS_DEPLOYMENTS: 'VPS DEPLOYMENTS',
   VPS_SOURCES: 'VPS SOURCES',
+  
+  // LiveStreams Labels
+  TOP_VPS_RESOURCE_CONSUMING_PODS: 'TOP VPS RESOURCE CONSUMING PODS',
+  ACTIVE_VPS_DEPLOYMENTS: 'Active VPS Deployments',
+  LAST_UPDATE: 'LAST UPDATE',
+  TREND: 'TREND',
+  STRATEGY: 'Strategy',
+  STARTED: 'Started',
+  ETA: 'ETA',
+  REPLICAS: 'Replicas',
+  READY: 'Ready',
+  UPDATED: 'Updated',
+  AVAILABLE: 'Available',
   
   // Metrics and Stats
   CPU: 'CPU',
@@ -632,6 +756,9 @@ export const API_BASE_PATHS = {
   DATABASES: '/api/databases',
   GITEA: '/api/gitea',
   GITOPS: '/api/gitops',
+  BACKUP: '/api/backup',
+  INFRASTRUCTURE: '/api/infrastructure',
+  CERTIFICATES: '/api/certificates',
   WEBSOCKET: '/ws'
 } as const;
 
@@ -751,6 +878,39 @@ export const API_ENDPOINTS = {
     DEPLOYMENT_HISTORY_BY_APP: (applicationId: string) => `${API_BASE_PATHS.GITOPS}/deployments?application_id=${applicationId}`,
     DEPLOYMENT: (id: string) => `${API_BASE_PATHS.GITOPS}/deployments/${id}`,
   },
+  BACKUP: {
+    BASE: API_BASE_PATHS.BACKUP,
+    JOBS: `${API_BASE_PATHS.BACKUP}/jobs`,
+    HISTORY: `${API_BASE_PATHS.BACKUP}/history`,
+    STORAGE: `${API_BASE_PATHS.BACKUP}/storage`,
+    STATISTICS: `${API_BASE_PATHS.BACKUP}/statistics`,
+    RECOVERIES_ACTIVE: `${API_BASE_PATHS.BACKUP}/recoveries/active`,
+    ALERTS: `${API_BASE_PATHS.BACKUP}/alerts`,
+    JOB: (id: string) => `${API_BASE_PATHS.BACKUP}/jobs/${id}`,
+    JOB_RUN: (id: string) => `${API_BASE_PATHS.BACKUP}/jobs/${id}/run`,
+    JOB_CANCEL: (id: string) => `${API_BASE_PATHS.BACKUP}/jobs/${id}/cancel`,
+    VERIFY: (id: string) => `${API_BASE_PATHS.BACKUP}/backups/${id}/verify`,
+    RECOVERY: (id: string) => `${API_BASE_PATHS.BACKUP}/backups/${id}/recover`,
+    DELETE: (id: string) => `${API_BASE_PATHS.BACKUP}/backups/${id}`,
+    SCHEDULE: (id: string) => `${API_BASE_PATHS.BACKUP}/jobs/${id}/schedule`
+  },
+  INFRASTRUCTURE: {
+    BASE: API_BASE_PATHS.INFRASTRUCTURE,
+    SERVICES: `${API_BASE_PATHS.INFRASTRUCTURE}/services`,
+    STATUS: `${API_BASE_PATHS.INFRASTRUCTURE}/status`,
+    ALERTS: `${API_BASE_PATHS.INFRASTRUCTURE}/alerts`,
+    REFRESH: `${API_BASE_PATHS.INFRASTRUCTURE}/refresh`
+  },
+  CERTIFICATES: {
+    BASE: API_BASE_PATHS.CERTIFICATES,
+    LIST: API_BASE_PATHS.CERTIFICATES,
+    STATS: `${API_BASE_PATHS.CERTIFICATES}/stats`,
+    ALERTS: `${API_BASE_PATHS.CERTIFICATES}/alerts`,
+    DOMAINS: `${API_BASE_PATHS.CERTIFICATES}/domains`,
+    REFRESH: `${API_BASE_PATHS.CERTIFICATES}/refresh`,
+    RENEW: (id: string) => `${API_BASE_PATHS.CERTIFICATES}/${id}/renew`,
+    VERIFY: (id: string) => `${API_BASE_PATHS.CERTIFICATES}/${id}/verify`
+  },
   WEBSOCKET: {
     BASE: API_BASE_PATHS.WEBSOCKET,
     DEFAULT_URL: 'ws://localhost:5173/ws' // Vite dev server with proxy
@@ -850,6 +1010,24 @@ export enum LogLevel {
   WARN = 'warn',
   ERROR = 'error',
   FATAL = 'fatal'
+}
+
+/**
+ * LiveStreams view mode types
+ */
+export enum LiveStreamViewMode {
+  PODS = 'pods',
+  LOGS = 'logs',
+  DEPLOYMENTS = 'deployments'
+}
+
+/**
+ * Deployment progress status types
+ */
+export enum DeploymentProgressStatus {
+  COMPLETE = 'complete',
+  PROGRESSING = 'progressing',
+  FAILED = 'failed'
 }
 
 /**
@@ -1190,46 +1368,12 @@ export const MESH_ANALYSIS = {
 // ============================================================================
 
 export const CSS_CLASSES = {
-  COMMON: {
-    BORDER_WHITE: 'border-white',
-    BORDER_WHITE_20: 'border-white/20',
-    BORDER_WHITE_30: 'border-white/30',
-    BG_BLACK: 'bg-black',
-    BG_WHITE_5: 'bg-white/5',
-    BG_WHITE_10: 'bg-white/10',
-    TEXT_WHITE: 'text-white',
-    TEXT_BLACK: 'text-black',
-    FONT_MONO: 'font-mono',
-    TRANSITION_COLORS: 'transition-colors'
-  },
-  STATUS: {
-    GREEN_500: 'bg-green-500',
-    YELLOW_500: 'bg-yellow-500',
-    RED_500: 'bg-red-500',
-    TEXT_GREEN_500: 'text-green-500',
-    TEXT_YELLOW_500: 'text-yellow-500',
-    TEXT_RED_500: 'text-red-500',
-    TEXT_GRAY_500: 'text-gray-500'
-  },
-  LAYOUT: {
-    FLEX: 'flex',
-    FLEX_COL: 'flex-col',
-    ITEMS_CENTER: 'items-center',
-    JUSTIFY_CENTER: 'justify-center',
-    JUSTIFY_BETWEEN: 'justify-between',
-    GAP_1: 'gap-1',
-    GAP_2: 'gap-2',
-    SPACE_Y_1: 'space-y-1',
-    SPACE_Y_2: 'space-y-2'
-  },
-  SIZE: {
-    W_2: 'w-2',
-    H_2: 'h-2',
-    W_3: 'w-3',
-    H_3: 'h-3',
-    W_1_5: 'w-1.5',
-    H_1_5: 'h-1.5',
-    ROUNDED_FULL: 'rounded-full'
+  FORM: {
+    INPUT_BASE: 'w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400',
+    LABEL_BASE: 'block text-sm font-mono text-gray-400 mb-2',
+    BUTTON_PRIMARY: 'flex items-center space-x-2 px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-mono',
+    BUTTON_SECONDARY: 'px-6 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono',
+    SELECT_BASE: 'w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400'
   }
 } as const;
 
