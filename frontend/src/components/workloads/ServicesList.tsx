@@ -48,7 +48,7 @@ const ServicesList: FC<ServicesListProps> = ({
     }
 
     servicesList.sort((a, b) => {
-      let valueA: any, valueB: any;
+      let valueA: string | number, valueB: string | number;
       
       switch (sortBy) {
         case 'namespace':
