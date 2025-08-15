@@ -26,6 +26,7 @@ import type {
   PodLifecycleEvent, 
   LifecycleTimelineEvent 
 } from '@/types/podLifecycle';
+import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
 import useWorkloadsStore from '@/stores/workloadsStore';
 import { MOCK_ENABLED } from '@/mocks';
 
@@ -140,12 +141,12 @@ const PodLifecycle: FC = () => {
   };
 
   // Custom tooltips
-  const CustomChurnTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomChurnTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white mb-1">{`Time: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value}`}
             </p>
@@ -156,7 +157,7 @@ const PodLifecycle: FC = () => {
     return null;
   };
 
-  const CustomFailureTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  const CustomFailureTooltip = ({ active, payload }: PieChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
