@@ -8,9 +8,11 @@ import { DeploymentsTab as DeploymentsTabEnum } from '@/constants';
 
 interface DeploymentDashboardProps {
   activeTab?: string;
+  showDeployModal?: boolean;
+  setShowDeployModal?: (show: boolean) => void;
 }
 
-const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = DeploymentsTabEnum.DEPLOYMENTS }) => {
+const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = DeploymentsTabEnum.DEPLOYMENTS, showDeployModal, setShowDeployModal }) => {
   const { fetchRegistries, fetchDeployments, fetchNodes } = useDeploymentStore();
 
   // Initialize data on mount
@@ -39,7 +41,7 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = Deploym
       case DeploymentsTabEnum.IMAGES:
         return <ImagesTab />;
       case DeploymentsTabEnum.DEPLOYMENTS:
-        return <EnhancedDeploymentsTab />;
+        return <EnhancedDeploymentsTab showDeployModal={showDeployModal} setShowDeployModal={setShowDeployModal} />;
       case DeploymentsTabEnum.HISTORY:
         return <HistoryTab />;
       default:
