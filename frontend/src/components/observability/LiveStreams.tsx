@@ -5,6 +5,7 @@ import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/termi
 import { getWebSocketInstance } from '@services/websocket';
 import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
+import { KubernetesPodAPI, Deployment } from '@/types';
 import RealtimeLogViewer from './RealtimeLogViewer';
 
 const LiveStreams: React.FC = () => {
@@ -62,7 +63,7 @@ const LiveStreams: React.FC = () => {
               
               // Transform API data to LiveTerminalData format
               const transformedData: LiveTerminalData = {
-                topPods: podsData.data?.slice(0, 10).map((pod: any) => ({
+                topPods: podsData.data?.slice(0, 10).map((pod: KubernetesPodAPI) => ({
                   name: pod.name,
                   namespace: pod.namespace,
                   cpu: pod.metrics?.cpuUsage || Math.random() * 100,
@@ -72,7 +73,7 @@ const LiveStreams: React.FC = () => {
                   status: pod.status || PodStatus.RUNNING,
                   lastUpdate: new Date().toISOString(),
                 })) || [],
-                deployments: deploymentsData.data?.filter((dep: any) => dep.status === 'updating' || dep.status === 'progressing').map((dep: any) => ({
+                deployments: deploymentsData.data?.filter((dep: Deployment) => dep.status === 'updating' || dep.status === 'progressing').map((dep: Deployment) => ({
                   name: dep.name,
                   namespace: dep.namespace,
                   status: dep.status === 'updating' ? DeploymentProgressStatus.PROGRESSING : DeploymentProgressStatus.PROGRESSING,
