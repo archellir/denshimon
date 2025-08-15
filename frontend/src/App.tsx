@@ -262,13 +262,13 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       {/* Main Content */}
       <main>
         <Routes>
-          <Route path="/" element={<Navigate to={`/${PrimaryTab.INFRASTRUCTURE}`} replace />} />
-          <Route path={`/${PrimaryTab.INFRASTRUCTURE}`} element={<Dashboard activePrimaryTab={PrimaryTab.INFRASTRUCTURE} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path={`/${PrimaryTab.WORKLOADS}`} element={<Dashboard activePrimaryTab={PrimaryTab.WORKLOADS} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
-          <Route path={`/${PrimaryTab.MESH}`} element={<Dashboard activePrimaryTab={PrimaryTab.MESH} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path="/" element={<Navigate to={`/${PrimaryTab.DEPLOYMENTS}`} replace />} />
           <Route path={`/${PrimaryTab.DEPLOYMENTS}`} element={<Dashboard activePrimaryTab={PrimaryTab.DEPLOYMENTS} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
           <Route path={`/${PrimaryTab.DATABASE}`} element={<Dashboard activePrimaryTab={PrimaryTab.DATABASE} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
           <Route path={`/${PrimaryTab.OBSERVABILITY}`} element={<Dashboard activePrimaryTab={PrimaryTab.OBSERVABILITY} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.INFRASTRUCTURE}`} element={<Dashboard activePrimaryTab={PrimaryTab.INFRASTRUCTURE} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.WORKLOADS}`} element={<Dashboard activePrimaryTab={PrimaryTab.WORKLOADS} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
+          <Route path={`/${PrimaryTab.MESH}`} element={<Dashboard activePrimaryTab={PrimaryTab.MESH} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} />} />
         </Routes>
       </main>
 
@@ -293,12 +293,12 @@ const NavigationBar: FC = () => {
   const { isConnected } = useWebSocketMetricsStore()
   
   const allNavItems = [
-    { path: `/${PrimaryTab.INFRASTRUCTURE}`, icon: Server, label: UI_LABELS.INFRASTRUCTURE, tabId: PrimaryTab.INFRASTRUCTURE },
-    { path: `/${PrimaryTab.WORKLOADS}`, icon: Package, label: UI_LABELS.WORKLOADS, tabId: PrimaryTab.WORKLOADS },
-    { path: `/${PrimaryTab.MESH}`, icon: Zap, label: UI_LABELS.SERVICE_MESH, tabId: PrimaryTab.MESH },
     { path: `/${PrimaryTab.DEPLOYMENTS}`, icon: GitBranch, label: UI_LABELS.DEPLOYMENTS, tabId: PrimaryTab.DEPLOYMENTS },
     { path: `/${PrimaryTab.DATABASE}`, icon: Database, label: UI_LABELS.DATABASE, tabId: PrimaryTab.DATABASE },
     { path: `/${PrimaryTab.OBSERVABILITY}`, icon: Eye, label: UI_LABELS.OBSERVABILITY, tabId: PrimaryTab.OBSERVABILITY },
+    { path: `/${PrimaryTab.INFRASTRUCTURE}`, icon: Server, label: UI_LABELS.INFRASTRUCTURE, tabId: PrimaryTab.INFRASTRUCTURE },
+    { path: `/${PrimaryTab.WORKLOADS}`, icon: Package, label: UI_LABELS.WORKLOADS, tabId: PrimaryTab.WORKLOADS },
+    { path: `/${PrimaryTab.MESH}`, icon: Zap, label: UI_LABELS.SERVICE_MESH, tabId: PrimaryTab.MESH },
   ]
   
   const navItems = allNavItems.filter(item => isTabVisible(item.tabId))
@@ -356,12 +356,12 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   const { isSectionVisible } = useSettingsStore()
   
   const navItems = [
-    { path: `/${PrimaryTab.INFRASTRUCTURE}`, label: UI_LABELS.INFRASTRUCTURE },
-    { path: `/${PrimaryTab.WORKLOADS}`, label: UI_LABELS.WORKLOADS },
-    { path: `/${PrimaryTab.MESH}`, label: UI_LABELS.SERVICE_MESH },
     { path: `/${PrimaryTab.DEPLOYMENTS}`, label: UI_LABELS.DEPLOYMENTS },
     { path: `/${PrimaryTab.DATABASE}`, label: UI_LABELS.DATABASE },
     { path: `/${PrimaryTab.OBSERVABILITY}`, label: UI_LABELS.OBSERVABILITY },
+    { path: `/${PrimaryTab.INFRASTRUCTURE}`, label: UI_LABELS.INFRASTRUCTURE },
+    { path: `/${PrimaryTab.WORKLOADS}`, label: UI_LABELS.WORKLOADS },
+    { path: `/${PrimaryTab.MESH}`, label: UI_LABELS.SERVICE_MESH },
   ]
 
   const currentItem = navItems.find(item => item.path === location.pathname)
@@ -559,7 +559,7 @@ const App: FC = () => {
               error={error}
             />
           ) : (
-            <Navigate to={`/${PrimaryTab.INFRASTRUCTURE}`} replace />
+            <Navigate to={`/${PrimaryTab.DEPLOYMENTS}`} replace />
           )
         } />
         
