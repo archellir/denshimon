@@ -1,92 +1,76 @@
--- Initial database schema for denshimon
--- This file is automatically executed when PostgreSQL container starts
+-- Minimal database schema for denshimon - Only what's actually used
+-- This creates a clean, minimal schema focused on actual functionality
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Users table for authentication
+-- Core authentication table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'viewer',
+    role VARCHAR(50) NOT NULL DEFAULT 'viewer', -- admin, operator, viewer
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Audit logs table for tracking all actions
-CREATE TABLE IF NOT EXISTS audit_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
-    action VARCHAR(255) NOT NULL,
-    resource VARCHAR(255) NOT NULL,
-    resource_id VARCHAR(255),
-    details JSONB,
-    ip_address VARCHAR(45),
-    user_agent TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Container registries for deployment management
+CREATE TABLE IF NOT EXISTS container_registries (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    type VARCHAR(50) NOT NULL, -- dockerhub, gcr, ecr, generic, gitea
+    config TEXT NOT NULL, -- JSON configuration (url, credentials, etc.)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Git repositories table for GitOps
-CREATE TABLE IF NOT EXISTS git_repositories (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Database connections for database browser
+CREATE TABLE IF NOT EXISTS database_connections (
+    id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    url VARCHAR(500) NOT NULL,
-    branch VARCHAR(255) DEFAULT 'main',
-    auth_type VARCHAR(50) DEFAULT 'none', -- none, ssh, token
-    credentials JSONB, -- encrypted credentials
-    last_sync TIMESTAMP,
-    sync_status VARCHAR(50) DEFAULT 'unknown', -- synced, out_of_sync, error, unknown
-    sync_error TEXT,
+    type VARCHAR(50) NOT NULL, -- postgresql, sqlite, mysql, mariadb
+    host VARCHAR(255),
+    port INTEGER,
+    database_name VARCHAR(255),
+    username VARCHAR(255),
+    password_encrypted TEXT, -- encrypted password
+    ssl_enabled BOOLEAN DEFAULT FALSE,
+    ssl_config TEXT, -- JSON SSL configuration
+    connection_timeout INTEGER DEFAULT 30,
+    max_connections INTEGER DEFAULT 10,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_connected TIMESTAMP NULL
+);
+
+-- Certificate domain configurations for monitoring
+CREATE TABLE IF NOT EXISTS certificate_domains (
+    id VARCHAR(255) PRIMARY KEY,
+    domain VARCHAR(255) NOT NULL UNIQUE,
+    service VARCHAR(255) NOT NULL,
+    port INTEGER NOT NULL DEFAULT 443,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    check_interval INTEGER NOT NULL DEFAULT 60, -- minutes
+    warning_threshold INTEGER NOT NULL DEFAULT 30, -- days before expiration
+    critical_threshold INTEGER NOT NULL DEFAULT 7, -- days before expiration
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Applications table for GitOps applications
-CREATE TABLE IF NOT EXISTS applications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    repository_id UUID REFERENCES git_repositories(id),
-    path VARCHAR(500) DEFAULT '.',
-    namespace VARCHAR(255) DEFAULT 'default',
-    sync_policy JSONB, -- auto sync settings
-    health_status VARCHAR(50) DEFAULT 'unknown', -- healthy, progressing, degraded, suspended, missing, unknown
-    sync_status VARCHAR(50) DEFAULT 'unknown', -- synced, out_of_sync, unknown
-    last_sync TIMESTAMP,
-    sync_error TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Create performance indexes
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
--- Settings table for application configuration
-CREATE TABLE IF NOT EXISTS settings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    key VARCHAR(255) UNIQUE NOT NULL,
-    value JSONB NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE INDEX IF NOT EXISTS idx_container_registries_type ON container_registries(type);
+CREATE INDEX IF NOT EXISTS idx_container_registries_name ON container_registries(name);
 
--- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource);
+CREATE INDEX IF NOT EXISTS idx_database_connections_type ON database_connections(type);
+CREATE INDEX IF NOT EXISTS idx_database_connections_last_connected ON database_connections(last_connected);
 
-CREATE INDEX IF NOT EXISTS idx_git_repositories_name ON git_repositories(name);
-CREATE INDEX IF NOT EXISTS idx_git_repositories_sync_status ON git_repositories(sync_status);
+CREATE INDEX IF NOT EXISTS idx_certificate_domains_enabled ON certificate_domains(enabled);
+CREATE INDEX IF NOT EXISTS idx_certificate_domains_check_interval ON certificate_domains(check_interval);
 
-CREATE INDEX IF NOT EXISTS idx_applications_name ON applications(name);
-CREATE INDEX IF NOT EXISTS idx_applications_repository_id ON applications(repository_id);
-CREATE INDEX IF NOT EXISTS idx_applications_namespace ON applications(namespace);
-CREATE INDEX IF NOT EXISTS idx_applications_sync_status ON applications(sync_status);
-CREATE INDEX IF NOT EXISTS idx_applications_health_status ON applications(health_status);
-
-CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
-
--- Insert default demo users (passwords are 'password' hashed with bcrypt)
--- Note: In production, these should be created through proper user management
+-- Insert default demo users (password is 'password' hashed with bcrypt)
 INSERT INTO users (username, password_hash, role) VALUES 
     ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMye.2FMKJbqxvUCr6H7LcjNVnbhUEMz6/2', 'admin'),
     ('operator', '$2a$10$N9qo8uLOickgx2ZMRZoMye.2FMKJbqxvUCr6H7LcjNVnbhUEMz6/2', 'operator'),
