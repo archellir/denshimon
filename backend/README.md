@@ -17,10 +17,10 @@ Go backend service that provides REST APIs for Kubernetes management, GitOps ope
 - Node monitoring
 - Resource metrics collection
 
-### GitOps Operations
-- Git repository management
-- Application deployment and sync
-- ArgoCD-like functionality
+### Registry & Deployment Management
+- Container registry integration (Docker Hub, ECR, GCR, Gitea)
+- Image management and deployment
+- Database connection management
 
 ### Authentication & Security
 - PASETO v4 token-based auth
@@ -58,19 +58,22 @@ GET /api/k8s/nodes                - List nodes
 GET /api/k8s/health               - Cluster health check
 ```
 
-### GitOps
+### Deployments & Registry Management
 ```
-GET    /api/gitops/repositories     - List repositories
-POST   /api/gitops/repositories     - Add repository
-GET    /api/gitops/repositories/{id} - Get repository
-POST   /api/gitops/repositories/{id}/sync - Sync repository
-DELETE /api/gitops/repositories/{id} - Delete repository
+GET    /api/deployments/registries     - List container registries
+POST   /api/deployments/registries     - Add registry
+DELETE /api/deployments/registries/{id} - Delete registry
+POST   /api/deployments/registries/{id}/test - Test registry connection
 
-GET    /api/gitops/applications     - List applications
-POST   /api/gitops/applications     - Create application
-GET    /api/gitops/applications/{id} - Get application
-POST   /api/gitops/applications/{id}/sync - Sync application
-DELETE /api/gitops/applications/{id} - Delete application
+GET    /api/deployments/images         - List available images
+GET    /api/deployments/images/search  - Search images
+GET    /api/deployments/images/{id}/tags - Get image tags
+
+GET    /api/deployments                - List deployments
+POST   /api/deployments                - Create deployment
+GET    /api/deployments/{id}           - Get deployment details
+PUT    /api/deployments/{id}           - Update deployment
+DELETE /api/deployments/{id}           - Delete deployment
 ```
 
 ### Metrics
@@ -128,11 +131,13 @@ go test ./...
 
 SQLite database includes:
 - `users` - User accounts and roles
-- `sessions` - Authentication sessions
-- `cache` - Application cache
-- `audit_logs` - Audit trail
-- `git_repositories` - GitOps repositories
-- `applications` - Deployed applications
+- `sessions` - Authentication sessions (replaces Redis)
+- `cache` - Application cache (replaces Redis)
+- `container_registries` - Container registry configurations
+- `database_connections` - Database connection configs
+- `certificate_domains` - Certificate monitoring configs
+- `backup_jobs` - Backup job configurations
+- `backup_history` - Backup execution history
 
 ## Authentication
 
