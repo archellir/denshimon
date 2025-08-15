@@ -120,3 +120,19 @@ export interface ServiceMeshData {
   metrics: ServiceMeshMetrics;
   timestamp: string;
 }
+
+export interface ServiceUpdateData {
+  serviceId?: string;
+  status?: 'healthy' | 'warning' | 'error' | 'unknown';
+  metrics?: {
+    requestRate?: number;
+    errorRate?: number;
+    latency?: {
+      p95?: number;
+      p50?: number;
+      p99?: number;
+    };
+  };
+  circuitBreakerStatus?: 'closed' | 'open' | 'half-open';
+  lastTripped?: string;
+}
