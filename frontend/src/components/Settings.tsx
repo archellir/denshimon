@@ -113,7 +113,7 @@ const Settings: FC = () => {
     }
   };
 
-  const updateSetting = (key: keyof SettingsData, value: any) => {
+  const updateSetting = (key: keyof SettingsData, value: string | number | boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
