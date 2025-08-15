@@ -350,6 +350,151 @@ func (s *Service) GetDeploymentHistory(ctx context.Context, appID string) ([]Dep
 	return deployments, nil
 }
 
+// RollbackApplication rolls back an application to a previous deployment
+func (s *Service) RollbackApplication(ctx context.Context, appID string, targetDeploymentID string, rolledBackBy string) (*DeploymentRecord, error) {
+	// Get the target deployment to rollback to
+	var targetDeployment DeploymentRecord
+	var envJSON string
+	err := s.db.QueryRowContext(ctx, `
+		SELECT id, application_id, image, replicas, environment, git_hash, status, message, deployed_by, deployed_at
+		FROM gitops_deployments 
+		WHERE id = ? AND application_id = ?`,
+		targetDeploymentID, appID).Scan(
+		&targetDeployment.ID, &targetDeployment.ApplicationID, &targetDeployment.Image,
+		&targetDeployment.Replicas, &envJSON, &targetDeployment.GitHash, &targetDeployment.Status,
+		&targetDeployment.Message, &targetDeployment.DeployedBy, &targetDeployment.DeployedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get target deployment: %w", err)
+	}
+
+	json.Unmarshal([]byte(envJSON), &targetDeployment.Environment)
+
+	// Get application details
+	var app Application
+	var resourcesJSON, appEnvJSON string
+	err = s.db.QueryRowContext(ctx, `
+		SELECT id, name, namespace, repository_id, path, image, replicas, resources, environment
+		FROM gitops_applications WHERE id = ?`, appID).Scan(
+		&app.ID, &app.Name, &app.Namespace, &app.RepositoryID, &app.Path,
+		&app.Image, &app.Replicas, &resourcesJSON, &appEnvJSON)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get application: %w", err)
+	}
+
+	json.Unmarshal([]byte(resourcesJSON), &app.Resources)
+	json.Unmarshal([]byte(appEnvJSON), &app.Environment)
+
+	// Update application with rollback values
+	app.Image = targetDeployment.Image
+	app.Replicas = targetDeployment.Replicas
+	app.Environment = targetDeployment.Environment
+
+	// Generate Kubernetes manifest with rollback values
+	manifest, err := s.generateDeploymentManifest(&app)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate rollback manifest: %w", err)
+	}
+
+	// Write manifest to repository
+	manifestPath := filepath.Join("k8s", app.Namespace, fmt.Sprintf("%s-deployment.yaml", app.Name))
+	if err := s.gitClient.WriteFile(manifestPath, []byte(manifest)); err != nil {
+		return nil, fmt.Errorf("failed to write rollback manifest: %w", err)
+	}
+
+	// Commit and push rollback changes
+	commitMsg := fmt.Sprintf("fix(%s): rollback %s to previous deployment\n\nRollback to image %s and %d replicas\nTarget deployment: %s", 
+		app.Namespace, app.Name, targetDeployment.Image, targetDeployment.Replicas, targetDeploymentID)
+	if err := s.gitClient.CommitAndPush(commitMsg, manifestPath); err != nil {
+		return nil, fmt.Errorf("failed to commit rollback changes: %w", err)
+	}
+
+	// Get current git hash after rollback
+	commits, err := s.gitClient.Log(1)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get git hash: %w", err)
+	}
+
+	var gitHash string
+	if len(commits) > 0 {
+		gitHash = commits[0].Hash
+	}
+
+	// Create rollback deployment record
+	rollbackDeployment := &DeploymentRecord{
+		ID:            uuid.New().String(),
+		ApplicationID: appID,
+		Image:         targetDeployment.Image,
+		Replicas:      targetDeployment.Replicas,
+		Environment:   targetDeployment.Environment,
+		GitHash:       gitHash,
+		Status:        "rolled_back",
+		Message:       fmt.Sprintf("Rolled back to deployment %s", targetDeploymentID),
+		DeployedBy:    rolledBackBy,
+		DeployedAt:    time.Now(),
+	}
+
+	rollbackEnvJSON, _ := json.Marshal(rollbackDeployment.Environment)
+	_, err = s.db.ExecContext(ctx, `
+		INSERT INTO gitops_deployments (id, application_id, image, replicas, environment, git_hash, status, message, deployed_by, deployed_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		rollbackDeployment.ID, rollbackDeployment.ApplicationID, rollbackDeployment.Image, rollbackDeployment.Replicas,
+		string(rollbackEnvJSON), rollbackDeployment.GitHash, rollbackDeployment.Status, rollbackDeployment.Message, rollbackDeployment.DeployedBy, rollbackDeployment.DeployedAt)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to record rollback deployment: %w", err)
+	}
+
+	// Update application with rollback values and mark as rolled back
+	updatedEnvJSON, _ := json.Marshal(app.Environment)
+	_, err = s.db.ExecContext(ctx, `
+		UPDATE gitops_applications 
+		SET image = ?, replicas = ?, environment = ?, status = 'deployed', sync_status = 'synced', last_deployed = ?, updated_at = ?
+		WHERE id = ?`,
+		app.Image, app.Replicas, string(updatedEnvJSON), time.Now(), time.Now(), appID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update application after rollback: %w", err)
+	}
+
+	return rollbackDeployment, nil
+}
+
+// GetRollbackTargets returns available rollback targets for an application
+func (s *Service) GetRollbackTargets(ctx context.Context, appID string, limit int) ([]DeploymentRecord, error) {
+	if limit <= 0 {
+		limit = 10 // Default to last 10 deployments
+	}
+
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT id, application_id, image, replicas, environment, git_hash, status, message, deployed_by, deployed_at
+		FROM gitops_deployments 
+		WHERE application_id = ? AND status IN ('deployed', 'rolled_back')
+		ORDER BY deployed_at DESC
+		LIMIT ?`,
+		appID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get rollback targets: %w", err)
+	}
+	defer rows.Close()
+
+	var deployments []DeploymentRecord
+	for rows.Next() {
+		var deployment DeploymentRecord
+		var envJSON string
+
+		err := rows.Scan(&deployment.ID, &deployment.ApplicationID, &deployment.Image,
+			&deployment.Replicas, &envJSON, &deployment.GitHash, &deployment.Status,
+			&deployment.Message, &deployment.DeployedBy, &deployment.DeployedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan rollback target: %w", err)
+		}
+
+		json.Unmarshal([]byte(envJSON), &deployment.Environment)
+		deployments = append(deployments, deployment)
+	}
+
+	return deployments, nil
+}
+
 // generateDeploymentManifest generates a Kubernetes deployment manifest using templates
 func (s *Service) generateDeploymentManifest(app *Application) (string, error) {
 	options := map[string]interface{}{
