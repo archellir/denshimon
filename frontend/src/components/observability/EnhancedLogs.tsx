@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Package, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
+import { Package, AlertCircle, Info, AlertTriangle, Bug, Layers, FileText, Globe } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';
@@ -9,6 +9,7 @@ import {
   UI_MESSAGES,
   API_ENDPOINTS 
 } from '@/constants';
+import CustomSelector from '@/components/common/CustomSelector';
 
 const EnhancedLogs: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -119,11 +120,11 @@ const EnhancedLogs: React.FC = () => {
   return (
     <div className="space-y-6">
 
-      {/* VPS Log Stats */}
+      {/* Log Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div className="border border-white p-3 text-center">
           <div className="text-lg font-mono">{filteredLogs.length}</div>
-          <div className="text-xs font-mono opacity-60">{UI_LABELS.VPS_LOGS}</div>
+          <div className="text-xs font-mono opacity-60">{UI_LABELS.CONTAINER_LOGS}</div>
         </div>
         {([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO, LogLevel.DEBUG] as const).map(level => {
           const count = filteredLogs.filter(log => log.level === level).length;
@@ -138,7 +139,7 @@ const EnhancedLogs: React.FC = () => {
         })}
         <div className="border border-white p-3 text-center">
           <div className="text-lg font-mono">{uniqueSources.length}</div>
-          <div className="text-xs font-mono opacity-60">{UI_LABELS.VPS_SERVICES}</div>
+          <div className="text-xs font-mono opacity-60">{UI_LABELS.CONTAINER_SERVICES}</div>
         </div>
       </div>
 
@@ -148,45 +149,56 @@ const EnhancedLogs: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-xs font-mono mb-2 text-gray-400">LOG LEVEL</label>
-                <select
+                <CustomSelector
                   value={selectedLevel}
-                  onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="w-full bg-black border border-white/30 p-2 font-mono text-sm focus:outline-none focus:border-green-400"
-                >
-                  <option value="all">{UI_LABELS.ALL_LEVELS}</option>
-                  <option value={LogLevel.ERROR}>{UI_LABELS.ERROR}</option>
-                  <option value={LogLevel.WARN}>{UI_LABELS.WARN}</option>
-                  <option value={LogLevel.INFO}>{UI_LABELS.INFO}</option>
-                  <option value={LogLevel.DEBUG}>{UI_LABELS.DEBUG}</option>
-                </select>
+                  options={[
+                    { value: 'all', label: UI_LABELS.ALL_LEVELS },
+                    { value: LogLevel.ERROR, label: UI_LABELS.ERROR },
+                    { value: LogLevel.WARN, label: UI_LABELS.WARN },
+                    { value: LogLevel.INFO, label: UI_LABELS.INFO },
+                    { value: LogLevel.DEBUG, label: UI_LABELS.DEBUG }
+                  ]}
+                  onChange={(value) => setSelectedLevel(value)}
+                  placeholder="Select Level"
+                  icon={Layers}
+                  size="sm"
+                />
               </div>
               
               <div>
                 <label className="block text-xs font-mono mb-2 text-gray-400">SOURCE</label>
-                <select
+                <CustomSelector
                   value={selectedSource}
-                  onChange={(e) => setSelectedSource(e.target.value)}
-                  className="w-full bg-black border border-white/30 p-2 font-mono text-sm focus:outline-none focus:border-green-400"
-                >
-                  <option value="all">{UI_LABELS.ALL_SOURCES}</option>
-                  {uniqueSources.map(source => (
-                    <option key={source} value={source}>{source.toUpperCase()}</option>
-                  ))}
-                </select>
+                  options={[
+                    { value: 'all', label: UI_LABELS.ALL_SOURCES },
+                    ...uniqueSources.map(source => ({
+                      value: source,
+                      label: source.toUpperCase()
+                    }))
+                  ]}
+                  onChange={(value) => setSelectedSource(value)}
+                  placeholder="Select Source"
+                  icon={FileText}
+                  size="sm"
+                />
               </div>
               
               <div>
                 <label className="block text-xs font-mono mb-2 text-gray-400">NAMESPACE</label>
-                <select
+                <CustomSelector
                   value={selectedNamespace}
-                  onChange={(e) => setSelectedNamespace(e.target.value)}
-                  className="w-full bg-black border border-white/30 p-2 font-mono text-sm focus:outline-none focus:border-green-400"
-                >
-                  <option value="all">{UI_LABELS.ALL_NAMESPACES}</option>
-                  {uniqueNamespaces.map(namespace => (
-                    <option key={namespace} value={namespace}>{namespace.toUpperCase()}</option>
-                  ))}
-                </select>
+                  options={[
+                    { value: 'all', label: UI_LABELS.ALL_NAMESPACES },
+                    ...uniqueNamespaces.map(namespace => ({
+                      value: namespace,
+                      label: namespace.toUpperCase()
+                    }))
+                  ]}
+                  onChange={(value) => setSelectedNamespace(value)}
+                  placeholder="Select Namespace"
+                  icon={Globe}
+                  size="sm"
+                />
               </div>
               
               <div className="flex items-end">
@@ -207,11 +219,11 @@ const EnhancedLogs: React.FC = () => {
           {filteredLogs.length === 0 ? (
             <div className="p-8 text-center">
               <Package className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-              <div className="text-lg font-mono mb-2">{UI_MESSAGES.NO_VPS_LOGS}</div>
+              <div className="text-lg font-mono mb-2">{UI_MESSAGES.NO_CONTAINER_LOGS}</div>
               <div className="text-sm font-mono opacity-60">
                 {selectedLevel !== 'all' || selectedSource !== 'all' || selectedNamespace !== 'all' 
-                  ? 'No VPS log entries match your current filters'
-                  : 'No VPS log entries available'
+                  ? 'No log entries match your current filters'
+                  : 'No log entries available'
                 }
               </div>
             </div>

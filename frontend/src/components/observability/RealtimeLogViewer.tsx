@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, FC } from 'react';
-import { Filter, AlertCircle, Info, AlertTriangle, Bug } from 'lucide-react';
+import { Filter, AlertCircle, Info, AlertTriangle, Bug, Layers, Globe } from 'lucide-react';
 import { getWebSocketInstance } from '@services/websocket';
 import { WebSocketEventType } from '@/constants';
+import CustomSelector from '@/components/common/CustomSelector';
 
 interface LogEntry {
   id: string;
@@ -129,29 +130,37 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
             </div>
 
             {/* Level Filter */}
-          <select
-            value={filter.level}
-            onChange={(e) => setFilter({ ...filter, level: e.target.value })}
-            className="bg-black border border-white/30 px-2 py-1 text-xs font-mono focus:outline-none focus:border-green-400"
-          >
-            <option value="all">ALL LEVELS</option>
-            <option value="info">INFO</option>
-            <option value="warn">WARN</option>
-            <option value="error">ERROR</option>
-            <option value="debug">DEBUG</option>
-          </select>
+            <CustomSelector
+              value={filter.level}
+              options={[
+                { value: 'all', label: 'ALL LEVELS' },
+                { value: 'info', label: 'INFO' },
+                { value: 'warn', label: 'WARN' },
+                { value: 'error', label: 'ERROR' },
+                { value: 'debug', label: 'DEBUG' }
+              ]}
+              onChange={(value) => setFilter({ ...filter, level: value })}
+              placeholder="Select Level"
+              icon={Layers}
+              size="xs"
+              variant="compact"
+              className="min-w-28"
+            />
 
           {/* Namespace Filter */}
-          <select
-            value={filter.namespace}
-            onChange={(e) => setFilter({ ...filter, namespace: e.target.value })}
-            className="bg-black border border-white/30 px-2 py-1 text-xs font-mono focus:outline-none focus:border-green-400"
-          >
-            <option value="all">ALL NAMESPACES</option>
-            {namespaces.map(ns => (
-              <option key={ns} value={ns}>{ns}</option>
-            ))}
-          </select>
+            <CustomSelector
+              value={filter.namespace}
+              options={[
+                { value: 'all', label: 'ALL NAMESPACES' },
+                ...namespaces.map(ns => ({ value: ns, label: ns }))
+              ]}
+              onChange={(value) => setFilter({ ...filter, namespace: value })}
+              placeholder="Select Namespace"
+              icon={Globe}
+              size="xs"
+              variant="compact"
+              className="min-w-36"
+            />
 
           {/* Search */}
           <input
@@ -159,7 +168,7 @@ const RealtimeLogViewer: FC<RealtimeLogViewerProps> = ({
             placeholder="Search logs..."
             value={filter.search}
             onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-            className="bg-black border border-white/30 px-2 py-1 text-xs font-mono placeholder-gray-500 focus:outline-none focus:border-green-400"
+            className="bg-black border border-white px-2 py-1 text-xs font-mono placeholder-gray-500 focus:outline-none focus:border-green-400"
           />
           </div>
 
