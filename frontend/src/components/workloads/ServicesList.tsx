@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 import useWorkloadsStore, { Service } from '@/stores/workloadsStore';
 
 
@@ -268,13 +269,8 @@ const ServicesList: FC<ServicesListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="border border-white p-4 animate-pulse">
-            <Server size={48} className="mx-auto mb-4" />
-            <p className="font-mono text-sm">LOADING SERVICES...</p>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <SkeletonLoader variant="table" count={8} />
       </div>
     );
   }
