@@ -572,3 +572,90 @@ func (h *GitOpsHandler) ConfigureWebhook(w http.ResponseWriter, r *http.Request)
 
 	response.SendSuccess(w, config)
 }
+
+// GetHealthMetrics returns GitOps health metrics
+func (h *GitOpsHandler) GetHealthMetrics(w http.ResponseWriter, r *http.Request) {
+	metrics, err := h.service.GetHealthMetrics(r.Context())
+	if err != nil {
+		h.logger.Error("failed to get health metrics", "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to get health metrics")
+		return
+	}
+
+	response.SendSuccess(w, metrics)
+}
+
+// ListAlerts returns active GitOps alerts
+func (h *GitOpsHandler) ListAlerts(w http.ResponseWriter, r *http.Request) {
+	alerts, err := h.service.ListAlerts(r.Context())
+	if err != nil {
+		h.logger.Error("failed to list alerts", "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to list alerts")
+		return
+	}
+
+	response.SendSuccess(w, alerts)
+}
+
+// AcknowledgeAlert acknowledges a GitOps alert
+func (h *GitOpsHandler) AcknowledgeAlert(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		AlertID string `json:"alert_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.SendError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.AlertID == "" {
+		response.SendError(w, http.StatusBadRequest, "Alert ID is required")
+		return
+	}
+
+	if err := h.service.AcknowledgeAlert(r.Context(), req.AlertID); err != nil {
+		h.logger.Error("failed to acknowledge alert", "alert_id", req.AlertID, "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to acknowledge alert")
+		return
+	}
+
+	response.SendSuccess(w, map[string]string{"status": "acknowledged"})
+}
+
+// ResolveAlert resolves a GitOps alert
+func (h *GitOpsHandler) ResolveAlert(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		AlertID string `json:"alert_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.SendError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.AlertID == "" {
+		response.SendError(w, http.StatusBadRequest, "Alert ID is required")
+		return
+	}
+
+	if err := h.service.ResolveAlert(r.Context(), req.AlertID); err != nil {
+		h.logger.Error("failed to resolve alert", "alert_id", req.AlertID, "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to resolve alert")
+		return
+	}
+
+	response.SendSuccess(w, map[string]string{"status": "resolved"})
+}
+
+// TriggerHealthCheck triggers a health check and monitoring scan
+func (h *GitOpsHandler) TriggerHealthCheck(w http.ResponseWriter, r *http.Request) {
+	// Run health check in background to avoid timeout
+	go func() {
+		ctx := context.Background()
+		if err := h.service.MonitorHealth(ctx); err != nil {
+			h.logger.Error("health check failed", "error", err)
+		}
+	}()
+
+	response.SendSuccess(w, map[string]string{"status": "triggered"})
+}
