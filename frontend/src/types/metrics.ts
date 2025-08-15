@@ -110,3 +110,10 @@ export interface MetricsStore {
   fetchAllMetrics: () => Promise<void>;
   clearMetrics: () => void;
 }
+
+export interface WebSocketMetricsData {
+  cluster?: ClusterMetrics;
+  nodes?: NodeMetrics[];
+  pods?: PodMetrics[];
+  namespaces?: NamespaceMetrics[];
+}
