@@ -336,3 +336,128 @@ func (se *SyncEngine) ForceSync(ctx context.Context, config *SyncConfig) error {
 
 	return se.SyncAllApplications(ctx, config)
 }
+
+// WebhookPayload represents incoming webhook data
+type WebhookPayload struct {
+	Repository struct {
+		Name        string `json:"name"`
+		FullName    string `json:"full_name"`
+		CloneURL    string `json:"clone_url"`
+		DefaultBranch string `json:"default_branch"`
+	} `json:"repository"`
+	Ref        string `json:"ref"`
+	Before     string `json:"before"`
+	After      string `json:"after"`
+	Commits    []struct {
+		ID      string `json:"id"`
+		Message string `json:"message"`
+		Author  struct {
+			Name  string `json:"name"`
+			Email string `json:"email"`
+		} `json:"author"`
+		Modified []string `json:"modified"`
+		Added    []string `json:"added"`
+		Removed  []string `json:"removed"`
+	} `json:"commits"`
+	Pusher struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	} `json:"pusher"`
+}
+
+// ProcessWebhook handles incoming Git webhook notifications
+func (se *SyncEngine) ProcessWebhook(ctx context.Context, payload *WebhookPayload) error {
+	se.logger.Info("processing webhook", 
+		"repository", payload.Repository.FullName,
+		"ref", payload.Ref,
+		"commits", len(payload.Commits))
+
+	// Check if this is a push to the main branch
+	if !se.isMainBranchPush(payload) {
+		se.logger.Debug("ignoring webhook: not a main branch push", "ref", payload.Ref)
+		return nil
+	}
+
+	// Check if changes affect GitOps manifests
+	hasManifestChanges := se.hasManifestChanges(payload)
+	if !hasManifestChanges {
+		se.logger.Debug("ignoring webhook: no manifest changes detected")
+		return nil
+	}
+
+	se.logger.Info("webhook triggered sync", 
+		"repository", payload.Repository.FullName,
+		"pusher", payload.Pusher.Name)
+
+	// Create sync config for webhook-triggered sync
+	config := &SyncConfig{
+		AutoSync:         true,
+		CommitMessage:    fmt.Sprintf("feat(gitops): auto-sync from webhook (%s)", payload.After[:8]),
+		TargetBranch:     payload.Repository.DefaultBranch,
+		ManifestPath:     "k8s",
+		IncludeServices:  true,
+		IncludeIngress:   false,
+		IncludeConfigMap: true,
+		AutoScaling:      false,
+	}
+
+	// Pull latest changes from repository
+	if err := se.service.gitClient.Pull(); err != nil {
+		return fmt.Errorf("failed to pull latest changes: %w", err)
+	}
+
+	// Trigger synchronization
+	if err := se.SyncAllApplications(ctx, config); err != nil {
+		return fmt.Errorf("webhook sync failed: %w", err)
+	}
+
+	se.logger.Info("webhook sync completed successfully")
+	return nil
+}
+
+// isMainBranchPush checks if the webhook is for a push to the main branch
+func (se *SyncEngine) isMainBranchPush(payload *WebhookPayload) bool {
+	// Extract branch name from ref (refs/heads/main -> main)
+	branch := strings.TrimPrefix(payload.Ref, "refs/heads/")
+	
+	// Check against common main branch names
+	mainBranches := []string{"main", "master", payload.Repository.DefaultBranch}
+	for _, mainBranch := range mainBranches {
+		if branch == mainBranch {
+			return true
+		}
+	}
+	
+	return false
+}
+
+// hasManifestChanges checks if the webhook contains changes to GitOps manifests
+func (se *SyncEngine) hasManifestChanges(payload *WebhookPayload) bool {
+	manifestPaths := []string{"k8s/", "manifests/", ".yaml", ".yml"}
+	
+	for _, commit := range payload.Commits {
+		allFiles := append(commit.Modified, commit.Added...)
+		allFiles = append(allFiles, commit.Removed...)
+		
+		for _, file := range allFiles {
+			for _, manifestPath := range manifestPaths {
+				if strings.Contains(file, manifestPath) {
+					return true
+				}
+			}
+		}
+	}
+	
+	return false
+}
+
+// WebhookSyncResult represents the result of a webhook-triggered sync
+type WebhookSyncResult struct {
+	Triggered    bool      `json:"triggered"`
+	Repository   string    `json:"repository"`
+	Branch       string    `json:"branch"`
+	CommitHash   string    `json:"commit_hash"`
+	SyncedApps   int       `json:"synced_apps"`
+	ProcessedAt  time.Time `json:"processed_at"`
+	Error        string    `json:"error,omitempty"`
+}
