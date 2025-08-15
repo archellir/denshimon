@@ -3,6 +3,7 @@ import { Rocket, RotateCcw, Trash2, Plus, Package, Settings, X } from 'lucide-re
 import useDeploymentStore from '@/stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@/constants';
+import useModalKeyboard from '@/hooks/useModalKeyboard';
 
 
 interface ContainerImage {
@@ -103,44 +104,14 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     }
   }, [fetchDeployments, showDeployModal]);
 
-  // ESC key handler and focus management for modals
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (showDeployModal && setShowDeployModal) {
-          setShowDeployModal(false);
-        }
-      } else if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-        // Ctrl+Enter or Cmd+Enter to deploy
-        if (showDeployModal && selectedImage && deployForm.name && !deploying) {
-          event.preventDefault();
-          handleDeploy();
-        }
-      }
-    };
-
-    if (showDeployModal) {
-      // Add event listener for ESC key
-      document.addEventListener('keydown', handleKeyDown);
-      
-      // Focus management - focus the first input when modal opens
-      const timer = setTimeout(() => {
-        const firstInput = document.querySelector('#deploy-modal input, #deploy-modal select') as HTMLElement;
-        if (firstInput) {
-          firstInput.focus();
-        }
-      }, 100);
-
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.style.overflow = 'unset';
-        clearTimeout(timer);
-      };
-    }
-  }, [showDeployModal, setShowDeployModal]);
+  // Modal keyboard behavior
+  const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
+    isOpen: showDeployModal,
+    onClose: () => setShowDeployModal?.(false),
+    onSubmit: handleDeploy,
+    canSubmit: Boolean(selectedImage && deployForm.name && !deploying),
+    modalId: 'deploy-modal'
+  });
 
 
   const fetchImages = async () => {
@@ -402,12 +373,8 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
 
       {/* Deploy Application Modal */}
       {showDeployModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={(e) => {
-          if (e.target === e.currentTarget && setShowDeployModal) {
-            setShowDeployModal(false);
-          }
-        }}>
-          <div id="deploy-modal" className="bg-black border border-white p-8 max-w-7xl w-full mx-4 max-h-[95vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={createClickOutsideHandler(() => setShowDeployModal?.(false))}>
+          <div id="deploy-modal" className="bg-black border border-white p-8 max-w-7xl w-full mx-4 max-h-[95vh] overflow-y-auto" onClick={preventClickThrough}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
               <button

@@ -3,6 +3,7 @@ import { X, Save } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
 import { RegistryType, RegistryStatus, CSS_CLASSES } from '@/constants';
 import type { Registry } from '@/types/deployments';
+import useModalKeyboard from '@/hooks/useModalKeyboard';
 
 interface RegistryFormProps {
   registry?: Registry | null;
@@ -66,9 +67,18 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
   // Auth logic handled in form display
   const useTokenAuth = formData.type === 'gitea' || formData.type === 'gitlab' || formData.token;
 
+  // Modal keyboard behavior
+  const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
+    isOpen: true,
+    onClose,
+    onSubmit: handleSubmit,
+    canSubmit: Boolean(formData.name && formData.url && !loading),
+    modalId: 'registry-modal'
+  });
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-black border border-white w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={createClickOutsideHandler(onClose)}>
+      <div id="registry-modal" className="bg-black border border-white w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onClick={preventClickThrough}>
         <div className="flex items-center justify-between border-b border-white/20 p-4">
           <h2 className="text-xl font-mono">
             {registry ? 'EDIT REGISTRY' : 'ADD REGISTRY'}
