@@ -28,6 +28,8 @@ const (
 	MessageTypePipelineUpdate MessageType = "pipeline_update"
 	MessageTypePing           MessageType = "ping"
 	MessageTypePong           MessageType = "pong"
+	MessageTypeNetwork        MessageType = "network"
+	MessageTypeStorage        MessageType = "storage"
 )
 
 // Message represents a WebSocket message

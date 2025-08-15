@@ -45,6 +45,8 @@ func (p *Publisher) Start() {
 	go p.publishServices()
 	go p.publishAlerts()
 	go p.publishGitOpsEvents()
+	go p.publishNetworkMetrics()
+	go p.publishStorageMetrics()
 }
 
 // Stop stops the publisher
@@ -427,6 +429,42 @@ func (p *Publisher) publishServices() {
 	}
 }
 
+// publishNetworkMetrics publishes network metrics every 5 seconds
+func (p *Publisher) publishNetworkMetrics() {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			// In production, would get real network metrics
+			// For now, generate mock data
+			networkMetrics := p.generateMockNetworkMetrics()
+			p.hub.Broadcast(MessageTypeNetwork, networkMetrics)
+		}
+	}
+}
+
+// publishStorageMetrics publishes storage metrics every 10 seconds
+func (p *Publisher) publishStorageMetrics() {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			// In production, would get real storage metrics from k8s
+			// For now, generate mock data
+			storageMetrics := p.generateMockStorageMetrics()
+			p.hub.Broadcast(MessageTypeStorage, storageMetrics)
+		}
+	}
+}
+
 // publishGitOpsEvents publishes GitOps-related events (webhooks, pipeline updates)
 func (p *Publisher) publishGitOpsEvents() {
 	ticker := time.NewTicker(15 * time.Second)
@@ -545,6 +583,187 @@ func (p *Publisher) generateMockPipelineUpdate() map[string]interface{} {
 			"branch":     []string{"main", "production", "develop"}[rand.Intn(3)],
 			"duration":   30 + rand.Intn(300),
 		},
+	}
+}
+
+// generateMockNetworkMetrics creates mock network metrics data
+func (p *Publisher) generateMockNetworkMetrics() map[string]interface{} {
+	// Simulate realistic network metrics with some variation
+	baseInbound := 25.6
+	baseOutbound := 18.3
+	variation := rand.Float64() * 10 - 5 // +/- 5 Mbps variation
+
+	return map[string]interface{}{
+		"interfaces": []map[string]interface{}{
+			{
+				"name":          "eth0",
+				"status":        "up",
+				"ipAddress":     "10.0.0.100",
+				"mtu":           1500,
+				"bytesIn":       1073741824 + rand.Int63n(268435456), // 1-1.25GB
+				"bytesOut":      536870912 + rand.Int63n(134217728),   // 512-640MB
+				"packetsIn":     1000000 + rand.Intn(100000),
+				"packetsOut":    750000 + rand.Intn(50000),
+				"errorsIn":      rand.Intn(10),
+				"errorsOut":     rand.Intn(5),
+				"droppedIn":     rand.Intn(20),
+				"droppedOut":    rand.Intn(10),
+				"throughputIn":  baseInbound + variation,
+				"throughputOut": baseOutbound + variation/2,
+			},
+		},
+		"bandwidth": map[string]interface{}{
+			"totalUsage":  (baseInbound + baseOutbound) + variation,
+			"inbound":     baseInbound + variation,
+			"outbound":    baseOutbound + variation/2,
+			"peakUsage":   89.2 + rand.Float64()*20,
+			"avgUsage":    35.7 + rand.Float64()*10,
+			"utilization": 17.45 + rand.Float64()*5,
+		},
+		"connections": map[string]interface{}{
+			"established": 342 + rand.Intn(100),
+			"timeWait":    89 + rand.Intn(30),
+			"closeWait":   12 + rand.Intn(10),
+			"synSent":     5 + rand.Intn(5),
+			"synRecv":     3 + rand.Intn(3),
+			"listening":   47,
+		},
+		"protocols": map[string]interface{}{
+			"tcp": map[string]interface{}{
+				"connections": 425 + rand.Intn(75),
+				"bytesIn":     536870912 + rand.Int63n(134217728),
+				"bytesOut":    268435456 + rand.Int63n(67108864),
+				"retransmits": 25 + rand.Intn(15),
+			},
+			"udp": map[string]interface{}{
+				"packets":  50000 + rand.Intn(10000),
+				"bytesIn":  10485760 + rand.Int63n(2097152),
+				"bytesOut": 5242880 + rand.Int63n(1048576),
+				"errors":   rand.Intn(5),
+			},
+		},
+		"latency": map[string]interface{}{
+			"internalPods": map[string]float64{
+				"avg": 0.5 + rand.Float64()*0.3,
+				"p95": 1.2 + rand.Float64()*0.5,
+				"p99": 2.8 + rand.Float64()*1.0,
+			},
+			"externalServices": map[string]float64{
+				"avg": 45.2 + rand.Float64()*10,
+				"p95": 120.5 + rand.Float64()*30,
+				"p99": 350.8 + rand.Float64()*50,
+			},
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
+// generateMockStorageMetrics creates mock storage metrics data
+func (p *Publisher) generateMockStorageMetrics() map[string]interface{} {
+	// Simulate realistic storage metrics with some variation
+	totalStorage := int64(214748364800) // 200GB
+	usedBase := int64(96636764160)      // ~90GB base usage
+	variation := rand.Int63n(10737418240) // +/- 10GB variation
+
+	usedStorage := usedBase + variation
+	availableStorage := totalStorage - usedStorage
+	usagePercent := float64(usedStorage) / float64(totalStorage) * 100
+
+	return map[string]interface{}{
+		"volumes": []map[string]interface{}{
+			{
+				"name":         "pvc-data-postgres",
+				"namespace":    "production",
+				"storageClass": "local-path",
+				"capacity":     53687091200, // 50GB
+				"used":         32212254720 + rand.Int63n(5368709120), // 30-35GB
+				"available":    21474836480 - rand.Int63n(5368709120),
+				"status":       "Bound",
+				"accessMode":   "ReadWriteOnce",
+				"reclaimPolicy": "Retain",
+				"mountedBy":    "postgres-database-1a2b3c4d-jkl012",
+			},
+			{
+				"name":         "pvc-cache-redis",
+				"namespace":    "production",
+				"storageClass": "local-path",
+				"capacity":     10737418240, // 10GB
+				"used":         2147483648 + rand.Int63n(1073741824), // 2-3GB
+				"available":    8589934592 - rand.Int63n(1073741824),
+				"status":       "Bound",
+				"accessMode":   "ReadWriteOnce",
+				"reclaimPolicy": "Delete",
+				"mountedBy":    "redis-cache-6a8b9c0d-ghi789",
+			},
+			{
+				"name":         "pvc-logs-fluentd",
+				"namespace":    "monitoring",
+				"storageClass": "local-path",
+				"capacity":     21474836480, // 20GB
+				"used":         8589934592 + rand.Int63n(2147483648), // 8-10GB
+				"available":    12884901888 - rand.Int63n(2147483648),
+				"status":       "Bound",
+				"accessMode":   "ReadWriteMany",
+				"reclaimPolicy": "Retain",
+				"mountedBy":    "fluentd-aggregator",
+			},
+		},
+		"storageClasses": []map[string]interface{}{
+			{
+				"name":         "local-path",
+				"provisioner":  "rancher.io/local-path",
+				"volumeCount":  15,
+				"totalCapacity": totalStorage,
+				"usedCapacity":  usedStorage,
+				"reclaimPolicy": "Delete",
+				"volumeBindingMode": "WaitForFirstConsumer",
+			},
+		},
+		"overview": map[string]interface{}{
+			"totalCapacity":      totalStorage,
+			"usedCapacity":       usedStorage,
+			"availableCapacity":  availableStorage,
+			"usagePercent":       usagePercent,
+			"volumeCount":        15,
+			"boundVolumes":       12,
+			"unboundVolumes":     3,
+			"provisioningVolumes": 0,
+			"failedVolumes":      0,
+		},
+		"ioMetrics": map[string]interface{}{
+			"readOps":        1250 + rand.Intn(500),
+			"writeOps":       890 + rand.Intn(300),
+			"readBandwidth":  125.6 + rand.Float64()*50, // MB/s
+			"writeBandwidth": 89.3 + rand.Float64()*30,  // MB/s
+			"avgLatency":     2.5 + rand.Float64()*1.5,  // ms
+			"iops":           2140 + rand.Intn(500),
+		},
+		"diskHealth": map[string]interface{}{
+			"healthy":      true,
+			"temperature":  42 + rand.Intn(10), // Celsius
+			"smartStatus":  "PASSED",
+			"errorCount":   rand.Intn(5),
+			"warningCount": rand.Intn(10),
+			"uptime":       "15d 8h 32m",
+			"lastCheck":    time.Now().Add(-5 * time.Minute).UTC().Format(time.RFC3339),
+		},
+		"quotas": []map[string]interface{}{
+			{
+				"namespace":    "production",
+				"hardLimit":    107374182400, // 100GB
+				"used":         45097156608 + rand.Int63n(5368709120), // 42-47GB
+				"requestCount": 8,
+				"limitCount":   10,
+			},
+			{
+				"namespace":    "monitoring",
+				"hardLimit":    53687091200, // 50GB
+				"used":         21474836480 + rand.Int63n(5368709120), // 20-25GB
+				"requestCount": 5,
+				"limitCount":   8,
+			},
+		},
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
