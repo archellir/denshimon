@@ -7,16 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/archellir/denshimon/internal/common"
 	"github.com/archellir/denshimon/internal/providers/databases"
 )
-
-// APIResponse represents a standard API response
-type APIResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
-	Message string      `json:"message,omitempty"`
-}
 
 // DatabasesHandler handles database management endpoints
 type DatabasesHandler struct {
@@ -29,12 +22,12 @@ func writeErrorResponse(w http.ResponseWriter, status int, message string, err e
 	if err != nil {
 		errorMsg = fmt.Sprintf("%s: %v", message, err)
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: false,
 		Error:   errorMsg,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(response)
@@ -72,12 +65,12 @@ func (h *DatabasesHandler) RegisterRoutes(mux *http.ServeMux) {
 // ListConnections returns all database connections
 func (h *DatabasesHandler) ListConnections(w http.ResponseWriter, r *http.Request) {
 	connections := h.manager.GetConnections()
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    connections,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -89,21 +82,21 @@ func (h *DatabasesHandler) CreateConnection(w http.ResponseWriter, r *http.Reque
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	connection, err := h.manager.AddConnection(ctx, config)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to create connection", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    connection,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
@@ -112,18 +105,18 @@ func (h *DatabasesHandler) CreateConnection(w http.ResponseWriter, r *http.Reque
 // GetConnection returns a specific database connection
 func (h *DatabasesHandler) GetConnection(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	connection, err := h.manager.GetConnection(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusNotFound, "Connection not found", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    connection,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -131,29 +124,29 @@ func (h *DatabasesHandler) GetConnection(w http.ResponseWriter, r *http.Request)
 // UpdateConnection updates a database connection
 func (h *DatabasesHandler) UpdateConnection(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	var config databases.DatabaseConfig
 	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	config.ID = id
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	connection, err := h.manager.UpdateConnection(ctx, config)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to update connection", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    connection,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -161,20 +154,20 @@ func (h *DatabasesHandler) UpdateConnection(w http.ResponseWriter, r *http.Reque
 // DeleteConnection deletes a database connection
 func (h *DatabasesHandler) DeleteConnection(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
-	
+
 	if err := h.manager.DeleteConnection(ctx, id); err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to delete connection", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Message: "Connection deleted successfully",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -182,20 +175,20 @@ func (h *DatabasesHandler) DeleteConnection(w http.ResponseWriter, r *http.Reque
 // ConnectDatabase establishes a connection to a database
 func (h *DatabasesHandler) ConnectDatabase(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	if err := h.manager.Connect(ctx, id); err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to connect to database", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Message: "Connected successfully",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -203,20 +196,20 @@ func (h *DatabasesHandler) ConnectDatabase(w http.ResponseWriter, r *http.Reques
 // DisconnectDatabase closes a database connection
 func (h *DatabasesHandler) DisconnectDatabase(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
-	
+
 	if err := h.manager.Disconnect(ctx, id); err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to disconnect from database", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Message: "Disconnected successfully",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -228,21 +221,21 @@ func (h *DatabasesHandler) TestConnection(w http.ResponseWriter, r *http.Request
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
-	
+
 	result, err := h.manager.TestConnection(ctx, config)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to test connection", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    result,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -250,27 +243,27 @@ func (h *DatabasesHandler) TestConnection(w http.ResponseWriter, r *http.Request
 // GetDatabases returns databases for a connection
 func (h *DatabasesHandler) GetDatabases(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
-	
+
 	databases, err := provider.GetDatabases(ctx)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get databases", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    databases,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -279,27 +272,27 @@ func (h *DatabasesHandler) GetDatabases(w http.ResponseWriter, r *http.Request) 
 func (h *DatabasesHandler) GetTables(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	database := r.PathValue("database")
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
-	
+
 	tables, err := provider.GetTables(ctx, database)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get tables", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    tables,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -309,27 +302,27 @@ func (h *DatabasesHandler) GetColumns(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	database := r.PathValue("database")
 	table := r.PathValue("table")
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
-	
+
 	columns, err := provider.GetColumns(ctx, database, table)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get columns", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    columns,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -337,33 +330,33 @@ func (h *DatabasesHandler) GetColumns(w http.ResponseWriter, r *http.Request) {
 // ExecuteQuery executes a SQL query
 func (h *DatabasesHandler) ExecuteQuery(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	var req databases.QueryRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
 	defer cancel()
-	
+
 	result, err := provider.ExecuteQuery(ctx, req)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to execute query", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    result,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -372,35 +365,35 @@ func (h *DatabasesHandler) ExecuteQuery(w http.ResponseWriter, r *http.Request) 
 func (h *DatabasesHandler) GetTableData(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	table := r.PathValue("table")
-	
+
 	var req databases.TableDataRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	req.Table = table
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	result, err := provider.GetTableData(ctx, req)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get table data", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    result,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -409,34 +402,34 @@ func (h *DatabasesHandler) GetTableData(w http.ResponseWriter, r *http.Request) 
 func (h *DatabasesHandler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	table := r.PathValue("table")
-	
+
 	var req databases.RowUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	req.Table = table
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	if err := provider.UpdateRow(ctx, req); err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to update row", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Message: "Row updated successfully",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -445,34 +438,34 @@ func (h *DatabasesHandler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 func (h *DatabasesHandler) DeleteRow(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	table := r.PathValue("table")
-	
+
 	var req databases.RowDeleteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	req.Table = table
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	if err := provider.DeleteRow(ctx, req); err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to delete row", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Message: "Row deleted successfully",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -481,34 +474,34 @@ func (h *DatabasesHandler) DeleteRow(w http.ResponseWriter, r *http.Request) {
 func (h *DatabasesHandler) InsertRow(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	table := r.PathValue("table")
-	
+
 	var req databases.RowInsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-	
+
 	req.Table = table
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
-	
+
 	if err := provider.InsertRow(ctx, req); err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to insert row", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Message: "Row inserted successfully",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
@@ -517,27 +510,27 @@ func (h *DatabasesHandler) InsertRow(w http.ResponseWriter, r *http.Request) {
 // GetStats returns database statistics
 func (h *DatabasesHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	
+
 	provider, err := h.manager.GetProvider(id)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, "Database not connected", err)
 		return
 	}
-	
+
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
-	
+
 	stats, err := provider.GetStats(ctx)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get statistics", err)
 		return
 	}
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    stats,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -545,12 +538,12 @@ func (h *DatabasesHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 // GetSupportedTypes returns supported database types
 func (h *DatabasesHandler) GetSupportedTypes(w http.ResponseWriter, r *http.Request) {
 	types := h.manager.GetSupportedTypes()
-	
-	response := APIResponse{
+
+	response := common.APIResponse{
 		Success: true,
 		Data:    types,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
