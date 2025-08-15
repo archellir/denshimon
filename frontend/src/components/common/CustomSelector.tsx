@@ -9,7 +9,7 @@ export interface SelectorOption {
   disabled?: boolean;
 }
 
-interface CyberpunkSelectorProps {
+interface CustomSelectorProps {
   value: string;
   options: SelectorOption[];
   onChange: (value: string) => void;
@@ -24,7 +24,7 @@ interface CyberpunkSelectorProps {
   showPulse?: boolean;
 }
 
-const CyberpunkSelector: FC<CyberpunkSelectorProps> = ({
+const CustomSelector: FC<CustomSelectorProps> = ({
   value,
   options,
   onChange,
@@ -221,4 +221,4 @@ const CyberpunkSelector: FC<CyberpunkSelectorProps> = ({
   );
 };
 
-export default CyberpunkSelector;
+export default CustomSelector;

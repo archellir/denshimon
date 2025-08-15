@@ -4,7 +4,7 @@ import useDeploymentStore from '@/stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@/constants';
 import useModalKeyboard from '@/hooks/useModalKeyboard';
-import CyberpunkSelector from '@/components/common/CyberpunkSelector';
+import CustomSelector from '@/components/common/CustomSelector';
 
 
 interface ContainerImage {
@@ -391,7 +391,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
             {/* Container Image Selection at Top */}
             <div className="mb-6 pb-6 border-b border-white/30">
               <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
-              <CyberpunkSelector
+              <CustomSelector
                 value={selectedImage?.id || ''}
                 options={images.map(image => ({
                   value: image.id,
@@ -439,7 +439,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-mono text-gray-400 mb-1">NAMESPACE</label>
-                          <CyberpunkSelector
+                          <CustomSelector
                             value={deployForm.namespace}
                             options={[
                               { value: 'base-infra', label: 'BASE-INFRA' },
@@ -569,7 +569,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                           </div>
                           <div>
                             <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
-                            <CyberpunkSelector
+                            <CustomSelector
                               value={deployForm.storage.accessMode}
                               options={[
                                 { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
@@ -671,7 +671,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                     {deployForm.healthCheck.enabled && (
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-3">
-                          <CyberpunkSelector
+                          <CustomSelector
                             value={deployForm.healthCheck.type}
                             options={[
                               { value: 'http', label: 'HTTP GET' },
@@ -884,7 +884,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                   {/* Service Configuration */}
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
-                    <CyberpunkSelector
+                    <CustomSelector
                       value={deployForm.service.type}
                       options={[
                         { value: 'ClusterIP', label: 'CLUSTER IP' },
@@ -903,7 +903,7 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                   {/* Deployment Strategy */}
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
-                    <CyberpunkSelector
+                    <CustomSelector
                       value={deployForm.deployment.strategy}
                       options={[
                         { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
