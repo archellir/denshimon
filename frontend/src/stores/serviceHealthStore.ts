@@ -8,6 +8,7 @@ import {
   AlertType
 } from '@/types/serviceHealth';
 import { API_ENDPOINTS, Status } from '@/constants';
+import { apiService, ApiError } from '@/services/api';
 
 interface ServiceHealthStore {
   services: ServiceHealth[];
@@ -360,26 +361,17 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.SERVICES, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch service health: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get<any>(API_ENDPOINTS.INFRASTRUCTURE.SERVICES);
       set({ 
-        services: data.data || [],
+        services: response.data.data || response.data || [],
         isLoading: false,
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
       console.error('Failed to fetch service health:', error);
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch service health';
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch service health',
+        error: errorMessage,
         isLoading: false 
       });
     }
@@ -392,18 +384,8 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.STATUS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch infrastructure status: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ infrastructureStatus: data.data });
+      const response = await apiService.get<any>(API_ENDPOINTS.INFRASTRUCTURE.STATUS);
+      set({ infrastructureStatus: response.data.data || response.data });
     } catch (error) {
       console.error('Failed to fetch infrastructure status:', error);
     }
@@ -416,18 +398,8 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.ALERTS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch infrastructure alerts: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ alerts: data.data || [] });
+      const response = await apiService.get<any>(API_ENDPOINTS.INFRASTRUCTURE.ALERTS);
+      set({ alerts: response.data.data || response.data || [] });
     } catch (error) {
       console.error('Failed to fetch infrastructure alerts:', error);
     }
@@ -437,16 +409,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.REFRESH, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to refresh services: ${response.statusText}`);
-      }
+      await apiService.post(API_ENDPOINTS.INFRASTRUCTURE.REFRESH);
 
       await get().fetchServiceHealth();
       await get().fetchInfrastructureStatus();
@@ -456,7 +419,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to refresh services:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to refresh services',
+        error: error instanceof ApiError ? error.message : 'Failed to refresh services',
         isLoading: false 
       });
     }
@@ -464,16 +427,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
 
   acknowledgeAlert: async (alertId: string) => {
     try {
-      const response = await fetch(`/api/infrastructure/alerts/${alertId}/acknowledge`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to acknowledge alert: ${response.statusText}`);
-      }
+      await apiService.post(`/api/infrastructure/alerts/${alertId}/acknowledge`);
 
       const { alerts } = get();
       const updatedAlerts = alerts.map(alert => 
@@ -483,7 +437,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
       set({ alerts: updatedAlerts });
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to acknowledge alert' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to acknowledge alert' });
     }
   },
 
