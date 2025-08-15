@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Building K8s WebUI..."
+echo "Building Denshimon..."
 
 # Build frontend
 echo "Building frontend..."
