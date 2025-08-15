@@ -75,7 +75,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const data = await mockApiResponse({ success: true, data: mockDatabaseConnections });
         set({ connections: data.data, isLoading: false });
         return;
@@ -260,7 +260,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const databaseList = mockDatabases[connectionId] || [];
         const data = await mockApiResponse({ success: true, data: databaseList });
         set({ databases: data.data, isLoading: false });
@@ -288,7 +288,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const tableKey = `${connectionId}:${database}`;
         const tableList = mockTables[tableKey] || [];
         const data = await mockApiResponse({ success: true, data: tableList });
@@ -318,7 +318,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const columnKey = `${connectionId}:${database}:${table}`;
         const columnList = mockColumns[columnKey] || [];
         const data = await mockApiResponse({ success: true, data: columnList });
@@ -348,7 +348,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null, queryResults: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         // Try to find matching mock query result or use a default
         const queryResult = mockQueryResults[sql] || mockQueryResults['SELECT * FROM users LIMIT 5'];
         const data = await mockApiResponse({ success: true, data: queryResult });
@@ -384,7 +384,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const statsData = mockDatabaseStats[connectionId] || mockDatabaseStats['postgres-prod'];
         const data = await mockApiResponse({ success: true, data: statsData });
         set({ stats: data.data, isLoading: false });
@@ -412,7 +412,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Use mock data in development or when API fails
-      if (import.meta.env.DEV) {
+      if (MOCK_ENABLED) {
         const data = await mockApiResponse({ success: true, data: mockSupportedTypes });
         set({ supportedTypes: data.data, isLoading: false });
         return;
