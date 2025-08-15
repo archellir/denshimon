@@ -130,33 +130,6 @@ const DatabaseMonitoring: FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-mono">DATABASE MONITORING</h2>
-          <div className="text-sm font-mono opacity-60">
-            Real-time performance metrics and health monitoring
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs font-mono opacity-60">
-            Last update: {lastRefresh.toLocaleTimeString()}
-          </span>
-          <button
-            onClick={() => {
-              setLastRefresh(new Date());
-              if (selectedConnection) {
-                fetchStats(selectedConnection);
-              }
-            }}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm disabled:opacity-50"
-          >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-            <span>REFRESH</span>
-          </button>
-        </div>
-      </div>
 
       {/* Connection Selection */}
       <div className="flex items-center justify-between p-4 border border-white/20">

@@ -312,7 +312,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const deploymentStore = useDeploymentStore();
   
   // Database store for secondary nav controls
-  const { fetchConnections, isLoading: databaseLoading, connections } = useDatabaseStore();
+  const { fetchConnections, fetchStats, isLoading: databaseLoading, connections } = useDatabaseStore();
+  
+  // State for database monitoring refresh
+  const [lastDatabaseRefresh, setLastDatabaseRefresh] = useState<Date>(new Date());
 
   // WebSocket metrics initialization - only once on mount
   useEffect(() => {
@@ -612,6 +615,28 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 </span>
                 <button
                   onClick={() => fetchConnections()}
+                  disabled={databaseLoading}
+                  className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black disabled:opacity-50 transition-colors font-mono text-sm"
+                >
+                  <RefreshCw size={16} className={databaseLoading ? 'animate-spin' : ''} />
+                  <span>REFRESH</span>
+                </button>
+              </div>
+            );
+          case DatabaseTab.MONITORING:
+            return (
+              <div className="flex items-center space-x-4">
+                <span className="text-xs font-mono opacity-60">
+                  Last update: {lastDatabaseRefresh.toLocaleTimeString()}
+                </span>
+                <button
+                  onClick={() => {
+                    setLastDatabaseRefresh(new Date());
+                    // Refresh all connected databases
+                    connections
+                      .filter(conn => conn.status === 'connected')
+                      .forEach(conn => fetchStats(conn.id));
+                  }}
                   disabled={databaseLoading}
                   className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black disabled:opacity-50 transition-colors font-mono text-sm"
                 >
