@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, type LucideIcon } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, type LucideIcon } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
@@ -112,6 +112,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: DeploymentsTab.HISTORY, label: UI_LABELS.HISTORY, icon: History },
       { id: DeploymentsTab.IMAGES, label: UI_LABELS.IMAGES, icon: Package },
       { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
+      { id: DeploymentsTab.GITOPS, label: 'GITOPS', icon: GitBranch },
     ],
     [PrimaryTab.DATABASE]: [
       { id: DatabaseTab.BROWSER, label: UI_LABELS.BROWSER, icon: Eye },
