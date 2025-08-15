@@ -219,3 +219,346 @@ CREATE INDEX IF NOT EXISTS idx_gitops_applications_sync_status ON gitops_applica
 CREATE INDEX IF NOT EXISTS idx_gitops_deployments_application_id ON gitops_deployments(application_id);
 CREATE INDEX IF NOT EXISTS idx_gitops_deployments_deployed_at ON gitops_deployments(deployed_at);
 CREATE INDEX IF NOT EXISTS idx_gitops_deployments_status ON gitops_deployments(status);
+
+-- GitOps alerts table for monitoring and alerting
+CREATE TABLE IF NOT EXISTS gitops_alerts (
+    id VARCHAR(255) PRIMARY KEY,
+    type VARCHAR(100) NOT NULL, -- sync_failure, deployment_failure, repository_unreachable, drift_detected, repository_check_failed, application_check_failed, application_unhealthy, sync_outdated
+    severity VARCHAR(50) NOT NULL, -- critical, warning, info
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    metadata TEXT NOT NULL DEFAULT '{}', -- JSON metadata
+    status VARCHAR(50) NOT NULL DEFAULT 'active', -- active, acknowledged, resolved
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP NULL
+);
+
+-- Create indexes for GitOps alerts
+CREATE INDEX IF NOT EXISTS idx_gitops_alerts_type ON gitops_alerts(type);
+CREATE INDEX IF NOT EXISTS idx_gitops_alerts_severity ON gitops_alerts(severity);
+CREATE INDEX IF NOT EXISTS idx_gitops_alerts_status ON gitops_alerts(status);
+CREATE INDEX IF NOT EXISTS idx_gitops_alerts_created_at ON gitops_alerts(created_at);
+CREATE INDEX IF NOT EXISTS idx_gitops_alerts_resolved_at ON gitops_alerts(resolved_at);
+
+-- GitOps template customization tables
+CREATE TABLE IF NOT EXISTS gitops_templates (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    type VARCHAR(50) NOT NULL, -- web-app, api-service, worker, cron-job, database, custom
+    description TEXT,
+    content TEXT NOT NULL, -- Template YAML content with variables
+    variables TEXT, -- JSON array of required variables
+    is_default BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for templates
+CREATE INDEX IF NOT EXISTS idx_gitops_templates_type ON gitops_templates(type);
+CREATE INDEX IF NOT EXISTS idx_gitops_templates_is_default ON gitops_templates(is_default);
+
+-- Insert default templates
+INSERT INTO gitops_templates (id, name, type, description, content, variables, is_default) VALUES
+(
+    'tpl-web-app',
+    'Web Application',
+    'web-app',
+    'Standard web application with ingress and health checks',
+    '---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  labels:
+    app: {{.Name}}
+    type: web-app
+spec:
+  replicas: {{.Replicas}}
+  selector:
+    matchLabels:
+      app: {{.Name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Name}}
+    spec:
+      containers:
+      - name: {{.Name}}
+        image: {{.Image}}
+        ports:
+        - containerPort: {{.Port}}
+        resources:
+          requests:
+            cpu: {{.CPU.Request}}
+            memory: {{.Memory.Request}}
+          limits:
+            cpu: {{.CPU.Limit}}
+            memory: {{.Memory.Limit}}
+        livenessProbe:
+          httpGet:
+            path: {{.HealthCheck.Path}}
+            port: {{.Port}}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: {{.HealthCheck.Path}}
+            port: {{.Port}}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        {{range $key, $value := .Environment}}
+        - name: {{$key}}
+          value: "{{$value}}"
+        {{end}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+spec:
+  selector:
+    app: {{.Name}}
+  ports:
+  - port: {{.Port}}
+    targetPort: {{.Port}}
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+  - host: {{.Ingress.Host}}
+    http:
+      paths:
+      - path: {{.Ingress.Path}}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{.Name}}
+            port:
+              number: {{.Port}}',
+    '[
+        {"name": "Name", "required": true},
+        {"name": "Namespace", "default": "default"},
+        {"name": "Image", "required": true},
+        {"name": "Replicas", "default": 1},
+        {"name": "Port", "default": 8080},
+        {"name": "CPU.Request", "default": "100m"},
+        {"name": "CPU.Limit", "default": "500m"},
+        {"name": "Memory.Request", "default": "128Mi"},
+        {"name": "Memory.Limit", "default": "512Mi"},
+        {"name": "HealthCheck.Path", "default": "/health"},
+        {"name": "Ingress.Host", "required": true},
+        {"name": "Ingress.Path", "default": "/"}
+    ]',
+    TRUE
+),
+(
+    'tpl-api-service',
+    'API Service',
+    'api-service',
+    'REST API service with rate limiting',
+    '---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  labels:
+    app: {{.Name}}
+    type: api-service
+spec:
+  replicas: {{.Replicas}}
+  selector:
+    matchLabels:
+      app: {{.Name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Name}}
+    spec:
+      containers:
+      - name: {{.Name}}
+        image: {{.Image}}
+        ports:
+        - containerPort: {{.Port}}
+        resources:
+          requests:
+            cpu: {{.CPU.Request}}
+            memory: {{.Memory.Request}}
+          limits:
+            cpu: {{.CPU.Limit}}
+            memory: {{.Memory.Limit}}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{.Port}}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: {{.Port}}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        {{range $key, $value := .Environment}}
+        - name: {{$key}}
+          value: "{{$value}}"
+        {{end}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+spec:
+  selector:
+    app: {{.Name}}
+  ports:
+  - port: {{.Port}}
+    targetPort: {{.Port}}
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{.Name}}
+  minReplicas: {{.Replicas}}
+  maxReplicas: {{.MaxReplicas}}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70',
+    '[
+        {"name": "Name", "required": true},
+        {"name": "Namespace", "default": "default"},
+        {"name": "Image", "required": true},
+        {"name": "Replicas", "default": 2},
+        {"name": "MaxReplicas", "default": 10},
+        {"name": "Port", "default": 8080},
+        {"name": "CPU.Request", "default": "200m"},
+        {"name": "CPU.Limit", "default": "1000m"},
+        {"name": "Memory.Request", "default": "256Mi"},
+        {"name": "Memory.Limit", "default": "1Gi"}
+    ]',
+    TRUE
+),
+(
+    'tpl-worker',
+    'Background Worker',
+    'worker',
+    'Background worker without external access',
+    '---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  labels:
+    app: {{.Name}}
+    type: worker
+spec:
+  replicas: {{.Replicas}}
+  selector:
+    matchLabels:
+      app: {{.Name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Name}}
+    spec:
+      containers:
+      - name: {{.Name}}
+        image: {{.Image}}
+        resources:
+          requests:
+            cpu: {{.CPU.Request}}
+            memory: {{.Memory.Request}}
+          limits:
+            cpu: {{.CPU.Limit}}
+            memory: {{.Memory.Limit}}
+        env:
+        {{range $key, $value := .Environment}}
+        - name: {{$key}}
+          value: "{{$value}}"
+        {{end}}',
+    '[
+        {"name": "Name", "required": true},
+        {"name": "Namespace", "default": "default"},
+        {"name": "Image", "required": true},
+        {"name": "Replicas", "default": 1},
+        {"name": "CPU.Request", "default": "100m"},
+        {"name": "CPU.Limit", "default": "500m"},
+        {"name": "Memory.Request", "default": "256Mi"},
+        {"name": "Memory.Limit", "default": "1Gi"}
+    ]',
+    TRUE
+),
+(
+    'tpl-cron-job',
+    'Cron Job',
+    'cron-job',
+    'Scheduled job that runs periodically',
+    '---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  labels:
+    app: {{.Name}}
+    type: cron-job
+spec:
+  schedule: "{{.Schedule}}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{.Name}}
+            image: {{.Image}}
+            resources:
+              requests:
+                cpu: {{.CPU.Request}}
+                memory: {{.Memory.Request}}
+              limits:
+                cpu: {{.CPU.Limit}}
+                memory: {{.Memory.Limit}}
+            env:
+            {{range $key, $value := .Environment}}
+            - name: {{$key}}
+              value: "{{$value}}"
+            {{end}}
+          restartPolicy: OnFailure',
+    '[
+        {"name": "Name", "required": true},
+        {"name": "Namespace", "default": "default"},
+        {"name": "Image", "required": true},
+        {"name": "Schedule", "default": "0 * * * *", "description": "Cron schedule expression"},
+        {"name": "CPU.Request", "default": "100m"},
+        {"name": "CPU.Limit", "default": "500m"},
+        {"name": "Memory.Request", "default": "128Mi"},
+        {"name": "Memory.Limit", "default": "512Mi"}
+    ]',
+    TRUE
+)
+ON CONFLICT (id) DO NOTHING;
