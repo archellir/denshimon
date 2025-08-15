@@ -246,7 +246,7 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
-            {UI_LABELS.VPS_PODS}
+            {UI_LABELS.CONTAINER_PODS}
           </button>
           <button
             onClick={() => setViewMode(LiveStreamViewMode.LOGS)}
@@ -255,7 +255,7 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <FileText className="w-4 h-4 inline mr-2" />
-            {UI_LABELS.VPS_LOGS}
+            {UI_LABELS.CONTAINER_LOGS}
           </button>
           <button
             onClick={() => setViewMode(LiveStreamViewMode.DEPLOYMENTS)}
@@ -264,7 +264,7 @@ const LiveStreams: React.FC = () => {
             }`}
           >
             <TrendingUp className="w-4 h-4 inline mr-2" />
-            {UI_LABELS.VPS_DEPLOYMENTS}
+            {UI_LABELS.CONTAINER_DEPLOYMENTS}
           </button>
         </div>
         
@@ -322,9 +322,6 @@ const LiveStreams: React.FC = () => {
       {/* Top Pods View */}
       {viewMode === LiveStreamViewMode.PODS && liveData && (
         <div className="border border-white">
-          <div className="border-b border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">{UI_LABELS.TOP_VPS_RESOURCE_CONSUMING_PODS}</h3>
-          </div>
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-sm">
               <thead>
@@ -398,9 +395,6 @@ const LiveStreams: React.FC = () => {
       {/* Deployments View */}
       {viewMode === LiveStreamViewMode.DEPLOYMENTS && liveData && (
         <div className="space-y-4">
-          <div className="border border-white px-4 py-2">
-            <h3 className="font-mono text-sm font-bold">{UI_LABELS.ACTIVE_VPS_DEPLOYMENTS}</h3>
-          </div>
           {liveData.deployments.map((deployment) => (
             <div key={`${deployment.namespace}-${deployment.name}`} className="border border-white p-4">
               <div className="flex justify-between items-start mb-3">
