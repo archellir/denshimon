@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, FC } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { ServiceNode, ServiceConnection } from '@/types/serviceMesh';
+import { ForceGraphNode, ForceGraphLink } from '@/types';
 import { 
   CircuitBreakerStatus, 
   NetworkProtocol, 
@@ -286,7 +287,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
   }, [selectedService, onServiceSelect]);
 
   // Custom node rendering
-  const nodeCanvasObject = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+  const nodeCanvasObject = useCallback((node: ForceGraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const label = node.name;
     const fontSize = GRAPH_CONFIG.NODE.FONT_SIZE / globalScale;
     ctx.font = `${fontSize}px ${CANVAS_CONSTANTS.FONTS.JETBRAINS_MONO}`;
@@ -416,7 +417,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
   }, [selectedService, hoveredNode, showCriticalPath, criticalPath, showSinglePointsOfFailure, singlePointsOfFailure, showDependencyPaths, dependencyPaths, showLatencyHeatmap]);
 
   // Custom link rendering with animated traffic
-  const linkCanvasObject = useCallback((link: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+  const linkCanvasObject = useCallback((link: ForceGraphLink, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const start = link.source;
     const end = link.target;
     
@@ -686,7 +687,7 @@ const ForceGraph: FC<ForceGraphProps> = ({
         linkCanvasObject={linkCanvasObject}
         linkCanvasObjectMode={() => 'replace'}
         onNodeClick={handleNodeClick}
-        onNodeHover={(node: any) => setHoveredNode(node?.id || null)}
+        onNodeHover={(node: ForceGraphNode | null) => setHoveredNode(node?.id || null)}
         width={dimensions.width}
         height={dimensions.height}
         backgroundColor="#000000"
