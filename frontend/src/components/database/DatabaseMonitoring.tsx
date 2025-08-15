@@ -24,7 +24,7 @@ interface MetricCard {
   value: string;
   trend?: string;
   status: 'healthy' | 'warning' | 'critical';
-  icon: any;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
 }
 
 const DatabaseMonitoring: FC = () => {
