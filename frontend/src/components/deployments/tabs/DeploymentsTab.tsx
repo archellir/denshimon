@@ -33,20 +33,20 @@ const DeploymentsTab: FC = () => {
     }
   };
 
-  const handleScale = async (deployment: any) => {
+  const handleScale = async (deployment: Deployment) => {
     const newReplicas = prompt(`Scale ${deployment.name} (current: ${deployment.replicas}):`, deployment.replicas.toString());
     if (newReplicas && !isNaN(Number(newReplicas))) {
       await scaleDeployment(deployment.id, Number(newReplicas));
     }
   };
 
-  const handleRestart = async (deployment: any) => {
+  const handleRestart = async (deployment: Deployment) => {
     if (confirm(`Restart ${deployment.name}?`)) {
       await restartDeployment(deployment.id);
     }
   };
 
-  const handleDelete = async (deployment: any) => {
+  const handleDelete = async (deployment: Deployment) => {
     if (confirm(`Delete ${deployment.name}? This cannot be undone.`)) {
       await deleteDeployment(deployment.id);
     }
