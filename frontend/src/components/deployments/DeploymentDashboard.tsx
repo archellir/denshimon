@@ -4,14 +4,13 @@ import RegistriesTab from './tabs/RegistriesTab';
 import ImagesTab from './tabs/ImagesTab';
 import DeploymentsTab from './tabs/DeploymentsTab';
 import HistoryTab from './tabs/HistoryTab';
-
-type DeploymentTab = 'registries' | 'images' | 'deployments' | 'history';
+import { DeploymentsTab as DeploymentsTabEnum } from '@/constants';
 
 interface DeploymentDashboardProps {
-  activeTab?: DeploymentTab;
+  activeTab?: string;
 }
 
-const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = 'deployments' }) => {
+const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = DeploymentsTabEnum.DEPLOYMENTS }) => {
   const { fetchRegistries, fetchDeployments, fetchNodes } = useDeploymentStore();
 
   // Initialize data on mount
@@ -35,13 +34,13 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = 'deploy
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'registries':
+      case DeploymentsTabEnum.REGISTRIES:
         return <RegistriesTab />;
-      case 'images':
+      case DeploymentsTabEnum.IMAGES:
         return <ImagesTab />;
-      case 'deployments':
+      case DeploymentsTabEnum.DEPLOYMENTS:
         return <DeploymentsTab />;
-      case 'history':
+      case DeploymentsTabEnum.HISTORY:
         return <HistoryTab />;
       default:
         return <DeploymentsTab />;
