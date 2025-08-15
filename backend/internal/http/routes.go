@@ -290,6 +290,7 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /api/gitops/repositories/init", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.InitializeRepository)))
 	mux.HandleFunc("GET /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ListApplications)))
 	mux.HandleFunc("POST /api/gitops/applications", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.CreateApplication)))
+	mux.HandleFunc("GET /api/gitops/templates", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ListTemplates)))
 	mux.HandleFunc("POST /api/gitops/manifests/generate", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.GenerateManifest)))
 	mux.HandleFunc("POST /api/gitops/manifests/validate", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ValidateManifest)))
 	mux.HandleFunc("GET /api/gitops/manifests/types", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.GetSupportedTypes)))
@@ -329,6 +330,14 @@ func RegisterRoutes(
 	mux.Handle("/api/gitops/sync/application/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			gitopsHandlers.SyncApplication(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	}))))
+
+	mux.Handle("/api/gitops/templates/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			gitopsHandlers.GetTemplate(w, r)
 		} else {
 			http.NotFound(w, r)
 		}

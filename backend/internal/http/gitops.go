@@ -659,3 +659,33 @@ func (h *GitOpsHandler) TriggerHealthCheck(w http.ResponseWriter, r *http.Reques
 
 	response.SendSuccess(w, map[string]string{"status": "triggered"})
 }
+
+// ListTemplates returns all available templates
+func (h *GitOpsHandler) ListTemplates(w http.ResponseWriter, r *http.Request) {
+	templates, err := h.service.ListTemplates(r.Context())
+	if err != nil {
+		h.logger.Error("failed to list templates", "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to list templates")
+		return
+	}
+
+	response.SendSuccess(w, map[string]interface{}{"templates": templates})
+}
+
+// GetTemplate returns a specific template
+func (h *GitOpsHandler) GetTemplate(w http.ResponseWriter, r *http.Request) {
+	templateID := extractGitOpsIDFromPath(r.URL.Path, "/api/gitops/templates/")
+	if templateID == "" {
+		response.SendError(w, http.StatusBadRequest, "Invalid template ID")
+		return
+	}
+
+	template, err := h.service.GetTemplate(r.Context(), templateID)
+	if err != nil {
+		h.logger.Error("failed to get template", "template_id", templateID, "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to get template")
+		return
+	}
+
+	response.SendSuccess(w, template)
+}
