@@ -1,6 +1,7 @@
 import { useEffect, type FC } from 'react';
 import { Rocket, RotateCcw, Trash2 } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
+import { Deployment } from '@/types/deployments';
 
 const DeploymentsTab: FC = () => {
   const { 
