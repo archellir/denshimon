@@ -831,6 +831,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             setShowDeployModal={setShowDeployModal}
             preselectedImage={preselectedImage}
             setPreselectedImage={setPreselectedImage}
+            onTabChange={setActiveSecondaryTab}
           />
         )}
         
