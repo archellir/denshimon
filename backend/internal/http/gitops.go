@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/archellir/denshimon/internal/gitops"
@@ -407,4 +408,67 @@ func (h *GitOpsHandler) SyncApplication(w http.ResponseWriter, r *http.Request) 
 	}
 
 	response.SendSuccess(w, map[string]string{"status": "synced"})
+}
+
+// RollbackApplication rolls back an application to a previous deployment
+func (h *GitOpsHandler) RollbackApplication(w http.ResponseWriter, r *http.Request) {
+	appID := extractGitOpsIDFromPath(r.URL.Path, "/api/gitops/applications/")
+	if appID == "" {
+		response.SendError(w, http.StatusBadRequest, "Invalid application ID")
+		return
+	}
+
+	var req struct {
+		TargetDeploymentID string `json:"target_deployment_id"`
+		RolledBackBy       string `json:"rolled_back_by"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.SendError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.TargetDeploymentID == "" {
+		response.SendError(w, http.StatusBadRequest, "Target deployment ID is required")
+		return
+	}
+
+	if req.RolledBackBy == "" {
+		req.RolledBackBy = "system"
+	}
+
+	deployment, err := h.service.RollbackApplication(r.Context(), appID, req.TargetDeploymentID, req.RolledBackBy)
+	if err != nil {
+		h.logger.Error("failed to rollback application", "app_id", appID, "target_deployment", req.TargetDeploymentID, "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to rollback application")
+		return
+	}
+
+	response.SendSuccess(w, deployment)
+}
+
+// GetRollbackTargets returns available rollback targets for an application
+func (h *GitOpsHandler) GetRollbackTargets(w http.ResponseWriter, r *http.Request) {
+	appID := extractGitOpsIDFromPath(r.URL.Path, "/api/gitops/applications/")
+	if appID == "" {
+		response.SendError(w, http.StatusBadRequest, "Invalid application ID")
+		return
+	}
+
+	// Parse limit from query parameters
+	limit := 10 // default
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {
+			limit = parsedLimit
+		}
+	}
+
+	targets, err := h.service.GetRollbackTargets(r.Context(), appID, limit)
+	if err != nil {
+		h.logger.Error("failed to get rollback targets", "app_id", appID, "error", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to get rollback targets")
+		return
+	}
+
+	response.SendSuccess(w, targets)
 }
