@@ -104,15 +104,6 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     }
   }, [fetchDeployments, showDeployModal]);
 
-  // Modal keyboard behavior
-  const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
-    isOpen: showDeployModal,
-    onClose: () => setShowDeployModal?.(false),
-    onSubmit: handleDeploy,
-    canSubmit: Boolean(selectedImage && deployForm.name && !deploying),
-    modalId: 'deploy-modal'
-  });
-
 
   const fetchImages = async () => {
     try {
@@ -200,6 +191,15 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
       setDeploying(false);
     }
   };
+
+  // Modal keyboard behavior (must be after handleDeploy function)
+  const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
+    isOpen: showDeployModal,
+    onClose: () => setShowDeployModal?.(false),
+    onSubmit: handleDeploy,
+    canSubmit: Boolean(selectedImage && deployForm.name && !deploying),
+    modalId: 'deploy-modal'
+  });
 
   const resetDeployForm = () => {
     setSelectedImage(null);
