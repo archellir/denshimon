@@ -120,6 +120,37 @@ type SyncTrendPoint struct {
 	FailureCount int       `json:"failure_count"`
 }
 
+// Template represents a GitOps application template
+type Template struct {
+	ID          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Type        string                 `json:"type"` // web-app, api-service, worker, cron-job, database, custom
+	Description string                 `json:"description"`
+	Content     string                 `json:"content"`
+	Variables   []TemplateVariable     `json:"variables"`
+	IsDefault   bool                   `json:"is_default"`
+	CreatedAt   time.Time              `json:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at"`
+}
+
+// TemplateVariable represents a variable in a template
+type TemplateVariable struct {
+	Name        string `json:"name"`
+	Required    bool   `json:"required"`
+	Default     string `json:"default,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// TemplateEnvironment represents environment-specific overrides
+type TemplateEnvironment struct {
+	ID          string            `json:"id"`
+	TemplateID  string            `json:"template_id"`
+	Environment string            `json:"environment"` // development, staging, production
+	Overrides   map[string]string `json:"overrides"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+}
+
 // InitializeRepository initializes the GitOps repository
 func (s *Service) InitializeRepository() error {
 	return s.gitClient.Clone()
@@ -827,6 +858,165 @@ func (s *Service) MonitorHealth(ctx context.Context) error {
 		s.CreateAlert(ctx, "deployment_failure", "critical", "High Deployment Failure Rate",
 			fmt.Sprintf("%d deployments failed in the last hour", failureCount),
 			map[string]string{"failure_count": fmt.Sprintf("%d", failureCount)})
+	}
+
+	return nil
+}
+
+// ListTemplates returns all available templates
+func (s *Service) ListTemplates(ctx context.Context) ([]Template, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT id, name, type, description, content, variables, is_default, created_at, updated_at
+		FROM gitops_templates
+		ORDER BY type, name`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list templates: %w", err)
+	}
+	defer rows.Close()
+
+	var templates []Template
+	for rows.Next() {
+		var template Template
+		var variablesJSON string
+
+		err := rows.Scan(&template.ID, &template.Name, &template.Type, &template.Description,
+			&template.Content, &variablesJSON, &template.IsDefault, &template.CreatedAt, &template.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan template: %w", err)
+		}
+
+		if err := json.Unmarshal([]byte(variablesJSON), &template.Variables); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal variables: %w", err)
+		}
+
+		templates = append(templates, template)
+	}
+
+	return templates, nil
+}
+
+// GetTemplate returns a specific template by ID
+func (s *Service) GetTemplate(ctx context.Context, templateID string) (*Template, error) {
+	var template Template
+	var variablesJSON string
+
+	err := s.db.QueryRowContext(ctx, `
+		SELECT id, name, type, description, content, variables, is_default, created_at, updated_at
+		FROM gitops_templates
+		WHERE id = ?`, templateID).Scan(&template.ID, &template.Name, &template.Type, 
+		&template.Description, &template.Content, &variablesJSON, &template.IsDefault, 
+		&template.CreatedAt, &template.UpdatedAt)
+	
+	if err != nil {
+		return nil, fmt.Errorf("failed to get template: %w", err)
+	}
+
+	if err := json.Unmarshal([]byte(variablesJSON), &template.Variables); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal variables: %w", err)
+	}
+
+	return &template, nil
+}
+
+// GetTemplateWithEnvironment returns a template with environment-specific overrides
+func (s *Service) GetTemplateWithEnvironment(ctx context.Context, templateID, environment string) (*Template, map[string]string, error) {
+	template, err := s.GetTemplate(ctx, templateID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var overridesJSON string
+	err = s.db.QueryRowContext(ctx, `
+		SELECT overrides 
+		FROM gitops_template_environments
+		WHERE template_id = ? AND environment = ?`, 
+		templateID, environment).Scan(&overridesJSON)
+	
+	if err != nil && err != sql.ErrNoRows {
+		return nil, nil, fmt.Errorf("failed to get environment overrides: %w", err)
+	}
+
+	overrides := make(map[string]string)
+	if err != sql.ErrNoRows {
+		if err := json.Unmarshal([]byte(overridesJSON), &overrides); err != nil {
+			return nil, nil, fmt.Errorf("failed to unmarshal overrides: %w", err)
+		}
+	}
+
+	return template, overrides, nil
+}
+
+// CreateTemplate creates a new template
+func (s *Service) CreateTemplate(ctx context.Context, name, templateType, description, content string, variables []TemplateVariable) (*Template, error) {
+	template := &Template{
+		ID:          uuid.New().String(),
+		Name:        name,
+		Type:        templateType,
+		Description: description,
+		Content:     content,
+		Variables:   variables,
+		IsDefault:   false,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	variablesJSON, _ := json.Marshal(template.Variables)
+
+	_, err := s.db.ExecContext(ctx, `
+		INSERT INTO gitops_templates (id, name, type, description, content, variables, is_default, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		template.ID, template.Name, template.Type, template.Description,
+		template.Content, string(variablesJSON), template.IsDefault,
+		template.CreatedAt, template.UpdatedAt)
+	
+	if err != nil {
+		return nil, fmt.Errorf("failed to create template: %w", err)
+	}
+
+	return template, nil
+}
+
+// UpdateTemplate updates an existing template
+func (s *Service) UpdateTemplate(ctx context.Context, templateID, name, description, content string, variables []TemplateVariable) error {
+	variablesJSON, _ := json.Marshal(variables)
+
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE gitops_templates 
+		SET name = ?, description = ?, content = ?, variables = ?, updated_at = ?
+		WHERE id = ?`,
+		name, description, content, string(variablesJSON), time.Now(), templateID)
+	
+	if err != nil {
+		return fmt.Errorf("failed to update template: %w", err)
+	}
+
+	return nil
+}
+
+// DeleteTemplate deletes a template
+func (s *Service) DeleteTemplate(ctx context.Context, templateID string) error {
+	_, err := s.db.ExecContext(ctx, "DELETE FROM gitops_templates WHERE id = ?", templateID)
+	if err != nil {
+		return fmt.Errorf("failed to delete template: %w", err)
+	}
+	return nil
+}
+
+// SetEnvironmentOverrides sets environment-specific overrides for a template
+func (s *Service) SetEnvironmentOverrides(ctx context.Context, templateID, environment string, overrides map[string]string) error {
+	overridesJSON, _ := json.Marshal(overrides)
+	id := uuid.New().String()
+
+	_, err := s.db.ExecContext(ctx, `
+		INSERT INTO gitops_template_environments (id, template_id, environment, overrides, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
+		ON CONFLICT(template_id, environment) DO UPDATE SET
+			overrides = excluded.overrides,
+			updated_at = excluded.updated_at`,
+		id, templateID, environment, string(overridesJSON), time.Now(), time.Now())
+	
+	if err != nil {
+		return fmt.Errorf("failed to set environment overrides: %w", err)
 	}
 
 	return nil
