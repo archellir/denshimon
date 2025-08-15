@@ -4,6 +4,9 @@ export * from './metrics';
 export * from './network';
 export * from './podLifecycle';
 export * from './database';
+export * from './deployments';
+export * from './serviceMesh';
+export * from './common';
 
 // Re-export enums from constants
 export { 
