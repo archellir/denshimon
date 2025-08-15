@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { PrimaryTab } from '@/constants';
 
 interface KeyboardNavigationConfig {
   onTabSwitch?: (tabId: string) => void;
@@ -45,23 +46,23 @@ export const useKeyboardNavigation = (config: KeyboardNavigationConfig) => {
     switch (event.key.toLowerCase()) {
       case 'i':
         event.preventDefault();
-        onTabSwitch?.('infrastructure');
+        onTabSwitch?.(PrimaryTab.INFRASTRUCTURE);
         break;
       case 'w':
         event.preventDefault();
-        onTabSwitch?.('workloads');
+        onTabSwitch?.(PrimaryTab.WORKLOADS);
         break;
       case 's':
         event.preventDefault();
-        onTabSwitch?.('mesh');
+        onTabSwitch?.(PrimaryTab.MESH);
         break;
       case 'd':
         event.preventDefault();
-        onTabSwitch?.('deployments');
+        onTabSwitch?.(PrimaryTab.DEPLOYMENTS);
         break;
       case 'o':
         event.preventDefault();
-        onTabSwitch?.('observability');
+        onTabSwitch?.(PrimaryTab.OBSERVABILITY);
         break;
       case 'r':
         event.preventDefault();
