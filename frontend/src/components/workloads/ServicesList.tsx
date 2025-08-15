@@ -237,11 +237,27 @@ const ServicesList: FC<ServicesListProps> = ({
       width: 100,
       render: (service: Service) => (
         <div className="flex items-center space-x-2">
-          <button className="p-1 border border-white hover:bg-white hover:text-black transition-colors">
+          <button 
+            onClick={() => {
+              // View service details
+              console.log('Viewing service details for:', service.name);
+              alert(`Service Details:\n\nName: ${service.name}\nNamespace: ${service.namespace}\nType: ${service.type}\nEndpoints: ${service.endpoints.ready}/${service.endpoints.total}`);
+            }}
+            className="p-1 border border-white hover:bg-white hover:text-black transition-colors"
+            title="View Service Details"
+          >
             <Eye size={12} />
           </button>
           {service.external_ip && (
-            <button className="p-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors">
+            <button 
+              onClick={() => {
+                // Open external service
+                const url = `http://${service.external_ip}:${service.ports[0]?.port || 80}`;
+                window.open(url, '_blank');
+              }}
+              className="p-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors"
+              title="Open External Service"
+            >
               <ExternalLink size={12} />
             </button>
           )}
@@ -324,11 +340,27 @@ const ServicesList: FC<ServicesListProps> = ({
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 border border-white hover:bg-white hover:text-black transition-colors">
+                  <button 
+                    onClick={() => {
+                      // View service details
+                      console.log('Viewing service details for:', service.name);
+                      alert(`Service Details:\n\nName: ${service.name}\nNamespace: ${service.namespace}\nType: ${service.type}\nEndpoints: ${service.endpoints.ready}/${service.endpoints.total}`);
+                    }}
+                    className="p-2 border border-white hover:bg-white hover:text-black transition-colors"
+                    title="View Service Details"
+                  >
                     <Eye size={16} />
                   </button>
                   {service.external_ip && (
-                    <button className="p-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors">
+                    <button 
+                      onClick={() => {
+                        // Open external service
+                        const url = `http://${service.external_ip}:${service.ports[0]?.port || 80}`;
+                        window.open(url, '_blank');
+                      }}
+                      className="p-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors"
+                      title="Open External Service"
+                    >
                       <ExternalLink size={16} />
                     </button>
                   )}
