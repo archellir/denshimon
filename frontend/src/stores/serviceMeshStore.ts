@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ServiceMeshData } from '@/types/serviceMesh';
+import { ServiceMeshData, ServiceUpdateData } from '@/types/serviceMesh';
 import { API_ENDPOINTS, WebSocketEventType, ConnectionStatus } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
@@ -25,7 +25,7 @@ interface ServiceMeshStore {
   initializeWebSocket: () => void;
   cleanupWebSocket: () => void;
   updateConnectionState: (state: ConnectionStatus) => void;
-  updateServiceData: (serviceUpdate: any) => void;
+  updateServiceData: (serviceUpdate: ServiceUpdateData) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
 }
@@ -151,7 +151,7 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
     set({ connectionState: state });
   },
 
-  updateServiceData: (serviceUpdate: any) => {
+  updateServiceData: (serviceUpdate: ServiceUpdateData) => {
     set(state => {
       if (!state.data) {
         // If no initial data, load it first
