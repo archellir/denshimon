@@ -85,6 +85,11 @@ body {
   100% { width: 100%; }
 }
 
+@keyframes scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
 /* Terminal Cursor */
 .cursor::after {
   content: '█';
