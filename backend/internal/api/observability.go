@@ -81,8 +81,8 @@ func (h *ObservabilityHandlers) GetLogs(w http.ResponseWriter, r *http.Request) 
 		"logs":  logs,
 		"total": len(logs),
 		"metadata": map[string]interface{}{
-			"vps_node":   "vps-main",
-			"generated":  true,
+			"vps_node":  "vps-main",
+			"generated": true,
 			"timestamp": time.Now().UTC().Format(time.RFC3339),
 		},
 	})
@@ -126,10 +126,10 @@ func generateMockLogs(limit int, levelFilter, sourceFilter, namespaceFilter stri
 	levels := []string{"info", "warn", "error", "debug"}
 	sources := []string{"kubernetes-api", "nginx-ingress", "application", "database", "redis"}
 	namespaces := []string{"production", "staging", "monitoring", "kube-system", "default"}
-	
+
 	messages := []string{
 		"Request processed successfully",
-		"Database connection established", 
+		"Database connection established",
 		"Configuration reloaded",
 		"Health check passed",
 		"Authentication successful",
@@ -145,12 +145,12 @@ func generateMockLogs(limit int, levelFilter, sourceFilter, namespaceFilter stri
 	}
 
 	logs := make([]LogEntry, 0, limit)
-	
+
 	for i := 0; i < limit; i++ {
 		level := levels[rand.Intn(len(levels))]
 		source := sources[rand.Intn(len(sources))]
 		namespace := namespaces[rand.Intn(len(namespaces))]
-		
+
 		// Apply filters
 		if levelFilter != "" && level != levelFilter {
 			continue
@@ -164,7 +164,7 @@ func generateMockLogs(limit int, levelFilter, sourceFilter, namespaceFilter stri
 
 		// Generate timestamp within last 24 hours
 		timestamp := time.Now().Add(-time.Duration(rand.Intn(24*60)) * time.Minute)
-		
+
 		log := LogEntry{
 			ID:        fmt.Sprintf("%d", timestamp.UnixNano()),
 			Timestamp: timestamp.UTC().Format(time.RFC3339),
@@ -181,10 +181,10 @@ func generateMockLogs(limit int, levelFilter, sourceFilter, namespaceFilter stri
 				"duration":  rand.Intn(1000) + 50,
 			},
 		}
-		
+
 		logs = append(logs, log)
 	}
-	
+
 	return logs
 }
 
@@ -213,7 +213,7 @@ func generateMockEvents(limit int, categoryFilter, severityFilter, timeRange str
 	namespaces := []string{"production", "staging", "monitoring", "kube-system", "default"}
 
 	events := make([]TimelineEvent, 0, limit)
-	
+
 	// Parse time range
 	var timeRangeHours int
 	switch timeRange {
@@ -228,11 +228,11 @@ func generateMockEvents(limit int, categoryFilter, severityFilter, timeRange str
 	default:
 		timeRangeHours = 24
 	}
-	
+
 	for i := 0; i < limit; i++ {
 		category := categories[rand.Intn(len(categories))]
 		severity := severities[rand.Intn(len(severities))]
-		
+
 		// Apply filters
 		if categoryFilter != "" && category != categoryFilter {
 			continue
@@ -243,10 +243,10 @@ func generateMockEvents(limit int, categoryFilter, severityFilter, timeRange str
 
 		// Generate timestamp within specified range
 		timestamp := time.Now().Add(-time.Duration(rand.Intn(timeRangeHours*60)) * time.Minute)
-		
+
 		duration := rand.Intn(300000) + 30000 // 30s to 5min in milliseconds
-		resolved := rand.Float32() > 0.3       // 70% chance of being resolved
-		
+		resolved := rand.Float32() > 0.3      // 70% chance of being resolved
+
 		event := TimelineEvent{
 			ID:          randomString(16),
 			Timestamp:   timestamp.UTC().Format(time.RFC3339),
@@ -272,10 +272,10 @@ func generateMockEvents(limit int, categoryFilter, severityFilter, timeRange str
 				"event_type": "kubernetes",
 			},
 		}
-		
+
 		events = append(events, event)
 	}
-	
+
 	return events
 }
 
@@ -384,7 +384,7 @@ func (h *ObservabilityHandlers) GetLogStreams(w http.ResponseWriter, r *http.Req
 			"lastMessage": time.Now().Add(-120 * time.Second).UTC().Format(time.RFC3339),
 		},
 	}
-	
+
 	SendSuccess(w, map[string]interface{}{
 		"streams": streams,
 		"summary": map[string]interface{}{
@@ -415,20 +415,20 @@ func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.R
 	if timeRange == "" {
 		timeRange = "24h"
 	}
-	
+
 	analytics := map[string]interface{}{
 		"timeRange": timeRange,
 		"overview": map[string]interface{}{
-			"totalLogs":     2547389,
-			"errorLogs":     12847,
-			"warningLogs":   58392,
-			"infoLogs":      2156780,
-			"debugLogs":     319370,
-			"errorRate":     0.5,
-			"warningRate":   2.3,
-			"avgLogSize":    256,
-			"peakHour":      "14:00",
-			"quietHour":     "03:00",
+			"totalLogs":   2547389,
+			"errorLogs":   12847,
+			"warningLogs": 58392,
+			"infoLogs":    2156780,
+			"debugLogs":   319370,
+			"errorRate":   0.5,
+			"warningRate": 2.3,
+			"avgLogSize":  256,
+			"peakHour":    "14:00",
+			"quietHour":   "03:00",
 		},
 		"trends": map[string]interface{}{
 			"logVolumeChange":   "+15.2%",
@@ -439,115 +439,115 @@ func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.R
 		},
 		"patterns": []map[string]interface{}{
 			{
-				"pattern":     "Connection timeout",
-				"frequency":   347,
-				"severity":    "warning",
-				"source":      "nginx-ingress",
-				"trend":       "stable",
-				"impact":      "medium",
-				"lastSeen":    time.Now().Add(-15 * time.Minute).UTC().Format(time.RFC3339),
+				"pattern":   "Connection timeout",
+				"frequency": 347,
+				"severity":  "warning",
+				"source":    "nginx-ingress",
+				"trend":     "stable",
+				"impact":    "medium",
+				"lastSeen":  time.Now().Add(-15 * time.Minute).UTC().Format(time.RFC3339),
 			},
 			{
-				"pattern":     "Database slow query",
-				"frequency":   89,
-				"severity":    "warning",
-				"source":      "database",
-				"trend":       "decreasing",
-				"impact":      "low",
-				"lastSeen":    time.Now().Add(-45 * time.Minute).UTC().Format(time.RFC3339),
+				"pattern":   "Database slow query",
+				"frequency": 89,
+				"severity":  "warning",
+				"source":    "database",
+				"trend":     "decreasing",
+				"impact":    "low",
+				"lastSeen":  time.Now().Add(-45 * time.Minute).UTC().Format(time.RFC3339),
 			},
 			{
-				"pattern":     "Pod restart",
-				"frequency":   23,
-				"severity":    "error",
-				"source":      "kubernetes-api",
-				"trend":       "stable",
-				"impact":      "high",
-				"lastSeen":    time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339),
+				"pattern":   "Pod restart",
+				"frequency": 23,
+				"severity":  "error",
+				"source":    "kubernetes-api",
+				"trend":     "stable",
+				"impact":    "high",
+				"lastSeen":  time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339),
 			},
 			{
-				"pattern":     "Memory usage high",
-				"frequency":   156,
-				"severity":    "warning",
-				"source":      "system",
-				"trend":       "increasing",
-				"impact":      "medium",
-				"lastSeen":    time.Now().Add(-30 * time.Minute).UTC().Format(time.RFC3339),
+				"pattern":   "Memory usage high",
+				"frequency": 156,
+				"severity":  "warning",
+				"source":    "system",
+				"trend":     "increasing",
+				"impact":    "medium",
+				"lastSeen":  time.Now().Add(-30 * time.Minute).UTC().Format(time.RFC3339),
 			},
 			{
-				"pattern":     "Authentication failure",
-				"frequency":   67,
-				"severity":    "error",
-				"source":      "application",
-				"trend":       "stable",
-				"impact":      "medium",
-				"lastSeen":    time.Now().Add(-20 * time.Minute).UTC().Format(time.RFC3339),
+				"pattern":   "Authentication failure",
+				"frequency": 67,
+				"severity":  "error",
+				"source":    "application",
+				"trend":     "stable",
+				"impact":    "medium",
+				"lastSeen":  time.Now().Add(-20 * time.Minute).UTC().Format(time.RFC3339),
 			},
 		},
 		"topSources": []map[string]interface{}{
 			{
-				"source":    "application",
-				"logCount":  1152847,
-				"errorRate": 0.8,
+				"source":     "application",
+				"logCount":   1152847,
+				"errorRate":  0.8,
 				"percentage": 45.2,
 			},
 			{
-				"source":    "nginx-ingress",
-				"logCount":  678945,
-				"errorRate": 1.2,
+				"source":     "nginx-ingress",
+				"logCount":   678945,
+				"errorRate":  1.2,
 				"percentage": 26.7,
 			},
 			{
-				"source":    "kubernetes-api",
-				"logCount":  456782,
-				"errorRate": 0.3,
+				"source":     "kubernetes-api",
+				"logCount":   456782,
+				"errorRate":  0.3,
 				"percentage": 17.9,
 			},
 			{
-				"source":    "monitoring",
-				"logCount":  158923,
-				"errorRate": 0.2,
+				"source":     "monitoring",
+				"logCount":   158923,
+				"errorRate":  0.2,
 				"percentage": 6.2,
 			},
 			{
-				"source":    "database",
-				"logCount":  99892,
-				"errorRate": 0.1,
+				"source":     "database",
+				"logCount":   99892,
+				"errorRate":  0.1,
 				"percentage": 3.9,
 			},
 		},
 		"alerts": []map[string]interface{}{
 			{
-				"id":          "alert-1",
-				"type":        "error_rate_spike",
-				"severity":    "warning",
-				"source":      "nginx-ingress",
-				"message":     "Error rate increased by 25% in the last hour",
-				"threshold":   "5%",
-				"current":     "6.3%",
-				"triggered":   time.Now().Add(-45 * time.Minute).UTC().Format(time.RFC3339),
+				"id":           "alert-1",
+				"type":         "error_rate_spike",
+				"severity":     "warning",
+				"source":       "nginx-ingress",
+				"message":      "Error rate increased by 25% in the last hour",
+				"threshold":    "5%",
+				"current":      "6.3%",
+				"triggered":    time.Now().Add(-45 * time.Minute).UTC().Format(time.RFC3339),
 				"acknowledged": false,
 			},
 			{
-				"id":          "alert-2",
-				"type":        "log_volume_spike",
-				"severity":    "info",
-				"source":      "application",
-				"message":     "Log volume increased significantly during peak hours",
-				"threshold":   "1000/min",
-				"current":     "1350/min",
-				"triggered":   time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339),
+				"id":           "alert-2",
+				"type":         "log_volume_spike",
+				"severity":     "info",
+				"source":       "application",
+				"message":      "Log volume increased significantly during peak hours",
+				"threshold":    "1000/min",
+				"current":      "1350/min",
+				"triggered":    time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339),
 				"acknowledged": true,
 			},
 			{
-				"id":          "alert-3",
-				"type":        "repeated_errors",
-				"severity":    "critical",
-				"source":      "database",
-				"message":     "Connection pool exhausted errors repeating",
-				"threshold":   "10 occurrences",
-				"current":     "15 occurrences",
-				"triggered":   time.Now().Add(-30 * time.Minute).UTC().Format(time.RFC3339),
+				"id":           "alert-3",
+				"type":         "repeated_errors",
+				"severity":     "critical",
+				"source":       "database",
+				"message":      "Connection pool exhausted errors repeating",
+				"threshold":    "10 occurrences",
+				"current":      "15 occurrences",
+				"triggered":    time.Now().Add(-30 * time.Minute).UTC().Format(time.RFC3339),
 				"acknowledged": false,
 			},
 		},
@@ -578,17 +578,17 @@ func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.R
 			},
 		},
 		"performance": map[string]interface{}{
-			"ingestionRate":  "2.1MB/s",
-			"processingTime": "125ms",
-			"indexingDelay":  "45ms",
-			"queryTime":      "8ms",
-			"storageUsed":    "39.5GB",
-			"storageLimit":   "200GB",
-			"retentionPolicy": "14 days",
+			"ingestionRate":    "2.1MB/s",
+			"processingTime":   "125ms",
+			"indexingDelay":    "45ms",
+			"queryTime":        "8ms",
+			"storageUsed":      "39.5GB",
+			"storageLimit":     "200GB",
+			"retentionPolicy":  "14 days",
 			"compressionRatio": "3.2:1",
 		},
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-	
+
 	SendSuccess(w, analytics)
 }

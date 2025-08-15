@@ -56,7 +56,7 @@ func (h *MetricsHandlers) GetNodesMetrics(w http.ResponseWriter, r *http.Request
 
 	// Get node name from query parameter
 	nodeName := r.URL.Query().Get("node")
-	
+
 	if nodeName != "" {
 		// Get specific node metrics
 		nodeMetrics, err := h.metricsService.GetNodeMetrics(r.Context(), nodeName)
@@ -157,7 +157,7 @@ func (h *MetricsHandlers) GetMetricsHistory(w http.ResponseWriter, r *http.Reque
 	// Parse duration parameter (default to 1 hour)
 	durationStr := r.URL.Query().Get("duration")
 	duration := time.Hour
-	
+
 	if durationStr != "" {
 		if d, err := time.ParseDuration(durationStr); err == nil {
 			duration = d
@@ -242,10 +242,10 @@ func (h *MetricsHandlers) GetHealthMetrics(w http.ResponseWriter, r *http.Reques
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusServiceUnavailable)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status":      "unavailable",
-			"message":     "Metrics service not available",
-			"k8s_client":  false,
-			"timestamp":   time.Now(),
+			"status":     "unavailable",
+			"message":    "Metrics service not available",
+			"k8s_client": false,
+			"timestamp":  time.Now(),
 		})
 		return
 	}
@@ -296,78 +296,78 @@ func (h *MetricsHandlers) GetNetworkMetrics(w http.ResponseWriter, r *http.Reque
 	networkMetrics := map[string]interface{}{
 		"interfaces": []map[string]interface{}{
 			{
-				"name":        "eth0",
-				"status":      "up",
-				"ipAddress":   "10.0.0.100",
-				"mtu":         1500,
-				"bytesIn":     1073741824,  // 1GB
-				"bytesOut":    536870912,   // 512MB
-				"packetsIn":   1000000,
-				"packetsOut":  750000,
-				"errorsIn":    0,
-				"errorsOut":   0,
-				"droppedIn":   5,
-				"droppedOut":  2,
-				"throughputIn": 25.6,      // Mbps
-				"throughputOut": 18.3,     // Mbps
+				"name":          "eth0",
+				"status":        "up",
+				"ipAddress":     "10.0.0.100",
+				"mtu":           1500,
+				"bytesIn":       1073741824, // 1GB
+				"bytesOut":      536870912,  // 512MB
+				"packetsIn":     1000000,
+				"packetsOut":    750000,
+				"errorsIn":      0,
+				"errorsOut":     0,
+				"droppedIn":     5,
+				"droppedOut":    2,
+				"throughputIn":  25.6, // Mbps
+				"throughputOut": 18.3, // Mbps
 			},
 			{
-				"name":        "lo",
-				"status":      "up",
-				"ipAddress":   "127.0.0.1",
-				"mtu":         65536,
-				"bytesIn":     104857600,   // 100MB
-				"bytesOut":    104857600,   // 100MB
-				"packetsIn":   50000,
-				"packetsOut":  50000,
-				"errorsIn":    0,
-				"errorsOut":   0,
-				"droppedIn":   0,
-				"droppedOut":  0,
-				"throughputIn": 5.2,       // Mbps
-				"throughputOut": 5.2,      // Mbps
+				"name":          "lo",
+				"status":        "up",
+				"ipAddress":     "127.0.0.1",
+				"mtu":           65536,
+				"bytesIn":       104857600, // 100MB
+				"bytesOut":      104857600, // 100MB
+				"packetsIn":     50000,
+				"packetsOut":    50000,
+				"errorsIn":      0,
+				"errorsOut":     0,
+				"droppedIn":     0,
+				"droppedOut":    0,
+				"throughputIn":  5.2, // Mbps
+				"throughputOut": 5.2, // Mbps
 			},
 		},
 		"kubernetes": map[string]interface{}{
 			"podNetworking": map[string]interface{}{
-				"cniPlugin":      "flannel",
-				"podCIDR":        "10.244.0.0/16",
-				"serviceCIDR":    "10.96.0.0/12",
-				"dnsClusterIP":   "10.96.0.10",
-				"activeIPs":      847,
-				"availableIPs":   65289,
+				"cniPlugin":    "flannel",
+				"podCIDR":      "10.244.0.0/16",
+				"serviceCIDR":  "10.96.0.0/12",
+				"dnsClusterIP": "10.96.0.10",
+				"activeIPs":    847,
+				"availableIPs": 65289,
 			},
 			"services": map[string]interface{}{
-				"totalServices":  25,
-				"clusterIPs":     20,
-				"nodePort":       3,
-				"loadBalancer":   1,
-				"externalName":   1,
+				"totalServices": 25,
+				"clusterIPs":    20,
+				"nodePort":      3,
+				"loadBalancer":  1,
+				"externalName":  1,
 			},
 			"ingress": map[string]interface{}{
-				"controller":    "nginx",
-				"totalRules":    15,
-				"tlsEnabled":    true,
+				"controller":   "nginx",
+				"totalRules":   15,
+				"tlsEnabled":   true,
 				"certificates": 3,
 			},
 		},
 		"connections": map[string]interface{}{
 			"established": 342,
-			"timeWait":     89,
-			"closeWait":    12,
-			"synSent":      5,
-			"synRecv":      3,
-			"finWait1":     8,
-			"finWait2":     2,
-			"listening":    47,
+			"timeWait":    89,
+			"closeWait":   12,
+			"synSent":     5,
+			"synRecv":     3,
+			"finWait1":    8,
+			"finWait2":    2,
+			"listening":   47,
 		},
 		"bandwidth": map[string]interface{}{
-			"totalUsage":     43.9,      // Mbps
-			"inbound":        25.6,      // Mbps
-			"outbound":       18.3,      // Mbps
-			"peakUsage":      89.2,      // Mbps
-			"avgUsage":       35.7,      // Mbps
-			"utilization":    17.45,     // % of 1Gbps
+			"totalUsage":  43.9,  // Mbps
+			"inbound":     25.6,  // Mbps
+			"outbound":    18.3,  // Mbps
+			"peakUsage":   89.2,  // Mbps
+			"avgUsage":    35.7,  // Mbps
+			"utilization": 17.45, // % of 1Gbps
 		},
 		"protocols": map[string]interface{}{
 			"tcp": map[string]interface{}{
@@ -389,11 +389,11 @@ func (h *MetricsHandlers) GetNetworkMetrics(w http.ResponseWriter, r *http.Reque
 			},
 		},
 		"security": map[string]interface{}{
-			"networkPolicies": 8,
-			"deniedConnections": 127,
+			"networkPolicies":    8,
+			"deniedConnections":  127,
 			"allowedConnections": 15342,
-			"suspiciousTraffic": 3,
-			"firewallRules": 45,
+			"suspiciousTraffic":  3,
+			"firewallRules":      45,
 		},
 		"latency": map[string]interface{}{
 			"internalPods": map[string]float64{
@@ -414,6 +414,6 @@ func (h *MetricsHandlers) GetNetworkMetrics(w http.ResponseWriter, r *http.Reque
 		},
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-	
+
 	SendSuccess(w, networkMetrics)
 }

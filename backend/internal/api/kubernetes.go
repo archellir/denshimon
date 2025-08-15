@@ -74,16 +74,16 @@ type ServicePort struct {
 }
 
 type EventInfo struct {
-	Name            string            `json:"name"`
-	Namespace       string            `json:"namespace"`
-	Type            string            `json:"type"`
-	Reason          string            `json:"reason"`
-	Object          string            `json:"object"`
-	Message         string            `json:"message"`
-	Count           int32             `json:"count"`
-	FirstTime       string            `json:"first_time"`
-	LastTime        string            `json:"last_time"`
-	Labels          map[string]string `json:"labels"`
+	Name      string            `json:"name"`
+	Namespace string            `json:"namespace"`
+	Type      string            `json:"type"`
+	Reason    string            `json:"reason"`
+	Object    string            `json:"object"`
+	Message   string            `json:"message"`
+	Count     int32             `json:"count"`
+	FirstTime string            `json:"first_time"`
+	LastTime  string            `json:"last_time"`
+	Labels    map[string]string `json:"labels"`
 }
 
 func NewKubernetesHandlers(k8sClient *k8s.Client) *KubernetesHandlers {
@@ -277,7 +277,7 @@ func (h *KubernetesHandlers) ListNodes(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(mockNodes)
 		return
 	}
-	
+
 	nodes, err := h.k8sClient.Clientset().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list nodes: %v", err))
@@ -313,7 +313,7 @@ func (h *KubernetesHandlers) ListDeployments(w http.ResponseWriter, r *http.Requ
 		json.NewEncoder(w).Encode(mockDeployments)
 		return
 	}
-	
+
 	namespace := r.URL.Query().Get("namespace")
 	if namespace == "" {
 		namespace = "default"
@@ -436,7 +436,7 @@ func (h *KubernetesHandlers) HandlePodExec(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
 		return
 	}
-	
+
 	h.k8sClient.HandlePodExec(w, r)
 }
 
@@ -446,7 +446,7 @@ func (h *KubernetesHandlers) HandlePodLogs(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
 		return
 	}
-	
+
 	h.k8sClient.HandlePodLogs(w, r)
 }
 
@@ -456,7 +456,7 @@ func (h *KubernetesHandlers) HandlePodPortForward(w http.ResponseWriter, r *http
 		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
 		return
 	}
-	
+
 	h.k8sClient.HandlePodPortForward(w, r)
 }
 
@@ -466,7 +466,7 @@ func (h *KubernetesHandlers) HandleFileUpload(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
 		return
 	}
-	
+
 	h.k8sClient.HandleFileUpload(w, r)
 }
 
@@ -476,7 +476,7 @@ func (h *KubernetesHandlers) HandleFileDownload(w http.ResponseWriter, r *http.R
 		http.Error(w, "Kubernetes client not available", http.StatusServiceUnavailable)
 		return
 	}
-	
+
 	h.k8sClient.HandleFileDownload(w, r)
 }
 
@@ -489,7 +489,7 @@ func (h *KubernetesHandlers) ListServices(w http.ResponseWriter, r *http.Request
 		json.NewEncoder(w).Encode(mockServices)
 		return
 	}
-	
+
 	namespace := r.URL.Query().Get("namespace")
 	if namespace == "" {
 		namespace = "default"
@@ -543,7 +543,7 @@ func (h *KubernetesHandlers) ListEvents(w http.ResponseWriter, r *http.Request) 
 		json.NewEncoder(w).Encode(mockEvents)
 		return
 	}
-	
+
 	namespace := r.URL.Query().Get("namespace")
 	if namespace == "" {
 		namespace = "default"
@@ -677,111 +677,111 @@ func hasPermission(role, resource, action string) bool {
 func getMockPods() []PodInfo {
 	return []PodInfo{
 		{
-			Name:      "nginx-app-5d4c4b8f45-abc12",
-			Namespace: "denshimon-test",
-			Status:    "Running",
-			Ready:     "1/1",
-			Restarts:  0,
-			Age:       "2h",
-			Node:      "worker-1",
-			IP:        "10.244.1.15",
-			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+			Name:        "nginx-app-5d4c4b8f45-abc12",
+			Namespace:   "denshimon-test",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    0,
+			Age:         "2h",
+			Node:        "worker-1",
+			IP:          "10.244.1.15",
+			Labels:      map[string]string{"app": "nginx", "version": "v1.0.0"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
 		},
 		{
-			Name:      "nginx-app-5d4c4b8f45-def34",
-			Namespace: "denshimon-test",
-			Status:    "Running", 
-			Ready:     "1/1",
-			Restarts:  0,
-			Age:       "2h",
-			Node:      "worker-2",
-			IP:        "10.244.2.16",
-			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+			Name:        "nginx-app-5d4c4b8f45-def34",
+			Namespace:   "denshimon-test",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    0,
+			Age:         "2h",
+			Node:        "worker-2",
+			IP:          "10.244.2.16",
+			Labels:      map[string]string{"app": "nginx", "version": "v1.0.0"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
 		},
 		{
-			Name:      "nginx-app-5d4c4b8f45-ghi56",
-			Namespace: "denshimon-test",
-			Status:    "Running",
-			Ready:     "1/1", 
-			Restarts:  1,
-			Age:       "2h",
-			Node:      "worker-1",
-			IP:        "10.244.1.17",
-			Labels:    map[string]string{"app": "nginx", "version": "v1.0.0"},
+			Name:        "nginx-app-5d4c4b8f45-ghi56",
+			Namespace:   "denshimon-test",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    1,
+			Age:         "2h",
+			Node:        "worker-1",
+			IP:          "10.244.1.17",
+			Labels:      map[string]string{"app": "nginx", "version": "v1.0.0"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
 		},
 		{
-			Name:      "redis-cache-7b8c9d0e1f-xyz78",
-			Namespace: "denshimon-test",
-			Status:    "Running",
-			Ready:     "1/1",
-			Restarts:  0,
-			Age:       "3h",
-			Node:      "worker-2",
-			IP:        "10.244.2.18",
-			Labels:    map[string]string{"app": "redis", "tier": "cache"},
+			Name:        "redis-cache-7b8c9d0e1f-xyz78",
+			Namespace:   "denshimon-test",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    0,
+			Age:         "3h",
+			Node:        "worker-2",
+			IP:          "10.244.2.18",
+			Labels:      map[string]string{"app": "redis", "tier": "cache"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
 		},
 		{
-			Name:      "api-backend-6f7g8h9i0j-klm90",
-			Namespace: "production",
-			Status:    "Running",
-			Ready:     "1/1",
-			Restarts:  0,
-			Age:       "1d",
-			Node:      "worker-3",
-			IP:        "10.244.3.20",
-			Labels:    map[string]string{"app": "api-backend", "environment": "production"},
+			Name:        "api-backend-6f7g8h9i0j-klm90",
+			Namespace:   "production",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    0,
+			Age:         "1d",
+			Node:        "worker-3",
+			IP:          "10.244.3.20",
+			Labels:      map[string]string{"app": "api-backend", "environment": "production"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "2"},
 		},
 		{
-			Name:      "failing-pod-crash",
-			Namespace: "denshimon-test",
-			Status:    "CrashLoopBackOff",
-			Ready:     "0/1",
-			Restarts:  15,
-			Age:       "30m",
-			Node:      "worker-1",
-			IP:        "",
-			Labels:    map[string]string{"app": "failing-example", "status": "crashloopbackoff"},
+			Name:        "failing-pod-crash",
+			Namespace:   "denshimon-test",
+			Status:      "CrashLoopBackOff",
+			Ready:       "0/1",
+			Restarts:    15,
+			Age:         "30m",
+			Node:        "worker-1",
+			IP:          "",
+			Labels:      map[string]string{"app": "failing-example", "status": "crashloopbackoff"},
 			Annotations: map[string]string{},
 		},
 		{
-			Name:      "pending-pod-no-resources",
-			Namespace: "denshimon-test",
-			Status:    "Pending",
-			Ready:     "0/1",
-			Restarts:  0,
-			Age:       "45m",
-			Node:      "",
-			IP:        "",
-			Labels:    map[string]string{"app": "pending-example", "status": "pending"},
+			Name:        "pending-pod-no-resources",
+			Namespace:   "denshimon-test",
+			Status:      "Pending",
+			Ready:       "0/1",
+			Restarts:    0,
+			Age:         "45m",
+			Node:        "",
+			IP:          "",
+			Labels:      map[string]string{"app": "pending-example", "status": "pending"},
 			Annotations: map[string]string{},
 		},
 		{
-			Name:      "prometheus-847c5d6e2f-nop12",
-			Namespace: "monitoring",
-			Status:    "Running",
-			Ready:     "1/1",
-			Restarts:  0,
-			Age:       "7d",
-			Node:      "master-1",
-			IP:        "10.244.0.25",
-			Labels:    map[string]string{"app": "prometheus", "component": "monitoring"},
+			Name:        "prometheus-847c5d6e2f-nop12",
+			Namespace:   "monitoring",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    0,
+			Age:         "7d",
+			Node:        "master-1",
+			IP:          "10.244.0.25",
+			Labels:      map[string]string{"app": "prometheus", "component": "monitoring"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
 		},
 		{
-			Name:      "grafana-958f6g7h3i-qrs34",
-			Namespace: "monitoring",
-			Status:    "Running",
-			Ready:     "1/1",
-			Restarts:  2,
-			Age:       "7d",
-			Node:      "worker-1",
-			IP:        "10.244.1.26",
-			Labels:    map[string]string{"app": "grafana", "component": "monitoring"},
+			Name:        "grafana-958f6g7h3i-qrs34",
+			Namespace:   "monitoring",
+			Status:      "Running",
+			Ready:       "1/1",
+			Restarts:    2,
+			Age:         "7d",
+			Node:        "worker-1",
+			IP:          "10.244.1.26",
+			Labels:      map[string]string{"app": "grafana", "component": "monitoring"},
 			Annotations: map[string]string{"deployment.kubernetes.io/revision": "1"},
 		},
 	}
@@ -799,10 +799,10 @@ func getMockNodes() []NodeInfo {
 			Kernel:    "5.15.0-97-generic",
 			Container: "containerd://1.7.13",
 			Labels: map[string]string{
-				"kubernetes.io/arch":                   "amd64",
-				"kubernetes.io/os":                     "linux",
+				"kubernetes.io/arch":                    "amd64",
+				"kubernetes.io/os":                      "linux",
 				"node-role.kubernetes.io/control-plane": "",
-				"node-role.kubernetes.io/master":       "",
+				"node-role.kubernetes.io/master":        "",
 			},
 		},
 		{
@@ -839,7 +839,7 @@ func getMockNodes() []NodeInfo {
 			Roles:     []string{"worker"},
 			Age:       "25d",
 			Version:   "v1.29.2",
-			OS:        "Ubuntu 22.04.4 LTS", 
+			OS:        "Ubuntu 22.04.4 LTS",
 			Kernel:    "5.15.0-97-generic",
 			Container: "containerd://1.7.13",
 			Labels: map[string]string{
@@ -881,7 +881,7 @@ func getMockDeployments() []DeploymentInfo {
 		},
 		{
 			Name:      "unhealthy-app",
-			Namespace: "denshimon-test", 
+			Namespace: "denshimon-test",
 			Ready:     "0/2",
 			UpToDate:  2,
 			Available: 0,
@@ -912,10 +912,10 @@ func getMockDeployments() []DeploymentInfo {
 func getMockServices() []ServiceInfo {
 	return []ServiceInfo{
 		{
-			Name:      "nginx-service",
-			Namespace: "denshimon-test",
-			Type:      "ClusterIP",
-			ClusterIP: "10.96.123.45",
+			Name:        "nginx-service",
+			Namespace:   "denshimon-test",
+			Type:        "ClusterIP",
+			ClusterIP:   "10.96.123.45",
 			ExternalIPs: []string{},
 			Ports: []ServicePort{
 				{
@@ -929,10 +929,10 @@ func getMockServices() []ServiceInfo {
 			Labels: map[string]string{"app": "nginx", "service": "web"},
 		},
 		{
-			Name:      "redis-service",
-			Namespace: "denshimon-test",
-			Type:      "ClusterIP",
-			ClusterIP: "10.96.234.56",
+			Name:        "redis-service",
+			Namespace:   "denshimon-test",
+			Type:        "ClusterIP",
+			ClusterIP:   "10.96.234.56",
 			ExternalIPs: []string{},
 			Ports: []ServicePort{
 				{
@@ -946,10 +946,10 @@ func getMockServices() []ServiceInfo {
 			Labels: map[string]string{"app": "redis", "tier": "cache"},
 		},
 		{
-			Name:      "api-backend-service",
-			Namespace: "production",
-			Type:      "LoadBalancer",
-			ClusterIP: "10.96.345.67",
+			Name:        "api-backend-service",
+			Namespace:   "production",
+			Type:        "LoadBalancer",
+			ClusterIP:   "10.96.345.67",
 			ExternalIPs: []string{"203.0.113.10"},
 			Ports: []ServicePort{
 				{
@@ -971,10 +971,10 @@ func getMockServices() []ServiceInfo {
 			Labels: map[string]string{"app": "api-backend", "environment": "production"},
 		},
 		{
-			Name:      "kubernetes",
-			Namespace: "default",
-			Type:      "ClusterIP",
-			ClusterIP: "10.96.0.1",
+			Name:        "kubernetes",
+			Namespace:   "default",
+			Type:        "ClusterIP",
+			ClusterIP:   "10.96.0.1",
 			ExternalIPs: []string{},
 			Ports: []ServicePort{
 				{
@@ -988,10 +988,10 @@ func getMockServices() []ServiceInfo {
 			Labels: map[string]string{"component": "apiserver", "provider": "kubernetes"},
 		},
 		{
-			Name:      "prometheus-service",
-			Namespace: "monitoring",
-			Type:      "NodePort",
-			ClusterIP: "10.96.456.78",
+			Name:        "prometheus-service",
+			Namespace:   "monitoring",
+			Type:        "NodePort",
+			ClusterIP:   "10.96.456.78",
 			ExternalIPs: []string{},
 			Ports: []ServicePort{
 				{
@@ -1016,7 +1016,7 @@ func (h *KubernetesHandlers) ListNamespaces(w http.ResponseWriter, r *http.Reque
 		SendSuccess(w, mockNamespaces)
 		return
 	}
-	
+
 	namespaces, err := h.k8sClient.Clientset().CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list namespaces: %v", err))
@@ -1052,7 +1052,7 @@ func (h *KubernetesHandlers) GetStorageInfo(w http.ResponseWriter, r *http.Reque
 		SendSuccess(w, mockStorage)
 		return
 	}
-	
+
 	// Get persistent volumes
 	pvs, err := h.k8sClient.Clientset().CoreV1().PersistentVolumes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
@@ -1082,12 +1082,12 @@ func (h *KubernetesHandlers) GetStorageInfo(w http.ResponseWriter, r *http.Reque
 	// Process PVs
 	for _, pv := range pvs.Items {
 		pvInfo := map[string]interface{}{
-			"name":       pv.Name,
-			"status":     string(pv.Status.Phase),
-			"capacity":   pv.Spec.Capacity,
-			"accessModes": pv.Spec.AccessModes,
+			"name":          pv.Name,
+			"status":        string(pv.Status.Phase),
+			"capacity":      pv.Spec.Capacity,
+			"accessModes":   pv.Spec.AccessModes,
 			"reclaimPolicy": string(pv.Spec.PersistentVolumeReclaimPolicy),
-			"age":        formatAge(pv.CreationTimestamp.Time),
+			"age":           formatAge(pv.CreationTimestamp.Time),
 		}
 		storageInfo.PersistentVolumes = append(storageInfo.PersistentVolumes, pvInfo)
 	}
@@ -1095,13 +1095,13 @@ func (h *KubernetesHandlers) GetStorageInfo(w http.ResponseWriter, r *http.Reque
 	// Process PVCs
 	for _, pvc := range pvcs.Items {
 		pvcInfo := map[string]interface{}{
-			"name":      pvc.Name,
-			"namespace": pvc.Namespace,
-			"status":    string(pvc.Status.Phase),
-			"capacity":  pvc.Status.Capacity,
-			"accessModes": pvc.Spec.AccessModes,
+			"name":         pvc.Name,
+			"namespace":    pvc.Namespace,
+			"status":       string(pvc.Status.Phase),
+			"capacity":     pvc.Status.Capacity,
+			"accessModes":  pvc.Spec.AccessModes,
 			"storageClass": pvc.Spec.StorageClassName,
-			"age":       formatAge(pvc.CreationTimestamp.Time),
+			"age":          formatAge(pvc.CreationTimestamp.Time),
 		}
 		storageInfo.PersistentVolumeClaims = append(storageInfo.PersistentVolumeClaims, pvcInfo)
 	}
@@ -1148,49 +1148,49 @@ func getMockStorageInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"persistentVolumes": []map[string]interface{}{
 			{
-				"name":       "pv-vps-storage-1",
-				"status":     "Bound",
-				"capacity":   map[string]string{"storage": "50Gi"},
-				"accessModes": []string{"ReadWriteOnce"},
+				"name":          "pv-vps-storage-1",
+				"status":        "Bound",
+				"capacity":      map[string]string{"storage": "50Gi"},
+				"accessModes":   []string{"ReadWriteOnce"},
 				"reclaimPolicy": "Retain",
-				"age":        "15d",
+				"age":           "15d",
 			},
 			{
-				"name":       "pv-vps-storage-2",
-				"status":     "Available",
-				"capacity":   map[string]string{"storage": "100Gi"},
-				"accessModes": []string{"ReadWriteOnce"},
+				"name":          "pv-vps-storage-2",
+				"status":        "Available",
+				"capacity":      map[string]string{"storage": "100Gi"},
+				"accessModes":   []string{"ReadWriteOnce"},
 				"reclaimPolicy": "Delete",
-				"age":        "10d",
+				"age":           "10d",
 			},
 		},
 		"persistentVolumeClaims": []map[string]interface{}{
 			{
-				"name":      "data-postgres-0",
-				"namespace": "production",
-				"status":    "Bound",
-				"capacity":  map[string]string{"storage": "20Gi"},
-				"accessModes": []string{"ReadWriteOnce"},
+				"name":         "data-postgres-0",
+				"namespace":    "production",
+				"status":       "Bound",
+				"capacity":     map[string]string{"storage": "20Gi"},
+				"accessModes":  []string{"ReadWriteOnce"},
 				"storageClass": "vps-ssd",
-				"age":       "15d",
+				"age":          "15d",
 			},
 			{
-				"name":      "redis-data",
-				"namespace": "denshimon-test",
-				"status":    "Bound",
-				"capacity":  map[string]string{"storage": "5Gi"},
-				"accessModes": []string{"ReadWriteOnce"},
+				"name":         "redis-data",
+				"namespace":    "denshimon-test",
+				"status":       "Bound",
+				"capacity":     map[string]string{"storage": "5Gi"},
+				"accessModes":  []string{"ReadWriteOnce"},
 				"storageClass": "vps-ssd",
-				"age":       "3h",
+				"age":          "3h",
 			},
 		},
 		"storageClasses": []map[string]interface{}{
 			{
-				"name":      "vps-ssd",
-				"provisioner": "kubernetes.io/host-path",
-				"reclaimPolicy": "Delete",
+				"name":              "vps-ssd",
+				"provisioner":       "kubernetes.io/host-path",
+				"reclaimPolicy":     "Delete",
 				"volumeBindingMode": "Immediate",
-				"age":       "30d",
+				"age":               "30d",
 			},
 		},
 	}

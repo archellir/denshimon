@@ -11,9 +11,9 @@ import (
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
 	"github.com/archellir/denshimon/internal/providers"
+	"github.com/archellir/denshimon/internal/providers/backup"
 	"github.com/archellir/denshimon/internal/providers/certificates"
 	"github.com/archellir/denshimon/internal/providers/databases"
-	"github.com/archellir/denshimon/internal/providers/backup"
 	"github.com/archellir/denshimon/internal/websocket"
 )
 
@@ -26,17 +26,17 @@ func RegisterRoutes(
 ) {
 	// Initialize services
 	metricsService := metrics.NewService(k8sClient)
-	
+
 	// Initialize provider registry and deployment service
 	providerRegistry := InitializeProviders()
 	registryManager := providers.NewRegistryManager(providerRegistry)
 	deploymentService := deployments.NewService(k8sClient, registryManager, db.DB)
 	deploymentHandlers := NewDeploymentHandlers(deploymentService, registryManager, providerRegistry)
-	
+
 	// Initialize database management
 	databaseManager := databases.NewManager(db.DB)
 	databaseHandlers := handlers.NewDatabasesHandler(databaseManager)
-	
+
 	// Initialize certificate management
 	certificateManager := certificates.NewManager()
 	certificateHandlers := handlers.NewCertificateHandlers(certificateManager)
@@ -50,12 +50,12 @@ func RegisterRoutes(
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			
+
 			if r.Method == "OPTIONS" {
 				w.WriteHeader(http.StatusOK)
 				return
 			}
-			
+
 			next(w, r)
 		}
 	}
@@ -70,7 +70,7 @@ func RegisterRoutes(
 	// Auth endpoints (no auth required)
 	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
 	mux.HandleFunc("POST /api/auth/logout", corsMiddleware(authHandlers.Logout))
-	
+
 	// Protected auth endpoints
 	mux.HandleFunc("POST /api/auth/refresh", corsMiddleware(authService.AuthMiddleware(authHandlers.Refresh)))
 	mux.HandleFunc("GET /api/auth/me", corsMiddleware(authService.AuthMiddleware(authHandlers.Me)))
@@ -82,17 +82,17 @@ func RegisterRoutes(
 	mux.HandleFunc("DELETE /api/auth/users/{id}", corsMiddleware(authService.RequireRole("admin")(authHandlers.DeleteUser)))
 
 	// Protected routes (require auth)
-	
+
 	// Kubernetes endpoints (require authentication)
 	mux.HandleFunc("GET /api/k8s/pods", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListPods)))
 	mux.HandleFunc("GET /api/k8s/pods/{name}", corsMiddleware(authService.AuthMiddleware(k8sHandlers.GetPod)))
 	mux.HandleFunc("POST /api/k8s/pods/{name}/restart", corsMiddleware(authService.AuthMiddleware(k8sHandlers.RestartPod)))
 	mux.HandleFunc("DELETE /api/k8s/pods/{name}", corsMiddleware(authService.AuthMiddleware(k8sHandlers.DeletePod)))
 	mux.HandleFunc("GET /api/k8s/pods/{name}/logs", corsMiddleware(authService.AuthMiddleware(k8sHandlers.GetPodLogs)))
-	
+
 	mux.HandleFunc("GET /api/k8s/deployments", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListDeployments)))
 	mux.HandleFunc("PATCH /api/k8s/deployments/{name}/scale", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ScaleDeployment)))
-	
+
 	mux.HandleFunc("GET /api/k8s/nodes", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListNodes)))
 	mux.HandleFunc("GET /api/k8s/services", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListServices)))
 	mux.HandleFunc("GET /api/k8s/events", corsMiddleware(authService.AuthMiddleware(k8sHandlers.ListEvents)))
@@ -136,7 +136,7 @@ func RegisterRoutes(
 	// Registry management
 	mux.HandleFunc("GET /api/deployments/registries", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListRegistries)))
 	mux.HandleFunc("POST /api/deployments/registries", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.AddRegistry)))
-	
+
 	// Registry operations (using pattern matching)
 	mux.Handle("/api/deployments/registries/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -152,7 +152,7 @@ func RegisterRoutes(
 	// Image management
 	mux.HandleFunc("GET /api/deployments/images", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListImages)))
 	mux.HandleFunc("GET /api/deployments/images/search", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.SearchImages)))
-	
+
 	// Image operations
 	mux.Handle("/api/deployments/images/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/tags") && r.Method == "GET" {
@@ -166,7 +166,7 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/deployments", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListDeployments)))
 	mux.HandleFunc("POST /api/deployments", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.CreateDeployment)))
 	mux.HandleFunc("GET /api/deployments/nodes", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.GetAvailableNodes)))
-	
+
 	// Deployment operations
 	mux.Handle("/api/deployments/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path

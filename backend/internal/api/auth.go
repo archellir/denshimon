@@ -113,7 +113,7 @@ func (h *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := authHeader[len("Bearer "):]
-	
+
 	// Revoke token (add to blacklist)
 	if err := h.authService.RevokeToken(token); err != nil {
 		http.Error(w, "Failed to logout", http.StatusInternalServerError)

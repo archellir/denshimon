@@ -14,8 +14,8 @@ import (
 
 // DeploymentHandlers handles HTTP requests for deployments
 type DeploymentHandlers struct {
-	service         *deployments.Service
-	registryManager *providers.RegistryManager
+	service          *deployments.Service
+	registryManager  *providers.RegistryManager
 	providerRegistry *providers.ProviderRegistry
 }
 
@@ -39,9 +39,9 @@ func (h *DeploymentHandlers) ListRegistries(w http.ResponseWriter, r *http.Reque
 // AddRegistry adds a new registry configuration
 func (h *DeploymentHandlers) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Name      string                    `json:"name"`
-		Type      string                    `json:"type"`
-		Config    providers.RegistryConfig  `json:"config"`
+		Name   string                   `json:"name"`
+		Type   string                   `json:"type"`
+		Config providers.RegistryConfig `json:"config"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -76,7 +76,7 @@ func (h *DeploymentHandlers) AddRegistry(w http.ResponseWriter, r *http.Request)
 
 	registry.Status = "connected"
 	// In a real implementation, save to database here
-	
+
 	writeJSON(w, registry)
 }
 
@@ -90,7 +90,7 @@ func (h *DeploymentHandlers) DeleteRegistry(w http.ResponseWriter, r *http.Reque
 
 	h.registryManager.RemoveRegistry(registryID)
 	// In a real implementation, delete from database here
-	
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -98,7 +98,7 @@ func (h *DeploymentHandlers) DeleteRegistry(w http.ResponseWriter, r *http.Reque
 func (h *DeploymentHandlers) TestRegistry(w http.ResponseWriter, r *http.Request) {
 	registryID := extractIDFromPath(r.URL.Path, "/api/deployments/registries/")
 	registryID = strings.TrimSuffix(registryID, "/test")
-	
+
 	if registryID == "" {
 		http.Error(w, "Registry ID is required", http.StatusBadRequest)
 		return
@@ -440,32 +440,32 @@ func extractIDFromPath(path, prefix string) string {
 	if !strings.HasPrefix(path, prefix) {
 		return ""
 	}
-	
+
 	remaining := strings.TrimPrefix(path, prefix)
 	parts := strings.Split(remaining, "/")
 	if len(parts) > 0 && parts[0] != "" {
 		return parts[0]
 	}
-	
+
 	return ""
 }
 
 // InitializeProviders sets up all registry providers
 func InitializeProviders() *providers.ProviderRegistry {
 	registry := providers.NewProviderRegistry()
-	
+
 	// Register all supported providers
 	registry.Register("dockerhub", func(config providers.RegistryConfig) (providers.RegistryProvider, error) {
 		return registries.NewDockerHubProvider(config)
 	})
-	
+
 	registry.Register("gitea", func(config providers.RegistryConfig) (providers.RegistryProvider, error) {
 		return registries.NewGiteaProvider(config)
 	})
-	
+
 	registry.Register("generic", func(config providers.RegistryConfig) (providers.RegistryProvider, error) {
 		return registries.NewGenericProvider(config)
 	})
-	
+
 	return registry
 }

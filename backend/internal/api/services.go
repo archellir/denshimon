@@ -19,23 +19,23 @@ func NewServicesHandlers(k8sClient *k8s.Client) *ServicesHandlers {
 
 // ServiceMeshData represents the full service mesh topology
 type ServiceMeshData struct {
-	Services    []ServiceNode      `json:"services"`
+	Services    []ServiceNode       `json:"services"`
 	Connections []ServiceConnection `json:"connections"`
-	Endpoints   []APIEndpoint      `json:"endpoints"`
-	Flows       []TrafficFlow      `json:"flows"`
-	Metrics     ServiceMeshMetrics `json:"metrics"`
-	Timestamp   string             `json:"timestamp"`
+	Endpoints   []APIEndpoint       `json:"endpoints"`
+	Flows       []TrafficFlow       `json:"flows"`
+	Metrics     ServiceMeshMetrics  `json:"metrics"`
+	Timestamp   string              `json:"timestamp"`
 }
 
 type ServiceNode struct {
-	ID        string                 `json:"id"`
-	Name      string                 `json:"name"`
-	Namespace string                 `json:"namespace"`
-	Version   string                 `json:"version"`
-	Type      string                 `json:"type"`
-	Status    string                 `json:"status"`
-	Instances int                    `json:"instances"`
-	Metrics   ServiceMetrics         `json:"metrics"`
+	ID             string             `json:"id"`
+	Name           string             `json:"name"`
+	Namespace      string             `json:"namespace"`
+	Version        string             `json:"version"`
+	Type           string             `json:"type"`
+	Status         string             `json:"status"`
+	Instances      int                `json:"instances"`
+	Metrics        ServiceMetrics     `json:"metrics"`
 	CircuitBreaker CircuitBreakerInfo `json:"circuitBreaker"`
 }
 
@@ -77,11 +77,11 @@ type ServiceConnection struct {
 }
 
 type APIEndpoint struct {
-	ID            string `json:"id"`
-	ServiceID     string `json:"serviceId"`
-	Path          string `json:"path"`
-	Method        string `json:"method"`
-	Metrics       struct {
+	ID        string `json:"id"`
+	ServiceID string `json:"serviceId"`
+	Path      string `json:"path"`
+	Method    string `json:"method"`
+	Metrics   struct {
 		RequestRate float64 `json:"requestRate"`
 		ErrorRate   float64 `json:"errorRate"`
 		Latency     struct {
@@ -142,7 +142,7 @@ type ServiceMeshMetrics struct {
 func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request) {
 	// Generate mock service mesh data for VPS
 	// In a real implementation, this would query Kubernetes services, deployments, etc.
-	
+
 	services := []ServiceNode{
 		{
 			ID:        "api-service",
@@ -170,7 +170,7 @@ func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request
 		},
 		{
 			ID:        "web-frontend",
-			Name:      "web-frontend", 
+			Name:      "web-frontend",
 			Namespace: "production",
 			Version:   "v2.1.0",
 			Type:      "frontend",
@@ -195,7 +195,7 @@ func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request
 		{
 			ID:        "database",
 			Name:      "postgres-db",
-			Namespace: "production", 
+			Namespace: "production",
 			Version:   "v13.8",
 			Type:      "database",
 			Status:    "healthy",
@@ -311,7 +311,7 @@ func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request
 				ByErrorRate   []ServiceNode `json:"byErrorRate"`
 			}{
 				ByRequestRate: services[:2], // Top 2 by request rate
-				ByLatency:     services[:2], // Top 2 by latency  
+				ByLatency:     services[:2], // Top 2 by latency
 				ByErrorRate:   services[:2], // Top 2 by error rate
 			},
 			Alerts: struct {
@@ -331,7 +331,7 @@ func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request
 				ErrorRateTrend   string `json:"errorRateTrend"`
 			}{
 				RequestRateTrend: "stable",
-				LatencyTrend:     "stable", 
+				LatencyTrend:     "stable",
 				ErrorRateTrend:   "stable",
 			},
 		},
@@ -375,20 +375,20 @@ func (h *ServicesHandlers) GetServiceTopology(w http.ResponseWriter, r *http.Req
 		},
 		"edges": []map[string]interface{}{
 			{
-				"id":       "edge-1",
-				"source":   "web-frontend",
-				"target":   "api-service",
-				"protocol": "HTTP",
+				"id":        "edge-1",
+				"source":    "web-frontend",
+				"target":    "api-service",
+				"protocol":  "HTTP",
 				"encrypted": true,
-				"traffic":  320.2,
+				"traffic":   320.2,
 			},
 			{
-				"id":       "edge-2",
-				"source":   "api-service",
-				"target":   "database",
-				"protocol": "TCP",
+				"id":        "edge-2",
+				"source":    "api-service",
+				"target":    "database",
+				"protocol":  "TCP",
 				"encrypted": true,
-				"traffic":  150.5,
+				"traffic":   150.5,
 			},
 		},
 		"metrics": map[string]interface{}{
@@ -398,7 +398,7 @@ func (h *ServicesHandlers) GetServiceTopology(w http.ResponseWriter, r *http.Req
 			"encryptedTraffic": 100.0,
 		},
 	}
-	
+
 	SendSuccess(w, topology)
 }
 
@@ -454,16 +454,16 @@ func (h *ServicesHandlers) GetServiceEndpoints(w http.ResponseWriter, r *http.Re
 			"rateLimit":   nil,
 		},
 	}
-	
+
 	SendSuccess(w, map[string]interface{}{
 		"endpoints": endpoints,
 		"summary": map[string]interface{}{
-			"total":             len(endpoints),
-			"authenticated":     2,
-			"rateLimited":       2,
-			"avgRequestRate":    69.9,
-			"avgErrorRate":      1.2,
-			"avgLatency":        30.4,
+			"total":          len(endpoints),
+			"authenticated":  2,
+			"rateLimited":    2,
+			"avgRequestRate": 69.9,
+			"avgErrorRate":   1.2,
+			"avgLatency":     30.4,
 		},
 	})
 }
@@ -512,16 +512,16 @@ func (h *ServicesHandlers) GetServiceFlows(w http.ResponseWriter, r *http.Reques
 			},
 		},
 	}
-	
+
 	SendSuccess(w, map[string]interface{}{
 		"flows": flows,
 		"summary": map[string]interface{}{
-			"totalFlows":         len(flows),
-			"criticalFlows":      1,
-			"avgRequestRate":     71.5,
-			"avgLatency":         41.4,
-			"avgErrorRate":       1.1,
-			"bottleneckService":  "api-service",
+			"totalFlows":        len(flows),
+			"criticalFlows":     1,
+			"avgRequestRate":    71.5,
+			"avgLatency":        41.4,
+			"avgErrorRate":      1.1,
+			"bottleneckService": "api-service",
 		},
 	})
 }
@@ -571,11 +571,11 @@ func (h *ServicesHandlers) GetServiceGateway(w http.ResponseWriter, r *http.Requ
 			},
 		},
 		"metrics": map[string]interface{}{
-			"totalRequests":   50847,
-			"requestRate":     320.2,
-			"errorRate":       1.2,
-			"avgLatency":      28.5,
-			"bytesTransferred": 1048576000,
+			"totalRequests":     50847,
+			"requestRate":       320.2,
+			"errorRate":         1.2,
+			"avgLatency":        28.5,
+			"bytesTransferred":  1048576000,
 			"activeConnections": 125,
 			"responseTime": map[string]float64{
 				"p50": 25.1,
@@ -590,12 +590,12 @@ func (h *ServicesHandlers) GetServiceGateway(w http.ResponseWriter, r *http.Requ
 			},
 		},
 		"security": map[string]interface{}{
-			"tlsEnabled":    true,
-			"mtlsEnabled":   false,
-			"corsEnabled":   true,
-			"authPolicies":  []string{"jwt-auth", "api-key-auth"},
-			"rateLimiting":  true,
-			"ipFiltering":   false,
+			"tlsEnabled":     true,
+			"mtlsEnabled":    false,
+			"corsEnabled":    true,
+			"authPolicies":   []string{"jwt-auth", "api-key-auth"},
+			"rateLimiting":   true,
+			"ipFiltering":    false,
 			"ddosProtection": true,
 		},
 		"health": map[string]interface{}{
@@ -607,6 +607,6 @@ func (h *ServicesHandlers) GetServiceGateway(w http.ResponseWriter, r *http.Requ
 			"configVersion": "v1.2.0",
 		},
 	}
-	
+
 	SendSuccess(w, gateway)
 }

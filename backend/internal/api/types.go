@@ -78,7 +78,7 @@ func SendErrorWithMessage(w http.ResponseWriter, status int, err string, message
 func SendPaginated(w http.ResponseWriter, data interface{}, total, page, limit int) {
 	hasNext := (page * limit) < total
 	hasPrev := page > 1
-	
+
 	SendJSON(w, http.StatusOK, PaginatedResponse{
 		Data:    data,
 		Total:   total,
@@ -102,19 +102,19 @@ func SendMetadata(w http.ResponseWriter, data interface{}, total int, metadata m
 func ParsePagination(r *http.Request, defaultLimit, maxLimit int) (page, limit int) {
 	page = 1
 	limit = defaultLimit
-	
+
 	if p := r.URL.Query().Get("page"); p != "" {
 		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
 			page = parsed
 		}
 	}
-	
+
 	if l := r.URL.Query().Get("limit"); l != "" {
 		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= maxLimit {
 			limit = parsed
 		}
 	}
-	
+
 	return page, limit
 }
 
@@ -124,16 +124,16 @@ func ParseTimeRange(r *http.Request, defaultRange string) string {
 	if timeRange == "" {
 		return defaultRange
 	}
-	
+
 	// Validate against known time ranges
 	validRanges := map[string]bool{
 		"5m": true, "15m": true, "1h": true, "6h": true,
 		"12h": true, "24h": true, "48h": true, "7d": true, "30d": true,
 	}
-	
+
 	if validRanges[timeRange] {
 		return timeRange
 	}
-	
+
 	return defaultRange
 }
