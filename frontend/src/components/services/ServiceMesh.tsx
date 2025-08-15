@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Network, Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch, RefreshCw } from 'lucide-react';
+import { Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch, RefreshCw, Network } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
@@ -182,17 +182,32 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="border border-white p-4 animate-pulse">
-              <Network size={48} className="mx-auto mb-4" />
-              <p className="font-mono text-sm">LOADING SERVICE MESH...</p>
+        {/* Overview Stats Skeleton */}
+        <div className="grid grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-black border border-white/20 p-4">
+              <div className="h-3 bg-white/10 animate-pulse rounded w-2/3 mb-2" />
+              <div className="h-8 bg-white/10 animate-pulse rounded w-1/2" />
             </div>
-          </div>
+          ))}
         </div>
-        <SkeletonLoader variant="card" count={6} />
-        <SkeletonLoader variant="chart" count={1} />
-        <SkeletonLoader variant="table" count={8} />
+        
+        {/* Content Area Skeleton */}
+        {selectedView === 'topology' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <SkeletonLoader variant="chart" count={1} />
+            </div>
+            <SkeletonLoader variant="card" count={1} />
+          </div>
+        ) : selectedView === 'flows' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonLoader variant="card" count={1} />
+            <SkeletonLoader variant="list" count={5} />
+          </div>
+        ) : (
+          <SkeletonLoader variant="table" count={8} />
+        )}
       </div>
     );
   }
