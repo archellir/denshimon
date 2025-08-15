@@ -206,7 +206,7 @@ func (h *ServicesHandlers) convertK8sServicesToNodes(k8sServices []corev1.Servic
 			Type:      serviceType,
 			Status:    "healthy", // Would be determined from actual health checks
 			Instances: getServiceInstances(&svc),
-			Metrics:   generateMockMetricsForType(serviceType),
+			Metrics:   ServiceMetrics{}, // Real metrics would come from Prometheus/metrics-server
 			CircuitBreaker: CircuitBreakerInfo{
 				Status:           "closed",
 				FailureThreshold: 50,
@@ -246,56 +246,6 @@ func getServiceInstances(service *corev1.Service) int {
 	return 1 // Default to 1 instance
 }
 
-// generateMockMetricsForType generates realistic metrics based on service type
-func generateMockMetricsForType(serviceType string) ServiceMetrics {
-	switch serviceType {
-	case "frontend":
-		return ServiceMetrics{
-			RequestRate: 200.0 + float64(time.Now().UnixNano()%100),
-			ErrorRate:   0.5 + float64(time.Now().UnixNano()%20)/10.0,
-			Latency: struct {
-				P50 float64 `json:"p50"`
-				P95 float64 `json:"p95"`
-				P99 float64 `json:"p99"`
-			}{
-				P50: 20.0 + float64(time.Now().UnixNano()%30),
-				P95: 60.0 + float64(time.Now().UnixNano()%100),
-				P99: 150.0 + float64(time.Now().UnixNano()%200),
-			},
-			SuccessRate: 97.0 + float64(time.Now().UnixNano()%25)/10.0,
-		}
-	case "database":
-		return ServiceMetrics{
-			RequestRate: 50.0 + float64(time.Now().UnixNano()%100),
-			ErrorRate:   0.1 + float64(time.Now().UnixNano()%5)/10.0,
-			Latency: struct {
-				P50 float64 `json:"p50"`
-				P95 float64 `json:"p95"`
-				P99 float64 `json:"p99"`
-			}{
-				P50: 5.0 + float64(time.Now().UnixNano()%15),
-				P95: 15.0 + float64(time.Now().UnixNano()%30),
-				P99: 40.0 + float64(time.Now().UnixNano()%80),
-			},
-			SuccessRate: 99.0 + float64(time.Now().UnixNano()%9)/10.0,
-		}
-	default: // backend, cache, gateway, sidecar
-		return ServiceMetrics{
-			RequestRate: 100.0 + float64(time.Now().UnixNano()%200),
-			ErrorRate:   0.3 + float64(time.Now().UnixNano()%15)/10.0,
-			Latency: struct {
-				P50 float64 `json:"p50"`
-				P95 float64 `json:"p95"`
-				P99 float64 `json:"p99"`
-			}{
-				P50: 10.0 + float64(time.Now().UnixNano()%25),
-				P95: 30.0 + float64(time.Now().UnixNano()%70),
-				P99: 80.0 + float64(time.Now().UnixNano()%150),
-			},
-			SuccessRate: 98.0 + float64(time.Now().UnixNano()%18)/10.0,
-		}
-	}
-}
 
 // GetServiceMesh returns the complete service mesh topology and metrics
 func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request) {
