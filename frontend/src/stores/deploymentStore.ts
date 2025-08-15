@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RegistryStatus } from '@/constants';
+import { RegistryStatus, API_ENDPOINTS } from '@/constants';
 import type {
   Registry,
   ContainerImage,
@@ -76,7 +76,7 @@ interface DeploymentStore {
   getNodesByZone: () => Record<string, NodeInfo[]>;
 }
 
-const API_BASE = '/api/deployments';
+// API_ENDPOINTS.DEPLOYMENTS.BASE removed - using API_ENDPOINTS from constants
 
 const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   // Initial state
@@ -112,7 +112,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
       } else {
         // Real API call
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`${API_BASE}/registries`, {
+        const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         
@@ -141,7 +141,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, creating: true }, error: null }));
     
     try {
-      const response = await fetch(`${API_BASE}/registries`, {
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registryData),
@@ -164,7 +164,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   deleteRegistry: async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/registries/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete registry');
       
       set(state => ({
@@ -233,7 +233,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   getImageTags: async (registryId, repository) => {
     try {
-      const response = await fetch(`${API_BASE}/images/${registryId}/${repository}/tags`);
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/images/${registryId}/${repository}/tags`);
       if (!response.ok) throw new Error('Failed to get image tags');
       
       const result = await response.json();
@@ -264,7 +264,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deploying: true }, error: null }));
     
     try {
-      const response = await fetch(API_BASE, {
+      const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
@@ -290,7 +290,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   updateDeployment: async (id, updates) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}`, {
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -309,7 +309,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   scaleDeployment: async (id, replicas) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}/scale`, {
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/scale`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ replicas }),
@@ -326,7 +326,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   deleteDeployment: async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete deployment');
       
       set(state => ({
@@ -339,7 +339,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   restartDeployment: async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/${id}/restart`, { method: 'POST' });
+      const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${id}/restart`, { method: 'POST' });
       if (!response.ok) throw new Error('Failed to restart deployment');
       
       // Refresh deployment data

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Certificate, CertificateAlert, CertificateStats, DomainConfig, CertificateStatus } from '@/types/certificates';
+import { API_ENDPOINTS } from '@/constants';
 
 interface CertificateStore {
   // State
@@ -219,7 +220,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/certificates', {
+      const response = await fetch(API_ENDPOINTS.CERTIFICATES.LIST, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -252,7 +253,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/certificates/stats', {
+      const response = await fetch(API_ENDPOINTS.CERTIFICATES.STATS, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -277,7 +278,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/certificates/alerts', {
+      const response = await fetch(API_ENDPOINTS.CERTIFICATES.ALERTS, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -302,7 +303,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/certificates/domains', {
+      const response = await fetch(API_ENDPOINTS.CERTIFICATES.DOMAINS, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -363,7 +364,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const response = await fetch('/api/certificates/refresh', {
+      const response = await fetch(API_ENDPOINTS.CERTIFICATES.REFRESH, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -391,7 +392,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
 
   addDomain: async (config: DomainConfig) => {
     try {
-      const response = await fetch('/api/certificates/domains', {
+      const response = await fetch(API_ENDPOINTS.CERTIFICATES.DOMAINS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

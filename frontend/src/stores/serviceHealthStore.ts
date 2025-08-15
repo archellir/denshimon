@@ -14,6 +14,7 @@ import {
   UptimeKumaHealth,
   PostgreSQLHealth
 } from '@/types/serviceHealth';
+import { API_ENDPOINTS } from '@/constants';
 
 interface ServiceHealthStore {
   // State
@@ -374,7 +375,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/infrastructure/services', {
+      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.SERVICES, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -407,7 +408,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/infrastructure/status', {
+      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.STATUS, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -432,7 +433,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/infrastructure/alerts', {
+      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.ALERTS, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -453,7 +454,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
-      const response = await fetch('/api/infrastructure/refresh', {
+      const response = await fetch(API_ENDPOINTS.INFRASTRUCTURE.REFRESH, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`

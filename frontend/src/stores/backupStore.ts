@@ -19,6 +19,7 @@ import {
   RecoveryOptions,
   RestoreType
 } from '@/types/backup';
+import { StorageKey, API_ENDPOINTS } from '@/constants';
 
 interface BackupStore {
   // State
@@ -415,9 +416,9 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/backup/jobs', {
+      const response = await fetch(API_ENDPOINTS.BACKUP.JOBS, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -452,11 +453,11 @@ const useBackupStore = create<BackupStore>((set, get) => ({
 
       const url = jobId 
         ? `/api/backup/history?jobId=${jobId}`
-        : '/api/backup/history';
+        : API_ENDPOINTS.BACKUP.HISTORY;
       
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -483,9 +484,9 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/backup/storage', {
+      const response = await fetch(API_ENDPOINTS.BACKUP.STORAGE, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -508,9 +509,9 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/backup/statistics', {
+      const response = await fetch(API_ENDPOINTS.BACKUP.STATISTICS, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -533,9 +534,9 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/backup/recoveries/active', {
+      const response = await fetch(API_ENDPOINTS.BACKUP.RECOVERIES_ACTIVE, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -558,9 +559,9 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch('/api/backup/alerts', {
+      const response = await fetch(API_ENDPOINTS.BACKUP.ALERTS, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -580,7 +581,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await fetch(`/api/backup/jobs/${jobId}/run`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -601,7 +602,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await fetch(`/api/backup/jobs/${jobId}/cancel`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -622,7 +623,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await fetch(`/api/backup/history/${backupId}/verify`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -643,7 +644,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await fetch(`/api/backup/history/${backupId}/recover`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(options || {})
@@ -666,7 +667,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await fetch(`/api/backup/history/${backupId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
         }
       });
 
@@ -687,7 +688,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await fetch(`/api/backup/jobs/${jobId}/schedule`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(schedule)
