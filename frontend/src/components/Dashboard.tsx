@@ -600,10 +600,26 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Tab Descriptions */}
+      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
+        <div className="border-b border-white">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="space-y-2">
+              <p className="text-gray-300 font-mono text-sm">
+                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).primary}
+              </p>
+              <p className="text-gray-400 font-mono text-sm">
+                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).secondary}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick Stats - show for major tabs except observability */}
       {isSectionVisible(DASHBOARD_SECTIONS.QUICK_STATS) && (activePrimaryTab === PrimaryTab.INFRASTRUCTURE || activePrimaryTab === PrimaryTab.WORKLOADS || activePrimaryTab === PrimaryTab.MESH || activePrimaryTab === PrimaryTab.DEPLOYMENTS || activePrimaryTab === PrimaryTab.DATABASE) && clusterMetrics && (
         <div className="border-b border-white">
-          <div className="max-w-7xl mx-auto px-6 pt-2 pb-6">
+          <div className="max-w-7xl mx-auto px-6 pt-6 pb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {getQuickStatsForTab(activePrimaryTab).map((stat) => (
                 <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
@@ -619,22 +635,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab Descriptions */}
-      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
-        <div className="border-b border-white">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="space-y-2">
-              <p className="text-gray-300 font-mono text-sm">
-                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).primary}
-              </p>
-              <p className="text-gray-400 font-mono text-sm">
-                {getTabDescriptions(activePrimaryTab, activeSecondaryTab).secondary}
-              </p>
             </div>
           </div>
         </div>

@@ -1236,8 +1236,8 @@ export const GRAPH_CONFIG = {
   },
   DIMENSIONS: {
     DEFAULT_WIDTH: 800,
-    DEFAULT_HEIGHT: 600,
-    MAX_HEIGHT: 600
+    DEFAULT_HEIGHT: 500,
+    MAX_HEIGHT: 500
   }
 } as const;
 
