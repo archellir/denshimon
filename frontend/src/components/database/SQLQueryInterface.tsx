@@ -106,8 +106,38 @@ const SQLQueryInterface: FC = () => {
 
   return (
     <div className={`space-y-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-black p-6' : ''}`}>
-      {/* Header Actions - keep only functional buttons */}
-      <div className="flex justify-end">
+
+      {/* Connection Selection */}
+      <div className="flex items-center justify-between p-4 border border-white/20">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Database size={16} />
+            <label className="font-mono text-sm">CONNECTION:</label>
+          </div>
+          <select
+            value={selectedConnection}
+            onChange={(e) => setSelectedConnection(e.target.value)}
+            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400"
+          >
+            <option value="">Select Database Connection</option>
+            {connectedConnections.map(conn => (
+              <option key={conn.id} value={conn.id}>
+                {conn.name} ({conn.type.toUpperCase()})
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center space-x-2">
+            <label className="font-mono text-sm">LIMIT:</label>
+            <input
+              type="number"
+              value={queryLimit}
+              onChange={(e) => setQueryLimit(parseInt(e.target.value) || 100)}
+              className="bg-black border border-white px-2 py-1 font-mono text-sm w-20 focus:outline-none focus:border-green-400"
+              min="1"
+              max="10000"
+            />
+          </div>
+        </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowHistory(!showHistory)}
@@ -125,37 +155,6 @@ const SQLQueryInterface: FC = () => {
             <Maximize2 size={16} />
             <span>FULLSCREEN</span>
           </button>
-        </div>
-      </div>
-
-      {/* Connection Selection */}
-      <div className="flex items-center space-x-4 p-4 border border-white/20">
-        <div className="flex items-center space-x-2">
-          <Database size={16} />
-          <label className="font-mono text-sm">CONNECTION:</label>
-        </div>
-        <select
-          value={selectedConnection}
-          onChange={(e) => setSelectedConnection(e.target.value)}
-          className="bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400"
-        >
-          <option value="">Select Database Connection</option>
-          {connectedConnections.map(conn => (
-            <option key={conn.id} value={conn.id}>
-              {conn.name} ({conn.type.toUpperCase()})
-            </option>
-          ))}
-        </select>
-        <div className="flex items-center space-x-2 ml-4">
-          <label className="font-mono text-sm">LIMIT:</label>
-          <input
-            type="number"
-            value={queryLimit}
-            onChange={(e) => setQueryLimit(parseInt(e.target.value) || 100)}
-            className="bg-black border border-white px-2 py-1 font-mono text-sm w-20 focus:outline-none focus:border-green-400"
-            min="1"
-            max="10000"
-          />
         </div>
       </div>
 
