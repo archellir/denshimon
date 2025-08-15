@@ -98,7 +98,10 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>(TimeRange.ONE_HOUR)
   const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false)
   const [showDashboardSettings, setShowDashboardSettings] = useState<boolean>(false)
-  const [showHelp, setShowHelp] = useState<boolean>(false)
+  const [showHelp, setShowHelp] = useState<boolean>(() => {
+    const saved = localStorage.getItem('denshimon-show-help')
+    return saved ? JSON.parse(saved) : false
+  })
   const navigate = useNavigate()
   const { isSectionVisible } = useSettingsStore()
 
@@ -107,6 +110,11 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
     const wsUrl = import.meta.env.VITE_WS_URL || API_ENDPOINTS.WEBSOCKET.DEFAULT_URL
     initializeWebSocket(wsUrl)
   }, [])
+
+  // Save help state to localStorage
+  useEffect(() => {
+    localStorage.setItem('denshimon-show-help', JSON.stringify(showHelp))
+  }, [showHelp])
 
   // Handle refresh current view
   const handleRefresh = () => {
