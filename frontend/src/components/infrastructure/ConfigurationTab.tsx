@@ -21,7 +21,7 @@ interface SyncMetrics {
   recent_deployments: number;
 }
 
-const BaseInfrastructureTab = () => {
+const ConfigurationTab = () => {
   const [repository, setRepository] = useState<BaseInfrastructureRepo | null>(null);
   const [metrics, setMetrics] = useState<SyncMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -321,4 +321,4 @@ const BaseInfrastructureTab = () => {
   );
 };
 
-export default BaseInfrastructureTab;
+export default ConfigurationTab;

@@ -2,14 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, type LucideIcon } from 'lucide-react';
-import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
-import GlobalSearch from '@components/common/GlobalSearch';
-import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
-import useDeploymentStore from '@stores/deploymentStore';
-import { SearchResult } from '@stores/globalSearchStore';
-import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
-import useSettingsStore from '@stores/settingsStore';
-import NotificationContainer from '@components/common/NotificationContainer';
+import StatusIcon, { getStatusColor } from '@/components/common/StatusIcon';
+import GlobalSearch from '@/components/common/GlobalSearch';
+import useWebSocketMetricsStore from '@/stores/webSocketMetricsStore';
+import useDeploymentStore from '@/stores/deploymentStore';
+import { SearchResult } from '@/stores/globalSearchStore';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@/constants';
+import useSettingsStore from '@/stores/settingsStore';
+import NotificationContainer from '@/components/common/NotificationContainer';
 import { 
   generateInfrastructureStats, 
   generateWorkloadsStats, 
@@ -18,35 +18,35 @@ import {
   generateDatabaseStats,
   generateObservabilityStats,
   type QuickStat
-} from '@utils/quickStatsUtils';
-import ClusterOverview from '@components/metrics/ClusterOverview';
-import WorkloadsOverview from '@components/metrics/WorkloadsOverview';
-import HealthDashboard from '@components/metrics/HealthDashboard';
-import ResourceCharts from '@components/metrics/ResourceCharts';
-import NodeList from '@components/metrics/NodeList';
-import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
-import NetworkTraffic from '@components/network/NetworkTraffic';
-import EventTimeline from '@components/events/EventTimeline';
-import ServiceMesh from '@components/services/ServiceMesh';
-import EnhancedLogs from '@components/observability/EnhancedLogs';
-import LiveStreams from '@components/observability/LiveStreams';
-import LogAnalytics from '@components/observability/LogAnalytics';
-import DeploymentDashboard from '@components/deployments/DeploymentDashboard';
-import BaseInfrastructureTab from '@components/infrastructure/BaseInfrastructureTab';
-import PodsView from '@components/PodsView';
-import ResourceTree from '@components/infrastructure/ResourceTree';
-import StorageIOMetrics from '@components/storage/StorageIOMetrics';
-import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
-import ServicesList from '@components/workloads/ServicesList';
-import DatabaseGrid from '@components/infrastructure/DatabaseGrid';
-import AddDatabaseConnectionModal from '@components/infrastructure/AddDatabaseConnectionModal';
-import DatabaseManagement from '@components/infrastructure/DatabaseManagement';
-import DatabaseBrowser from '@components/database/DatabaseBrowser';
-import SQLQueryInterface from '@components/database/SQLQueryInterface';
-import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
-import CertificateHealthDashboard from '@components/infrastructure/CertificateHealthDashboard';
-import ServiceHealthDashboard from '@components/infrastructure/ServiceHealthDashboard';
-import BackupRecoveryDashboard from '@components/infrastructure/BackupRecoveryDashboard';
+} from '@/utils/quickStatsUtils';
+import ClusterOverview from '@/components/metrics/ClusterOverview';
+import WorkloadsOverview from '@/components/metrics/WorkloadsOverview';
+import HealthDashboard from '@/components/metrics/HealthDashboard';
+import ResourceCharts from '@/components/metrics/ResourceCharts';
+import NodeList from '@/components/metrics/NodeList';
+import NamespaceMetrics from '@/components/metrics/NamespaceMetrics';
+import NetworkTraffic from '@/components/network/NetworkTraffic';
+import EventTimeline from '@/components/events/EventTimeline';
+import ServiceMesh from '@/components/services/ServiceMesh';
+import EnhancedLogs from '@/components/observability/EnhancedLogs';
+import LiveStreams from '@/components/observability/LiveStreams';
+import LogAnalytics from '@/components/observability/LogAnalytics';
+import DeploymentDashboard from '@/components/deployments/DeploymentDashboard';
+import ConfigurationTab from '@/components/infrastructure/ConfigurationTab';
+import PodsView from '@/components/PodsView';
+import ResourceTree from '@/components/infrastructure/ResourceTree';
+import StorageIOMetrics from '@/components/storage/StorageIOMetrics';
+import APIGatewayAnalytics from '@/components/gateway/APIGatewayAnalytics';
+import ServicesList from '@/components/workloads/ServicesList';
+import DatabaseGrid from '@/components/infrastructure/DatabaseGrid';
+import AddDatabaseConnectionModal from '@/components/infrastructure/AddDatabaseConnectionModal';
+import DatabaseManagement from '@/components/infrastructure/DatabaseManagement';
+import DatabaseBrowser from '@/components/database/DatabaseBrowser';
+import SQLQueryInterface from '@/components/database/SQLQueryInterface';
+import DatabaseMonitoring from '@/components/database/DatabaseMonitoring';
+import CertificateHealthDashboard from '@/components/infrastructure/CertificateHealthDashboard';
+import ServiceHealthDashboard from '@/components/infrastructure/ServiceHealthDashboard';
+import BackupRecoveryDashboard from '@/components/infrastructure/BackupRecoveryDashboard';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -696,7 +696,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             <ClusterOverview timeRange={timeRange} />
           </div>
         )}
-        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <BaseInfrastructureTab />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <ConfigurationTab />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NODES && <NodeList />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.RESOURCES && <ResourceCharts timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.STORAGE && <StorageIOMetrics timeRange={timeRange} />}
