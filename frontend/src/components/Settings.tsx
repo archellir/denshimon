@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import { Save, RefreshCw, Database, Shield, Monitor, Bell } from 'lucide-react';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
+import { StorageKey } from '@/constants';
 
 interface SettingsData {
   // Metrics settings
@@ -54,7 +55,7 @@ const Settings: FC = () => {
   }, []);
 
   const loadSettings = () => {
-    const savedSettings = localStorage.getItem('denshimon_settings');
+    const savedSettings = localStorage.getItem(StorageKey.SETTINGS);
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
@@ -71,7 +72,7 @@ const Settings: FC = () => {
     
     try {
       // Save to localStorage (in production, would save to backend API)
-      localStorage.setItem('denshimon_settings', JSON.stringify(settings));
+      localStorage.setItem(StorageKey.SETTINGS, JSON.stringify(settings));
       
       // Update metrics store with new values
       setRefreshInterval(settings.refreshInterval);
