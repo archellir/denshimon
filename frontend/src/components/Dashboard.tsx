@@ -385,11 +385,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
               </button>
             );
           case InfrastructureTab.NODES:
-            return (
-              <span className="text-sm font-mono opacity-60">
-                {clusterMetrics ? `${clusterMetrics.total_nodes} NODES` : 'CONNECTING...'}
-              </span>
-            );
+            return null;
           case InfrastructureTab.RESOURCES:
             return null;
           case InfrastructureTab.STORAGE:
