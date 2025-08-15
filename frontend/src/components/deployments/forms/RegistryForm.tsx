@@ -1,7 +1,7 @@
 import { useState, type FC } from 'react';
 import { X, Save } from 'lucide-react';
 import useDeploymentStore from '@/stores/deploymentStore';
-import { RegistryType, RegistryStatus } from '@/constants';
+import { RegistryType, RegistryStatus, CSS_CLASSES } from '@/constants';
 import type { Registry } from '@/types/deployments';
 
 interface RegistryFormProps {
@@ -85,27 +85,27 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
           {/* Basic Information */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-mono text-gray-400 mb-2">
+              <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                 REGISTRY NAME *
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                className={CSS_CLASSES.FORM.INPUT_BASE}
                 placeholder="My Registry"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-mono text-gray-400 mb-2">
+              <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                 REGISTRY TYPE *
               </label>
               <select
                 value={formData.type}
                 onChange={(e) => handleTypeChange(e.target.value as typeof formData.type)}
-                className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                className={CSS_CLASSES.FORM.SELECT_BASE}
               >
                 {registryTypes.map(type => (
                   <option key={type.value} value={type.value}>
@@ -116,14 +116,14 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-mono text-gray-400 mb-2">
+              <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                 REGISTRY URL *
               </label>
               <input
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                className={CSS_CLASSES.FORM.INPUT_BASE}
                 placeholder={selectedType?.defaultUrl}
                 required
               />
@@ -131,14 +131,14 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
 
             {formData.type !== 'dockerhub' && (
               <div>
-                <label className="block text-sm font-mono text-gray-400 mb-2">
+                <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                   NAMESPACE
                 </label>
                 <input
                   type="text"
                   value={formData.namespace}
                   onChange={(e) => setFormData(prev => ({ ...prev, namespace: e.target.value }))}
-                  className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                  className={CSS_CLASSES.FORM.INPUT_BASE}
                   placeholder="organization or user"
                 />
                 <p className="text-xs text-gray-400 mt-1">
@@ -154,14 +154,14 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
             
             {useTokenAuth ? (
               <div>
-                <label className="block text-sm font-mono text-gray-400 mb-2">
+                <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                   ACCESS TOKEN
                 </label>
                 <input
                   type="password"
                   value={formData.token}
                   onChange={(e) => setFormData(prev => ({ ...prev, token: e.target.value }))}
-                  className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                  className={CSS_CLASSES.FORM.INPUT_BASE}
                   placeholder="Personal access token or API key"
                 />
                 <p className="text-xs text-gray-400 mt-1">
@@ -173,26 +173,26 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-mono text-gray-400 mb-2">
+                  <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                     USERNAME
                   </label>
                   <input
                     type="text"
                     value={formData.username}
                     onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                    className={CSS_CLASSES.FORM.INPUT_BASE}
                     placeholder="username"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-mono text-gray-400 mb-2">
+                  <label className={CSS_CLASSES.FORM.LABEL_BASE}>
                     PASSWORD
                   </label>
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className="w-full bg-black border border-white text-white px-3 py-2 font-mono focus:outline-none focus:border-green-400"
+                    className={CSS_CLASSES.FORM.INPUT_BASE}
                     placeholder="password or token"
                   />
                 </div>
@@ -209,14 +209,14 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono"
+              className={CSS_CLASSES.FORM.BUTTON_SECONDARY}
             >
               CANCEL
             </button>
             <button
               type="submit"
               disabled={loading.creating}
-              className="flex items-center space-x-2 px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-mono"
+              className={CSS_CLASSES.FORM.BUTTON_PRIMARY}
             >
               {loading.creating ? (
                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
