@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { 
   Activity, 
@@ -13,13 +13,12 @@ import {
   Eye,
   BarChart3,
   PieChart,
-  Server,
-  ChevronDown,
-  ChevronUp
+  Server
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
 import { mockDatabaseStats } from '@/mocks';
+import CustomSelector from '@/components/common/CustomSelector';
 
 interface MetricCard {
   title: string;
@@ -41,10 +40,6 @@ const DatabaseMonitoring: FC = () => {
   const [selectedConnection, setSelectedConnection] = useState<string>('');
   const [refreshInterval, setRefreshInterval] = useState<number>(30);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-  const [connectionDropdownOpen, setConnectionDropdownOpen] = useState<boolean>(false);
-  const [intervalDropdownOpen, setIntervalDropdownOpen] = useState<boolean>(false);
-  const connectionDropdownRef = useRef<HTMLDivElement>(null);
-  const intervalDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchConnections();
@@ -58,25 +53,6 @@ const DatabaseMonitoring: FC = () => {
     return () => clearInterval(interval);
   }, [refreshInterval]);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (connectionDropdownRef.current && !connectionDropdownRef.current.contains(event.target as Node)) {
-        setConnectionDropdownOpen(false);
-      }
-      if (intervalDropdownRef.current && !intervalDropdownRef.current.contains(event.target as Node)) {
-        setIntervalDropdownOpen(false);
-      }
-    };
-
-    if (connectionDropdownOpen || intervalDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [connectionDropdownOpen, intervalDropdownOpen]);
 
   const connectedConnections = connections.filter(conn => 
     conn.status === DatabaseStatus.CONNECTED
@@ -162,119 +138,42 @@ const DatabaseMonitoring: FC = () => {
         <div className="flex items-center space-x-4">
           <Database size={16} />
           <label className="font-mono text-sm">DATABASE CONNECTION:</label>
-          <div className="relative" ref={connectionDropdownRef}>
-            <button
-              onClick={() => setConnectionDropdownOpen(!connectionDropdownOpen)}
-              className="bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between min-w-72"
-            >
-              <div className="flex items-center space-x-2">
-                {selectedConnection ? (
-                  <>
-                    <Zap size={12} className="text-green-400" />
-                    <span>
-                      {connectedConnections.find(conn => conn.id === selectedConnection)?.name} 
-                      ({connectedConnections.find(conn => conn.id === selectedConnection)?.type.toUpperCase()})
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Database size={12} className="opacity-60" />
-                    <span className="opacity-60">Select Connection to Monitor</span>
-                  </>
-                )}
-              </div>
-              {connectionDropdownOpen ? (
-                <ChevronUp size={16} className="text-green-400" />
-              ) : (
-                <ChevronDown size={16} className="opacity-60" />
-              )}
-            </button>
-            
-            {connectionDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0 max-h-48 overflow-y-auto">
-                <button
-                  onClick={() => {
-                    setSelectedConnection('');
-                    setConnectionDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 font-mono text-sm hover:bg-white/10 transition-colors flex items-center space-x-2 border-b border-white/20"
-                >
-                  <Database size={12} className="opacity-60" />
-                  <span className="opacity-60">Select Connection to Monitor</span>
-                </button>
-                {connectedConnections.map(conn => (
-                  <button
-                    key={conn.id}
-                    onClick={() => {
-                      setSelectedConnection(conn.id);
-                      setConnectionDropdownOpen(false);
-                      fetchStats(conn.id);
-                    }}
-                    className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center justify-between border-b border-white/10 last:border-b-0 ${
-                      selectedConnection === conn.id ? 'bg-green-400/10 text-green-400' : ''
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Zap size={12} className="text-green-400" />
-                      <span>{conn.name} ({conn.type.toUpperCase()})</span>
-                    </div>
-                    {conn.status === DatabaseStatus.CONNECTED && (
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <CustomSelector
+            value={selectedConnection}
+            options={connectedConnections.map(conn => ({
+              value: conn.id,
+              label: `${conn.name} (${conn.type.toUpperCase()})`,
+              description: conn.status === DatabaseStatus.CONNECTED ? 'Connected' : conn.status
+            }))}
+            onChange={(value) => {
+              setSelectedConnection(value);
+              if (value) {
+                fetchStats(value);
+              }
+            }}
+            placeholder="Select Connection to Monitor"
+            icon={Zap}
+            size="md"
+            variant="detailed"
+            className="min-w-72"
+          />
         </div>
         <div className="flex items-center space-x-2">
           <label className="font-mono text-sm">REFRESH INTERVAL:</label>
-          <div className="relative" ref={intervalDropdownRef}>
-            <button
-              onClick={() => setIntervalDropdownOpen(!intervalDropdownOpen)}
-              className="bg-black border border-white text-white px-2 py-1 font-mono text-sm focus:outline-none focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between min-w-16"
-            >
-              <div className="flex items-center space-x-2">
-                <Clock size={12} className="text-green-400" />
-                <span>
-                  {refreshInterval === 10 ? '10s' :
-                   refreshInterval === 30 ? '30s' :
-                   refreshInterval === 60 ? '1m' :
-                   refreshInterval === 300 ? '5m' : `${refreshInterval}s`}
-                </span>
-              </div>
-              {intervalDropdownOpen ? (
-                <ChevronUp size={14} className="text-green-400" />
-              ) : (
-                <ChevronDown size={14} className="opacity-60" />
-              )}
-            </button>
-            
-            {intervalDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
-                {[
-                  { value: 10, label: '10s' },
-                  { value: 30, label: '30s' },
-                  { value: 60, label: '1m' },
-                  { value: 300, label: '5m' }
-                ].map(interval => (
-                  <button
-                    key={interval.value}
-                    onClick={() => {
-                      setRefreshInterval(interval.value);
-                      setIntervalDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-2 py-1 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
-                      refreshInterval === interval.value ? 'bg-green-400/10 text-green-400' : ''
-                    }`}
-                  >
-                    <Clock size={12} className="text-green-400" />
-                    <span>{interval.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <CustomSelector
+            value={refreshInterval.toString()}
+            options={[
+              { value: '10', label: '10s' },
+              { value: '30', label: '30s' },
+              { value: '60', label: '1m' },
+              { value: '300', label: '5m' }
+            ]}
+            onChange={(value) => setRefreshInterval(parseInt(value))}
+            icon={Clock}
+            size="sm"
+            variant="compact"
+            className="min-w-20"
+          />
         </div>
       </div>
 
