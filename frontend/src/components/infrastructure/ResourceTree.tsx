@@ -6,11 +6,12 @@ import ResourceActions, { handleResourceAction } from '@components/common/Resour
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import { API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
+import { KubernetesResource } from '@/types';
 
 // Mock Kubernetes resources for demonstration
-const generateMockResources = (): any[] => {
+const generateMockResources = (): KubernetesResource[] => {
   const namespaces = ['production', 'staging', 'default'];
-  const resources: any[] = [];
+  const resources: KubernetesResource[] = [];
 
   namespaces.forEach((ns, nsIndex) => {
     // Namespace
@@ -233,7 +234,7 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
           fetch(API_ENDPOINTS.KUBERNETES.STORAGE, { headers })
         ]);
         
-        const allResources: any[] = [];
+        const allResources: KubernetesResource[] = [];
         
         // Process each API response
         if (nodesResponse.status === 'fulfilled' && nodesResponse.value.ok) {
