@@ -121,11 +121,11 @@ const NamespaceMetrics: FC = () => {
         </div>
       )}
 
-      {/* VPS Namespace Summary */}
+      {/* Namespace Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="border border-white p-4">
           <div className="text-2xl font-mono">{filteredAndSortedNamespaces.length}</div>
-          <div className="text-xs font-mono opacity-60">VPS NAMESPACES</div>
+          <div className="text-xs font-mono opacity-60">NAMESPACES</div>
         </div>
         <div className="border border-white p-4">
           <div className="text-2xl font-mono text-blue-400">{totalStats.totalPods}</div>

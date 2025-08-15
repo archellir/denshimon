@@ -122,9 +122,9 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     return (
     <div className="space-y-6">
 
-      {/* VPS Resource Usage Over Time */}
+      {/* Resource Usage Over Time */}
       <div className="border border-white p-4 h-96">
-          <h3 className="font-mono text-sm mb-4">VPS RESOURCE USAGE OVER TIME</h3>
+          <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
             {isLoadingHistory ? (
               <div className="h-full">
@@ -180,7 +180,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           </div>
         </div>
 
-      {/* VPS Status & Capacity */}
+      {/* Status & Capacity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pod Status */}
         <div className="border border-white p-4">
@@ -222,9 +222,9 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           </div>
         </div>
 
-        {/* VPS Capacity Status */}
+        {/* Capacity Status */}
         <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">VPS CAPACITY STATUS</h3>
+          <h3 className="font-mono text-sm mb-4">CAPACITY STATUS</h3>
           <div className="space-y-4 mt-6">
             {/* CPU Capacity */}
             <div>

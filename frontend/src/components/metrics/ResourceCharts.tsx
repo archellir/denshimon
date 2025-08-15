@@ -190,10 +190,10 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
       </div>
 
 
-      {/* VPS Resource Summary */}
+      {/* Resource Summary */}
       {nodeResourceData.length > 0 && (
         <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">VPS DEPLOYMENT CAPACITY</h3>
+          <h3 className="font-mono text-sm mb-4">DEPLOYMENT CAPACITY</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Current State */}
             <div>
