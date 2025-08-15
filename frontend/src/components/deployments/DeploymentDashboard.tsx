@@ -4,6 +4,7 @@ import RegistriesTab from './tabs/RegistriesTab';
 import ImagesTab from './tabs/ImagesTab';
 import DeploymentsTab from './tabs/DeploymentsTab';
 import HistoryTab from './tabs/HistoryTab';
+import GitOpsTab from './tabs/GitOpsTab';
 import { DeploymentsTab as DeploymentsTabEnum } from '@/constants';
 
 interface DeploymentDashboardProps {
@@ -42,6 +43,8 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ activeTab = Deploym
         return <DeploymentsTab />;
       case DeploymentsTabEnum.HISTORY:
         return <HistoryTab />;
+      case DeploymentsTabEnum.GITOPS:
+        return <GitOpsTab />;
       default:
         return <DeploymentsTab />;
     }

@@ -219,7 +219,8 @@ export enum DeploymentsTab {
   DEPLOYMENTS = 'deployments',
   HISTORY = 'history',
   IMAGES = 'images',
-  REGISTRIES = 'registries'
+  REGISTRIES = 'registries',
+  GITOPS = 'gitops'
 }
 
 export enum DatabaseTab {
@@ -446,6 +447,7 @@ export const UI_LABELS = {
   REGISTRIES: 'Registries',
   IMAGES: 'Images',
   HISTORY: 'History',
+  GITOPS: 'GitOps',
   LOGS: 'Log Data',
   EVENTS: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
@@ -857,6 +859,45 @@ export enum GiteaWorkflowConclusion {
   FAILURE = 'failure',
   CANCELLED = 'cancelled',
   SKIPPED = 'skipped'
+}
+
+// GITOPS ENUMS
+
+export enum GitOpsRepositoryStatus {
+  PENDING = Status.PENDING,
+  ACTIVE = 'active',
+  ERROR = Status.ERROR,
+  SYNCING = 'syncing'
+}
+
+export enum GitOpsApplicationHealth {
+  HEALTHY = Status.HEALTHY,
+  DEGRADED = Status.DEGRADED,
+  SUSPENDED = Status.SUSPENDED,
+  MISSING = Status.MISSING,
+  UNKNOWN = Status.UNKNOWN
+}
+
+export enum GitOpsApplicationSyncStatus {
+  SYNCED = SyncStatus.SYNCED,
+  OUT_OF_SYNC = SyncStatus.OUT_OF_SYNC,
+  UNKNOWN = SyncStatus.UNKNOWN
+}
+
+export enum GitOpsDeploymentStatus {
+  DEPLOYED = 'deployed',
+  FAILED = 'failed',
+  PENDING = Status.PENDING,
+  ROLLED_BACK = 'rolled_back'
+}
+
+export enum GitOpsResourceType {
+  DEPLOYMENT = 'Deployment',
+  SERVICE = 'Service',
+  INGRESS = 'Ingress',
+  CONFIG_MAP = 'ConfigMap',
+  HPA = 'HorizontalPodAutoscaler',
+  FULL = 'Full'
 }
 
 // CHART TYPES
