@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Rocket, RotateCcw, Trash2, X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
+import { Rocket, RotateCcw, Trash2, X, Container, Database, Server, Globe, Shield, Activity, Scale } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import { API_ENDPOINTS } from '@constants';
 import useModalKeyboard from '@hooks/useModalKeyboard';
 import CustomSelector from '@components/common/CustomSelector';
+import CustomDialog from '@components/common/CustomDialog';
 
 
 interface ContainerImage {
@@ -36,6 +37,22 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
   const [images, setImages] = useState<ContainerImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
   const [deploying, setDeploying] = useState(false);
+
+  // Dialog states
+  const [scaleDialog, setScaleDialog] = useState<{ open: boolean; deployment: Deployment | null; value: string }>({ 
+    open: false, 
+    deployment: null, 
+    value: '' 
+  });
+  const [restartDialog, setRestartDialog] = useState<{ open: boolean; deployment: Deployment | null }>({ 
+    open: false, 
+    deployment: null 
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; deployment: Deployment | null }>({ 
+    open: false, 
+    deployment: null 
+  });
+  const [actionLoading, setActionLoading] = useState(false);
   const [deployForm, setDeployForm] = useState({
     name: '',
     namespace: 'base-infra',
@@ -286,22 +303,67 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
     }
   };
 
-  const handleScale = async (deployment: Deployment) => {
-    const newReplicas = prompt(`Scale ${deployment.name} (current: ${deployment.replicas}):`, deployment.replicas.toString());
-    if (newReplicas && !isNaN(Number(newReplicas))) {
-      await scaleDeployment(deployment.id, Number(newReplicas));
+  const handleScale = (deployment: Deployment) => {
+    setScaleDialog({ 
+      open: true, 
+      deployment, 
+      value: deployment.replicas.toString() 
+    });
+  };
+
+  const handleRestart = (deployment: Deployment) => {
+    setRestartDialog({ 
+      open: true, 
+      deployment 
+    });
+  };
+
+  const handleDelete = (deployment: Deployment) => {
+    setDeleteDialog({ 
+      open: true, 
+      deployment 
+    });
+  };
+
+  const onScaleConfirm = async () => {
+    if (!scaleDialog.deployment || !scaleDialog.value || isNaN(Number(scaleDialog.value))) return;
+    
+    try {
+      setActionLoading(true);
+      await scaleDeployment(scaleDialog.deployment.id, Number(scaleDialog.value));
+      setScaleDialog({ open: false, deployment: null, value: '' });
+    } catch (error) {
+      console.error('Failed to scale deployment:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleRestart = async (deployment: Deployment) => {
-    if (confirm(`Restart ${deployment.name}?`)) {
-      await restartDeployment(deployment.id);
+  const onRestartConfirm = async () => {
+    if (!restartDialog.deployment) return;
+    
+    try {
+      setActionLoading(true);
+      await restartDeployment(restartDialog.deployment.id);
+      setRestartDialog({ open: false, deployment: null });
+    } catch (error) {
+      console.error('Failed to restart deployment:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleDelete = async (deployment: Deployment) => {
-    if (confirm(`Delete ${deployment.name}? This cannot be undone.`)) {
-      await deleteDeployment(deployment.id);
+  const onDeleteConfirm = async () => {
+    if (!deleteDialog.deployment) return;
+    
+    try {
+      setActionLoading(true);
+      await deleteDeployment(deleteDialog.deployment.id);
+      setDeleteDialog({ open: false, deployment: null });
+    } catch (error) {
+      console.error('Failed to delete deployment:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -1049,6 +1111,58 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
           </div>
         </div>
       )}
+
+      {/* Scale Dialog */}
+      <CustomDialog
+        isOpen={scaleDialog.open}
+        onClose={() => setScaleDialog({ open: false, deployment: null, value: '' })}
+        onConfirm={onScaleConfirm}
+        title="Scale Deployment"
+        message={`Adjust the number of replicas for ${scaleDialog.deployment?.name?.toUpperCase()}`}
+        confirmText="SCALE"
+        cancelText="CANCEL"
+        variant="info"
+        icon={Scale}
+        loading={actionLoading}
+        inputField={{
+          label: "Number of Replicas",
+          type: "number",
+          value: scaleDialog.value,
+          onChange: (value) => setScaleDialog(prev => ({ ...prev, value })),
+          placeholder: "Enter replica count",
+          min: 0,
+          max: 100,
+          required: true
+        }}
+      />
+
+      {/* Restart Dialog */}
+      <CustomDialog
+        isOpen={restartDialog.open}
+        onClose={() => setRestartDialog({ open: false, deployment: null })}
+        onConfirm={onRestartConfirm}
+        title="Restart Deployment"
+        message={`Are you sure you want to restart ${restartDialog.deployment?.name?.toUpperCase()}? This will trigger a rolling restart of all pods.`}
+        confirmText="RESTART"
+        cancelText="CANCEL"
+        variant="warning"
+        icon={RotateCcw}
+        loading={actionLoading}
+      />
+
+      {/* Delete Dialog */}
+      <CustomDialog
+        isOpen={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, deployment: null })}
+        onConfirm={onDeleteConfirm}
+        title="Delete Deployment"
+        message={`Are you sure you want to permanently delete ${deleteDialog.deployment?.name?.toUpperCase()}? This action cannot be undone and will remove all associated resources.`}
+        confirmText="DELETE"
+        cancelText="CANCEL"
+        variant="danger"
+        icon={Trash2}
+        loading={actionLoading}
+      />
     </>
   );
 };
