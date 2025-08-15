@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { PrimaryTab, DeploymentsTab } from '@/constants';
 
 export interface SearchResult {
   id: string;
@@ -144,7 +145,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         namespace: pod.namespace,
         description: `Pod in ${pod.namespace} namespace`,
         location: {
-          primaryTab: 'workloads',
+          primaryTab: PrimaryTab.WORKLOADS,
           secondaryTab: 'pods'
         },
         matchedFields: getMatchedFields(lowerQuery, pod.name, pod.namespace),
@@ -163,7 +164,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: node.name,
         description: 'Kubernetes node',
         location: {
-          primaryTab: 'infrastructure',
+          primaryTab: PrimaryTab.INFRASTRUCTURE,
           secondaryTab: 'nodes'
         },
         matchedFields: getMatchedFields(lowerQuery, node.name),
@@ -183,7 +184,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         namespace: service.namespace,
         description: `Service in ${service.namespace} namespace`,
         location: {
-          primaryTab: 'workloads',
+          primaryTab: PrimaryTab.WORKLOADS,
           secondaryTab: 'services'
         },
         matchedFields: getMatchedFields(lowerQuery, service.name, service.namespace),
@@ -202,7 +203,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: ns.name,
         description: 'Kubernetes namespace',
         location: {
-          primaryTab: 'workloads',
+          primaryTab: PrimaryTab.WORKLOADS,
           secondaryTab: 'namespaces'
         },
         matchedFields: getMatchedFields(lowerQuery, ns.name),
@@ -222,8 +223,8 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         namespace: deployment.namespace,
         description: `Deployment in ${deployment.namespace} namespace`,
         location: {
-          primaryTab: 'deployments',
-          secondaryTab: 'deployments'
+          primaryTab: PrimaryTab.DEPLOYMENTS,
+          secondaryTab: DeploymentsTab.DEPLOYMENTS
         },
         matchedFields: getMatchedFields(lowerQuery, deployment.name, deployment.namespace),
         relevanceScore: relevance
@@ -241,7 +242,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: registry.name,
         description: `${registry.type} registry at ${registry.url}`,
         location: {
-          primaryTab: 'deployments',
+          primaryTab: PrimaryTab.DEPLOYMENTS,
           secondaryTab: 'registries'
         },
         matchedFields: getMatchedFields(lowerQuery, registry.name, registry.type, registry.url),
@@ -261,7 +262,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: fullName,
         description: `Container image from ${image.registry}`,
         location: {
-          primaryTab: 'deployments',
+          primaryTab: PrimaryTab.DEPLOYMENTS,
           secondaryTab: 'images'
         },
         matchedFields: getMatchedFields(lowerQuery, image.repository, image.tag, fullName),
@@ -280,7 +281,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
         name: endpoint.name,
         description: `API endpoint for ${endpoint.service}`,
         location: {
-          primaryTab: 'mesh',
+          primaryTab: PrimaryTab.MESH,
           secondaryTab: 'endpoints'
         },
         matchedFields: getMatchedFields(lowerQuery, endpoint.name, endpoint.service),
