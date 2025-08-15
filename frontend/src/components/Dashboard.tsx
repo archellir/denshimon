@@ -396,11 +396,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           case InfrastructureTab.RESOURCES:
             return null;
           case InfrastructureTab.STORAGE:
-            return (
-              <span className="text-sm font-mono opacity-60">
-                {clusterMetrics ? `${(clusterMetrics.storage_usage.usage_percent).toFixed(1)}% STORAGE` : 'CONNECTING...'}
-              </span>
-            );
+            return null;
           default:
             return null;
         }
