@@ -17,6 +17,7 @@ import {
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
 
 interface WorkloadsOverviewProps {
   timeRange?: string;
@@ -105,12 +106,12 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
     ].filter(item => item.pods > 0);
   }, [clusterMetrics]);
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white">{`Time: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value}`}
             </p>
@@ -121,7 +122,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
     return null;
   };
 
-  const CustomPieTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  const CustomPieTooltip = ({ active, payload }: PieChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
@@ -134,7 +135,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
     return null;
   };
 
-  const CustomBarTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomBarTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
