@@ -395,10 +395,9 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
               })}
             </div>
             )}
-          </div>
 
-          {/* Service Details */}
-          <div className="border border-white p-4">
+            {/* Service Details */}
+            <div className="border border-white p-4">
             <h3 className="font-mono text-sm mb-4">SERVICE DETAILS</h3>
             {selectedServiceData ? (
               <div className="space-y-4">
@@ -493,7 +492,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                 <div className="text-sm font-mono">Select a service to view details</div>
               </div>
             )}
-          </div>
+            </div>
           </div>
         </div>
       )}
