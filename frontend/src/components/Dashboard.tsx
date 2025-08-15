@@ -73,6 +73,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   // Database management state
   const [showAddDatabaseModal, setShowAddDatabaseModal] = useState(false);
   const [selectedDatabaseConnection, setSelectedDatabaseConnection] = useState<string | null>(null);
+  
+  // Deployment management state
+  const [showDeployModal, setShowDeployModal] = useState(false);
 
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
@@ -502,6 +505,16 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           );
         }
         switch (secondaryTab) {
+          case DeploymentsTab.DEPLOYMENTS:
+            return (
+              <button
+                onClick={() => setShowDeployModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm uppercase tracking-wider"
+              >
+                <Plus size={16} />
+                <span>DEPLOY APPLICATION</span>
+              </button>
+            );
           case DeploymentsTab.REGISTRIES:
             return (
               <button
@@ -715,6 +728,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.DEPLOYMENTS && (
           <DeploymentDashboard 
             activeTab={activeSecondaryTab}
+            showDeployModal={showDeployModal}
+            setShowDeployModal={setShowDeployModal}
           />
         )}
         
