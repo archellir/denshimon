@@ -99,7 +99,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
   const [showShortcutsModal, setShowShortcutsModal] = useState<boolean>(false)
   const [showDashboardSettings, setShowDashboardSettings] = useState<boolean>(false)
   const [showHelp, setShowHelp] = useState<boolean>(() => {
-    const saved = localStorage.getItem('denshimon-show-help')
+    const saved = localStorage.getItem('denshimon-show-tab-description')
     return saved ? JSON.parse(saved) : false
   })
   const navigate = useNavigate()
@@ -113,7 +113,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
 
   // Save help state to localStorage
   useEffect(() => {
-    localStorage.setItem('denshimon-show-help', JSON.stringify(showHelp))
+    localStorage.setItem('denshimon-show-tab-description', JSON.stringify(showHelp))
   }, [showHelp])
 
   // Handle refresh current view
