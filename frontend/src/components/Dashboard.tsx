@@ -32,6 +32,7 @@ import EnhancedLogs from '@components/observability/EnhancedLogs';
 import LiveStreams from '@components/observability/LiveStreams';
 import LogAnalytics from '@components/observability/LogAnalytics';
 import DeploymentDashboard from '@components/deployments/DeploymentDashboard';
+import GitOpsTab from '@components/deployments/tabs/GitOpsTab';
 import PodsView from '@components/PodsView';
 import ResourceTree from '@components/infrastructure/ResourceTree';
 import StorageIOMetrics from '@components/storage/StorageIOMetrics';
@@ -86,7 +87,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const secondaryTabs: Record<string, Array<{ id: string; label: string; icon: LucideIcon }>> = {
     [PrimaryTab.INFRASTRUCTURE]: [
       { id: InfrastructureTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
-      { id: InfrastructureTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
+      { id: InfrastructureTab.CONFIGURATION, label: UI_LABELS.CONFIGURATION, icon: GitBranch },
       { id: InfrastructureTab.BACKUP, label: UI_LABELS.BACKUP, icon: HardDrive },
       { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
       { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
@@ -96,6 +97,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     ],
     [PrimaryTab.WORKLOADS]: [
       { id: WorkloadsTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
+      { id: WorkloadsTab.HIERARCHY, label: UI_LABELS.HIERARCHY, icon: TreePine },
       { id: WorkloadsTab.PODS, label: UI_LABELS.PODS, icon: Database },
       { id: WorkloadsTab.SERVICES, label: UI_LABELS.SERVICES, icon: Network },
       { id: WorkloadsTab.NAMESPACES, label: UI_LABELS.NAMESPACES, icon: HardDrive },
@@ -112,7 +114,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: DeploymentsTab.HISTORY, label: UI_LABELS.HISTORY, icon: History },
       { id: DeploymentsTab.IMAGES, label: UI_LABELS.IMAGES, icon: Package },
       { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
-      { id: DeploymentsTab.GITOPS, label: 'GITOPS', icon: GitBranch },
     ],
     [PrimaryTab.DATABASE]: [
       { id: DatabaseTab.BROWSER, label: UI_LABELS.BROWSER, icon: Eye },
@@ -599,16 +600,17 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             <ClusterOverview timeRange={timeRange} />
           </div>
         )}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <GitOpsTab />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NODES && <NodeList />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.RESOURCES && <ResourceCharts timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.STORAGE && <StorageIOMetrics timeRange={timeRange} />}
-        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.HIERARCHY && <ResourceTree />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NETWORK && <NetworkTraffic timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CERTIFICATES && <CertificateHealthDashboard />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.BACKUP && <BackupRecoveryDashboard />}
         
         {/* Workloads Tab Content */}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.OVERVIEW && <WorkloadsOverview timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.HIERARCHY && <ResourceTree />}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.PODS && <PodsView selectedNamespace={selectedNamespace} />}
         {activePrimaryTab === PrimaryTab.WORKLOADS && activeSecondaryTab === WorkloadsTab.SERVICES && <ServicesList 
           selectedNamespace={selectedNamespace} 

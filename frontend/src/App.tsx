@@ -371,16 +371,17 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   const secondaryTabLabels: Record<string, Record<string, string>> = {
     [PrimaryTab.INFRASTRUCTURE]: {
       [InfrastructureTab.OVERVIEW]: UI_LABELS.OVERVIEW,
+      [InfrastructureTab.CONFIGURATION]: UI_LABELS.CONFIGURATION,
       [InfrastructureTab.NODES]: UI_LABELS.NODES, 
       [InfrastructureTab.RESOURCES]: UI_LABELS.RESOURCES,
       [InfrastructureTab.STORAGE]: UI_LABELS.STORAGE,
-      [InfrastructureTab.HIERARCHY]: UI_LABELS.HIERARCHY,
       [InfrastructureTab.NETWORK]: UI_LABELS.NETWORK,
       [InfrastructureTab.CERTIFICATES]: UI_LABELS.CERTIFICATES,
       [InfrastructureTab.BACKUP]: UI_LABELS.BACKUP
     },
     [PrimaryTab.WORKLOADS]: {
       [WorkloadsTab.OVERVIEW]: UI_LABELS.OVERVIEW,
+      [WorkloadsTab.HIERARCHY]: UI_LABELS.HIERARCHY,
       [WorkloadsTab.PODS]: UI_LABELS.PODS,
       [WorkloadsTab.SERVICES]: UI_LABELS.SERVICES, 
       [WorkloadsTab.NAMESPACES]: UI_LABELS.NAMESPACES

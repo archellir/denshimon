@@ -191,7 +191,7 @@ export enum PrimaryTab {
 
 export enum InfrastructureTab {
   OVERVIEW = 'overview',
-  HIERARCHY = 'hierarchy',
+  CONFIGURATION = 'configuration',
   BACKUP = 'backup',
   CERTIFICATES = 'certificates',
   NETWORK = 'network',
@@ -202,6 +202,7 @@ export enum InfrastructureTab {
 
 export enum WorkloadsTab {
   OVERVIEW = 'overview',
+  HIERARCHY = 'hierarchy',
   PODS = 'pods',
   SERVICES = 'services',
   NAMESPACES = 'namespaces'
@@ -219,8 +220,7 @@ export enum DeploymentsTab {
   DEPLOYMENTS = 'deployments',
   HISTORY = 'history',
   IMAGES = 'images',
-  REGISTRIES = 'registries',
-  GITOPS = 'gitops'
+  REGISTRIES = 'registries'
 }
 
 export enum DatabaseTab {
@@ -447,7 +447,7 @@ export const UI_LABELS = {
   REGISTRIES: 'Registries',
   IMAGES: 'Images',
   HISTORY: 'History',
-  GITOPS: 'GitOps',
+  CONFIGURATION: 'Configuration',
   LOGS: 'Log Data',
   EVENTS: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
