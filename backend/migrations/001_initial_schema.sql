@@ -158,12 +158,64 @@ CREATE INDEX IF NOT EXISTS idx_backup_alerts_timestamp ON backup_alerts(timestam
 CREATE INDEX IF NOT EXISTS idx_backup_alerts_acknowledged ON backup_alerts(acknowledged);
 CREATE INDEX IF NOT EXISTS idx_backup_alerts_job_id ON backup_alerts(job_id);
 
--- Insert default settings
-INSERT INTO settings (key, value, description) VALUES 
-    ('app_name', '"Denshimon"', 'Application name'),
-    ('theme', '"cyberpunk"', 'UI theme'),
-    ('default_namespace', '"default"', 'Default Kubernetes namespace'),
-    ('log_level', '"info"', 'Application log level'),
-    ('metrics_retention', '"30d"', 'Metrics retention period'),
-    ('auto_refresh_interval', '30', 'Auto refresh interval in seconds')
-ON CONFLICT (key) DO NOTHING;
+-- GitOps repositories table
+CREATE TABLE IF NOT EXISTS gitops_repositories (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    url VARCHAR(500) NOT NULL,
+    branch VARCHAR(255) NOT NULL DEFAULT 'main',
+    path VARCHAR(500) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- pending, active, error, syncing
+    description TEXT,
+    last_sync TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- GitOps applications table
+CREATE TABLE IF NOT EXISTS gitops_applications (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    namespace VARCHAR(255) NOT NULL,
+    repository_id VARCHAR(255),
+    path VARCHAR(500),
+    image VARCHAR(500) NOT NULL,
+    replicas INTEGER NOT NULL DEFAULT 1,
+    resources TEXT, -- JSON resources configuration
+    environment TEXT, -- JSON environment variables
+    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- pending, deployed, failed, updating
+    health VARCHAR(50) NOT NULL DEFAULT 'unknown', -- healthy, degraded, suspended, missing, unknown
+    sync_status VARCHAR(50) NOT NULL DEFAULT 'out-of-sync', -- synced, out-of-sync, unknown
+    last_deployed TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (repository_id) REFERENCES gitops_repositories(id) ON DELETE SET NULL
+);
+
+-- GitOps deployment history table
+CREATE TABLE IF NOT EXISTS gitops_deployments (
+    id VARCHAR(255) PRIMARY KEY,
+    application_id VARCHAR(255) NOT NULL,
+    image VARCHAR(500) NOT NULL,
+    replicas INTEGER NOT NULL,
+    environment TEXT, -- JSON environment variables
+    git_hash VARCHAR(255),
+    status VARCHAR(50) NOT NULL, -- deployed, failed, pending, rolled_back
+    message TEXT,
+    deployed_by VARCHAR(255) NOT NULL,
+    deployed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES gitops_applications(id) ON DELETE CASCADE
+);
+
+-- Create indexes for GitOps tables
+CREATE INDEX IF NOT EXISTS idx_gitops_repositories_status ON gitops_repositories(status);
+CREATE INDEX IF NOT EXISTS idx_gitops_repositories_last_sync ON gitops_repositories(last_sync);
+
+CREATE INDEX IF NOT EXISTS idx_gitops_applications_namespace ON gitops_applications(namespace);
+CREATE INDEX IF NOT EXISTS idx_gitops_applications_repository_id ON gitops_applications(repository_id);
+CREATE INDEX IF NOT EXISTS idx_gitops_applications_status ON gitops_applications(status);
+CREATE INDEX IF NOT EXISTS idx_gitops_applications_sync_status ON gitops_applications(sync_status);
+
+CREATE INDEX IF NOT EXISTS idx_gitops_deployments_application_id ON gitops_deployments(application_id);
+CREATE INDEX IF NOT EXISTS idx_gitops_deployments_deployed_at ON gitops_deployments(deployed_at);
+CREATE INDEX IF NOT EXISTS idx_gitops_deployments_status ON gitops_deployments(status);
