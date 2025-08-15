@@ -690,18 +690,53 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                           </div>
                           <div>
                             <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
-                            <select
-                              value={deployForm.storage.accessMode}
-                              onChange={(e) => setDeployForm(prev => ({
-                                ...prev,
-                                storage: {...prev.storage, accessMode: e.target.value}
-                              }))}
-                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                            >
-                              <option value="ReadWriteOnce">READ WRITE ONCE</option>
-                              <option value="ReadOnlyMany">READ ONLY MANY</option>
-                              <option value="ReadWriteMany">READ WRITE MANY</option>
-                            </select>
+                            <div className="relative" ref={accessModeDropdownRef}>
+                              <button
+                                onClick={() => setAccessModeDropdownOpen(!accessModeDropdownOpen)}
+                                className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <Shield size={12} className="text-green-400" />
+                                  <span>
+                                    {deployForm.storage.accessMode === 'ReadWriteOnce' ? 'READ WRITE ONCE' :
+                                     deployForm.storage.accessMode === 'ReadOnlyMany' ? 'READ ONLY MANY' :
+                                     deployForm.storage.accessMode === 'ReadWriteMany' ? 'READ WRITE MANY' : deployForm.storage.accessMode}
+                                  </span>
+                                </div>
+                                {accessModeDropdownOpen ? (
+                                  <ChevronUp size={14} className="text-green-400" />
+                                ) : (
+                                  <ChevronDown size={14} className="opacity-60" />
+                                )}
+                              </button>
+                              
+                              {accessModeDropdownOpen && (
+                                <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
+                                  {[
+                                    { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
+                                    { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
+                                    { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
+                                  ].map(mode => (
+                                    <button
+                                      key={mode.value}
+                                      onClick={() => {
+                                        setDeployForm(prev => ({
+                                          ...prev,
+                                          storage: {...prev.storage, accessMode: mode.value}
+                                        }));
+                                        setAccessModeDropdownOpen(false);
+                                      }}
+                                      className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
+                                        deployForm.storage.accessMode === mode.value ? 'bg-green-400/10 text-green-400' : ''
+                                      }`}
+                                    >
+                                      <Shield size={12} className="text-green-400" />
+                                      <span>{mode.label}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-xs font-mono text-gray-400 mb-1">MOUNT PATH</label>
@@ -790,18 +825,53 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                     {deployForm.healthCheck.enabled && (
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-3">
-                          <select
-                            value={deployForm.healthCheck.type}
-                            onChange={(e) => setDeployForm(prev => ({
-                              ...prev,
-                              healthCheck: {...prev.healthCheck, type: e.target.value}
-                            }))}
-                            className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                          >
-                            <option value="http">HTTP GET</option>
-                            <option value="exec">EXEC COMMAND</option>
-                            <option value="tcp">TCP SOCKET</option>
-                          </select>
+                          <div className="relative" ref={healthCheckDropdownRef}>
+                            <button
+                              onClick={() => setHealthCheckDropdownOpen(!healthCheckDropdownOpen)}
+                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <Activity size={12} className="text-green-400" />
+                                <span>
+                                  {deployForm.healthCheck.type === 'http' ? 'HTTP GET' :
+                                   deployForm.healthCheck.type === 'exec' ? 'EXEC COMMAND' :
+                                   deployForm.healthCheck.type === 'tcp' ? 'TCP SOCKET' : deployForm.healthCheck.type.toUpperCase()}
+                                </span>
+                              </div>
+                              {healthCheckDropdownOpen ? (
+                                <ChevronUp size={14} className="text-green-400" />
+                              ) : (
+                                <ChevronDown size={14} className="opacity-60" />
+                              )}
+                            </button>
+                            
+                            {healthCheckDropdownOpen && (
+                              <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
+                                {[
+                                  { value: 'http', label: 'HTTP GET' },
+                                  { value: 'exec', label: 'EXEC COMMAND' },
+                                  { value: 'tcp', label: 'TCP SOCKET' }
+                                ].map(check => (
+                                  <button
+                                    key={check.value}
+                                    onClick={() => {
+                                      setDeployForm(prev => ({
+                                        ...prev,
+                                        healthCheck: {...prev.healthCheck, type: check.value}
+                                      }));
+                                      setHealthCheckDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 font-mono text-sm hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
+                                      deployForm.healthCheck.type === check.value ? 'bg-green-400/10 text-green-400' : ''
+                                    }`}
+                                  >
+                                    <Activity size={12} className="text-green-400" />
+                                    <span>{check.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           <input
                             type="text"
                             placeholder={deployForm.healthCheck.type === 'http' ? 'PATH (e.g., /api/healthz)' : deployForm.healthCheck.type === 'exec' ? 'COMMAND' : 'PORT'}
@@ -1001,34 +1071,103 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                   {/* Service Configuration */}
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
-                    <select
-                      value={deployForm.service.type}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        service: {...prev.service, type: e.target.value}
-                      }))}
-                      className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                    >
-                      <option value="ClusterIP">CLUSTER IP</option>
-                      <option value="NodePort">NODE PORT</option>
-                      <option value="LoadBalancer">LOAD BALANCER</option>
-                    </select>
+                    <div className="relative" ref={serviceTypeDropdownRef}>
+                      <button
+                        onClick={() => setServiceTypeDropdownOpen(!serviceTypeDropdownOpen)}
+                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Globe size={10} className="text-green-400" />
+                          <span>
+                            {deployForm.service.type === 'ClusterIP' ? 'CLUSTER IP' :
+                             deployForm.service.type === 'NodePort' ? 'NODE PORT' :
+                             deployForm.service.type === 'LoadBalancer' ? 'LOAD BALANCER' : deployForm.service.type}
+                          </span>
+                        </div>
+                        {serviceTypeDropdownOpen ? (
+                          <ChevronUp size={12} className="text-green-400" />
+                        ) : (
+                          <ChevronDown size={12} className="opacity-60" />
+                        )}
+                      </button>
+                      
+                      {serviceTypeDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
+                          {[
+                            { value: 'ClusterIP', label: 'CLUSTER IP' },
+                            { value: 'NodePort', label: 'NODE PORT' },
+                            { value: 'LoadBalancer', label: 'LOAD BALANCER' }
+                          ].map(service => (
+                            <button
+                              key={service.value}
+                              onClick={() => {
+                                setDeployForm(prev => ({
+                                  ...prev,
+                                  service: {...prev.service, type: service.value}
+                                }));
+                                setServiceTypeDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-2 py-1 font-mono text-xs hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
+                                deployForm.service.type === service.value ? 'bg-green-400/10 text-green-400' : ''
+                              }`}
+                            >
+                              <Globe size={10} className="text-green-400" />
+                              <span>{service.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Deployment Strategy */}
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
-                    <select
-                      value={deployForm.deployment.strategy}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        deployment: {...prev.deployment, strategy: e.target.value}
-                      }))}
-                      className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs mb-2"
-                    >
-                      <option value="RollingUpdate">ROLLING UPDATE</option>
-                      <option value="Recreate">RECREATE</option>
-                    </select>
+                    <div className="relative mb-2" ref={deployStrategyDropdownRef}>
+                      <button
+                        onClick={() => setDeployStrategyDropdownOpen(!deployStrategyDropdownOpen)}
+                        className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs focus:border-green-400 hover:border-green-400 transition-colors flex items-center justify-between"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Server size={10} className="text-green-400" />
+                          <span>
+                            {deployForm.deployment.strategy === 'RollingUpdate' ? 'ROLLING UPDATE' :
+                             deployForm.deployment.strategy === 'Recreate' ? 'RECREATE' : deployForm.deployment.strategy}
+                          </span>
+                        </div>
+                        {deployStrategyDropdownOpen ? (
+                          <ChevronUp size={12} className="text-green-400" />
+                        ) : (
+                          <ChevronDown size={12} className="opacity-60" />
+                        )}
+                      </button>
+                      
+                      {deployStrategyDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 z-50 bg-black border border-white border-t-0">
+                          {[
+                            { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
+                            { value: 'Recreate', label: 'RECREATE' }
+                          ].map(strategy => (
+                            <button
+                              key={strategy.value}
+                              onClick={() => {
+                                setDeployForm(prev => ({
+                                  ...prev,
+                                  deployment: {...prev.deployment, strategy: strategy.value}
+                                }));
+                                setDeployStrategyDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-2 py-1 font-mono text-xs hover:bg-green-400/20 transition-colors flex items-center space-x-2 border-b border-white/10 last:border-b-0 ${
+                                deployForm.deployment.strategy === strategy.value ? 'bg-green-400/10 text-green-400' : ''
+                              }`}
+                            >
+                              <Server size={10} className="text-green-400" />
+                              <span>{strategy.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     {deployForm.deployment.strategy === 'RollingUpdate' && (
                       <div className="grid grid-cols-2 gap-2">
                         <input
