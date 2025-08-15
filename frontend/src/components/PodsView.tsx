@@ -5,6 +5,7 @@ import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
 import { API_ENDPOINTS } from '@/constants'
+import { apiService, ApiError } from '@/services/api'
 
 interface Container {
   name: string
@@ -61,26 +62,15 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     setError(null)
 
     try {
-      const token = localStorage.getItem('auth_token')
       const url = selectedNamespace === 'all' 
         ? API_ENDPOINTS.KUBERNETES.PODS
         : `${API_ENDPOINTS.KUBERNETES.PODS}?namespace=${selectedNamespace}`
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText)
-      }
-
-      const data = await response.json()
-      setPods(data)
+      const response = await apiService.get<Pod[]>(url)
+      setPods(response.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch pods')
+      const errorMessage = err instanceof ApiError ? err.message : 'Failed to fetch pods'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
