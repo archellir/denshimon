@@ -2,11 +2,17 @@ import { useState, type FC } from 'react';
 import { Trash2, TestTube, CheckCircle, XCircle, Clock, Package } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import RegistryForm from '../forms/RegistryForm';
+import CustomDialog from '@components/common/CustomDialog';
 import type { Registry } from '@/types/deployments';
 
 const RegistriesTab: FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingRegistry, setEditingRegistry] = useState<Registry | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; registry: Registry | null }>({ 
+    open: false, 
+    registry: null 
+  });
+  const [actionLoading, setActionLoading] = useState(false);
   const { 
     registries, 
     loading, 
@@ -45,9 +51,24 @@ const RegistriesTab: FC = () => {
     console.log(`Registry test ${success ? 'passed' : 'failed'}`);
   };
 
-  const handleDeleteRegistry = async (registry: Registry) => {
-    if (confirm(`Are you sure you want to delete ${registry.name}?`)) {
-      await deleteRegistry(registry.id);
+  const handleDeleteRegistry = (registry: Registry) => {
+    setDeleteDialog({ 
+      open: true, 
+      registry 
+    });
+  };
+
+  const onDeleteConfirm = async () => {
+    if (!deleteDialog.registry) return;
+    
+    try {
+      setActionLoading(true);
+      await deleteRegistry(deleteDialog.registry.id);
+      setDeleteDialog({ open: false, registry: null });
+    } catch (error) {
+      console.error('Failed to delete registry:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -145,6 +166,20 @@ const RegistriesTab: FC = () => {
           onSave={handleFormClose}
         />
       )}
+
+      {/* Delete Dialog */}
+      <CustomDialog
+        isOpen={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, registry: null })}
+        onConfirm={onDeleteConfirm}
+        title="Delete Registry"
+        message={`Are you sure you want to permanently delete ${deleteDialog.registry?.name?.toUpperCase()}? This action cannot be undone and will remove all associated configurations.`}
+        confirmText="DELETE"
+        cancelText="CANCEL"
+        variant="danger"
+        icon={Trash2}
+        loading={actionLoading}
+      />
     </>
   );
 };
