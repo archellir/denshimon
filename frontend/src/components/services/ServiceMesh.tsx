@@ -5,7 +5,7 @@ import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
 import { ServiceMeshData } from '@/types/serviceMesh';
 import { generateServiceMeshData } from '@/mocks/services/mesh';
-import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType, GraphViewMode, CSS_CLASSES, ServiceFilterType, ServiceType, UI_LABELS, API_ENDPOINTS } from '@/constants';
+import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, WebSocketEventType, GraphViewMode, ServiceFilterType, ServiceType, UI_LABELS, API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks/index';
 import { getWebSocketInstance } from '@services/websocket';
 
@@ -283,11 +283,11 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
             <div className="text-xs text-gray-500 uppercase mb-1">Circuit Breakers</div>
             <div className="text-lg font-mono">
               {data.services.filter(s => s.circuitBreaker.status === 'open').length > 0 ? (
-                <span className={CSS_CLASSES.STATUS.TEXT_RED_500}>{data.services.filter(s => s.circuitBreaker.status === 'open').length} OPEN</span>
+                <span className="text-red-500">{data.services.filter(s => s.circuitBreaker.status === 'open').length} OPEN</span>
               ) : data.services.filter(s => s.circuitBreaker.status === 'half-open').length > 0 ? (
-                <span className={CSS_CLASSES.STATUS.TEXT_YELLOW_500}>{data.services.filter(s => s.circuitBreaker.status === 'half-open').length} WARN</span>
+                <span className="text-yellow-500">{data.services.filter(s => s.circuitBreaker.status === 'half-open').length} WARN</span>
               ) : (
-                <span className={CSS_CLASSES.STATUS.TEXT_GREEN_500}>OK</span>
+                <span className="text-green-500">OK</span>
               )}
             </div>
           </div>
@@ -423,12 +423,12 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                     </div>
                     
                     <div className="flex justify-between items-center mt-2">
-                      <div className={`${CSS_CLASSES.LAYOUT.FLEX} ${CSS_CLASSES.LAYOUT.ITEMS_CENTER} ${CSS_CLASSES.LAYOUT.GAP_1}`}>
+                      <div className="flex items-center gap-1">
                         {getCircuitBreakerIcon(service.circuitBreaker.status)}
-                        <div className={`${CSS_CLASSES.SIZE.W_1_5} ${CSS_CLASSES.SIZE.H_1_5} ${CSS_CLASSES.SIZE.ROUNDED_FULL} ${
-                          service.circuitBreaker.status === 'closed' ? CSS_CLASSES.STATUS.GREEN_500 :
-                          service.circuitBreaker.status === 'half-open' ? CSS_CLASSES.STATUS.YELLOW_500 :
-                          CSS_CLASSES.STATUS.RED_500
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          service.circuitBreaker.status === 'closed' ? 'bg-green-500' :
+                          service.circuitBreaker.status === 'half-open' ? 'bg-yellow-500' :
+                          'bg-red-500'
                         }`} />
                         <span className="text-xs">{service.instances}</span>
                       </div>
@@ -482,10 +482,10 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                     <span className="text-xs font-mono">
                       {selectedServiceData.circuitBreaker.status.toUpperCase()}
                     </span>
-                    <div className={`${CSS_CLASSES.SIZE.W_2} ${CSS_CLASSES.SIZE.H_2} ${CSS_CLASSES.SIZE.ROUNDED_FULL} ml-2 ${
-                      selectedServiceData.circuitBreaker.status === 'closed' ? CSS_CLASSES.STATUS.GREEN_500 :
-                      selectedServiceData.circuitBreaker.status === 'half-open' ? CSS_CLASSES.STATUS.YELLOW_500 :
-                      CSS_CLASSES.STATUS.RED_500
+                    <div className={`w-2 h-2 rounded-full ml-2 ${
+                      selectedServiceData.circuitBreaker.status === 'closed' ? 'bg-green-500' :
+                      selectedServiceData.circuitBreaker.status === 'half-open' ? 'bg-yellow-500' :
+                      'bg-red-500'
                     }`} />
                   </div>
                   <div className="text-xs font-mono text-gray-400">
@@ -580,12 +580,12 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                   </td>
                   <td className="p-3 text-right">{service.metrics.latency.p95.toFixed(0)}ms</td>
                   <td className="p-3 text-center">
-                    <div className={`${CSS_CLASSES.LAYOUT.FLEX} ${CSS_CLASSES.LAYOUT.ITEMS_CENTER} ${CSS_CLASSES.LAYOUT.JUSTIFY_CENTER} ${CSS_CLASSES.LAYOUT.GAP_1}`}>
+                    <div className="flex items-center justify-center gap-1">
                       {getCircuitBreakerIcon(service.circuitBreaker.status)}
-                      <div className={`${CSS_CLASSES.SIZE.W_1_5} ${CSS_CLASSES.SIZE.H_1_5} ${CSS_CLASSES.SIZE.ROUNDED_FULL} ${
-                        service.circuitBreaker.status === 'closed' ? CSS_CLASSES.STATUS.GREEN_500 :
-                        service.circuitBreaker.status === 'half-open' ? CSS_CLASSES.STATUS.YELLOW_500 :
-                        CSS_CLASSES.STATUS.RED_500
+                      <div className={`w-1.5 h-1.5 rounded-full ${
+                        service.circuitBreaker.status === 'closed' ? 'bg-green-500' :
+                        service.circuitBreaker.status === 'half-open' ? 'bg-yellow-500' :
+                        'bg-red-500'
                       }`} />
                     </div>
                   </td>
