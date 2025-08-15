@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { getWebSocketInstance } from '@services/websocket';
 import { notificationService } from '@services/notifications';
-import { WebSocketEventType, Status, DASHBOARD_SECTIONS } from '@/constants';
+import { WebSocketEventType, Status, DASHBOARD_SECTIONS, NotificationSeverity } from '@/constants';
 import useSettingsStore from '@stores/settingsStore';
 
 interface AlertData {
   id: string;
-  severity: 'critical' | 'warning' | 'info';
+  severity: NotificationSeverity;
   title: string;
   description: string;
   source: string;
@@ -39,13 +39,13 @@ export const useAlertNotifications = () => {
 
       let severity: Status;
       switch (alertData.severity) {
-        case 'critical':
+        case NotificationSeverity.CRITICAL:
           severity = Status.CRITICAL;
           break;
-        case 'warning':
+        case NotificationSeverity.WARNING:
           severity = Status.WARNING;
           break;
-        case 'info':
+        case NotificationSeverity.INFO:
         default:
           severity = Status.INFO;
           break;
