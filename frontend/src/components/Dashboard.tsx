@@ -52,9 +52,10 @@ interface DashboardProps {
   activePrimaryTab?: string;
   onSecondaryTabChange?: (tabId: string) => void;
   timeRange?: string;
+  showHelp?: boolean;
 }
 
-const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRUCTURE, onSecondaryTabChange, timeRange = TimeRange.ONE_HOUR }) => {
+const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRUCTURE, onSecondaryTabChange, timeRange = TimeRange.ONE_HOUR, showHelp = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isSectionVisible } = useSettingsStore();
 
@@ -601,7 +602,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Tab Descriptions */}
-      {isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
+      {showHelp && isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
         <div className="border-b border-white">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="space-y-2">
