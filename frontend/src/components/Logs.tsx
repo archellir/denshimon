@@ -4,6 +4,7 @@ import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@/mocks/terminal/liveData';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
+import { Pod } from '@/stores/workloadsStore';
 import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 
@@ -185,7 +186,7 @@ const Logs: React.FC = () => {
       key: 'name',
       title: 'POD',
       minWidth: 200,
-      render: (pod: any) => (
+      render: (pod: Pod) => (
         <span className="text-cyan-500 font-mono text-sm">{pod.name}</span>
       ),
     },
@@ -193,7 +194,7 @@ const Logs: React.FC = () => {
       key: 'namespace',
       title: 'NAMESPACE',
       width: 140,
-      render: (pod: any) => (
+      render: (pod: Pod) => (
         <span className="font-mono text-sm">{pod.namespace}</span>
       ),
     },
@@ -202,7 +203,7 @@ const Logs: React.FC = () => {
       title: 'CPU %',
       width: 80,
       align: 'right' as const,
-      render: (pod: any) => (
+      render: (pod: Pod) => (
         <span className={`font-mono text-sm ${
           pod.cpu > 80 ? 'text-red-500' : pod.cpu > 60 ? 'text-yellow-500' : ''
         }`}>
@@ -222,7 +223,7 @@ const Logs: React.FC = () => {
       title: 'MEMORY MB',
       width: 100,
       align: 'right' as const,
-      render: (pod: any) => (
+      render: (pod: Pod) => (
         <span className={`font-mono text-sm ${
           pod.memory > 3000 ? 'text-red-500' : pod.memory > 2000 ? 'text-yellow-500' : ''
         }`}>
@@ -241,7 +242,7 @@ const Logs: React.FC = () => {
       key: 'lastUpdate',
       title: 'LAST UPDATE',
       width: 120,
-      render: (pod: any) => (
+      render: (pod: Pod) => (
         <span className="text-gray-500 font-mono text-sm">
           {new Date(pod.lastUpdate).toLocaleTimeString()}
         </span>

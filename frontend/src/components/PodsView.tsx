@@ -133,7 +133,7 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     }
 
     return filtered.sort((a, b) => {
-      let valueA: any, valueB: any
+      let valueA: string | number | Date, valueB: string | number | Date
       
       switch (sortBy) {
         case 'namespace':
