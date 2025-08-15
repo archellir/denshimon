@@ -32,7 +32,11 @@ func NewDeploymentHandlers(service *deployments.Service, registryManager *provid
 
 // ListRegistries returns all configured registries
 func (h *DeploymentHandlers) ListRegistries(w http.ResponseWriter, r *http.Request) {
-	registries := []providers.Registry{} // This would come from database
+	registries, err := h.service.ListRegistries(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	writeJSON(w, registries)
 }
 
@@ -66,16 +70,21 @@ func (h *DeploymentHandlers) AddRegistry(w http.ResponseWriter, r *http.Request)
 		UpdatedAt: time.Now(),
 	}
 
-	// Test connection
-	if err := h.registryManager.AddRegistry(r.Context(), registry); err != nil {
+	// Save to database
+	if err := h.service.CreateRegistry(r.Context(), registry); err != nil {
 		registry.Status = "error"
 		registry.Error = err.Error()
 		writeJSON(w, registry)
 		return
 	}
 
-	registry.Status = "connected"
-	// In a real implementation, save to database here
+	// Test connection (optional, could be done async)
+	if err := h.registryManager.AddRegistry(r.Context(), registry); err != nil {
+		registry.Status = "error"
+		registry.Error = err.Error()
+	} else {
+		registry.Status = "connected"
+	}
 
 	writeJSON(w, registry)
 }
@@ -88,8 +97,14 @@ func (h *DeploymentHandlers) DeleteRegistry(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Delete from database
+	if err := h.service.DeleteRegistry(r.Context(), registryID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Remove from memory
 	h.registryManager.RemoveRegistry(r.Context(), registryID)
-	// In a real implementation, delete from database here
 
 	w.WriteHeader(http.StatusNoContent)
 }
