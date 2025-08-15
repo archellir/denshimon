@@ -554,35 +554,37 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                       </div>
                       {deployForm.storage.enabled && (
                         <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs font-mono text-gray-400 mb-1">SIZE</label>
-                            <input
-                              type="text"
-                              placeholder="e.g., 512Mi, 20Gi"
-                              value={deployForm.storage.size}
-                              onChange={(e) => setDeployForm(prev => ({
-                                ...prev,
-                                storage: {...prev.storage, size: e.target.value}
-                              }))}
-                              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
-                            <CustomSelector
-                              value={deployForm.storage.accessMode}
-                              options={[
-                                { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
-                                { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
-                                { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
-                              ]}
-                              onChange={(value) => setDeployForm(prev => ({
-                                ...prev,
-                                storage: {...prev.storage, accessMode: value}
-                              }))}
-                              icon={Shield}
-                              size="sm"
-                            />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-mono text-gray-400 mb-1">SIZE</label>
+                              <input
+                                type="text"
+                                placeholder="e.g., 512Mi, 20Gi"
+                                value={deployForm.storage.size}
+                                onChange={(e) => setDeployForm(prev => ({
+                                  ...prev,
+                                  storage: {...prev.storage, size: e.target.value}
+                                }))}
+                                className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
+                              <CustomSelector
+                                value={deployForm.storage.accessMode}
+                                options={[
+                                  { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
+                                  { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
+                                  { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
+                                ]}
+                                onChange={(value) => setDeployForm(prev => ({
+                                  ...prev,
+                                  storage: {...prev.storage, accessMode: value}
+                                }))}
+                                icon={Shield}
+                                size="sm"
+                              />
+                            </div>
                           </div>
                           <div>
                             <label className="block text-xs font-mono text-gray-400 mb-1">MOUNT PATH</label>
@@ -881,67 +883,75 @@ const DeploymentsTab = ({ showDeployModal = false, setShowDeployModal }: Deploym
                     )}
                   </div>
 
-                  {/* Service Configuration */}
-                  <div>
-                    <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
-                    <CustomSelector
-                      value={deployForm.service.type}
-                      options={[
-                        { value: 'ClusterIP', label: 'CLUSTER IP' },
-                        { value: 'NodePort', label: 'NODE PORT' },
-                        { value: 'LoadBalancer', label: 'LOAD BALANCER' }
-                      ]}
-                      onChange={(value) => setDeployForm(prev => ({
-                        ...prev,
-                        service: {...prev.service, type: value}
-                      }))}
-                      icon={Globe}
-                      size="xs"
-                    />
+                  {/* Service Configuration & Deployment Strategy */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
+                      <CustomSelector
+                        value={deployForm.service.type}
+                        options={[
+                          { value: 'ClusterIP', label: 'CLUSTER IP' },
+                          { value: 'NodePort', label: 'NODE PORT' },
+                          { value: 'LoadBalancer', label: 'LOAD BALANCER' }
+                        ]}
+                        onChange={(value) => setDeployForm(prev => ({
+                          ...prev,
+                          service: {...prev.service, type: value}
+                        }))}
+                        icon={Globe}
+                        size="xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
+                      <CustomSelector
+                        value={deployForm.deployment.strategy}
+                        options={[
+                          { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
+                          { value: 'Recreate', label: 'RECREATE' }
+                        ]}
+                        onChange={(value) => setDeployForm(prev => ({
+                          ...prev,
+                          deployment: {...prev.deployment, strategy: value}
+                        }))}
+                        icon={Server}
+                        size="xs"
+                      />
+                    </div>
                   </div>
 
-                  {/* Deployment Strategy */}
-                  <div>
-                    <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
-                    <CustomSelector
-                      value={deployForm.deployment.strategy}
-                      options={[
-                        { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
-                        { value: 'Recreate', label: 'RECREATE' }
-                      ]}
-                      onChange={(value) => setDeployForm(prev => ({
-                        ...prev,
-                        deployment: {...prev.deployment, strategy: value}
-                      }))}
-                      icon={Server}
-                      size="xs"
-                      className="mb-2"
-                    />
-                    {deployForm.deployment.strategy === 'RollingUpdate' && (
-                      <div className="grid grid-cols-2 gap-2">
+                  {/* Rolling Update Parameters */}
+                  {deployForm.deployment.strategy === 'RollingUpdate' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">MAX SURGE</label>
                         <input
                           type="text"
-                          placeholder="MAX SURGE"
+                          placeholder="25%"
                           value={deployForm.deployment.maxSurge}
                           onChange={(e) => setDeployForm(prev => ({
                             ...prev,
                             deployment: {...prev.deployment, maxSurge: e.target.value}
                           }))}
-                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                          className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono text-gray-400 mb-1">MAX UNAVAILABLE</label>
                         <input
                           type="text"
-                          placeholder="MAX UNAVAILABLE"
+                          placeholder="25%"
                           value={deployForm.deployment.maxUnavailable}
                           onChange={(e) => setDeployForm(prev => ({
                             ...prev,
                             deployment: {...prev.deployment, maxUnavailable: e.target.value}
                           }))}
-                          className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                          className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                         />
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Security Context */}
                   <div>
