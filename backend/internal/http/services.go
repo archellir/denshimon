@@ -1,9 +1,12 @@
 package http
 
 import (
+	"context"
 	"net/http"
+	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/pkg/response"
 )
@@ -18,14 +21,11 @@ func NewServicesHandlers(k8sClient *k8s.Client) *ServicesHandlers {
 	}
 }
 
-// ServiceMeshData represents the full service mesh topology
 type ServiceMeshData struct {
-	Services    []ServiceNode       `json:"services"`
-	Connections []ServiceConnection `json:"connections"`
-	Endpoints   []APIEndpoint       `json:"endpoints"`
-	Flows       []TrafficFlow       `json:"flows"`
-	Metrics     ServiceMeshMetrics  `json:"metrics"`
-	Timestamp   string              `json:"timestamp"`
+	Services    []ServiceNode        `json:"services"`
+	Connections []ServiceConnection  `json:"connections"`
+	Metrics     ServiceMeshMetrics   `json:"metrics"`
+	Timestamp   string               `json:"timestamp"`
 }
 
 type ServiceNode struct {
@@ -52,10 +52,10 @@ type ServiceMetrics struct {
 }
 
 type CircuitBreakerInfo struct {
-	Status           string  `json:"status"`
-	FailureThreshold int     `json:"failureThreshold"`
-	Timeout          int     `json:"timeout"`
-	LastTripped      *string `json:"lastTripped,omitempty"`
+	Status           string `json:"status"`
+	FailureThreshold int    `json:"failureThreshold"`
+	Timeout          int    `json:"timeout"`
+	LastTripped      *int64 `json:"lastTripped,omitempty"`
 }
 
 type ServiceConnection struct {
@@ -77,33 +77,7 @@ type ServiceConnection struct {
 	LoadBalancing string `json:"loadBalancing"`
 }
 
-type APIEndpoint struct {
-	ID        string `json:"id"`
-	ServiceID string `json:"serviceId"`
-	Path      string `json:"path"`
-	Method    string `json:"method"`
-	Metrics   struct {
-		RequestRate float64 `json:"requestRate"`
-		ErrorRate   float64 `json:"errorRate"`
-		Latency     struct {
-			P50 float64 `json:"p50"`
-			P95 float64 `json:"p95"`
-			P99 float64 `json:"p99"`
-		} `json:"latency"`
-		StatusCodes map[string]int `json:"statusCodes"`
-	} `json:"metrics"`
-	RateLimit      *RateLimit `json:"rateLimit,omitempty"`
-	Authentication bool       `json:"authentication"`
-	Deprecated     bool       `json:"deprecated"`
-}
-
-type RateLimit struct {
-	Limit   int    `json:"limit"`
-	Period  string `json:"period"`
-	Current int    `json:"current"`
-}
-
-type TrafficFlow struct {
+type ServiceFlow struct {
 	ID           string   `json:"id"`
 	Path         []string `json:"path"`
 	RequestRate  float64  `json:"requestRate"`
@@ -112,18 +86,33 @@ type TrafficFlow struct {
 	CriticalPath bool     `json:"criticalPath"`
 }
 
+type ServiceEndpoint struct {
+	ID             string  `json:"id"`
+	ServiceID      string  `json:"serviceId"`
+	Path           string  `json:"path"`
+	Method         string  `json:"method"`
+	Authentication bool    `json:"authentication"`
+	RateLimit      *struct {
+		Limit  int    `json:"limit"`
+		Period string `json:"period"`
+	} `json:"rateLimit,omitempty"`
+	Deprecated bool           `json:"deprecated"`
+	Metrics    ServiceMetrics `json:"metrics"`
+}
+
 type ServiceMeshMetrics struct {
 	Overview struct {
-		TotalServices    int     `json:"totalServices"`
-		TotalConnections int     `json:"totalConnections"`
-		TotalRequestRate float64 `json:"totalRequestRate"`
-		AvgLatency       float64 `json:"avgLatency"`
-		ErrorRate        float64 `json:"errorRate"`
-		MTLSCoverage     float64 `json:"mTLSCoverage"`
+		TotalServices       int     `json:"totalServices"`
+		HealthyServices     int     `json:"healthyServices"`
+		TotalRequestRate    float64 `json:"totalRequestRate"`
+		AvgLatency          float64 `json:"avgLatency"`
+		ErrorRate           float64 `json:"errorRate"`
+		MTLSCoverage        float64 `json:"mTLSCoverage"`
+		ActiveConnections   int     `json:"activeConnections"`
+		CircuitBreakersOpen int     `json:"circuitBreakersOpen"`
 	} `json:"overview"`
 	TopServices struct {
 		ByRequestRate []ServiceNode `json:"byRequestRate"`
-		ByLatency     []ServiceNode `json:"byLatency"`
 		ByErrorRate   []ServiceNode `json:"byErrorRate"`
 	} `json:"topServices"`
 	Alerts struct {
@@ -139,474 +128,508 @@ type ServiceMeshMetrics struct {
 	} `json:"trends"`
 }
 
+// Service classification constants
+const (
+	InfraServiceTypeLabel = "infra/service-type"
+)
+
+// Service type mappings for common patterns
+var serviceTypeMappings = map[string]string{
+	"frontend":  "frontend",
+	"ui":        "frontend",
+	"web":       "frontend",
+	"backend":   "backend",
+	"api":       "backend",
+	"server":    "backend",
+	"database":  "database",
+	"db":        "database",
+	"postgres":  "database",
+	"mysql":     "database",
+	"mongodb":   "database",
+	"cache":     "cache",
+	"redis":     "cache",
+	"memcached": "cache",
+	"gateway":   "gateway",
+	"proxy":     "gateway",
+	"ingress":   "gateway",
+	"sidecar":   "sidecar",
+	"mesh":      "sidecar",
+}
+
+// extractServiceType determines the service type from Kubernetes labels
+func extractServiceType(service *corev1.Service) string {
+	if service.Labels == nil {
+		return inferServiceTypeFromName(service.Name)
+	}
+
+	// Check for explicit infra/service-type label
+	if serviceType, exists := service.Labels[InfraServiceTypeLabel]; exists {
+		return serviceType
+	}
+
+	// Fallback to name-based inference
+	return inferServiceTypeFromName(service.Name)
+}
+
+// inferServiceTypeFromName attempts to infer service type from service name
+func inferServiceTypeFromName(serviceName string) string {
+	lowerName := strings.ToLower(serviceName)
+	
+	for pattern, serviceType := range serviceTypeMappings {
+		if strings.Contains(lowerName, pattern) {
+			return serviceType
+		}
+	}
+	
+	// Default to backend if no pattern matches
+	return "backend"
+}
+
+// convertK8sServicesToNodes converts Kubernetes services to ServiceNode structs
+func (h *ServicesHandlers) convertK8sServicesToNodes(k8sServices []corev1.Service) []ServiceNode {
+	var services []ServiceNode
+	
+	for _, svc := range k8sServices {
+		// Skip system services
+		if strings.HasPrefix(svc.Namespace, "kube-") {
+			continue
+		}
+		
+		serviceType := extractServiceType(&svc)
+		
+		// Generate mock metrics for now - in real implementation would query actual metrics
+		node := ServiceNode{
+			ID:        svc.Name,
+			Name:      svc.Name,
+			Namespace: svc.Namespace,
+			Version:   getServiceVersion(&svc),
+			Type:      serviceType,
+			Status:    "healthy", // Would be determined from actual health checks
+			Instances: getServiceInstances(&svc),
+			Metrics:   generateMockMetricsForType(serviceType),
+			CircuitBreaker: CircuitBreakerInfo{
+				Status:           "closed",
+				FailureThreshold: 50,
+				Timeout:          30000,
+			},
+		}
+		
+		services = append(services, node)
+	}
+	
+	return services
+}
+
+// getServiceVersion extracts version from service labels or annotations
+func getServiceVersion(service *corev1.Service) string {
+	if service.Labels != nil {
+		if version, exists := service.Labels["app.kubernetes.io/version"]; exists {
+			return version
+		}
+		if version, exists := service.Labels["version"]; exists {
+			return version
+		}
+	}
+	
+	if service.Annotations != nil {
+		if version, exists := service.Annotations["version"]; exists {
+			return version
+		}
+	}
+	
+	return "v1.0.0" // Default version
+}
+
+// getServiceInstances estimates service instances (simplified)
+func getServiceInstances(service *corev1.Service) int {
+	// In real implementation, would query associated deployment/replicaset
+	return 1 // Default to 1 instance
+}
+
+// generateMockMetricsForType generates realistic metrics based on service type
+func generateMockMetricsForType(serviceType string) ServiceMetrics {
+	switch serviceType {
+	case "frontend":
+		return ServiceMetrics{
+			RequestRate: 200.0 + float64(time.Now().UnixNano()%100),
+			ErrorRate:   0.5 + float64(time.Now().UnixNano()%20)/10.0,
+			Latency: struct {
+				P50 float64 `json:"p50"`
+				P95 float64 `json:"p95"`
+				P99 float64 `json:"p99"`
+			}{
+				P50: 20.0 + float64(time.Now().UnixNano()%30),
+				P95: 60.0 + float64(time.Now().UnixNano()%100),
+				P99: 150.0 + float64(time.Now().UnixNano()%200),
+			},
+			SuccessRate: 97.0 + float64(time.Now().UnixNano()%25)/10.0,
+		}
+	case "database":
+		return ServiceMetrics{
+			RequestRate: 50.0 + float64(time.Now().UnixNano()%100),
+			ErrorRate:   0.1 + float64(time.Now().UnixNano()%5)/10.0,
+			Latency: struct {
+				P50 float64 `json:"p50"`
+				P95 float64 `json:"p95"`
+				P99 float64 `json:"p99"`
+			}{
+				P50: 5.0 + float64(time.Now().UnixNano()%15),
+				P95: 15.0 + float64(time.Now().UnixNano()%30),
+				P99: 40.0 + float64(time.Now().UnixNano()%80),
+			},
+			SuccessRate: 99.0 + float64(time.Now().UnixNano()%9)/10.0,
+		}
+	default: // backend, cache, gateway, sidecar
+		return ServiceMetrics{
+			RequestRate: 100.0 + float64(time.Now().UnixNano()%200),
+			ErrorRate:   0.3 + float64(time.Now().UnixNano()%15)/10.0,
+			Latency: struct {
+				P50 float64 `json:"p50"`
+				P95 float64 `json:"p95"`
+				P99 float64 `json:"p99"`
+			}{
+				P50: 10.0 + float64(time.Now().UnixNano()%25),
+				P95: 30.0 + float64(time.Now().UnixNano()%70),
+				P99: 80.0 + float64(time.Now().UnixNano()%150),
+			},
+			SuccessRate: 98.0 + float64(time.Now().UnixNano()%18)/10.0,
+		}
+	}
+}
+
 // GetServiceMesh returns the complete service mesh topology and metrics
 func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request) {
-	// Generate mock service mesh data for VPS
-	// In a real implementation, this would query Kubernetes services, deployments, etc.
-
-	services := []ServiceNode{
-		{
-			ID:        "api-service",
-			Name:      "api-service",
-			Namespace: "production",
-			Version:   "v1.2.0",
-			Type:      "backend",
-			Status:    "healthy",
-			Instances: 2,
-			Metrics: ServiceMetrics{
-				RequestRate: 150.5,
-				ErrorRate:   0.8,
-				Latency: struct {
-					P50 float64 `json:"p50"`
-					P95 float64 `json:"p95"`
-					P99 float64 `json:"p99"`
-				}{P50: 12.5, P95: 45.2, P99: 120.8},
-				SuccessRate: 99.2,
-			},
-			CircuitBreaker: CircuitBreakerInfo{
-				Status:           "closed",
-				FailureThreshold: 50,
-				Timeout:          30000,
-			},
-		},
-		{
-			ID:        "web-frontend",
-			Name:      "web-frontend",
-			Namespace: "production",
-			Version:   "v2.1.0",
-			Type:      "frontend",
-			Status:    "healthy",
-			Instances: 3,
-			Metrics: ServiceMetrics{
-				RequestRate: 320.2,
-				ErrorRate:   1.2,
-				Latency: struct {
-					P50 float64 `json:"p50"`
-					P95 float64 `json:"p95"`
-					P99 float64 `json:"p99"`
-				}{P50: 25.1, P95: 89.5, P99: 250.3},
-				SuccessRate: 98.8,
-			},
-			CircuitBreaker: CircuitBreakerInfo{
-				Status:           "closed",
-				FailureThreshold: 50,
-				Timeout:          30000,
-			},
-		},
-		{
-			ID:        "database",
-			Name:      "postgres-db",
-			Namespace: "production",
-			Version:   "v13.8",
-			Type:      "database",
-			Status:    "healthy",
-			Instances: 1,
-			Metrics: ServiceMetrics{
-				RequestRate: 890.7,
-				ErrorRate:   0.1,
-				Latency: struct {
-					P50 float64 `json:"p50"`
-					P95 float64 `json:"p95"`
-					P99 float64 `json:"p99"`
-				}{P50: 3.2, P95: 12.8, P99: 28.5},
-				SuccessRate: 99.9,
-			},
-			CircuitBreaker: CircuitBreakerInfo{
-				Status:           "closed",
-				FailureThreshold: 80,
-				Timeout:          10000,
-			},
-		},
+	ctx := r.Context()
+	
+	// Get real Kubernetes services
+	servicesList, err := h.k8sClient.ListServices(ctx, "")
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to list Kubernetes services", err)
+		return
 	}
-
-	connections := []ServiceConnection{
-		{
-			ID:       "conn-1",
-			Source:   "web-frontend",
-			Target:   "api-service",
-			Protocol: "HTTP",
-			Metrics: struct {
-				RequestRate      float64 `json:"requestRate"`
-				ErrorRate        float64 `json:"errorRate"`
-				Latency          float64 `json:"latency"`
-				BytesTransferred int64   `json:"bytesTransferred"`
-			}{
-				RequestRate:      320.2,
-				ErrorRate:        1.2,
-				Latency:          15.8,
-				BytesTransferred: 1048576,
-			},
-			Security: struct {
-				Encrypted  bool    `json:"encrypted"`
-				MTLS       bool    `json:"mTLS"`
-				AuthPolicy *string `json:"authPolicy,omitempty"`
-			}{
-				Encrypted: true,
-				MTLS:      true,
-			},
-			LoadBalancing: "round_robin",
-		},
-		{
-			ID:       "conn-2",
-			Source:   "api-service",
-			Target:   "database",
-			Protocol: "TCP",
-			Metrics: struct {
-				RequestRate      float64 `json:"requestRate"`
-				ErrorRate        float64 `json:"errorRate"`
-				Latency          float64 `json:"latency"`
-				BytesTransferred int64   `json:"bytesTransferred"`
-			}{
-				RequestRate:      150.5,
-				ErrorRate:        0.1,
-				Latency:          3.2,
-				BytesTransferred: 2097152,
-			},
-			Security: struct {
-				Encrypted  bool    `json:"encrypted"`
-				MTLS       bool    `json:"mTLS"`
-				AuthPolicy *string `json:"authPolicy,omitempty"`
-			}{
-				Encrypted: true,
-				MTLS:      false,
-			},
-			LoadBalancing: "least_conn",
-		},
-	}
-
-	// Calculate overview metrics
-	totalServices := len(services)
-	totalConnections := len(connections)
-	totalRequestRate := 0.0
-	totalErrorRate := 0.0
-	for _, service := range services {
-		totalRequestRate += service.Metrics.RequestRate
-		totalErrorRate += service.Metrics.ErrorRate
-	}
-	avgErrorRate := totalErrorRate / float64(totalServices)
-
+	
+	// Convert Kubernetes services to ServiceNodes with label-based types
+	services := h.convertK8sServicesToNodes(servicesList.Items)
+	
+	// Generate connections based on service relationships (simplified)
+	connections := h.generateServiceConnections(services)
+	
+	// Calculate metrics from real services
+	metrics := h.calculateServiceMeshMetrics(services, connections)
+	
+	// Build service mesh data response
 	meshData := ServiceMeshData{
 		Services:    services,
 		Connections: connections,
-		Endpoints:   []APIEndpoint{}, // TODO: Generate endpoints
-		Flows:       []TrafficFlow{}, // TODO: Generate flows
-		Metrics: ServiceMeshMetrics{
-			Overview: struct {
-				TotalServices    int     `json:"totalServices"`
-				TotalConnections int     `json:"totalConnections"`
-				TotalRequestRate float64 `json:"totalRequestRate"`
-				AvgLatency       float64 `json:"avgLatency"`
-				ErrorRate        float64 `json:"errorRate"`
-				MTLSCoverage     float64 `json:"mTLSCoverage"`
-			}{
-				TotalServices:    totalServices,
-				TotalConnections: totalConnections,
-				TotalRequestRate: totalRequestRate,
-				AvgLatency:       25.8,
-				ErrorRate:        avgErrorRate,
-				MTLSCoverage:     50.0,
-			},
-			TopServices: struct {
-				ByRequestRate []ServiceNode `json:"byRequestRate"`
-				ByLatency     []ServiceNode `json:"byLatency"`
-				ByErrorRate   []ServiceNode `json:"byErrorRate"`
-			}{
-				ByRequestRate: services[:2], // Top 2 by request rate
-				ByLatency:     services[:2], // Top 2 by latency
-				ByErrorRate:   services[:2], // Top 2 by error rate
-			},
-			Alerts: struct {
-				CircuitBreakersOpen []ServiceNode       `json:"circuitBreakersOpen"`
-				HighErrorRate       []ServiceNode       `json:"highErrorRate"`
-				HighLatency         []ServiceNode       `json:"highLatency"`
-				SecurityIssues      []ServiceConnection `json:"securityIssues"`
-			}{
-				CircuitBreakersOpen: []ServiceNode{},
-				HighErrorRate:       []ServiceNode{},
-				HighLatency:         []ServiceNode{},
-				SecurityIssues:      []ServiceConnection{},
-			},
-			Trends: struct {
-				RequestRateTrend string `json:"requestRateTrend"`
-				LatencyTrend     string `json:"latencyTrend"`
-				ErrorRateTrend   string `json:"errorRateTrend"`
-			}{
-				RequestRateTrend: "stable",
-				LatencyTrend:     "stable",
-				ErrorRateTrend:   "stable",
-			},
-		},
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Metrics:     metrics,
+		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 	}
 
 	response.SendSuccess(w, meshData)
 }
 
+// generateServiceConnections creates connections between services based on common patterns
+func (h *ServicesHandlers) generateServiceConnections(services []ServiceNode) []ServiceConnection {
+	var connections []ServiceConnection
+	
+	// Simple heuristic: connect frontends to backends, backends to databases
+	var frontends, backends, databases []ServiceNode
+	
+	for _, svc := range services {
+		switch svc.Type {
+		case "frontend":
+			frontends = append(frontends, svc)
+		case "backend":
+			backends = append(backends, svc)
+		case "database":
+			databases = append(databases, svc)
+		}
+	}
+	
+	// Connect frontends to backends
+	for _, frontend := range frontends {
+		for _, backend := range backends {
+			connections = append(connections, h.createConnection(frontend.ID, backend.ID, "HTTP"))
+		}
+	}
+	
+	// Connect backends to databases
+	for _, backend := range backends {
+		for _, database := range databases {
+			connections = append(connections, h.createConnection(backend.ID, database.ID, "TCP"))
+		}
+	}
+	
+	return connections
+}
+
+// createConnection creates a service connection with realistic metrics
+func (h *ServicesHandlers) createConnection(source, target, protocol string) ServiceConnection {
+	now := time.Now().UnixNano()
+	return ServiceConnection{
+		ID:       source + "-" + target,
+		Source:   source,
+		Target:   target,
+		Protocol: protocol,
+		Metrics: struct {
+			RequestRate      float64 `json:"requestRate"`
+			ErrorRate        float64 `json:"errorRate"`
+			Latency          float64 `json:"latency"`
+			BytesTransferred int64   `json:"bytesTransferred"`
+		}{
+			RequestRate:      50.0 + float64(now%200),
+			ErrorRate:        0.1 + float64(now%20)/10.0,
+			Latency:          5.0 + float64(now%50),
+			BytesTransferred: int64(1024 * (1 + now%1000)),
+		},
+		Security: struct {
+			Encrypted  bool    `json:"encrypted"`
+			MTLS       bool    `json:"mTLS"`
+			AuthPolicy *string `json:"authPolicy,omitempty"`
+		}{
+			Encrypted: true,
+			MTLS:      (now%10) > 3, // 70% have mTLS
+		},
+		LoadBalancing: []string{"round_robin", "least_conn", "ip_hash"}[now%3],
+	}
+}
+
+// calculateServiceMeshMetrics calculates overall mesh metrics from services
+func (h *ServicesHandlers) calculateServiceMeshMetrics(services []ServiceNode, connections []ServiceConnection) ServiceMeshMetrics {
+	var totalRequestRate, totalErrorRate float64
+	var latencies []float64
+	var healthyServices, totalServices int
+	
+	totalServices = len(services)
+	
+	for _, svc := range services {
+		totalRequestRate += svc.Metrics.RequestRate
+		totalErrorRate += svc.Metrics.ErrorRate
+		latencies = append(latencies, svc.Metrics.Latency.P95)
+		
+		if svc.Status == "healthy" {
+			healthyServices++
+		}
+	}
+	
+	// Calculate average latency
+	var avgLatency float64
+	if len(latencies) > 0 {
+		for _, latency := range latencies {
+			avgLatency += latency
+		}
+		avgLatency /= float64(len(latencies))
+	}
+	
+	// Calculate average error rate
+	var avgErrorRate float64
+	if totalServices > 0 {
+		avgErrorRate = totalErrorRate / float64(totalServices)
+	}
+	
+	// Count mTLS connections
+	var mTLSConnections int
+	for _, conn := range connections {
+		if conn.Security.MTLS {
+			mTLSConnections++
+		}
+	}
+	
+	var mTLSCoverage float64
+	if len(connections) > 0 {
+		mTLSCoverage = float64(mTLSConnections) / float64(len(connections)) * 100
+	}
+	
+	return ServiceMeshMetrics{
+		Overview: struct {
+			TotalServices       int     `json:"totalServices"`
+			HealthyServices     int     `json:"healthyServices"`
+			TotalRequestRate    float64 `json:"totalRequestRate"`
+			AvgLatency          float64 `json:"avgLatency"`
+			ErrorRate           float64 `json:"errorRate"`
+			MTLSCoverage        float64 `json:"mTLSCoverage"`
+			ActiveConnections   int     `json:"activeConnections"`
+			CircuitBreakersOpen int     `json:"circuitBreakersOpen"`
+		}{
+			TotalServices:       totalServices,
+			HealthyServices:     healthyServices,
+			TotalRequestRate:    totalRequestRate,
+			AvgLatency:          avgLatency,
+			ErrorRate:           avgErrorRate,
+			MTLSCoverage:        mTLSCoverage,
+			ActiveConnections:   len(connections),
+			CircuitBreakersOpen: 0, // Would calculate from circuit breaker status
+		},
+		TopServices: struct {
+			ByRequestRate []ServiceNode `json:"byRequestRate"`
+			ByErrorRate   []ServiceNode `json:"byErrorRate"`
+		}{
+			ByRequestRate: h.getTopServicesByRequestRate(services, 5),
+			ByErrorRate:   h.getTopServicesByErrorRate(services, 5),
+		},
+		Alerts: struct {
+			CircuitBreakersOpen []ServiceNode       `json:"circuitBreakersOpen"`
+			HighErrorRate       []ServiceNode       `json:"highErrorRate"`
+			HighLatency         []ServiceNode       `json:"highLatency"`
+			SecurityIssues      []ServiceConnection `json:"securityIssues"`
+		}{
+			CircuitBreakersOpen: h.getServicesWithOpenCircuitBreakers(services),
+			HighErrorRate:       h.getServicesWithHighErrorRate(services),
+			HighLatency:         h.getServicesWithHighLatency(services),
+			SecurityIssues:      h.getConnectionsWithSecurityIssues(connections),
+		},
+		Trends: struct {
+			RequestRateTrend string `json:"requestRateTrend"`
+			LatencyTrend     string `json:"latencyTrend"`
+			ErrorRateTrend   string `json:"errorRateTrend"`
+		}{
+			RequestRateTrend: "increasing",
+			LatencyTrend:     "stable",
+			ErrorRateTrend:   "stable",
+		},
+	}
+}
+
+// Helper functions for metrics calculation
+func (h *ServicesHandlers) getTopServicesByRequestRate(services []ServiceNode, limit int) []ServiceNode {
+	// Sort services by request rate (descending) and return top N
+	sorted := make([]ServiceNode, len(services))
+	copy(sorted, services)
+	
+	for i := 0; i < len(sorted)-1; i++ {
+		for j := 0; j < len(sorted)-i-1; j++ {
+			if sorted[j].Metrics.RequestRate < sorted[j+1].Metrics.RequestRate {
+				sorted[j], sorted[j+1] = sorted[j+1], sorted[j]
+			}
+		}
+	}
+	
+	if len(sorted) > limit {
+		return sorted[:limit]
+	}
+	return sorted
+}
+
+func (h *ServicesHandlers) getTopServicesByErrorRate(services []ServiceNode, limit int) []ServiceNode {
+	// Sort services by error rate (descending) and return top N
+	sorted := make([]ServiceNode, len(services))
+	copy(sorted, services)
+	
+	for i := 0; i < len(sorted)-1; i++ {
+		for j := 0; j < len(sorted)-i-1; j++ {
+			if sorted[j].Metrics.ErrorRate < sorted[j+1].Metrics.ErrorRate {
+				sorted[j], sorted[j+1] = sorted[j+1], sorted[j]
+			}
+		}
+	}
+	
+	if len(sorted) > limit {
+		return sorted[:limit]
+	}
+	return sorted
+}
+
+func (h *ServicesHandlers) getServicesWithOpenCircuitBreakers(services []ServiceNode) []ServiceNode {
+	var result []ServiceNode
+	for _, svc := range services {
+		if svc.CircuitBreaker.Status == "open" {
+			result = append(result, svc)
+		}
+	}
+	return result
+}
+
+func (h *ServicesHandlers) getServicesWithHighErrorRate(services []ServiceNode) []ServiceNode {
+	var result []ServiceNode
+	for _, svc := range services {
+		if svc.Metrics.ErrorRate > 5.0 { // 5% error rate threshold
+			result = append(result, svc)
+		}
+	}
+	return result
+}
+
+func (h *ServicesHandlers) getServicesWithHighLatency(services []ServiceNode) []ServiceNode {
+	var result []ServiceNode
+	for _, svc := range services {
+		if svc.Metrics.Latency.P95 > 100.0 { // 100ms P95 latency threshold
+			result = append(result, svc)
+		}
+	}
+	return result
+}
+
+func (h *ServicesHandlers) getConnectionsWithSecurityIssues(connections []ServiceConnection) []ServiceConnection {
+	var result []ServiceConnection
+	for _, conn := range connections {
+		if !conn.Security.Encrypted || !conn.Security.MTLS {
+			result = append(result, conn)
+		}
+	}
+	return result
+}
+
 // GetServiceTopology returns the service topology
 func (h *ServicesHandlers) GetServiceTopology(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	
+	// Get real Kubernetes services
+	servicesList, err := h.k8sClient.ListServices(ctx, "")
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to list Kubernetes services", err)
+		return
+	}
+	
+	// Convert to topology format
+	nodes := []map[string]interface{}{}
+	edges := []map[string]interface{}{}
+	
+	for _, svc := range servicesList.Items {
+		if strings.HasPrefix(svc.Namespace, "kube-") {
+			continue
+		}
+		
+		nodes = append(nodes, map[string]interface{}{
+			"id":        svc.Name,
+			"name":      svc.Name,
+			"type":      extractServiceType(&svc),
+			"namespace": svc.Namespace,
+		})
+	}
+	
 	topology := map[string]interface{}{
-		"nodes": []map[string]interface{}{
-			{
-				"id":        "api-service",
-				"name":      "API Service",
-				"namespace": "production",
-				"type":      "backend",
-				"status":    "healthy",
-				"instances": 2,
-				"position":  map[string]int{"x": 200, "y": 100},
-			},
-			{
-				"id":        "web-frontend",
-				"name":      "Web Frontend",
-				"namespace": "production",
-				"type":      "frontend",
-				"status":    "healthy",
-				"instances": 3,
-				"position":  map[string]int{"x": 100, "y": 100},
-			},
-			{
-				"id":        "database",
-				"name":      "PostgreSQL",
-				"namespace": "production",
-				"type":      "database",
-				"status":    "healthy",
-				"instances": 1,
-				"position":  map[string]int{"x": 300, "y": 100},
-			},
-		},
-		"edges": []map[string]interface{}{
-			{
-				"id":        "edge-1",
-				"source":    "web-frontend",
-				"target":    "api-service",
-				"protocol":  "HTTP",
-				"encrypted": true,
-				"traffic":   320.2,
-			},
-			{
-				"id":        "edge-2",
-				"source":    "api-service",
-				"target":    "database",
-				"protocol":  "TCP",
-				"encrypted": true,
-				"traffic":   150.5,
-			},
-		},
+		"nodes": nodes,
+		"edges": edges,
 		"metrics": map[string]interface{}{
-			"totalNodes":       3,
-			"totalConnections": 2,
-			"healthyNodes":     3,
-			"encryptedTraffic": 100.0,
+			"totalNodes": len(nodes),
+			"totalEdges": len(edges),
 		},
 	}
 
 	response.SendSuccess(w, topology)
 }
 
-// GetServiceEndpoints returns all API endpoints
+// GetServiceEndpoints returns service endpoints information  
 func (h *ServicesHandlers) GetServiceEndpoints(w http.ResponseWriter, r *http.Request) {
-	endpoints := []map[string]interface{}{
-		{
-			"id":          "ep-1",
-			"service":     "api-service",
-			"path":        "/api/v1/users",
-			"method":      "GET",
-			"requestRate": 25.3,
-			"errorRate":   0.5,
-			"avgLatency":  12.5,
-			"statusCodes": map[string]int{"200": 95, "400": 3, "500": 2},
-			"auth":        true,
-			"rateLimit":   map[string]interface{}{"limit": 100, "period": "1m", "current": 25},
-		},
-		{
-			"id":          "ep-2",
-			"service":     "api-service",
-			"path":        "/api/v1/auth/login",
-			"method":      "POST",
-			"requestRate": 8.7,
-			"errorRate":   2.1,
-			"avgLatency":  45.2,
-			"statusCodes": map[string]int{"200": 85, "401": 10, "400": 5},
-			"auth":        false,
-			"rateLimit":   map[string]interface{}{"limit": 10, "period": "1m", "current": 8},
-		},
-		{
-			"id":          "ep-3",
-			"service":     "web-frontend",
-			"path":        "/",
-			"method":      "GET",
-			"requestRate": 180.5,
-			"errorRate":   0.8,
-			"avgLatency":  25.1,
-			"statusCodes": map[string]int{"200": 98, "404": 1, "500": 1},
-			"auth":        false,
-			"rateLimit":   nil,
-		},
-		{
-			"id":          "ep-4",
-			"service":     "web-frontend",
-			"path":        "/dashboard",
-			"method":      "GET",
-			"requestRate": 65.2,
-			"errorRate":   1.5,
-			"avgLatency":  38.7,
-			"statusCodes": map[string]int{"200": 92, "401": 5, "500": 3},
-			"auth":        true,
-			"rateLimit":   nil,
-		},
-	}
-
-	response.SendSuccess(w, map[string]interface{}{
-		"endpoints": endpoints,
-		"summary": map[string]interface{}{
-			"total":          len(endpoints),
-			"authenticated":  2,
-			"rateLimited":    2,
-			"avgRequestRate": 69.9,
-			"avgErrorRate":   1.2,
-			"avgLatency":     30.4,
-		},
-	})
+	// Return empty endpoints for now - would integrate with service discovery
+	endpoints := []map[string]interface{}{}
+	
+	response.SendSuccess(w, endpoints)
 }
 
-// GetServiceFlows returns traffic flow patterns
+// GetServiceFlows returns traffic flow information
 func (h *ServicesHandlers) GetServiceFlows(w http.ResponseWriter, r *http.Request) {
-	flows := []map[string]interface{}{
-		{
-			"id":           "flow-1",
-			"name":         "User Login Flow",
-			"path":         []string{"web-frontend", "api-service", "database"},
-			"requestRate":  8.7,
-			"avgLatency":   58.4,
-			"errorRate":    2.1,
-			"criticalPath": true,
-			"steps": []map[string]interface{}{
-				{"service": "web-frontend", "endpoint": "/login", "latency": 25.1},
-				{"service": "api-service", "endpoint": "/api/v1/auth/login", "latency": 30.1},
-				{"service": "database", "endpoint": "SELECT users", "latency": 3.2},
-			},
-		},
-		{
-			"id":           "flow-2",
-			"name":         "Data Fetch Flow",
-			"path":         []string{"web-frontend", "api-service", "database"},
-			"requestRate":  25.3,
-			"avgLatency":   40.8,
-			"errorRate":    0.5,
-			"criticalPath": false,
-			"steps": []map[string]interface{}{
-				{"service": "web-frontend", "endpoint": "/dashboard", "latency": 25.1},
-				{"service": "api-service", "endpoint": "/api/v1/users", "latency": 12.5},
-				{"service": "database", "endpoint": "SELECT data", "latency": 3.2},
-			},
-		},
-		{
-			"id":           "flow-3",
-			"name":         "Static Content Flow",
-			"path":         []string{"web-frontend"},
-			"requestRate":  180.5,
-			"avgLatency":   25.1,
-			"errorRate":    0.8,
-			"criticalPath": false,
-			"steps": []map[string]interface{}{
-				{"service": "web-frontend", "endpoint": "/", "latency": 25.1},
-			},
-		},
-	}
-
-	response.SendSuccess(w, map[string]interface{}{
-		"flows": flows,
-		"summary": map[string]interface{}{
-			"totalFlows":        len(flows),
-			"criticalFlows":     1,
-			"avgRequestRate":    71.5,
-			"avgLatency":        41.4,
-			"avgErrorRate":      1.1,
-			"bottleneckService": "api-service",
-		},
-	})
+	flows := []map[string]interface{}{}
+	
+	response.SendSuccess(w, flows)
 }
 
 // GetServiceGateway returns gateway configuration and metrics
 func (h *ServicesHandlers) GetServiceGateway(w http.ResponseWriter, r *http.Request) {
 	gateway := map[string]interface{}{
-		"config": map[string]interface{}{
-			"name":      "vps-gateway",
-			"namespace": "production",
-			"status":    "healthy",
-			"version":   "v1.18.2",
-			"listeners": []map[string]interface{}{
-				{
-					"name":     "http",
-					"port":     80,
-					"protocol": "HTTP",
-					"hosts":    []string{"*.vps.local"},
-				},
-				{
-					"name":     "https",
-					"port":     443,
-					"protocol": "HTTPS",
-					"hosts":    []string{"*.vps.local"},
-					"tls":      map[string]interface{}{"enabled": true, "cert": "vps-tls"},
-				},
-			},
-			"routes": []map[string]interface{}{
-				{
-					"name":      "api-route",
-					"path":      "/api/*",
-					"service":   "api-service",
-					"port":      8080,
-					"timeout":   30,
-					"retries":   3,
-					"rateLimit": map[string]interface{}{"rps": 100, "burst": 200},
-				},
-				{
-					"name":      "frontend-route",
-					"path":      "/*",
-					"service":   "web-frontend",
-					"port":      3000,
-					"timeout":   10,
-					"retries":   2,
-					"rateLimit": map[string]interface{}{"rps": 500, "burst": 1000},
-				},
-			},
-		},
-		"metrics": map[string]interface{}{
-			"totalRequests":     50847,
-			"requestRate":       320.2,
-			"errorRate":         1.2,
-			"avgLatency":        28.5,
-			"bytesTransferred":  1048576000,
-			"activeConnections": 125,
-			"responseTime": map[string]float64{
-				"p50": 25.1,
-				"p95": 89.5,
-				"p99": 250.3,
-			},
-			"statusCodes": map[string]int{
-				"2xx": 48823,
-				"3xx": 1015,
-				"4xx": 508,
-				"5xx": 501,
-			},
-		},
-		"security": map[string]interface{}{
-			"tlsEnabled":     true,
-			"mtlsEnabled":    false,
-			"corsEnabled":    true,
-			"authPolicies":   []string{"jwt-auth", "api-key-auth"},
-			"rateLimiting":   true,
-			"ipFiltering":    false,
-			"ddosProtection": true,
-		},
-		"health": map[string]interface{}{
-			"status":        "healthy",
-			"uptime":        "15d 6h 32m",
-			"memoryUsage":   "256MB",
-			"cpuUsage":      "12%",
-			"lastRestart":   "2024-01-15T10:30:00Z",
-			"configVersion": "v1.2.0",
-		},
+		"status": "healthy",
+		"version": "v1.2.0",
+		"uptime": "15d 6h 32m",
 	}
 
 	response.SendSuccess(w, gateway)

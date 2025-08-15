@@ -1001,6 +1001,34 @@ export enum ServiceType {
   SIDECAR = 'sidecar'
 }
 
+// Kubernetes label convention for service classification
+export const SERVICE_CLASSIFICATION_LABELS = {
+  INFRA_SERVICE_TYPE: 'infra/service-type'
+} as const;
+
+// Label value mappings for standard Kubernetes labels to denshimon service types
+export const LABEL_VALUE_MAPPINGS = {
+  'frontend': ServiceType.FRONTEND,
+  'ui': ServiceType.FRONTEND,
+  'web': ServiceType.FRONTEND,
+  'backend': ServiceType.BACKEND,
+  'api': ServiceType.BACKEND,
+  'server': ServiceType.BACKEND,
+  'database': ServiceType.DATABASE,
+  'db': ServiceType.DATABASE,
+  'postgres': ServiceType.DATABASE,
+  'mysql': ServiceType.DATABASE,
+  'mongodb': ServiceType.DATABASE,
+  'cache': ServiceType.CACHE,
+  'redis': ServiceType.CACHE,
+  'memcached': ServiceType.CACHE,
+  'gateway': ServiceType.GATEWAY,
+  'proxy': ServiceType.GATEWAY,
+  'ingress': ServiceType.GATEWAY,
+  'sidecar': ServiceType.SIDECAR,
+  'mesh': ServiceType.SIDECAR
+} as const;
+
 export enum ServiceFilterType {
   ALL = 'all',
   FRONTEND = 'frontend',
