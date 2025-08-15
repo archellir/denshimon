@@ -1,9 +1,10 @@
 import { WebSocketEventType, Status, CircuitBreakerStatus, SERVICE_IDS, WebSocketState } from '@/constants';
+import { WebSocketMessage, WebSocketCallback } from '@/types';
 
 export interface WebSocketMessage {
   type: WebSocketEventType;
   timestamp: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface WebSocketOptions {
@@ -16,7 +17,7 @@ export interface WebSocketOptions {
 export interface WebSocketSubscription {
   id: string;
   type: WebSocketEventType;
-  callback: (data: any) => void;
+  callback: WebSocketCallback;
 }
 
 export class DenshimonWebSocket {
@@ -162,7 +163,7 @@ export class DenshimonWebSocket {
     });
   }
 
-  public subscribe(type: WebSocketMessage['type'] | 'connection', callback: (data: any) => void): string {
+  public subscribe(type: WebSocketMessage['type'] | 'connection', callback: WebSocketCallback): string {
     const id = `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     this.subscriptions.set(id, {
