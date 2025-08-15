@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link, useNavigate, useSearchParams } from 'react-router'
 import type { FC } from 'react'
-import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Database, Eye, ChevronRight, Clock, Search, HelpCircle } from 'lucide-react'
+import { User, LogOut, Settings as SettingsIcon, Server, Package, Zap, GitBranch, Database, Eye, ChevronRight, ChevronDown, Clock, Search, HelpCircle } from 'lucide-react'
 import Dashboard from '@components/Dashboard'
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore'
 import KeyboardShortcutsModal from '@components/common/KeyboardShortcutsModal'
@@ -354,6 +354,7 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const { isSectionVisible } = useSettingsStore()
+  const [showHelp, setShowHelp] = useState(false)
   
   const navItems = [
     { path: `/${PrimaryTab.DEPLOYMENTS}`, label: UI_LABELS.DEPLOYMENTS },
@@ -418,34 +419,150 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab }) => {
   const currentSecondaryTab = searchParams.get('tab') || secondaryTab
   const secondaryLabel = currentSecondaryTab && secondaryTabLabels[primaryTab]?.[currentSecondaryTab]
 
+  // Tab descriptions for help section
+  const tabDescriptions: Record<string, { primary: string; secondary: Record<string, string> }> = {
+    [PrimaryTab.INFRASTRUCTURE]: {
+      primary: "Monitor and manage your Kubernetes cluster's core infrastructure components and settings.",
+      secondary: {
+        [InfrastructureTab.OVERVIEW]: "View cluster health overview and infrastructure metrics.",
+        [InfrastructureTab.CONFIGURATION]: "Manage infrastructure-as-code with GitOps workflows and templates.",
+        [InfrastructureTab.NODES]: "Monitor cluster nodes, capacity, and resource allocation.",
+        [InfrastructureTab.RESOURCES]: "Track CPU, memory, storage, and network resource usage.",
+        [InfrastructureTab.STORAGE]: "Monitor storage I/O metrics, volumes, and persistent storage.",
+        [InfrastructureTab.NETWORK]: "Analyze network traffic, connectivity, and performance.",
+        [InfrastructureTab.CERTIFICATES]: "Manage SSL/TLS certificates and security credentials.",
+        [InfrastructureTab.BACKUP]: "Configure and monitor backup jobs and recovery processes."
+      }
+    },
+    [PrimaryTab.WORKLOADS]: {
+      primary: "View and manage application workloads, pods, services, and resource relationships.",
+      secondary: {
+        [WorkloadsTab.OVERVIEW]: "Monitor workload health, deployments, and application metrics.",
+        [WorkloadsTab.HIERARCHY]: "Explore resource relationships and dependencies in your cluster.",
+        [WorkloadsTab.PODS]: "Manage individual pods, containers, and their lifecycle.",
+        [WorkloadsTab.SERVICES]: "Configure service discovery, load balancing, and networking.",
+        [WorkloadsTab.NAMESPACES]: "Organize and isolate resources across different namespaces."
+      }
+    },
+    [PrimaryTab.MESH]: {
+      primary: "Configure and monitor service mesh topology, traffic flows, and inter-service communication.",
+      secondary: {
+        [MeshTab.TOPOLOGY]: "Visualize service mesh architecture and connection topology.",
+        [MeshTab.SERVICES]: "Monitor service health, metrics, and circuit breaker status.",
+        [MeshTab.ENDPOINTS]: "Manage API endpoints, rate limiting, and authentication.",
+        [MeshTab.FLOWS]: "Analyze traffic flows, latency, and critical service paths.",
+        [MeshTab.GATEWAY]: "Configure API gateways, routing rules, and traffic policies."
+      }
+    },
+    [PrimaryTab.DEPLOYMENTS]: {
+      primary: "Deploy applications, manage container images, and track deployment history.",
+      secondary: {
+        [DeploymentsTab.DEPLOYMENTS]: "Create and manage application deployments with GitOps workflows.",
+        [DeploymentsTab.HISTORY]: "Track deployment history, rollbacks, and change logs.",
+        [DeploymentsTab.IMAGES]: "Browse container images, tags, and vulnerability scans.",
+        [DeploymentsTab.REGISTRIES]: "Manage container registries and image repositories."
+      }
+    },
+    [PrimaryTab.DATABASE]: {
+      primary: "Browse databases, execute queries, monitor connections, and manage operations.",
+      secondary: {
+        [DatabaseTab.CONNECTIONS]: "Manage database connections and configure access credentials.",
+        [DatabaseTab.BROWSER]: "Browse database schemas, tables, and data relationships.",
+        [DatabaseTab.QUERIES]: "Execute SQL queries and analyze database performance.",
+        [DatabaseTab.MONITORING]: "Monitor database health, connections, and resource usage."
+      }
+    },
+    [PrimaryTab.OBSERVABILITY]: {
+      primary: "Analyze logs, monitor system events, track service health, and view analytics.",
+      secondary: {
+        [ObservabilityTab.LOGS]: "Search, filter, and analyze application and system logs.",
+        [ObservabilityTab.EVENTS]: "Monitor Kubernetes events and system activities.",
+        [ObservabilityTab.STREAMS]: "View real-time data streams and live monitoring feeds.",
+        [ObservabilityTab.ANALYTICS]: "Analyze trends, generate reports, and create dashboards.",
+        [ObservabilityTab.SERVICE_HEALTH]: "Monitor service health checks and uptime metrics."
+      }
+    }
+  }
+
   return (
-    <div className="bg-black border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-6 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
-            <span>SYSTEM</span>
-            <ChevronRight size={14} />
-            <span className="text-white">{currentItem.label}</span>
-            {secondaryLabel && (
-              <>
-                <ChevronRight size={14} />
-                <span className="text-gray-300">{secondaryLabel}</span>
-              </>
+    <>
+      <div className="bg-black border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
+              <span>SYSTEM</span>
+              <ChevronRight size={14} />
+              <span className="text-white">{currentItem.label}</span>
+              {secondaryLabel && (
+                <>
+                  <ChevronRight size={14} />
+                  <span className="text-gray-300">{secondaryLabel}</span>
+                </>
+              )}
+              
+              {/* Help Toggle Arrow */}
+              <button
+                onClick={() => setShowHelp(!showHelp)}
+                className="ml-2 p-1 hover:bg-white/10 transition-colors rounded"
+                title={showHelp ? "Hide tab explanations" : "Show tab explanations"}
+              >
+                {showHelp ? (
+                  <ChevronDown size={14} className="text-gray-400 hover:text-white" />
+                ) : (
+                  <ChevronRight size={14} className="text-gray-400 hover:text-white" />
+                )}
+              </button>
+            </div>
+            
+            {/* Global Search Indicator */}
+            {isSectionVisible(DASHBOARD_SECTIONS.SEARCH_BAR) && (
+              <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
+                <Search size={14} />
+                <span>Press</span>
+                <kbd className="px-1 py-0.5 bg-white/10 rounded text-xs">Cmd+K</kbd>
+                <span>to search</span>
+              </div>
             )}
           </div>
-          
-          {/* Global Search Indicator */}
-          {isSectionVisible(DASHBOARD_SECTIONS.SEARCH_BAR) && (
-            <div className="flex items-center space-x-2 text-sm font-mono text-gray-400">
-              <Search size={14} />
-              <span>Press</span>
-              <kbd className="px-1 py-0.5 bg-white/10 rounded text-xs">Cmd+K</kbd>
-              <span>to search</span>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+
+      {/* Collapsible Help Section */}
+      {showHelp && (
+        <div className="bg-black border-b border-white/20">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="space-y-4">
+              {/* Primary Tab Description */}
+              <div>
+                <h3 className="text-sm font-mono font-bold text-white mb-2">{currentItem.label} TAB</h3>
+                <p className="text-sm font-mono text-gray-300">
+                  {tabDescriptions[primaryTab]?.primary}
+                </p>
+              </div>
+
+              {/* Secondary Tabs Description */}
+              {tabDescriptions[primaryTab]?.secondary && (
+                <div>
+                  <h4 className="text-xs font-mono font-bold text-gray-400 mb-3 uppercase">Available Sections</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.entries(tabDescriptions[primaryTab].secondary).map(([tabId, description]) => (
+                      <div key={tabId} className="border border-white/10 p-3">
+                        <div className="text-xs font-mono font-bold text-white mb-1">
+                          {secondaryTabLabels[primaryTab]?.[tabId]?.toUpperCase()}
+                        </div>
+                        <div className="text-xs font-mono text-gray-400">
+                          {description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
