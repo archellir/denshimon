@@ -5,12 +5,7 @@ import {
   InfrastructureStatus, 
   InfrastructureAlert,
   ServiceType,
-  GiteaHealth,
-  FilebrowserHealth,
-  UmamiHealth,
-  MemosHealth,
-  UptimeKumaHealth,
-  PostgreSQLHealth
+  AlertType
 } from '@/types/serviceHealth';
 import { API_ENDPOINTS, Status } from '@/constants';
 
@@ -85,7 +80,7 @@ const mockServices: ServiceHealth[] = [
       {
         id: 'fb-storage-warning',
         serviceId: 'filebrowser-service',
-        type: 'resource',
+        type: AlertType.RESOURCE,
         severity: Status.WARNING,
         message: 'Storage usage approaching 80% capacity',
         timestamp: '2024-01-20T14:15:00Z',
@@ -143,7 +138,7 @@ const mockServices: ServiceHealth[] = [
       {
         id: 'memos-sync-slow',
         serviceId: 'memos-service',
-        type: 'performance',
+        type: AlertType.PERFORMANCE,
         severity: Status.WARNING,
         message: 'Note synchronization taking longer than usual',
         timestamp: '2024-01-20T15:20:00Z',
@@ -178,7 +173,7 @@ const mockServices: ServiceHealth[] = [
       {
         id: 'uptime-monitor-down',
         serviceId: 'uptime-kuma-service',
-        type: 'connectivity',
+        type: AlertType.CONNECTIVITY,
         severity: Status.CRITICAL,
         message: 'External service monitor is down',
         timestamp: '2024-01-20T14:45:00Z',
