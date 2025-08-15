@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { generateNetworkMetrics } from '@mocks/network/traffic';
 import type { NetworkMetrics } from '@/types/network';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
 
 interface NetworkTrafficProps {
   timeRange?: string;
@@ -73,12 +74,12 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 
 
   // Custom tooltip for traffic chart
-  const CustomTrafficTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomTrafficTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white mb-1">{`Time: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value} MB/s`}
             </p>
@@ -90,7 +91,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
   };
 
   // Custom tooltip for protocol pie chart
-  const CustomProtocolTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  const CustomProtocolTooltip = ({ active, payload }: PieChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
