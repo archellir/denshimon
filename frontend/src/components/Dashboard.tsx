@@ -606,13 +606,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {/* Deployments Tab Content */}
         {activePrimaryTab === PrimaryTab.DEPLOYMENTS && (
           <DeploymentDashboard 
-            activeTab={
-              activeSecondaryTab === DeploymentsTab.REGISTRIES ? 'registries' :
-              activeSecondaryTab === DeploymentsTab.IMAGES ? 'images' :
-              activeSecondaryTab === DeploymentsTab.DEPLOYMENTS ? 'deployments' :
-              activeSecondaryTab === DeploymentsTab.HISTORY ? 'history' :
-              'deployments'
-            } 
+            activeTab={activeSecondaryTab}
           />
         )}
         
