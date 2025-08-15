@@ -12,6 +12,7 @@ import {
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { ChartTooltipProps } from '@/types';
 
 interface ResourceChartsProps {
   timeRange?: string;
@@ -47,14 +48,14 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
     }));
   }, [nodeMetrics]);
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white mb-1">{`Time: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value.toFixed(1)}${
+              {`${entry.name}: ${Number(entry.value).toFixed(1)}${
                 entry.name === 'CPU' || entry.name === 'Memory' ? '%' : ''
               }`}
             </p>
