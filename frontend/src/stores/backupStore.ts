@@ -19,8 +19,9 @@ import {
   RecoveryOptions,
   RestoreType
 } from '@/types/backup';
-import { StorageKey, API_ENDPOINTS } from '@/constants';
+import { API_ENDPOINTS } from '@/constants';
 import { MOCK_ENABLED } from '@/mocks';
+import { apiService, ApiError } from '@/services/api';
 
 interface BackupStore {
   // State
@@ -416,22 +417,12 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.BACKUP.JOBS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch backup jobs: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ jobs: data.data || [], isLoading: false });
+      const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.JOBS);
+      set({ jobs: response.data.data || response.data || [], isLoading: false });
     } catch (error) {
       console.error('Failed to fetch backup jobs:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch backup jobs',
+        error: error instanceof ApiError ? error.message : 'Failed to fetch backup jobs',
         isLoading: false 
       });
     }
@@ -454,22 +445,12 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         ? `/api/backup/history?jobId=${jobId}`
         : API_ENDPOINTS.BACKUP.HISTORY;
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch backup history: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ history: data.data || [], isLoading: false });
+      const response = await apiService.get<any>(url);
+      set({ history: response.data.data || response.data || [], isLoading: false });
     } catch (error) {
       console.error('Failed to fetch backup history:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch backup history',
+        error: error instanceof ApiError ? error.message : 'Failed to fetch backup history',
         isLoading: false 
       });
     }
@@ -482,18 +463,8 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.BACKUP.STORAGE, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch backup storage: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ storage: data.data || [] });
+      const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.STORAGE);
+      set({ storage: response.data.data || response.data || [] });
     } catch (error) {
       console.error('Failed to fetch backup storage:', error);
     }
@@ -506,18 +477,8 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.BACKUP.STATISTICS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch backup statistics: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ statistics: data.data });
+      const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.STATISTICS);
+      set({ statistics: response.data.data || response.data });
     } catch (error) {
       console.error('Failed to fetch backup statistics:', error);
     }
@@ -530,18 +491,8 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.BACKUP.RECOVERIES_ACTIVE, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch active recoveries: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ activeRecoveries: data.data || [] });
+      const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.RECOVERIES_ACTIVE);
+      set({ activeRecoveries: response.data.data || response.data || [] });
     } catch (error) {
       console.error('Failed to fetch active recoveries:', error);
     }
@@ -554,18 +505,8 @@ const useBackupStore = create<BackupStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.BACKUP.ALERTS, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch backup alerts: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      set({ alerts: data.data || [] });
+      const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.ALERTS);
+      set({ alerts: response.data.data || response.data || [] });
     } catch (error) {
       console.error('Failed to fetch backup alerts:', error);
     }
@@ -573,131 +514,73 @@ const useBackupStore = create<BackupStore>((set, get) => ({
 
   runBackup: async (jobId: string) => {
     try {
-      const response = await fetch(`/api/backup/jobs/${jobId}/run`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to run backup: ${response.statusText}`);
-      }
+      await apiService.post(`/api/backup/jobs/${jobId}/run`);
 
       // Refresh job status
       await get().fetchBackupJobs();
     } catch (error) {
       console.error('Failed to run backup:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to run backup' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to run backup' });
     }
   },
 
   cancelBackup: async (jobId: string) => {
     try {
-      const response = await fetch(`/api/backup/jobs/${jobId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to cancel backup: ${response.statusText}`);
-      }
+      await apiService.post(`/api/backup/jobs/${jobId}/cancel`);
 
       // Refresh job status
       await get().fetchBackupJobs();
     } catch (error) {
       console.error('Failed to cancel backup:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to cancel backup' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to cancel backup' });
     }
   },
 
   verifyBackup: async (backupId: string) => {
     try {
-      const response = await fetch(`/api/backup/history/${backupId}/verify`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to verify backup: ${response.statusText}`);
-      }
+      await apiService.post(`/api/backup/history/${backupId}/verify`);
 
       // Refresh history
       await get().fetchBackupHistory();
     } catch (error) {
       console.error('Failed to verify backup:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to verify backup' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to verify backup' });
     }
   },
 
   startRecovery: async (backupId: string, options?: RecoveryOptions) => {
     try {
-      const response = await fetch(`/api/backup/history/${backupId}/recover`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(options || {})
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to start recovery: ${response.statusText}`);
-      }
+      await apiService.post(`/api/backup/history/${backupId}/recover`, options || {});
 
       // Refresh active recoveries
       await get().fetchActiveRecoveries();
     } catch (error) {
       console.error('Failed to start recovery:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to start recovery' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to start recovery' });
     }
   },
 
   deleteBackup: async (backupId: string) => {
     try {
-      const response = await fetch(`/api/backup/history/${backupId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete backup: ${response.statusText}`);
-      }
+      await apiService.delete(`/api/backup/history/${backupId}`);
 
       // Refresh history
       await get().fetchBackupHistory();
     } catch (error) {
       console.error('Failed to delete backup:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to delete backup' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to delete backup' });
     }
   },
 
   updateSchedule: async (jobId: string, schedule: BackupSchedule) => {
     try {
-      const response = await fetch(`/api/backup/jobs/${jobId}/schedule`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem(StorageKey.AUTH_TOKEN)}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(schedule)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update schedule: ${response.statusText}`);
-      }
+      await apiService.put(`/api/backup/jobs/${jobId}/schedule`, schedule);
 
       // Refresh jobs
       await get().fetchBackupJobs();
     } catch (error) {
       console.error('Failed to update schedule:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to update schedule' });
+      set({ error: error instanceof ApiError ? error.message : 'Failed to update schedule' });
     }
   },
 
