@@ -24,6 +24,16 @@ import {
   MOCK_ENABLED
 } from '@/mocks';
 
+// Helper function to get authenticated headers
+const getAuthHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem('auth_token');
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
 interface DatabaseStore {
   // State
   connections: DatabaseConfig[];
@@ -82,7 +92,9 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTIONS);
+      const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTIONS, {
+        headers: getAuthHeaders(),
+      });
       const data: ApiResponse<DatabaseConfig[]> = await response.json();
       
       if (data.success) {
@@ -105,6 +117,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(config),
       });
@@ -133,6 +146,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(config),
       });
@@ -161,6 +175,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
     try {
       const response = await fetch(API_ENDPOINTS.DATABASES.CONNECTION(id), {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
       
       const data: ApiResponse<void> = await response.json();
