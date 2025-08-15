@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ResourceCharts from '@components/metrics/ResourceCharts';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
 
 interface ClusterOverviewProps {
   timeRange?: string;
@@ -73,14 +74,14 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
   }, [clusterMetrics]);
 
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
           <p className="text-white">{`Time: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value.toFixed(1)}${
+              {`${entry.name}: ${Number(entry.value).toFixed(1)}${
                 entry.name === 'CPU' || entry.name === 'Memory' ? '%' : ''
               }`}
             </p>
@@ -91,7 +92,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     return null;
   };
 
-  const CustomPieTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
+  const CustomPieTooltip = ({ active, payload }: PieChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-black border border-white p-2 font-mono text-xs">
