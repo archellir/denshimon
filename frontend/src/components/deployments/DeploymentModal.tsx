@@ -1,10 +1,10 @@
 import { useState, useEffect, type FC } from 'react';
 import { X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
 import { ContainerImage } from '@/types';
-import { API_ENDPOINTS } from '@/constants';
-import useModalKeyboard from '@/hooks/useModalKeyboard';
-import useDeploymentStore from '@/stores/deploymentStore';
-import CustomSelector from '@/components/common/CustomSelector';
+import { API_ENDPOINTS } from '@constants';
+import useModalKeyboard from '@hooks/useModalKeyboard';
+import useDeploymentStore from '@stores/deploymentStore';
+import CustomSelector from '@components/common/CustomSelector';
 
 interface DeploymentModalProps {
   isOpen: boolean;

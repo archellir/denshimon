@@ -1,8 +1,8 @@
 import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
-import useDeploymentStore from '@/stores/deploymentStore';
+import useDeploymentStore from '@stores/deploymentStore';
 import { ContainerImage } from '@/types';
-import DeploymentModal from '@/components/deployments/DeploymentModal';
+import DeploymentModal from '@components/deployments/DeploymentModal';
 
 const ImagesTab: FC = () => {
   const { images, loading, fetchImages } = useDeploymentStore();
