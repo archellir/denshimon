@@ -234,8 +234,9 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={createClickOutsideHandler(() => onClose?.())}>
-      <div id="deploy-modal" className="bg-black border border-white p-8 max-w-7xl w-full mx-4 max-h-[95vh] overflow-y-auto" onClick={preventClickThrough}>
-        <div className="flex items-center justify-between mb-6">
+      <div id="deploy-modal" className="bg-black border border-white max-w-7xl w-full mx-4 max-h-[95vh] flex flex-col" onClick={preventClickThrough}>
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between p-8 pb-4 border-b border-white/30">
           <h3 className="text-2xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
           <button
             onClick={() => onClose?.()}
@@ -244,6 +245,9 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
             <X size={20} />
           </button>
         </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-8 py-4">
 
         {/* Container Image Selection at Top */}
         <div className="mb-6 pb-6 border-b border-white/30">
@@ -279,7 +283,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         <div className="space-y-6">
           <h4 className="text-lg font-bold text-white font-mono tracking-wider">CONFIGURATION</h4>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-6">
               {/* Basic Configuration */}
@@ -888,9 +892,10 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
             </div>
           </div>
         </div>
+        </div>
 
-        {/* Deploy Button */}
-        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-white">
+        {/* Fixed Footer */}
+        <div className="flex justify-end space-x-3 p-8 pt-4 border-t border-white/30">
           <button
             onClick={() => onClose?.()}
             className="px-4 py-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-sm tracking-wider"
