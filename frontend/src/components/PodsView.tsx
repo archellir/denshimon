@@ -4,38 +4,17 @@ import { Server, AlertCircle, CheckCircle, Terminal, X } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
-import { API_ENDPOINTS } from '@constants'
-import { apiService, ApiError } from '@services/api'
+import useWorkloadsStore, { Pod as StorePod } from '@stores/workloadsStore'
 
-interface Container {
-  name: string
-  image: string
-  ready: boolean
-  restartCount: number
-  state: string
-}
-
-interface Pod {
-  name: string
-  namespace: string
-  status: string
-  ready: string
-  restarts: number
-  age: string
-  node: string
-  ip: string
-  labels: Record<string, string>
-  containers?: Container[]
-}
+// Using Pod interface from store
+type Pod = StorePod;
 
 interface PodsViewProps {
   selectedNamespace: string;
 }
 
 const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
-  const [pods, setPods] = useState<Pod[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { pods, isLoading, error, fetchPods } = useWorkloadsStore()
   const [sortBy, setSortBy] = useState<string>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [selectedPod, setSelectedPod] = useState<Pod | null>(null)
@@ -57,34 +36,14 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     };
   }, []);
 
-  const fetchPods = async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const url = selectedNamespace === 'all' 
-        ? API_ENDPOINTS.KUBERNETES.PODS
-        : `${API_ENDPOINTS.KUBERNETES.PODS}?namespace=${selectedNamespace}`
-
-      const response = await apiService.get<Pod[]>(url)
-      setPods(response.data)
-    } catch (err) {
-      const errorMessage = err instanceof ApiError ? err.message : 'Failed to fetch pods'
-      setError(errorMessage)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   useEffect(() => {
-    fetchPods()
-  }, [selectedNamespace])
+    fetchPods(selectedNamespace)
+  }, [selectedNamespace, fetchPods])
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
+  const getStatusIcon = (phase: string) => {
+    switch (phase) {
       case 'Running':
         return <CheckCircle className="text-green-400" size={16} />
-      case 'CrashLoopBackOff':
       case 'Failed':
         return <AlertCircle className="text-red-400" size={16} />
       default:
@@ -92,11 +51,10 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (phase: string) => {
+    switch (phase) {
       case 'Running':
         return 'text-green-400'
-      case 'CrashLoopBackOff':
       case 'Failed':
         return 'text-red-400'
       default:
@@ -120,7 +78,7 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
       filtered = filtered.filter(pod => 
         pod.name.toLowerCase().includes(query) ||
         pod.namespace.toLowerCase().includes(query) ||
-        pod.status.toLowerCase().includes(query) ||
+        pod.phase.toLowerCase().includes(query) ||
         pod.node?.toLowerCase().includes(query) ||
         pod.ip?.toLowerCase().includes(query)
       )
@@ -139,8 +97,9 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
           valueB = b.namespace
           break
         case 'status':
-          valueA = a.status
-          valueB = b.status
+        case 'phase':
+          valueA = a.phase
+          valueB = b.phase
           break
         case 'restarts':
           valueA = a.restarts
@@ -174,32 +133,21 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
   }
 
   const handleDebugPod = (pod: Pod) => {
-    // Add default containers if not present (for backward compatibility)
-    const podWithContainers = {
-      ...pod,
-      containers: pod.containers || [{
-        name: 'main',
-        image: 'unknown',
-        ready: pod.status === 'Running',
-        restartCount: pod.restarts,
-        state: pod.status
-      }]
-    }
-    setSelectedPod(podWithContainers)
+    setSelectedPod(pod)
     setIsDebugPanelOpen(true)
   }
 
   const columns: Column<Pod>[] = [
     {
-      key: 'status',
+      key: 'phase',
       title: 'STATUS',
       width: 120,
       sortable: true,
       render: (pod: Pod) => (
         <div className="flex items-center space-x-2">
-          {getStatusIcon(pod.status)}
-          <span className={`text-xs ${getStatusColor(pod.status)}`}>
-            {pod.status}
+          {getStatusIcon(pod.phase)}
+          <span className={`text-xs ${getStatusColor(pod.phase)}`}>
+            {pod.phase}
           </span>
         </div>
       ),
@@ -230,7 +178,7 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
       width: 80,
       align: 'center' as const,
       render: (pod: Pod) => (
-        <span className="font-mono text-sm">{pod.ready}</span>
+        <span className="font-mono text-sm">{pod.ready ? 'True' : 'False'}</span>
       ),
     },
     {
@@ -340,7 +288,7 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
       {/* Debug Panel */}
       {selectedPod && (
         <PodDebugPanel
-          pod={{ ...selectedPod, containers: selectedPod.containers || [] }}
+          pod={selectedPod}
           isOpen={isDebugPanelOpen}
           onClose={() => {
             setIsDebugPanelOpen(false)

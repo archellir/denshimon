@@ -147,7 +147,110 @@ const mockPods: Pod[] = [
       }
     ],
     status: 'Running',
-    created: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    created: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    cpu: 45.2,
+    memory: 512
+  },
+  {
+    id: 'api-backend-pod-1',
+    name: 'api-backend-deployment-def456-abc',
+    namespace: 'production',
+    phase: 'Running',
+    ready: true,
+    restarts: 2,
+    age: '5d',
+    node: 'worker-node-2',
+    ip: '10.244.2.20',
+    labels: { app: 'api-backend', tier: 'backend', version: 'v2.1.0' },
+    containers: [
+      {
+        name: 'api-backend',
+        image: 'node:18-alpine',
+        ready: true,
+        restartCount: 2
+      },
+      {
+        name: 'sidecar-proxy',
+        image: 'envoy:v1.20',
+        ready: true,
+        restartCount: 0
+      }
+    ],
+    status: 'Running',
+    created: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    cpu: 78.5,
+    memory: 1024
+  },
+  {
+    id: 'database-pod-1',
+    name: 'postgres-primary-sts-0',
+    namespace: 'default',
+    phase: 'Running',
+    ready: true,
+    restarts: 0,
+    age: '10d',
+    node: 'worker-node-3',
+    ip: '10.244.3.10',
+    labels: { app: 'postgres', role: 'primary' },
+    containers: [
+      {
+        name: 'postgres',
+        image: 'postgres:14',
+        ready: true,
+        restartCount: 0
+      }
+    ],
+    status: 'Running',
+    created: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    cpu: 25.1,
+    memory: 2048
+  },
+  {
+    id: 'monitoring-pod-1',
+    name: 'prometheus-server-abc123-def',
+    namespace: 'monitoring',
+    phase: 'Pending',
+    ready: false,
+    restarts: 0,
+    age: '30m',
+    node: 'worker-node-1',
+    labels: { app: 'prometheus', component: 'server' },
+    containers: [
+      {
+        name: 'prometheus',
+        image: 'prom/prometheus:latest',
+        ready: false,
+        restartCount: 0
+      }
+    ],
+    status: 'Pending',
+    created: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    cpu: 0,
+    memory: 0
+  },
+  {
+    id: 'cache-pod-1',
+    name: 'redis-deployment-ghi789-jkl',
+    namespace: 'production',
+    phase: 'Failed',
+    ready: false,
+    restarts: 5,
+    age: '1h',
+    node: 'worker-node-2',
+    ip: '10.244.2.25',
+    labels: { app: 'redis', tier: 'cache' },
+    containers: [
+      {
+        name: 'redis',
+        image: 'redis:7-alpine',
+        ready: false,
+        restartCount: 5
+      }
+    ],
+    status: 'Failed',
+    created: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    cpu: 0,
+    memory: 256
   }
 ];
 
