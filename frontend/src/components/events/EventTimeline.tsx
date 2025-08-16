@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { parseTimeRangeToHours } from '@utils/timeUtils';
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
-import { EventTimelineData, TimelineEvent } from '@/types/eventTimeline';
+import { 
+  getSeverityIcon, 
+  getCategoryIcon, 
+  getSeverityColor,
+  formatTimeAgo,
+  groupEventsByHour,
+  filterEvents
+} from '@utils/eventUtils';
+import { EventTimelineData } from '@/types/eventTimeline';
 import { generateEventTimelineData } from '@mocks/events/timeline';
 import { MOCK_ENABLED } from '@mocks/index';
 import { 
@@ -88,32 +95,8 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
   const filteredData = useMemo(() => {
     if (!data) return null;
 
-    const filteredEvents = data.events.filter(event => {
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(event.category);
-      const matchesSeverity = selectedSeverities.length === 0 || selectedSeverities.includes(event.severity);
-      
-      return matchesCategory && matchesSeverity;
-    });
-
-    const groupMap = new Map<string, TimelineEvent[]>();
-    filteredEvents.forEach(event => {
-      const hour = new Date(event.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';
-      if (!groupMap.has(hour)) {
-        groupMap.set(hour, []);
-      }
-      groupMap.get(hour)!.push(event);
-    });
-
-    const groups = Array.from(groupMap.entries()).map(([hour, events]) => ({
-      hour,
-      events,
-      summary: {
-        critical: events.filter(e => e.severity === 'critical').length,
-        warning: events.filter(e => e.severity === 'warning').length,
-        info: events.filter(e => e.severity === 'info').length,
-        success: events.filter(e => e.severity === 'success').length,
-      },
-    })).sort((a, b) => new Date(b.hour).getTime() - new Date(a.hour).getTime());
+    const filteredEvents = filterEvents(data.events, selectedCategories, selectedSeverities);
+    const groups = groupEventsByHour(filteredEvents);
 
     return {
       ...data,
@@ -122,51 +105,6 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     };
   }, [data, selectedCategories, selectedSeverities]);
 
-  const getSeverityIcon = (severity: Status) => {
-    switch (severity) {
-      case Status.CRITICAL: return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case Status.WARNING: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case Status.INFO: return <Info className="w-4 h-4 text-blue-500" />;
-      case Status.SUCCESS: return <CheckCircle className="w-4 h-4 text-green-500" />;
-    }
-  };
-
-  const getCategoryIcon = (category: EventCategory) => {
-    switch (category) {
-      case EventCategory.NODE: return <Server className="w-4 h-4" />;
-      case EventCategory.POD: return <Package className="w-4 h-4" />;
-      case EventCategory.SERVICE: return <Activity className="w-4 h-4" />;
-      case EventCategory.CONFIG: return <Settings className="w-4 h-4" />;
-      case EventCategory.SECURITY: return <Shield className="w-4 h-4" />;
-      case EventCategory.NETWORK: return <Network className="w-4 h-4" />;
-      case EventCategory.STORAGE: return <HardDrive className="w-4 h-4" />;
-    }
-  };
-
-  const getSeverityColor = (severity: Status) => {
-    switch (severity) {
-      case Status.CRITICAL: return 'border-red-500 text-red-500';
-      case Status.WARNING: return 'border-yellow-500 text-yellow-500';
-      case Status.INFO: return 'border-blue-500 text-blue-500';
-      case Status.SUCCESS: return 'border-green-500 text-green-500';
-    }
-  };
-
-
-  const formatTimeAgo = (timestamp: string) => {
-    const now = Date.now();
-    const then = new Date(timestamp).getTime();
-    const diff = now - then;
-    
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
-    return 'just now';
-  };
 
   const toggleGroup = (hour: string) => {
     const newExpanded = new Set(expandedGroups);
