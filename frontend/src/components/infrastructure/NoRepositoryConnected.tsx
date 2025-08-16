@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { GitBranch, CheckCircle, Activity, ExternalLink } from 'lucide-react';
+import { GitBranch, CheckCircle, Activity, ExternalLink, Key } from 'lucide-react';
 import CustomDialog from '@components/common/CustomDialog';
+import CustomSelector from '@components/common/CustomSelector';
 
 const NoRepositoryConnected = () => {
   const [showConnectDialog, setShowConnectDialog] = useState(false);
@@ -178,15 +179,18 @@ const NoRepositoryConnected = () => {
             <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider">
               Authentication Method
             </label>
-            <select
+            <CustomSelector
               value={authMethod}
-              onChange={(e) => setAuthMethod(e.target.value)}
-              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400 transition-colors"
-            >
-              <option value="ssh">SSH Key</option>
-              <option value="token">Personal Access Token</option>
-              <option value="deploy-key">Deploy Key</option>
-            </select>
+              options={[
+                { value: 'ssh', label: 'SSH Key' },
+                { value: 'token', label: 'Personal Access Token' },
+                { value: 'deploy-key', label: 'Deploy Key (Recommended)' }
+              ]}
+              onChange={(value) => setAuthMethod(value)}
+              placeholder="Select Authentication Method"
+              icon={Key}
+              size="sm"
+            />
           </div>
 
           <div>
