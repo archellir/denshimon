@@ -728,7 +728,9 @@ export const API_ENDPOINTS = {
     ROW_DELETE: (id: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/tables/${table}/rows`,
     ROW_INSERT: (id: string, table: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/tables/${table}/rows`,
     STATS: (id: string) => `${API_BASE_PATHS.DATABASES}/connections/${id}/stats`,
-    TYPES: `${API_BASE_PATHS.DATABASES}/types`
+    TYPES: `${API_BASE_PATHS.DATABASES}/types`,
+    SAVED_QUERIES: `${API_BASE_PATHS.DATABASES}/saved-queries`,
+    SAVED_QUERY: (id: string) => `${API_BASE_PATHS.DATABASES}/saved-queries/${id}`
   },
   GITEA: {
     BASE: API_BASE_PATHS.GITEA,
