@@ -63,7 +63,7 @@ const StatCard: FC<StatCardProps> = ({
     default: 20,
     compact: 18,
     minimal: 16,
-    'service-health': 16
+    'service-health': 32
   };
 
   const statusIconSizes = {
@@ -113,17 +113,17 @@ const StatCard: FC<StatCardProps> = ({
   if (variant === 'service-health') {
     return (
       <div 
-        className={`${baseClasses} ${variantClasses['service-health']} ${clickableClasses} ${className}`}
+        className={`${baseClasses} ${variantClasses['service-health']} ${clickableClasses} ${className} flex items-center`}
         onClick={onClick}
       >
-        <div className="flex items-center justify-between mb-2">
-          <span className={`${labelClasses['service-health']} font-mono`}>{label}</span>
-          <Icon size={iconSizes['service-health']} />
+        <div className="flex-1">
+          <span className={`${labelClasses['service-health']} font-mono block mb-2`}>{label}</span>
+          <div className={`${valueClasses['service-health']} font-mono`}>{value}</div>
+          {description && (
+            <div className="font-mono text-xs opacity-60">{description}</div>
+          )}
         </div>
-        <div className={`${valueClasses['service-health']} font-mono`}>{value}</div>
-        {description && (
-          <div className="font-mono text-xs opacity-60">{description}</div>
-        )}
+        <Icon size={iconSizes['service-health']} className="ml-4" />
       </div>
     );
   }
