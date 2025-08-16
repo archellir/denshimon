@@ -65,7 +65,7 @@ export interface QueryRequest {
 
 export interface QueryResult {
   columns: string[];
-  rows: any[][];
+  rows: (string | number | boolean | null)[][]; // Database query results can be mixed types
   rowCount: number;
   affectedRows?: number;
   duration: number;
