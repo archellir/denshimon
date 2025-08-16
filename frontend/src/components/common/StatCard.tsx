@@ -37,9 +37,9 @@ const StatCard: FC<StatCardProps> = ({
   const clickableClasses = onClick ? 'cursor-pointer hover:bg-white/5' : '';
   
   const variantClasses = {
-    default: 'px-4 py-3',
-    compact: 'px-3 py-2',
-    minimal: 'px-2 py-1.5'
+    default: 'pl-5 pr-4 py-3',
+    compact: 'pl-4 pr-3 py-2',
+    minimal: 'pl-3 pr-2 py-1.5'
   };
 
   const valueClasses = {
