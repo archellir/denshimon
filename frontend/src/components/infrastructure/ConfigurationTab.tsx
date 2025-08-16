@@ -3,6 +3,7 @@ import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCom
 import { API_ENDPOINTS } from '@constants';
 import { MOCK_ENABLED, mockBaseInfrastructureRepo, mockSyncMetrics, mockMonitoringData, mockWebhookData, simulateSync } from '@/mocks';
 import type { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 import NoRepositoryConnected from './NoRepositoryConnected';
 
 
@@ -134,8 +135,14 @@ const ConfigurationTab = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 bg-black border border-white">
-        <div className="text-white font-mono tracking-wider">LOADING BASE INFRASTRUCTURE REPOSITORY...</div>
+      <div className="space-y-6">
+        <SkeletonLoader variant="card" count={1} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <SkeletonLoader variant="card" count={3} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonLoader variant="card" count={2} />
+        </div>
       </div>
     );
   }
