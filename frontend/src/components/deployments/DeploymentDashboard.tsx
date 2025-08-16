@@ -5,7 +5,6 @@ import ImagesTab from './tabs/ImagesTab';
 import DeploymentsTab from './tabs/DeploymentsTab';
 import HistoryTab from './tabs/HistoryTab';
 import { DeploymentsTab as DeploymentsTabEnum } from '@constants';
-import { ContainerImage } from '@/types';
 
 interface DeploymentDashboardProps {
   activeTab?: string;

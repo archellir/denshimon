@@ -33,7 +33,6 @@ const ServiceHealthDashboard: FC = () => {
     stats,
     infrastructureStatus,
     alerts,
-    isLoading,
     error,
     lastUpdated,
     setServiceHealthData,

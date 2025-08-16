@@ -18,7 +18,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   onClose,
   preselectedImage
 }) => {
-  const { images, loading, fetchImages } = useDeploymentStore();
+  const { images, fetchImages } = useDeploymentStore();
   
   // Deployment states
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);

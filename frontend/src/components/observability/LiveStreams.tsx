@@ -5,7 +5,6 @@ import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@mocks/termin
 import { useWebSocket } from '@hooks/useWebSocket';
 import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, WebSocketEventType } from '@constants';
 import { MOCK_ENABLED } from '@/mocks';
-import { KubernetesPodAPI, Deployment } from '@/types';
 import RealtimeLogViewer from './RealtimeLogViewer';
 
 const LiveStreams: React.FC = () => {
@@ -22,10 +21,6 @@ const LiveStreams: React.FC = () => {
     timestamp: string;
   }>(WebSocketEventType.PODS);
 
-  const { data: eventsData } = useWebSocket<{
-    events: any[];
-    timestamp: string;
-  }>(WebSocketEventType.EVENTS);
 
   const { data: deploymentsData } = useWebSocket<{
     deployments: any[];
@@ -87,6 +82,9 @@ const LiveStreams: React.FC = () => {
     };
   }, [isPaused]);
 
+  // Show data from WebSocket when available, otherwise show mock data if enabled
+  const displayData = (!MOCK_ENABLED && liveData) || (MOCK_ENABLED && liveData) || null;
+
   // Auto-scroll for live logs
   useEffect(() => {
     if (autoScroll && logsEndRef.current && viewMode === LiveStreamViewMode.LOGS) {
@@ -141,7 +139,7 @@ const LiveStreams: React.FC = () => {
 
   // Connection status helpers (matching WebSocketStatus component)
   const getStatusIcon = () => {
-    switch (connectionState) {
+    switch (connectionState.state) {
       case WebSocketState.CONNECTED:
         return <Wifi size={16} className="text-green-500" />;
       case WebSocketState.CONNECTING:
@@ -156,7 +154,7 @@ const LiveStreams: React.FC = () => {
   };
 
   const getConnectionColor = () => {
-    switch (connectionState) {
+    switch (connectionState.state) {
       case WebSocketState.CONNECTED:
         return 'border-green-500 text-green-500';
       case WebSocketState.CONNECTING:
@@ -171,7 +169,7 @@ const LiveStreams: React.FC = () => {
   };
 
   const getStatusText = () => {
-    switch (connectionState) {
+    switch (connectionState.state) {
       case WebSocketState.CONNECTED:
         return UI_MESSAGES.LIVE;
       case WebSocketState.CONNECTING:
@@ -185,10 +183,7 @@ const LiveStreams: React.FC = () => {
     }
   };
 
-  const isConnected = connectionState === WebSocketState.CONNECTED;
-
-  // Show data from WebSocket when available, otherwise show mock data if enabled
-  const displayData = (!MOCK_ENABLED && liveData) || (MOCK_ENABLED && liveData) || null;
+  const isConnected = connectionState.state === WebSocketState.CONNECTED;
 
   return (
     <div className="space-y-6">
@@ -263,12 +258,12 @@ const LiveStreams: React.FC = () => {
             
             {/* Tooltip */}
             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black border border-white text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-              {UI_MESSAGES.REAL_TIME_UPDATES} {connectionState}
+              {UI_MESSAGES.REAL_TIME_UPDATES} {connectionState.state}
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
             </div>
 
             {/* Pulse effect when connecting */}
-            {connectionState === WebSocketState.CONNECTING && (
+            {connectionState.state === WebSocketState.CONNECTING && (
               <div className="absolute inset-0 border border-yellow-500 animate-pulse pointer-events-none"></div>
             )}
           </div>

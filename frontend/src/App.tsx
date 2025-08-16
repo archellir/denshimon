@@ -119,7 +119,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
         InfrastructureTab.NETWORK,
         InfrastructureTab.RESOURCES,
         InfrastructureTab.STORAGE
-      ].includes(currentSecondaryTab)
+      ].includes(currentSecondaryTab as InfrastructureTab)
     }
 
     // Workloads tabs that need timeframe selector
@@ -132,7 +132,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       return [
         ObservabilityTab.LOGS,
         ObservabilityTab.ANALYTICS
-      ].includes(currentSecondaryTab)
+      ].includes(currentSecondaryTab as ObservabilityTab)
     }
 
     return false
