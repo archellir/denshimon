@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch, RefreshCw, Network } from 'lucide-react';
+import { Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch, Network } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
@@ -17,7 +17,6 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
     error, 
     connectionState, 
     fetchServiceMeshData, 
-    refreshData,
     initializeWebSocket, 
     cleanupWebSocket,
     clearError
@@ -238,34 +237,16 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
         <div className="text-2xl font-mono text-green-500">{data.metrics.overview.mTLSCoverage.toFixed(0)}%</div>
       </div>
       <div className="bg-black border border-white p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs text-gray-500 uppercase mb-1">Circuit Breakers</div>
-            <div className="text-lg font-mono">
-              {data.services.filter(s => s.circuitBreaker.status === 'open').length > 0 ? (
-                <span className="text-red-500">{data.services.filter(s => s.circuitBreaker.status === 'open').length} OPEN</span>
-              ) : data.services.filter(s => s.circuitBreaker.status === 'half-open').length > 0 ? (
-                <span className="text-yellow-500">{data.services.filter(s => s.circuitBreaker.status === 'half-open').length} WARN</span>
-              ) : (
-                <span className="text-green-500">OK</span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={refreshData}
-              disabled={isLoading}
-              className="p-1 border border-white hover:bg-white hover:text-black transition-colors disabled:opacity-50"
-              title="Refresh Service Mesh Data"
-            >
-              <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
-            </button>
-            <div className="flex items-center space-x-1">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
-              <span className="text-xs font-mono text-gray-500">
-                {isConnected ? 'LIVE' : 'OFFLINE'}
-              </span>
-            </div>
+        <div>
+          <div className="text-xs text-gray-500 uppercase mb-1">Circuit Breakers</div>
+          <div className="text-lg font-mono">
+            {data.services.filter(s => s.circuitBreaker.status === 'open').length > 0 ? (
+              <span className="text-red-500">{data.services.filter(s => s.circuitBreaker.status === 'open').length} OPEN</span>
+            ) : data.services.filter(s => s.circuitBreaker.status === 'half-open').length > 0 ? (
+              <span className="text-yellow-500">{data.services.filter(s => s.circuitBreaker.status === 'half-open').length} WARN</span>
+            ) : (
+              <span className="text-green-500">OK</span>
+            )}
           </div>
         </div>
       </div>
