@@ -6,7 +6,7 @@ import {
   RefreshCw, ArrowLeft
 } from 'lucide-react';
 import SearchBar from '@components/common/SearchBar';
-import LoadingSpinner from '@components/common/LoadingSpinner';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 interface FileItem {
   name: string;
@@ -281,8 +281,8 @@ const FileExplorer: FC<FileExplorerProps> = ({
         onDrop={handleDrop}
       >
         {isLoading ? (
-          <div className="flex items-center justify-center h-32">
-            <LoadingSpinner size="md" text="Loading files..." />
+          <div className="h-32">
+            <SkeletonLoader variant="table" count={5} />
           </div>
         ) : filteredFiles.length === 0 ? (
           <div className="text-center py-8 text-sm font-mono opacity-60">

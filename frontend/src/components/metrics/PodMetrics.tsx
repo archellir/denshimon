@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import type { FC } from 'react';
 import { Database, Cpu, MemoryStick, CheckCircle, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 
 const PodMetrics: FC = () => {
@@ -74,8 +75,12 @@ const PodMetrics: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-green-400 font-mono">LOADING PODS...</div>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <SkeletonLoader variant="text" count={1} className="w-48" />
+          <SkeletonLoader variant="text" count={1} className="w-32" />
+        </div>
+        <SkeletonLoader variant="table" count={6} />
       </div>
     );
   }

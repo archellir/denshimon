@@ -5,6 +5,7 @@ import { Deployment } from '@/types/deployments';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 interface DeploymentsTabProps {
   showDeployModal?: boolean;
@@ -136,29 +137,7 @@ const DeploymentsTab = ({
 
       {loading.deployments ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {[...Array(4)].map((_, index) => (
-            <div key={`skeleton-${index}`} className="border border-white/20 p-4 bg-black animate-pulse">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="h-6 bg-white/10 rounded w-32 mb-2"></div>
-                  <div className="flex items-center space-x-4">
-                    <div className="h-4 bg-white/10 rounded w-20"></div>
-                    <div className="h-4 bg-white/10 rounded w-24"></div>
-                    <div className="h-4 bg-white/10 rounded w-20"></div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="h-8 bg-white/10 rounded w-20"></div>
-                  <div className="h-8 bg-white/10 rounded w-8"></div>
-                  <div className="h-8 bg-white/10 rounded w-8"></div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="h-4 bg-white/10 rounded w-48"></div>
-                <div className="h-4 bg-white/10 rounded w-40"></div>
-              </div>
-            </div>
-          ))}
+          <SkeletonLoader variant="card" count={4} />
         </div>
       ) : deployments.length === 0 ? (
         <div className="border border-white p-8 text-center bg-black">

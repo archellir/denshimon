@@ -4,6 +4,7 @@ import useDeploymentStore from '@stores/deploymentStore';
 import { ContainerImage } from '@/types';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 
 const ImagesTab: FC = () => {
   const { images, loading, fetchImages } = useDeploymentStore();
@@ -31,36 +32,7 @@ const ImagesTab: FC = () => {
     <>
       {loading.images ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, index) => (
-            <div key={`skeleton-${index}`} className="border border-white/20 p-4 animate-pulse">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                  <div className="h-4 bg-white/10 rounded w-32 mb-2"></div>
-                  <div className="h-4 bg-white/10 rounded w-20 mb-1"></div>
-                  <div className="h-3 bg-white/10 rounded w-24"></div>
-                </div>
-                <div className="h-8 bg-white/10 rounded w-20"></div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <div className="h-3 bg-white/10 rounded w-12"></div>
-                  <div className="h-3 bg-white/10 rounded w-16"></div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="h-3 bg-white/10 rounded w-16"></div>
-                  <div className="h-3 bg-white/10 rounded w-20"></div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="h-3 bg-white/10 rounded w-14"></div>
-                  <div className="h-3 bg-white/10 rounded w-24"></div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="h-3 bg-white/10 rounded w-12"></div>
-                  <div className="h-3 bg-white/10 rounded w-20"></div>
-                </div>
-              </div>
-            </div>
-          ))}
+          <SkeletonLoader variant="card" count={6} />
         </div>
       ) : images.length === 0 ? (
         <div className="border border-white/20 p-8 text-center">

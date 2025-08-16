@@ -183,12 +183,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
       <div className="space-y-6">
         {/* Overview Stats Skeleton */}
         <div className="grid grid-cols-6 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-black border border-white/20 p-4">
-              <div className="h-3 bg-white/10 animate-pulse rounded w-2/3 mb-2" />
-              <div className="h-8 bg-white/10 animate-pulse rounded w-1/2" />
-            </div>
-          ))}
+          <SkeletonLoader variant="card" count={6} />
         </div>
         
         {/* Content Area Skeleton */}

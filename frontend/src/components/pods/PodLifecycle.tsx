@@ -27,6 +27,7 @@ import type {
   LifecycleTimelineEvent 
 } from '@/types/podLifecycle';
 import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 import useWorkloadsStore from '@stores/workloadsStore';
 import { MOCK_ENABLED } from '@/mocks';
 
@@ -201,14 +202,12 @@ const PodLifecycle: FC = () => {
 
   if (isLoading && !lifecycleData) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-2xl font-mono mb-2">LOADING...</div>
-          <div className="text-sm font-mono opacity-60">Analyzing pod lifecycle</div>
-          <div className="text-xs font-mono opacity-40 mt-2">
-            Current pods: {pods.length}
-          </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <SkeletonLoader variant="card" count={4} />
         </div>
+        <SkeletonLoader variant="chart" count={1} />
+        <SkeletonLoader variant="table" count={5} />
       </div>
     );
   }
