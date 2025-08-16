@@ -430,7 +430,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           case WorkloadsTab.SERVICES:
             return (
               <>
-                <span className="text-sm font-mono opacity-60">SERVICES</span>
                 <CustomSelector
                   value={selectedNamespace}
                   options={[

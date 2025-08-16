@@ -241,16 +241,9 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       });
     } catch (error) {
       console.error('Failed to fetch services:', error);
-      // Fallback to mock data on error
-      let services = mockServices;
-      if (namespace && namespace !== 'all') {
-        services = mockServices.filter(svc => svc.namespace === namespace);
-      }
       set({ 
-        services, 
-        isLoading: false,
-        error: null,
-        lastUpdated: new Date().toISOString()
+        error: `Failed to fetch services: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        isLoading: false 
       });
     }
   },
@@ -308,16 +301,9 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       });
     } catch (error) {
       console.error('Failed to fetch pods:', error);
-      // Fallback to mock data on error
-      let pods = mockPods;
-      if (namespace && namespace !== 'all') {
-        pods = mockPods.filter(pod => pod.namespace === namespace);
-      }
       set({ 
-        pods, 
-        isLoading: false,
-        error: null,
-        lastUpdated: new Date().toISOString()
+        error: `Failed to fetch pods: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        isLoading: false 
       });
     }
   },
@@ -354,12 +340,9 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
       });
     } catch (error) {
       console.error('Failed to fetch namespaces:', error);
-      // Fallback to mock data on error
       set({ 
-        namespaces: mockNamespaces, 
-        isLoading: false,
-        error: null,
-        lastUpdated: new Date().toISOString()
+        error: `Failed to fetch namespaces: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        isLoading: false 
       });
     }
   },
