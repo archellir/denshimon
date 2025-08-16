@@ -2,6 +2,7 @@ import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { ContainerImage } from '@/types';
+import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
 
 const ImagesTab: FC = () => {
@@ -51,13 +52,13 @@ const ImagesTab: FC = () => {
                   <p className="text-sm text-green-400 font-mono">{image.tag}</p>
                   <p className="text-xs text-gray-400">{image.registry}</p>
                 </div>
-                <button
+                <CustomButton
+                  label="DEPLOY"
+                  icon={Play}
                   onClick={() => handleDeploy(image)}
-                  className="flex items-center space-x-1 px-3 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs"
-                >
-                  <Play size={12} />
-                  <span>DEPLOY</span>
-                </button>
+                  color="green"
+                  className="w-auto px-3 py-1"
+                />
               </div>
 
               <div className="space-y-2 text-xs">

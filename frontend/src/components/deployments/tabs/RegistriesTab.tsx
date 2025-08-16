@@ -3,6 +3,7 @@ import { Trash2, TestTube, CheckCircle, XCircle, Clock, Package } from 'lucide-r
 import useDeploymentStore from '@stores/deploymentStore';
 import RegistryForm from '../forms/RegistryForm';
 import CustomDialog from '@components/common/CustomDialog';
+import CustomButton from '@components/common/CustomButton';
 import type { Registry } from '@/types/deployments';
 
 interface RegistriesTabProps {
@@ -105,19 +106,19 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
           <p className="text-gray-400 mb-4">
             Add container registries to deploy images from Docker Hub, Gitea, or other sources.
           </p>
-          <button
+          <CustomButton
+            label="ADD FIRST REGISTRY"
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono"
-          >
-            ADD FIRST REGISTRY
-          </button>
+            color="green"
+            className="w-auto px-6"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {registries.map((registry) => {
             const StatusIcon = getStatusIcon(registry.status);
             return (
-              <div key={registry.id} className="border border-white/20 p-4 hover:border-white/40 transition-colors">
+              <div key={registry.id} className="border border-white/20 p-4 hover:border-white/40 transition-colors flex flex-col h-full">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-mono font-bold text-lg">{registry.name}</h3>
@@ -131,7 +132,7 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-4 flex-1">
                   <div className="text-sm">
                     <span className="text-gray-400">URL:</span>
                     <span className="ml-2 font-mono">{registry.config.url}</span>
@@ -149,20 +150,21 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
                   )}
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <button
+                <div className="flex items-center justify-end space-x-2">
+                  <CustomButton
+                    label="TEST"
+                    icon={TestTube}
                     onClick={() => handleTestRegistry(registry)}
-                    className="flex-1 flex items-center justify-center space-x-1 px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
-                  >
-                    <TestTube size={14} />
-                    <span>TEST</span>
-                  </button>
-                  <button
+                    color="blue"
+                    className="w-auto"
+                  />
+                  <CustomButton
+                    label=""
+                    icon={Trash2}
                     onClick={() => handleDeleteRegistry(registry)}
-                    className="flex items-center justify-center px-3 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-sm"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                    color="red"
+                    className="w-auto px-2 py-1"
+                  />
                 </div>
               </div>
             );
