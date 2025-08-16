@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Download, RefreshCw, Table, Filter, Search } from 'lucide-react';
-import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
-import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@mocks/terminal/liveData';
+import { LiveTerminalData, TerminalFilter, PodResourceUsage, DeploymentProgress } from '@/types/liveTerminal';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { Pod } from '@stores/workloadsStore';
 import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
+import { useWebSocket, useLogsWebSocket } from '@hooks/useWebSocket';
+import { WebSocketEventType, PodStatus } from '@constants';
 
 const Logs: React.FC = () => {
   // Live terminal state
@@ -33,20 +34,92 @@ const Logs: React.FC = () => {
     loadStaticLogs();
   }, []);
 
-  // Live terminal updates
+  // WebSocket connections for real-time data
+  const { data: podsData } = useWebSocket<{
+    pods: PodResourceUsage[];
+    timestamp: string;
+  }>(WebSocketEventType.PODS);
+
+  const { data: deploymentsData } = useWebSocket<{
+    deployments: DeploymentProgress[];
+    timestamp: string;
+  }>(WebSocketEventType.DEPLOYMENTS);
+
+  const { data: liveLogEntry } = useLogsWebSocket();
+
+  // Handle WebSocket data to build LiveTerminalData
   useEffect(() => {
-    let unsubscribe: (() => void) | null = null;
-    
-    if (selectedView === 'live' || selectedView === 'pods' || selectedView === 'deployments') {
-      unsubscribe = startLiveTerminalUpdates(setLiveData);
+    if (!MOCK_ENABLED && (podsData || deploymentsData)) {
+      setLiveData(prevData => {
+        const transformedData: LiveTerminalData = {
+          topPods: podsData ? podsData.pods.slice(0, 10).map((pod: PodResourceUsage) => ({
+            name: pod.name,
+            namespace: pod.namespace,
+            cpu: pod.cpu || Math.random() * 100,
+            cpuTrend: pod.cpuTrend || 'stable',
+            memory: pod.memory || Math.random() * 4000,
+            memoryTrend: pod.memoryTrend || 'stable',
+            status: pod.status || PodStatus.RUNNING,
+            lastUpdate: pod.lastUpdate || new Date().toISOString(),
+          })) : (prevData?.topPods || []),
+          deployments: deploymentsData ? deploymentsData.deployments.map((deployment: DeploymentProgress) => ({
+            name: deployment.name,
+            namespace: deployment.namespace,
+            status: deployment.status,
+            progress: deployment.progress,
+            strategy: deployment.strategy,
+            startTime: deployment.startTime,
+            estimatedCompletion: deployment.estimatedCompletion,
+            replicas: deployment.replicas,
+            message: deployment.message,
+          })) : (prevData?.deployments || []),
+          logs: prevData?.logs || [],
+          stats: {
+            logsPerSecond: 10 + Math.random() * 50,
+            activeStreams: 3 + Math.round(Math.random() * 7),
+            errorRate: 0.5 + Math.random() * 2,
+            warningRate: 2 + Math.random() * 5
+          },
+          lastUpdate: podsData?.timestamp || deploymentsData?.timestamp || new Date().toISOString(),
+        };
+        return transformedData;
+      });
     }
-    
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-        stopLiveTerminalUpdates();
-      }
-    };
+  }, [podsData, deploymentsData]);
+
+  // Handle incoming live log entries
+  useEffect(() => {
+    if (liveLogEntry && !MOCK_ENABLED) {
+      setLiveData(prevData => {
+        if (!prevData) return null;
+        
+        const newLog = {
+          timestamp: liveLogEntry.timestamp,
+          level: liveLogEntry.level as 'info' | 'warn' | 'error' | 'debug',
+          source: liveLogEntry.source,
+          message: liveLogEntry.message,
+          metadata: liveLogEntry.metadata
+        };
+        
+        return {
+          ...prevData,
+          logs: [newLog, ...prevData.logs.slice(0, 999)] // Keep max 1000 logs
+        };
+      });
+    }
+  }, [liveLogEntry]);
+
+  // Fallback to mock data when MOCK_ENABLED
+  useEffect(() => {
+    if (MOCK_ENABLED && (selectedView === 'live' || selectedView === 'pods' || selectedView === 'deployments')) {
+      const { startLiveTerminalUpdates, stopLiveTerminalUpdates } = require('@mocks/terminal/liveData');
+      const unsubscribe = startLiveTerminalUpdates(setLiveData);
+      
+      return () => {
+        unsubscribe?.();
+        stopLiveTerminalUpdates?.();
+      };
+    }
   }, [selectedView]);
 
   // Auto-scroll for live logs
@@ -254,7 +327,7 @@ const Logs: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-mono">SYSTEM LOGS</h1>
+        <h1 className="text-2xl font-mono">LIVE STREAMS</h1>
         <div className="flex items-center gap-4">
           {/* Live Stats (only show when in live/pods/deployments view) */}
           {liveData && (selectedView === 'live' || selectedView === 'pods' || selectedView === 'deployments') && (
