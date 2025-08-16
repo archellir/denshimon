@@ -75,6 +75,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   // Database management state
   const [showAddDatabaseModal, setShowAddDatabaseModal] = useState(false);
+  const [preselectedDatabaseConnection, setPreselectedDatabaseConnection] = useState<string | undefined>();
   
   // Deployment management state
   const [showDeployModal, setShowDeployModal] = useState(false);
@@ -134,8 +135,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
     ],
     [PrimaryTab.DATABASE]: [
+      { id: DatabaseTab.EXPLORER, label: 'Explorer', icon: Eye },
       { id: DatabaseTab.CONNECTIONS, label: UI_LABELS.CONNECTIONS, icon: Database },
-      { id: DatabaseTab.EXPLORER, label: 'EXPLORER', icon: Eye },
       { id: DatabaseTab.MONITORING, label: UI_LABELS.MONITORING, icon: TrendingUp },
     ],
     [PrimaryTab.OBSERVABILITY]: [
@@ -277,8 +278,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         [DeploymentsTab.REGISTRIES]: "Configure and manage container registries for pulling images in Kubernetes deployments."
       },
       [PrimaryTab.DATABASE]: {
-        [DatabaseTab.CONNECTIONS]: "Manage database connections and credentials with WebSocket-based connectivity.",
         [DatabaseTab.EXPLORER]: "Unified database interface for browsing schemas, executing queries, and managing data with context-aware navigation.",
+        [DatabaseTab.CONNECTIONS]: "Manage database connections and credentials with WebSocket-based connectivity.",
         [DatabaseTab.MONITORING]: "Monitor database performance metrics and real-time query execution statistics."
       },
       [PrimaryTab.OBSERVABILITY]: {
@@ -901,14 +902,16 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.CONNECTIONS && (
           <DatabaseGrid 
             onAddConnection={() => setShowAddDatabaseModal(true)}
-            onUseConnection={() => {
-              // Switch to EXPLORER tab
+            onUseConnection={(connectionId) => {
+              // Switch to EXPLORER tab and set preselected connection
               setActiveSecondaryTab(DatabaseTab.EXPLORER);
-              // Future: Could also pass the selected connection ID to the Explorer
+              setPreselectedDatabaseConnection(connectionId);
             }}
           />
         )}
-        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.EXPLORER && <DatabaseExplorer />}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.EXPLORER && (
+          <DatabaseExplorer preselectedConnectionId={preselectedDatabaseConnection} />
+        )}
         {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.MONITORING && <DatabaseMonitoring />}
         
         {/* Observability Tab Content */}
