@@ -301,22 +301,84 @@ func (h *MetricsHandlers) GetNetworkMetrics(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Get real network metrics from cluster
-	clusterMetrics, err := h.metricsService.GetClusterMetrics(r.Context())
+	// Parse duration parameter (default to 1 hour)
+	durationStr := r.URL.Query().Get("duration")
+	duration := time.Hour
+	if durationStr != "" {
+		if d, err := time.ParseDuration(durationStr); err == nil {
+			duration = d
+		}
+	}
+
+	// Try to get detailed network metrics from Prometheus
+	networkMetrics, err := h.metricsService.GetNetworkMetrics(r.Context(), duration)
 	if err != nil {
+		// Fallback to basic cluster network metrics
+		clusterMetrics, clusterErr := h.metricsService.GetClusterMetrics(r.Context())
+		if clusterErr != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "Failed to get network metrics",
+			})
+			return
+		}
+
+		fallbackMetrics := map[string]interface{}{
+			"network":   clusterMetrics.NetworkMetrics,
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+			"source":    "cluster_basic",
+		}
+		SendSuccess(w, fallbackMetrics)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"data":      networkMetrics,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"source":    "prometheus",
+	})
+}
+
+// GET /api/metrics/storage - Get storage metrics
+func (h *MetricsHandlers) GetStorageMetrics(w http.ResponseWriter, r *http.Request) {
+	if h.metricsService == nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusServiceUnavailable)
 		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Failed to get network metrics",
+			"error": "Metrics service not available",
 		})
 		return
 	}
 
-	// Return network-related metrics from cluster
-	networkMetrics := map[string]interface{}{
-		"network":   clusterMetrics.NetworkMetrics,
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	// Try to get detailed storage metrics from Prometheus
+	storageMetrics, err := h.metricsService.GetStorageMetrics(r.Context())
+	if err != nil {
+		// Fallback to basic cluster storage metrics
+		clusterMetrics, clusterErr := h.metricsService.GetClusterMetrics(r.Context())
+		if clusterErr != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error": "Failed to get storage metrics",
+			})
+			return
+		}
+
+		fallbackMetrics := map[string]interface{}{
+			"storage":   clusterMetrics.StorageUsage,
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+			"source":    "cluster_basic",
+		}
+		SendSuccess(w, fallbackMetrics)
+		return
 	}
 
-	SendSuccess(w, networkMetrics)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"data":      storageMetrics,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"source":    "prometheus",
+	})
 }
