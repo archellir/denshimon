@@ -50,6 +50,18 @@ export {
   mockBackupAlerts
 } from './backup/backup';
 
+// Infrastructure configuration mocks
+export {
+  mockBaseInfrastructureRepo,
+  mockSyncMetrics,
+  mockInfrastructureRepos,
+  mockMonitoringData,
+  mockWebhookData,
+  mockRecentActivity,
+  simulateSync,
+  generateMockSyncHistory
+} from './infrastructure/configuration';
+
 // Mock environment flag - explicit control over mock data usage
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
