@@ -89,7 +89,10 @@ const HealthDashboard: FC<HealthDashboardProps> = ({
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SkeletonLoader variant="card" count={4} />
+        <SkeletonLoader variant="health-card" />
+        <SkeletonLoader variant="health-card" />
+        <SkeletonLoader variant="health-card" />
+        <SkeletonLoader variant="health-card" />
       </div>
     );
   }
