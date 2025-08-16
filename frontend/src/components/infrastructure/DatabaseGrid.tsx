@@ -120,23 +120,6 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onViewConnection
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-mono">DATABASE CONNECTIONS</h2>
-          <div className="text-sm font-mono opacity-60">
-            {connections.length} CONNECTION{connections.length !== 1 ? 'S' : ''}
-          </div>
-        </div>
-        <button
-          onClick={onAddConnection}
-          className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
-        >
-          <Plus size={16} />
-          <span>ADD CONNECTION</span>
-        </button>
-      </div>
-
       {/* Grid */}
       {isLoading && connections.length === 0 ? (
         <div className="min-h-96 flex items-center justify-center">
