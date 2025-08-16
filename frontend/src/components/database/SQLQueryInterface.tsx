@@ -24,41 +24,28 @@ const SQLQueryInterface: FC = () => {
   const {
     connections,
     queryResults,
+    savedQueries,
     isLoading,
     error,
     executeQuery,
     clearQueryResults,
-    fetchConnections
+    fetchConnections,
+    fetchSavedQueries,
+    createSavedQuery,
+    deleteSavedQuery
   } = useDatabaseStore();
 
   const [selectedConnection, setSelectedConnection] = useState<string>('');
   const [sqlQuery, setSqlQuery] = useState<string>('');
   const [queryLimit, setQueryLimit] = useState<number>(100);
   const [showHistory, setShowHistory] = useState<boolean>(false);
-  const [savedQueries, setSavedQueries] = useState<Array<{id: string, name: string, sql: string}>>([]);
   const [queryName, setQueryName] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  // Load saved queries from localStorage on mount
-  useEffect(() => {
-    const storedQueries = localStorage.getItem('denshimon_saved_queries');
-    if (storedQueries) {
-      try {
-        setSavedQueries(JSON.parse(storedQueries));
-      } catch (error) {
-        console.error('Failed to load saved queries:', error);
-      }
-    }
-  }, []);
-
-  // Save queries to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('denshimon_saved_queries', JSON.stringify(savedQueries));
-  }, [savedQueries]);
-
   useEffect(() => {
     fetchConnections();
-  }, [fetchConnections]);
+    fetchSavedQueries();
+  }, [fetchConnections, fetchSavedQueries]);
 
 
   const connectedConnections = connections.filter(conn => 
@@ -70,17 +57,19 @@ const SQLQueryInterface: FC = () => {
     executeQuery(selectedConnection, sqlQuery, queryLimit);
   };
 
-  const handleSaveQuery = () => {
+  const handleSaveQuery = async () => {
     if (!queryName.trim() || !sqlQuery.trim()) return;
     
-    const newQuery = {
-      id: Date.now().toString(),
-      name: queryName,
-      sql: sqlQuery
-    };
-    
-    setSavedQueries(prev => [...prev, newQuery]);
-    setQueryName('');
+    try {
+      await createSavedQuery({
+        name: queryName,
+        sql: sqlQuery,
+        connectionId: selectedConnection || undefined
+      });
+      setQueryName('');
+    } catch (error) {
+      console.error('Failed to save query:', error);
+    }
   };
 
   const loadSavedQuery = (sql: string) => {
@@ -344,7 +333,13 @@ SELECT * FROM users LIMIT 10;"
                           </div>
                         </button>
                         <button
-                          onClick={() => setSavedQueries(prev => prev.filter(q => q.id !== query.id))}
+                          onClick={async () => {
+                            try {
+                              await deleteSavedQuery(query.id);
+                            } catch (error) {
+                              console.error('Failed to delete query:', error);
+                            }
+                          }}
                           className="p-1 hover:bg-red-400/20 text-red-400 transition-colors"
                         >
                           <Trash2 size={12} />
