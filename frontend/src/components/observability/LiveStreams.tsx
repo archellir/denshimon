@@ -27,22 +27,37 @@ const LiveStreams: React.FC = () => {
     timestamp: string;
   }>(WebSocketEventType.EVENTS);
 
-  // Handle WebSocket pods data
+  const { data: deploymentsData } = useWebSocket<{
+    deployments: any[];
+    timestamp: string;
+  }>(WebSocketEventType.DEPLOYMENTS);
+
+  // Handle WebSocket data
   useEffect(() => {
-    if (podsData && !MOCK_ENABLED) {
-      // Transform WebSocket pods data to LiveTerminalData format
+    if ((podsData || deploymentsData) && !MOCK_ENABLED) {
+      // Transform WebSocket data to LiveTerminalData format
       const transformedData: LiveTerminalData = {
-        topPods: podsData.pods.slice(0, 10).map((pod: any) => ({
+        topPods: podsData ? podsData.pods.slice(0, 10).map((pod: any) => ({
           name: pod.name,
           namespace: pod.namespace,
-          cpu: Math.random() * 100, // TODO: Get actual CPU metrics from pod data
-          cpuTrend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-          memory: Math.random() * 4000, // TODO: Get actual memory metrics from pod data
-          memoryTrend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
+          cpu: pod.cpu || Math.random() * 100,
+          cpuTrend: pod.cpuTrend || 'stable',
+          memory: pod.memory || Math.random() * 4000,
+          memoryTrend: pod.memoryTrend || 'stable',
           status: pod.status || PodStatus.RUNNING,
-          lastUpdate: pod.startTime || new Date().toISOString(),
-        })),
-        deployments: [], // TODO: Add deployments from WebSocket
+          lastUpdate: pod.lastUpdate || pod.startTime || new Date().toISOString(),
+        })) : [],
+        deployments: deploymentsData ? deploymentsData.deployments.map((deployment: any) => ({
+          name: deployment.name,
+          namespace: deployment.namespace,
+          status: deployment.status,
+          progress: deployment.progress,
+          strategy: deployment.strategy,
+          startTime: deployment.startTime,
+          estimatedCompletion: deployment.estimatedCompletion,
+          replicas: deployment.replicas,
+          message: deployment.message,
+        })) : [],
         logs: [],
         stats: {
           logsPerSecond: 10 + Math.random() * 50,
@@ -50,11 +65,11 @@ const LiveStreams: React.FC = () => {
           errorRate: 0.5 + Math.random() * 2,
           warningRate: 2 + Math.random() * 5
         },
-        lastUpdate: podsData.timestamp,
+        lastUpdate: podsData?.timestamp || deploymentsData?.timestamp || new Date().toISOString(),
       };
       setLiveData(transformedData);
     }
-  }, [podsData]);
+  }, [podsData, deploymentsData]);
 
   // Use mock data only when MOCK_ENABLED
   useEffect(() => {
