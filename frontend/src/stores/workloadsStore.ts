@@ -48,6 +48,7 @@ export interface Pod {
     image: string;
     ready: boolean;
     restartCount: number;
+    state: string;
   }>;
   status: string;
   created: string;
@@ -143,7 +144,8 @@ const mockPods: Pod[] = [
         name: 'web-frontend',
         image: 'nginx:1.21',
         ready: true,
-        restartCount: 0
+        restartCount: 0,
+        state: 'running'
       }
     ],
     status: 'Running',
@@ -167,13 +169,15 @@ const mockPods: Pod[] = [
         name: 'api-backend',
         image: 'node:18-alpine',
         ready: true,
-        restartCount: 2
+        restartCount: 2,
+        state: 'running'
       },
       {
         name: 'sidecar-proxy',
         image: 'envoy:v1.20',
         ready: true,
-        restartCount: 0
+        restartCount: 0,
+        state: 'running'
       }
     ],
     status: 'Running',
@@ -197,7 +201,8 @@ const mockPods: Pod[] = [
         name: 'postgres',
         image: 'postgres:14',
         ready: true,
-        restartCount: 0
+        restartCount: 0,
+        state: 'running'
       }
     ],
     status: 'Running',
@@ -220,7 +225,8 @@ const mockPods: Pod[] = [
         name: 'prometheus',
         image: 'prom/prometheus:latest',
         ready: false,
-        restartCount: 0
+        restartCount: 0,
+        state: 'waiting'
       }
     ],
     status: 'Pending',
@@ -244,7 +250,8 @@ const mockPods: Pod[] = [
         name: 'redis',
         image: 'redis:7-alpine',
         ready: false,
-        restartCount: 5
+        restartCount: 5,
+        state: 'crashed'
       }
     ],
     status: 'Failed',
@@ -391,7 +398,8 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
           name: container.name,
           image: container.image,
           ready: container.ready || false,
-          restartCount: container.restartCount || 0
+          restartCount: container.restartCount || 0,
+          state: container.state || (container.ready ? 'running' : 'waiting')
         })) || [],
         status: pod.status?.phase || 'Unknown',
         created: pod.metadata?.creationTimestamp || new Date().toISOString()
