@@ -37,9 +37,9 @@ const StatCard: FC<StatCardProps> = ({
   const clickableClasses = onClick ? 'cursor-pointer hover:bg-white/5' : '';
   
   const variantClasses = {
-    default: 'p-2',
-    compact: 'p-1.5',
-    minimal: 'p-1'
+    default: 'px-4 py-3',
+    compact: 'px-3 py-2',
+    minimal: 'px-2 py-1.5'
   };
 
   const valueClasses = {
@@ -130,7 +130,7 @@ const StatCard: FC<StatCardProps> = ({
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center justify-between mb-0">
             <p className={`${labelClasses[variant]} opacity-60 uppercase tracking-wider`}>{label}</p>
             {badge && (
               <span className={`px-1.5 py-0.5 border text-xs ${getBadgeClasses(badge.color)}`}>
@@ -139,9 +139,9 @@ const StatCard: FC<StatCardProps> = ({
             )}
           </div>
           <div className="flex items-center justify-between">
-            <p className={`${valueClasses[variant]} font-bold`}>{value}</p>
+            <p className={`${valueClasses[variant]} font-bold leading-tight`}>{value}</p>
             {trend && (
-              <div className="ml-2">
+              <div className="ml-1">
                 {getTrendIcon()}
               </div>
             )}
