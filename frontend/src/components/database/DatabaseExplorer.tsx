@@ -174,7 +174,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   const selectedConnectionObj = connections.find(c => c.id === selectedConnection);
 
   const renderLeftPanel = () => (
-    <div className="w-80 flex-shrink-0 border-r border-white/20 flex flex-col" style={{ minHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px' }}>
+    <div className="w-80 flex-shrink-0 border-r border-white/20 flex flex-col" style={{ minHeight: '500px' }}>
       {/* Connection Selector */}
       <div className="p-4 border-b border-white/20">
         <CustomSelector
