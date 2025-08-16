@@ -21,14 +21,25 @@ const QueryResultsTable: FC<QueryResultsTableProps> = ({ queryResults, isFullscr
 
   const getCellId = (rowIndex: number, colIndex: number) => `${rowIndex}-${colIndex}`;
 
+  const getColumnWidth = (colName: string) => {
+    const lowerCol = colName.toLowerCase();
+    if (lowerCol.includes('id') || lowerCol === 'id') return '80px';
+    if (lowerCol.includes('status') || lowerCol.includes('phase')) return '100px';
+    if (lowerCol.includes('count') || lowerCol.includes('cpu') || lowerCol.includes('memory')) return '120px';
+    if (lowerCol.includes('timestamp') || lowerCol.includes('created') || lowerCol.includes('updated')) return '180px';
+    if (lowerCol.includes('name') || lowerCol.includes('namespace')) return '200px';
+    if (lowerCol.includes('notes') || lowerCol.includes('description') || lowerCol.includes('skills')) return '300px';
+    return '150px'; // default
+  };
+
   return (
     <div className="border border-white flex-shrink-0" style={{ height: isFullscreen ? 'calc(100vh - 200px)' : '400px', width: '100%', overflow: 'hidden' }}>
       <div className="h-full w-full overflow-auto">
-        <table className="text-sm font-mono border-collapse" style={{ tableLayout: 'auto' }}>
+        <table className="text-sm font-mono border-collapse" style={{ tableLayout: 'fixed', width: '100%' }}>
           <thead className="bg-white/10 sticky top-0">
             <tr>
               {queryResults.columns.map((col, i) => (
-                <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10 whitespace-nowrap" style={{ minWidth: '150px' }}>
+                <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10 whitespace-nowrap" style={{ width: getColumnWidth(col) }}>
                   {col}
                 </th>
               ))}
@@ -46,24 +57,27 @@ const QueryResultsTable: FC<QueryResultsTableProps> = ({ queryResults, isFullscr
                   return (
                     <td 
                       key={j} 
-                      className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap relative group" 
-                      style={{ minWidth: '150px', maxWidth: '300px' }}
+                      className="border-r border-white/10 last:border-r-0 relative group" 
                       onMouseEnter={() => setHoveredCell(cellId)}
                       onMouseLeave={() => setHoveredCell(null)}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className={`${cell === null ? 'opacity-50 italic' : ''} text-ellipsis overflow-hidden`}>
-                          {cell === null ? 'NULL' : displayText}
-                        </span>
-                        {hoveredCell === cellId && cellValue && (
-                          <button
-                            onClick={() => copyToClipboard(cellValue)}
-                            className="ml-2 p-1 hover:bg-white/20 rounded opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                            title="Copy cell value"
-                          >
-                            <Copy size={12} />
-                          </button>
-                        )}
+                      <div className="flex items-center h-full p-2">
+                        <div className="flex-1 min-w-0">
+                          <span className={`${cell === null ? 'opacity-50 italic' : ''} block truncate`}>
+                            {cell === null ? 'NULL' : displayText}
+                          </span>
+                        </div>
+                        <div className="flex-shrink-0 w-6 flex justify-center">
+                          {hoveredCell === cellId && cellValue && (
+                            <button
+                              onClick={() => copyToClipboard(cellValue)}
+                              className="p-1 hover:bg-white/20 rounded transition-colors"
+                              title="Copy cell value"
+                            >
+                              <Copy size={10} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                       {isLongText && hoveredCell === cellId && (
                         <div className="absolute z-10 bg-black border border-white/40 p-2 mt-1 left-0 max-w-96 text-xs shadow-lg">
