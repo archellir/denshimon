@@ -817,6 +817,7 @@ export const API_ENDPOINTS = {
     SERVICES: `${API_BASE_PATHS.INFRASTRUCTURE}/services`,
     STATUS: `${API_BASE_PATHS.INFRASTRUCTURE}/status`,
     ALERTS: `${API_BASE_PATHS.INFRASTRUCTURE}/alerts`,
+    ALERT_ACKNOWLEDGE: (alertId: string) => `${API_BASE_PATHS.INFRASTRUCTURE}/alerts/${alertId}/acknowledge`,
     REFRESH: `${API_BASE_PATHS.INFRASTRUCTURE}/refresh`
   },
   CERTIFICATES: {
