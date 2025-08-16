@@ -604,6 +604,21 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <ConnectionStatus isConnected={isConnected} />
               </div>
             );
+          case ObservabilityTab.SERVICE_HEALTH:
+            return (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    // Trigger infrastructure modal in ServiceHealthDashboard
+                    window.dispatchEvent(new CustomEvent('showInfrastructureModal'));
+                  }}
+                  className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
+                >
+                  <Shield size={16} />
+                  <span>INFRASTRUCTURE</span>
+                </button>
+              </div>
+            );
           case ObservabilityTab.EVENTS:
             return (
               <div className="flex items-center space-x-4">
