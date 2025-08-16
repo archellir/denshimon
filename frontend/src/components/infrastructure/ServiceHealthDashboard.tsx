@@ -23,7 +23,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import useServiceHealthStore from '@stores/serviceHealthStore';
-import { ServiceHealth, ServiceType } from '@/types/serviceHealth';
+import { ServiceHealth, ServiceType, InfrastructureAlert, InfrastructureStatus, ServiceHealthStats } from '@/types/serviceHealth';
 import { Status, WebSocketEventType } from '@constants';
 import { useWebSocket } from '@hooks/useWebSocket';
 
@@ -47,14 +47,14 @@ const ServiceHealthDashboard: FC = () => {
   // WebSocket connection for real-time service health data
   const { data: serviceHealthData } = useWebSocket<{
     services: ServiceHealth[];
-    alerts: any[];
-    infrastructure: any;
+    alerts: InfrastructureAlert[];
+    infrastructure: InfrastructureStatus;
     timestamp: string;
     source: string;
   }>(WebSocketEventType.SERVICE_HEALTH);
 
   const { data: serviceHealthStatsData } = useWebSocket<{
-    stats: any;
+    stats: ServiceHealthStats;
     timestamp: string;
   }>(WebSocketEventType.SERVICE_HEALTH_STATS);
 
