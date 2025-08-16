@@ -131,17 +131,6 @@ const SQLQueryInterface: FC = () => {
           />
         </div>
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <label className="font-mono text-sm">LIMIT:</label>
-            <input
-              type="number"
-              value={queryLimit}
-              onChange={(e) => setQueryLimit(parseInt(e.target.value) || 100)}
-              className="bg-black border border-white px-2 py-1 font-mono text-sm w-20 focus:outline-none focus:border-green-400"
-              min="1"
-              max="10000"
-            />
-          </div>
           <CustomButton
             label="HISTORY"
             icon={History}
@@ -167,6 +156,17 @@ const SQLQueryInterface: FC = () => {
             <div className="flex items-center justify-between">
               <h4 className="font-mono text-sm">SQL QUERY EDITOR</h4>
               <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
+                  <label className="font-mono text-xs">LIMIT:</label>
+                  <input
+                    type="number"
+                    value={queryLimit}
+                    onChange={(e) => setQueryLimit(parseInt(e.target.value) || 100)}
+                    className="bg-black border border-white px-2 py-2 font-mono text-xs w-20 focus:outline-none focus:border-green-400"
+                    min="1"
+                    max="10000"
+                  />
+                </div>
                 <input
                   type="text"
                   value={queryName}
