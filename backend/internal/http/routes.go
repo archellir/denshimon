@@ -142,6 +142,7 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/metrics/namespaces", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetNamespacesMetrics)))
 	mux.HandleFunc("GET /api/metrics/resources", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetResourceMetrics)))
 	mux.HandleFunc("GET /api/metrics/network", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetNetworkMetrics)))
+	mux.HandleFunc("GET /api/metrics/storage", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetStorageMetrics)))
 	mux.HandleFunc("GET /api/metrics/health", corsMiddleware(metricsHandlers.GetHealthMetrics)) // No auth required for health check
 
 	// Observability endpoints (require authentication)
