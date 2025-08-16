@@ -1,68 +1,52 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit, Webhook, Monitor, Bell, Settings } from 'lucide-react';
 import { API_ENDPOINTS } from '@constants';
+import { MOCK_ENABLED, mockBaseInfrastructureRepo, mockSyncMetrics, mockMonitoringData, mockWebhookData, simulateSync } from '@/mocks';
+import type { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';
 
-interface BaseInfrastructureRepo {
-  id: string;
-  name: string;
-  url: string;
-  branch: string;
-  status: 'active' | 'syncing' | 'error';
-  last_sync?: string;
-  sync_status: 'synced' | 'out_of_sync' | 'error';
-  health: 'healthy' | 'degraded' | 'unknown';
-}
-
-interface SyncMetrics {
-  last_sync_time?: string;
-  total_applications: number;
-  synced_applications: number;
-  out_of_sync_applications: number;
-  recent_deployments: number;
-}
 
 const ConfigurationTab = () => {
   const [repository, setRepository] = useState<BaseInfrastructureRepo | null>(null);
   const [metrics, setMetrics] = useState<SyncMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [monitoringData, setMonitoringData] = useState(mockMonitoringData);
+  const [webhookData, setWebhookData] = useState(mockWebhookData);
 
   const fetchBaseRepository = async () => {
     try {
       setLoading(true);
       
-      // Get repositories and find the first one (base repository)
-      const reposResponse = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES);
-      const reposData = await reposResponse.json();
-      
-      if (reposData.repositories && reposData.repositories.length > 0) {
-        setRepository(reposData.repositories[0]); // Use first repository as base
+      // Use mock data if enabled
+      if (MOCK_ENABLED) {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setRepository(mockBaseInfrastructureRepo);
+        setMetrics(mockSyncMetrics);
+        setMonitoringData(mockMonitoringData);
+        setWebhookData(mockWebhookData);
+      } else {
+        // Get repositories and find the first one (base repository)
+        const reposResponse = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES);
+        const reposData = await reposResponse.json();
+        
+        if (reposData.repositories && reposData.repositories.length > 0) {
+          setRepository(reposData.repositories[0]); // Use first repository as base
+        }
+        
+        // Get health metrics
+        const metricsResponse = await fetch(API_ENDPOINTS.GITOPS.HEALTH_METRICS);
+        const metricsData = await metricsResponse.json();
+        setMetrics(metricsData.data || metricsData);
       }
-      
-      // Get health metrics
-      const metricsResponse = await fetch(API_ENDPOINTS.GITOPS.HEALTH_METRICS);
-      const metricsData = await metricsResponse.json();
-      setMetrics(metricsData.data || metricsData);
       
     } catch (error) {
       console.error('Failed to fetch base repository:', error);
-      // Mock data for development
-      setRepository({
-        id: 'base-infra-1',
-        name: 'base-infrastructure',
-        url: 'https://git.example.com/infrastructure/base-k8s-configs.git',
-        branch: 'main',
-        status: 'active',
-        last_sync: new Date().toISOString(),
-        sync_status: 'synced',
-        health: 'healthy'
-      });
-      setMetrics({
-        total_applications: 5,
-        synced_applications: 4,
-        out_of_sync_applications: 1,
-        recent_deployments: 3
-      });
+      // Fallback to mock data on error
+      setRepository(mockBaseInfrastructureRepo);
+      setMetrics(mockSyncMetrics);
+      setMonitoringData(mockMonitoringData);
+      setWebhookData(mockWebhookData);
     } finally {
       setLoading(false);
     }
@@ -73,12 +57,35 @@ const ConfigurationTab = () => {
     
     try {
       setSyncing(true);
-      const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_SYNC(repository.id), {
-        method: 'POST'
-      });
       
-      if (response.ok) {
-        await fetchBaseRepository(); // Refresh data
+      if (MOCK_ENABLED) {
+        // Use mock sync function
+        const result = await simulateSync(repository.id);
+        if (result.success) {
+          // Update mock data to show sync completed
+          const updatedRepo = { 
+            ...repository, 
+            last_sync: new Date().toISOString(),
+            sync_status: 'synced' as const
+          };
+          setRepository(updatedRepo);
+          
+          // Update metrics with random changes
+          setMetrics(prev => prev ? {
+            ...prev,
+            last_sync_time: new Date().toISOString(),
+            recent_deployments: prev.recent_deployments + Math.floor(Math.random() * 3)
+          } : null);
+        }
+        console.log(result.message);
+      } else {
+        const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_SYNC(repository.id), {
+          method: 'POST'
+        });
+        
+        if (response.ok) {
+          await fetchBaseRepository(); // Refresh data
+        }
       }
     } catch (error) {
       console.error('Failed to sync repository:', error);
@@ -260,21 +267,21 @@ const ConfigurationTab = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">HEALTH CHECKS</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">ENABLED</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">{monitoringData.healthChecks}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">DRIFT DETECTION</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">ACTIVE</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">{monitoringData.driftDetection}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">AUTO SYNC</span>
-              <span className="text-sm text-blue-400 font-mono tracking-wider">5MIN INTERVAL</span>
+              <span className="text-sm text-blue-400 font-mono tracking-wider">{monitoringData.autoSyncInterval} INTERVAL</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">ALERTS</span>
               <div className="flex items-center space-x-2">
                 <Bell size={14} className="text-yellow-400" />
-                <span className="text-sm text-white font-mono tracking-wider">3 ACTIVE</span>
+                <span className="text-sm text-white font-mono tracking-wider">{monitoringData.activeAlerts} ACTIVE</span>
               </div>
             </div>
             <button className="w-full mt-4 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm tracking-wider uppercase">
@@ -292,19 +299,24 @@ const ConfigurationTab = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">GIT PUSH EVENTS</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">CONFIGURED</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">{webhookData.gitPushEvents}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">AUTO DEPLOY</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">ENABLED</span>
+              <span className="text-sm text-green-400 font-mono tracking-wider">{webhookData.autoDeploy}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">NOTIFICATIONS</span>
-              <span className="text-sm text-blue-400 font-mono tracking-wider">SLACK, EMAIL</span>
+              <span className="text-sm text-blue-400 font-mono tracking-wider">{webhookData.notifications.join(', ')}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-300 font-mono tracking-wider">LAST TRIGGER</span>
-              <span className="text-sm text-white font-mono tracking-wider">2MIN AGO</span>
+              <span className="text-sm text-white font-mono tracking-wider">
+                {webhookData.lastTrigger 
+                  ? `${Math.floor((Date.now() - new Date(webhookData.lastTrigger).getTime()) / 60000)}MIN AGO`
+                  : 'NEVER'
+                }
+              </span>
             </div>
             <div className="flex space-x-2 mt-4">
               <button className="flex-1 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm tracking-wider uppercase">
