@@ -2,18 +2,104 @@ import { useState } from 'react';
 import { GitBranch, CheckCircle, Activity, ExternalLink, Key } from 'lucide-react';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomSelector from '@components/common/CustomSelector';
+import { apiService } from '@services/api';
+import { API_ENDPOINTS } from '@constants';
+import type { BaseInfrastructureRepo } from '@/types/infrastructure';
 
-const NoRepositoryConnected = () => {
+interface NoRepositoryConnectedProps {
+  onRepositoryConnected?: (repository: BaseInfrastructureRepo) => void;
+}
+
+const NoRepositoryConnected = ({ onRepositoryConnected }: NoRepositoryConnectedProps) => {
   const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [repoUrl, setRepoUrl] = useState('');
   const [authMethod, setAuthMethod] = useState('ssh');
   const [branch, setBranch] = useState('main');
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  const handleConnect = () => {
-    // In a real implementation, this would connect to the repository
-    console.log('Connecting repository:', { repoUrl, authMethod, branch });
-    alert(`Would connect to repository:\n\nURL: ${repoUrl}\nAuth: ${authMethod}\nBranch: ${branch}\n\nThis would validate the repository, set up authentication, and configure sync settings.`);
-    setShowConnectDialog(false);
+  const validateForm = (): boolean => {
+    setConnectionError(null);
+    
+    if (!repoUrl.trim()) {
+      setConnectionError('Repository URL is required');
+      return false;
+    }
+    
+    // Basic URL validation
+    try {
+      new URL(repoUrl);
+    } catch {
+      setConnectionError('Invalid repository URL format');
+      return false;
+    }
+    
+    if (!authMethod) {
+      setConnectionError('Authentication method is required');
+      return false;
+    }
+    
+    if (!branch.trim()) {
+      setConnectionError('Branch name is required');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleConnect = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsConnecting(true);
+    setConnectionError(null);
+    
+    try {
+      // Prepare repository connection payload
+      const repositoryData = {
+        url: repoUrl.trim(),
+        branch: branch.trim(),
+        auth_method: authMethod,
+        // Additional authentication data would be handled separately
+        // in a real implementation (SSH keys, tokens, etc.)
+      };
+      
+      // Call the GitOps API to connect repository
+      const response = await apiService.post<BaseInfrastructureRepo>(
+        API_ENDPOINTS.GITOPS.REPOSITORIES,
+        repositoryData
+      );
+      
+      if (response.success && response.data) {
+        // Successfully connected repository
+        console.log('Repository connected successfully:', response.data);
+        
+        // Close dialog and reset form
+        setShowConnectDialog(false);
+        setRepoUrl('');
+        setAuthMethod('ssh');
+        setBranch('main');
+        
+        // Notify parent component about the successful connection
+        onRepositoryConnected?.(response.data);
+        
+      } else {
+        setConnectionError(response.error || 'Failed to connect repository');
+      }
+      
+    } catch (error) {
+      console.error('Repository connection failed:', error);
+      
+      // Handle different types of errors
+      if (error instanceof Error) {
+        setConnectionError(error.message);
+      } else {
+        setConnectionError('Failed to connect repository. Please check your connection and try again.');
+      }
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
   const openDocumentation = () => {
@@ -135,15 +221,31 @@ const NoRepositoryConnected = () => {
         </div>
 
         {/* Example Repository Structure */}
-        <div className="bg-black border border-white p-6">
-          <h3 className="text-lg font-bold text-white font-mono tracking-wider uppercase mb-4">
-            EXAMPLE REPOSITORY STRUCTURE
-          </h3>
-          <p className="text-sm text-gray-400 font-mono mb-4">
-            Based on production infrastructure repository pattern
-          </p>
-          <div className="bg-gray-900 border border-gray-600 p-4 font-mono text-sm text-gray-300 overflow-x-auto">
-            <pre>{repositoryStructure}</pre>
+        <div className="bg-black border border-green-400 p-6 relative overflow-hidden">
+          {/* Cyberpunk scanning lines */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-400/5 to-transparent animate-pulse" />
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-50 animate-scan" />
+          
+          {/* Corner accents */}
+          <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-green-400" />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-green-400" />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-green-400" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-green-400" />
+          
+          <div className="relative z-10">
+            <h3 className="text-lg font-bold text-green-400 font-mono tracking-wider uppercase mb-4">
+              ⟨ EXAMPLE REPOSITORY STRUCTURE ⟩
+            </h3>
+            <p className="text-sm text-gray-400 font-mono mb-4">
+              Based on production infrastructure repository pattern
+            </p>
+            <div className="bg-black border border-green-400/30 p-4 font-mono text-sm text-gray-300 overflow-x-auto relative">
+              {/* Code block scanning effect */}
+              <div className="absolute inset-0 bg-gradient-to-b from-green-400/5 via-transparent to-green-400/5 animate-pulse" />
+              <div className="relative z-10">
+                <pre>{repositoryStructure}</pre>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -151,17 +253,34 @@ const NoRepositoryConnected = () => {
       {/* Connect Repository Dialog */}
       <CustomDialog
         isOpen={showConnectDialog}
-        onClose={() => setShowConnectDialog(false)}
+        onClose={() => {
+          if (!isConnecting) {
+            setShowConnectDialog(false);
+            setConnectionError(null);
+          }
+        }}
         onConfirm={handleConnect}
         title="Connect Infrastructure Repository"
         variant="info"
         icon={GitBranch}
         width="xl"
         height="lg"
-        confirmText="CONNECT"
+        confirmText={isConnecting ? "CONNECTING..." : "CONNECT"}
         cancelText="CANCEL"
+        loading={isConnecting}
+        preventClickOutside={isConnecting}
       >
         <div className="space-y-4">
+          {/* Error Display */}
+          {connectionError && (
+            <div className="bg-red-900/20 border border-red-400 p-3 text-red-400 font-mono text-sm">
+              <div className="flex items-center space-x-2">
+                <span className="text-red-400">⚠</span>
+                <span>{connectionError}</span>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider">
               Repository URL
@@ -169,41 +288,55 @@ const NoRepositoryConnected = () => {
             <input
               type="text"
               value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
+              onChange={(e) => {
+                setRepoUrl(e.target.value);
+                setConnectionError(null); // Clear error when user starts typing
+              }}
               placeholder="https://github.com/your-org/infrastructure-repo.git"
               className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400 transition-colors"
+              disabled={isConnecting}
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider">
-              Authentication Method
-            </label>
-            <CustomSelector
-              value={authMethod}
-              options={[
-                { value: 'ssh', label: 'SSH Key' },
-                { value: 'token', label: 'Personal Access Token' },
-                { value: 'deploy-key', label: 'Deploy Key (Recommended)' }
-              ]}
-              onChange={(value) => setAuthMethod(value)}
-              placeholder="Select Authentication Method"
-              icon={Key}
-              size="sm"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider">
+                Authentication Method
+              </label>
+              <CustomSelector
+                value={authMethod}
+                options={[
+                  { value: 'ssh', label: 'SSH Key' },
+                  { value: 'token', label: 'Personal Access Token' },
+                  { value: 'deploy-key', label: 'Deploy Key (Recommended)' }
+                ]}
+                onChange={(value) => {
+                  setAuthMethod(value);
+                  setConnectionError(null);
+                }}
+                placeholder="Select Authentication Method"
+                icon={Key}
+                size="sm"
+                disabled={isConnecting}
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider">
-              Branch
-            </label>
-            <input
-              type="text"
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              placeholder="main"
-              className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400 transition-colors"
-            />
+            <div>
+              <label className="block text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider">
+                Branch
+              </label>
+              <input
+                type="text"
+                value={branch}
+                onChange={(e) => {
+                  setBranch(e.target.value);
+                  setConnectionError(null);
+                }}
+                placeholder="main"
+                className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-green-400 transition-colors"
+                disabled={isConnecting}
+              />
+            </div>
           </div>
 
           <div className="bg-black border border-cyan-400 p-4 text-xs font-mono relative overflow-hidden">
@@ -246,3 +379,4 @@ const NoRepositoryConnected = () => {
 };
 
 export default NoRepositoryConnected;
+export type { NoRepositoryConnectedProps };
