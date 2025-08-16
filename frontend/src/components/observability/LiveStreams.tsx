@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText, Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
-import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
+import { LiveTerminalData, TerminalFilter, PodResourceUsage, DeploymentProgress } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@mocks/terminal/liveData';
 import { useWebSocket } from '@hooks/useWebSocket';
 import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, WebSocketEventType } from '@constants';
@@ -17,13 +17,13 @@ const LiveStreams: React.FC = () => {
 
   // WebSocket connections for real-time data
   const { data: podsData, connectionState } = useWebSocket<{
-    pods: any[];
+    pods: PodResourceUsage[];
     timestamp: string;
   }>(WebSocketEventType.PODS);
 
 
   const { data: deploymentsData } = useWebSocket<{
-    deployments: any[];
+    deployments: DeploymentProgress[];
     timestamp: string;
   }>(WebSocketEventType.DEPLOYMENTS);
 
@@ -32,7 +32,7 @@ const LiveStreams: React.FC = () => {
     if ((podsData || deploymentsData) && !MOCK_ENABLED) {
       // Transform WebSocket data to LiveTerminalData format
       const transformedData: LiveTerminalData = {
-        topPods: podsData ? podsData.pods.slice(0, 10).map((pod: any) => ({
+        topPods: podsData ? podsData.pods.slice(0, 10).map((pod: PodResourceUsage) => ({
           name: pod.name,
           namespace: pod.namespace,
           cpu: pod.cpu || Math.random() * 100,
@@ -40,9 +40,9 @@ const LiveStreams: React.FC = () => {
           memory: pod.memory || Math.random() * 4000,
           memoryTrend: pod.memoryTrend || 'stable',
           status: pod.status || PodStatus.RUNNING,
-          lastUpdate: pod.lastUpdate || pod.startTime || new Date().toISOString(),
+          lastUpdate: pod.lastUpdate || new Date().toISOString(),
         })) : [],
-        deployments: deploymentsData ? deploymentsData.deployments.map((deployment: any) => ({
+        deployments: deploymentsData ? deploymentsData.deployments.map((deployment: DeploymentProgress) => ({
           name: deployment.name,
           namespace: deployment.namespace,
           status: deployment.status,
