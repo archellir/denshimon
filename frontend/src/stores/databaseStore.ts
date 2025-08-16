@@ -93,10 +93,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<DatabaseConfig[]>(API_ENDPOINTS.DATABASES.CONNECTIONS);
       set({ connections: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching connections, falling back to mock data:', error);
-      // Fallback to mock data
-      const data = await mockApiResponse({ success: true, data: mockDatabaseConnections });
-      set({ connections: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch connections';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -207,11 +205,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<DatabaseInfo[]>(API_ENDPOINTS.DATABASES.DATABASES(connectionId), false);
       set({ databases: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching databases, falling back to mock data:', error);
-      // Fallback to mock data
-      const databaseList = mockDatabases[connectionId] || [];
-      const data = await mockApiResponse({ success: true, data: databaseList });
-      set({ databases: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch databases';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -230,12 +225,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<TableInfo[]>(API_ENDPOINTS.DATABASES.TABLES(connectionId, database), false);
       set({ tables: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching tables, falling back to mock data:', error);
-      // Fallback to mock data
-      const tableKey = `${connectionId}:${database}`;
-      const tableList = mockTables[tableKey] || [];
-      const data = await mockApiResponse({ success: true, data: tableList });
-      set({ tables: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch tables';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -254,12 +245,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<ColumnInfo[]>(API_ENDPOINTS.DATABASES.COLUMNS(connectionId, database, table), false);
       set({ columns: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching columns, falling back to mock data:', error);
-      // Fallback to mock data
-      const columnKey = `${connectionId}:${database}:${table}`;
-      const columnList = mockColumns[columnKey] || [];
-      const data = await mockApiResponse({ success: true, data: columnList });
-      set({ columns: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch columns';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -278,11 +265,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.post<QueryResult>(API_ENDPOINTS.DATABASES.QUERY(connectionId), { sql, limit, offset }, false);
       set({ queryResults: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error executing query, falling back to mock data:', error);
-      // Fallback to mock data
-      const queryResult = mockQueryResults[sql] || mockQueryResults['SELECT * FROM users LIMIT 5'];
-      const data = await mockApiResponse({ success: true, data: queryResult });
-      set({ queryResults: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to execute query';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -300,11 +284,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<DatabaseStats>(API_ENDPOINTS.DATABASES.STATS(connectionId), false);
       set({ stats: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching stats, falling back to mock data:', error);
-      // Fallback to mock data
-      const statsData = mockDatabaseStats[connectionId] || mockDatabaseStats['postgres-prod'];
-      const data = await mockApiResponse({ success: true, data: statsData });
-      set({ stats: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch stats';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -321,10 +302,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<DatabaseType[]>(API_ENDPOINTS.DATABASES.TYPES, false);
       set({ supportedTypes: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching supported types, falling back to mock data:', error);
-      // Fallback to mock data
-      const data = await mockApiResponse({ success: true, data: mockSupportedTypes });
-      set({ supportedTypes: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch supported types';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -353,10 +332,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const response = await apiService.get<SavedQuery[]>(API_ENDPOINTS.DATABASES.SAVED_QUERIES, false);
       set({ savedQueries: response.data, isLoading: false });
     } catch (error) {
-      console.error('Error fetching saved queries, falling back to mock data:', error);
-      // Fallback to mock data
-      const data = await mockApiResponse({ success: true, data: mockSavedQueries });
-      set({ savedQueries: data.data, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch saved queries';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -382,18 +359,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
       const currentQueries = get().savedQueries;
       set({ savedQueries: [...currentQueries, response.data], isLoading: false });
     } catch (error) {
-      console.error('Error creating saved query, using mock behavior:', error);
-      // Fallback to mock behavior
-      const newQuery: SavedQuery = {
-        id: `saved-${Date.now()}`,
-        name: query.name,
-        sql: query.sql,
-        connectionId: query.connectionId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      const currentQueries = get().savedQueries;
-      set({ savedQueries: [...currentQueries, newQuery], isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to create saved query';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -417,13 +384,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         isLoading: false 
       });
     } catch (error) {
-      console.error('Error updating saved query, using mock behavior:', error);
-      // Fallback to mock behavior
-      const currentQueries = get().savedQueries;
-      const updatedQueries = currentQueries.map(q => 
-        q.id === id ? { ...q, ...query, updatedAt: new Date().toISOString() } : q
-      );
-      set({ savedQueries: updatedQueries, isLoading: false });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to update saved query';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
@@ -447,13 +409,8 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         isLoading: false 
       });
     } catch (error) {
-      console.error('Error deleting saved query, using mock behavior:', error);
-      // Fallback to mock behavior
-      const currentQueries = get().savedQueries;
-      set({ 
-        savedQueries: currentQueries.filter(q => q.id !== id), 
-        isLoading: false 
-      });
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete saved query';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 }));
