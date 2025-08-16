@@ -128,3 +128,12 @@ export interface TestConnectionResult {
   responseTime: number;
   version?: string;
 }
+
+export interface SavedQuery {
+  id: string;
+  name: string;
+  sql: string;
+  connectionId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
