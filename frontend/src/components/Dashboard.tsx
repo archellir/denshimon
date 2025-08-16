@@ -5,6 +5,7 @@ import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Packag
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import GlobalSearch from '@components/common/GlobalSearch';
 import CustomSelector from '@components/common/CustomSelector';
+import ConnectionStatus from '@components/common/ConnectionStatus';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import useDeploymentStore from '@stores/deploymentStore';
 import useDatabaseStore from '@stores/databaseStore';
@@ -569,21 +570,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           case ObservabilityTab.LOGS:
             return (
               <div className="flex items-center space-x-2">
-                <div className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${
-                  isConnected ? 'border-green-500 text-green-500' : 'border-gray-500 text-gray-500'
-                }`}>
-                  {isConnected ? (
-                    <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>LIVE</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                      <span>OFFLINE</span>
-                    </>
-                  )}
-                </div>
+                <ConnectionStatus isConnected={isConnected} />
                 <button
                   onClick={() => {
                     // Export logs functionality
@@ -618,21 +605,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           case ObservabilityTab.STREAMS:
             return (
               <div className="flex items-center space-x-2">
-                <div className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${
-                  isConnected ? 'border-green-500 text-green-500' : 'border-gray-500 text-gray-500'
-                }`}>
-                  {isConnected ? (
-                    <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>LIVE</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                      <span>OFFLINE</span>
-                    </>
-                  )}
-                </div>
+                <ConnectionStatus isConnected={isConnected} />
               </div>
             );
           case ObservabilityTab.EVENTS:
