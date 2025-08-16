@@ -202,6 +202,7 @@ export interface KubernetesPodSpec {
     image: string;
     ready?: boolean;
     restartCount?: number;
+    state?: string;
     resources?: {
       requests?: { cpu?: string; memory?: string };
       limits?: { cpu?: string; memory?: string };
