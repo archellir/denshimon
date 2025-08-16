@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Package, AlertCircle, Info, AlertTriangle, Bug, Layers, FileText, Globe, Download, Wifi, WifiOff, RotateCcw } from 'lucide-react';
+import { Package, AlertCircle, Info, AlertTriangle, Bug, Layers, FileText, Globe, Download } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';
@@ -7,8 +7,7 @@ import {
   LogLevel, 
   UI_LABELS, 
   UI_MESSAGES,
-  API_ENDPOINTS,
-  WebSocketState 
+  API_ENDPOINTS 
 } from '@constants';
 import CustomSelector from '@components/common/CustomSelector';
 
@@ -19,7 +18,7 @@ const LogData: React.FC = () => {
   const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
 
   // WebSocket for real-time log updates
-  const { data: newLogEntry, isConnected, connectionState } = useLogsWebSocket();
+  const { data: newLogEntry, isConnected } = useLogsWebSocket();
 
   // Load logs
   useEffect(() => {
@@ -135,92 +134,18 @@ const LogData: React.FC = () => {
   const uniqueSources = Array.from(new Set(logs.map(log => log.source))).sort();
   const uniqueNamespaces = Array.from(new Set(logs.map(log => log.metadata?.namespace || 'default'))).sort();
 
-  // Connection status helpers (matching LiveStreams component)
-  const getStatusIcon = () => {
-    switch (connectionState?.state) {
-      case WebSocketState.CONNECTED:
-        return <Wifi size={16} className="text-green-500" />;
-      case WebSocketState.CONNECTING:
-        return <RotateCcw size={16} className="text-yellow-500 animate-spin" />;
-      case WebSocketState.DISCONNECTED:
-        return <WifiOff size={16} className="text-gray-500" />;
-      case WebSocketState.ERROR:
-        return <AlertCircle size={16} className="text-red-500" />;
-      default:
-        return <WifiOff size={16} className="text-gray-500" />;
-    }
-  };
-
-  const getConnectionColor = () => {
-    switch (connectionState?.state) {
-      case WebSocketState.CONNECTED:
-        return 'border-green-500 text-green-500';
-      case WebSocketState.CONNECTING:
-        return 'border-yellow-500 text-yellow-500';
-      case WebSocketState.DISCONNECTED:
-        return 'border-gray-500 text-gray-500';
-      case WebSocketState.ERROR:
-        return 'border-red-500 text-red-500';
-      default:
-        return 'border-gray-500 text-gray-500';
-    }
-  };
-
-  const getStatusText = () => {
-    switch (connectionState?.state) {
-      case WebSocketState.CONNECTED:
-        return UI_MESSAGES.LIVE;
-      case WebSocketState.CONNECTING:
-        return UI_MESSAGES.CONNECTING;
-      case WebSocketState.DISCONNECTED:
-        return UI_MESSAGES.OFFLINE;
-      case WebSocketState.ERROR:
-        return UI_MESSAGES.ERROR;
-      default:
-        return UI_MESSAGES.UNKNOWN;
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header with Export */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-mono">LOG DATA</h2>
-          <div className="text-sm font-mono opacity-60">
-            {filteredLogs.length} ENTRIES
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button
-            onClick={exportLogs}
-            disabled={filteredLogs.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download size={16} />
-            <span>EXPORT CSV</span>
-          </button>
-          
-          {/* Connection Status - Far Right */}
-          <div className="relative group ml-auto">
-            <div className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${getConnectionColor()}`}>
-              {getStatusIcon()}
-              <span>{getStatusText()}</span>
-            </div>
-            
-            {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black border border-white text-xs font-mono whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-              {UI_MESSAGES.REAL_TIME_UPDATES} {connectionState?.state}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
-            </div>
-
-            {/* Pulse effect when connecting */}
-            {connectionState?.state === WebSocketState.CONNECTING && (
-              <div className="absolute inset-0 border border-yellow-500 animate-pulse pointer-events-none"></div>
-            )}
-          </div>
-        </div>
+      {/* Export Button Only */}
+      <div className="flex justify-end">
+        <button
+          onClick={exportLogs}
+          disabled={filteredLogs.length === 0}
+          className="flex items-center space-x-2 px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Download size={16} />
+          <span>EXPORT CSV</span>
+        </button>
       </div>
 
       {/* Log Stats */}
