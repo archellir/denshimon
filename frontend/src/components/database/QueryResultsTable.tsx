@@ -1,6 +1,8 @@
 import { useState, type FC } from 'react';
 import { Copy } from 'lucide-react';
 import { QueryResult } from '@/types/database';
+import { getCellId, getColumnWidth } from '@utils/tableUtils';
+import { truncateText } from '@utils/formatUtils';
 
 interface QueryResultsTableProps {
   queryResults: QueryResult;
@@ -14,31 +16,6 @@ const QueryResultsTable: FC<QueryResultsTableProps> = ({ queryResults, isFullscr
     navigator.clipboard.writeText(text);
   };
 
-  const truncateText = (text: string, maxLength: number = 100) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  const getCellId = (rowIndex: number, colIndex: number) => `${rowIndex}-${colIndex}`;
-
-  const getColumnWidth = (colName: string) => {
-    const lowerCol = colName.toLowerCase();
-    
-    // Calculate minimum width based on column title length (roughly 8px per character + padding)
-    const minWidthForTitle = Math.max(colName.length * 8 + 32, 80);
-    
-    let suggestedWidth = 150; // default
-    
-    if (lowerCol.includes('id') || lowerCol === 'id') suggestedWidth = 80;
-    else if (lowerCol.includes('status') || lowerCol.includes('phase')) suggestedWidth = 100;
-    else if (lowerCol.includes('count') || lowerCol.includes('cpu') || lowerCol.includes('memory')) suggestedWidth = 120;
-    else if (lowerCol.includes('timestamp') || lowerCol.includes('created') || lowerCol.includes('updated')) suggestedWidth = 180;
-    else if (lowerCol.includes('name') || lowerCol.includes('namespace')) suggestedWidth = 200;
-    else if (lowerCol.includes('notes') || lowerCol.includes('description') || lowerCol.includes('skills')) suggestedWidth = 300;
-    
-    // Return the larger of suggested width or minimum title width
-    return `${Math.max(suggestedWidth, minWidthForTitle)}px`;
-  };
 
   return (
     <div className="border border-white flex-shrink-0" style={{ height: isFullscreen ? 'calc(100vh - 200px)' : '400px', width: '100%', overflow: 'hidden' }}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Rocket, RotateCcw, Trash2, Scale } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
+import { getDeploymentStatusColor } from '@utils/statusUtils';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
@@ -51,22 +52,6 @@ const DeploymentsTab = ({
 
 
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'running':
-        return 'text-green-400';
-      case 'pending':
-        return 'text-yellow-400';
-      case 'failed':
-        return 'text-red-400';
-      case 'updating':
-        return 'text-blue-400';
-      case 'terminating':
-        return 'text-orange-400';
-      default:
-        return 'text-gray-400';
-    }
-  };
 
   const handleScale = (deployment: Deployment) => {
     setScaleDialog({ 
@@ -162,7 +147,7 @@ const DeploymentsTab = ({
                   <h3 className="text-xl font-mono font-bold text-white">{deployment.name.toUpperCase()}</h3>
                   <div className="flex items-center space-x-4 text-sm text-gray-300 font-mono">
                     <span>NS: {deployment.namespace}</span>
-                    <span className={getStatusColor(deployment.status)}>
+                    <span className={getDeploymentStatusColor(deployment.status as any)}>
                       STATUS: {deployment.status.toUpperCase()}
                     </span>
                     <span>REPLICAS: {deployment.replicas}</span>

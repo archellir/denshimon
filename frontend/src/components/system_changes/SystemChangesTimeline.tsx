@@ -5,11 +5,11 @@ import {
   getCategoryIcon, 
   getSeverityColor,
   formatTimeAgo,
-  groupEventsByHour,
-  filterEvents
-} from '@utils/eventUtils';
-import { EventTimelineData } from '@/types/eventTimeline';
-import { generateEventTimelineData } from '@mocks/events/timeline';
+  groupSystemChangesByHour,
+  filterSystemChanges
+} from '@utils/systemChangesUtils';
+import { SystemChangesTimelineData } from '@/types/systemChangesTimeline';
+import { generateSystemChangesTimelineData } from '@mocks/system_changes/timeline';
 import { MOCK_ENABLED } from '@mocks/index';
 import { 
   TimeRange, 
@@ -19,12 +19,12 @@ import {
   API_ENDPOINTS 
 } from '@constants';
 
-interface EventTimelineProps {
+interface SystemChangesTimelineProps {
   timeRange?: string;
 }
 
-const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWENTY_FOUR_HOURS }) => {
-  const [data, setData] = useState<EventTimelineData | null>(null);
+const SystemChangesTimeline: React.FC<SystemChangesTimelineProps> = ({ timeRange = TimeRange.TWENTY_FOUR_HOURS }) => {
+  const [data, setData] = useState<SystemChangesTimelineData | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
   const [selectedSeverities, setSelectedSeverities] = useState<Status[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -37,7 +37,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
     try {
       if (MOCK_ENABLED) {
         const hours = parseTimeRangeToHours(timeRange);
-        const timelineData = generateEventTimelineData(hours);
+        const timelineData = generateSystemChangesTimelineData(hours);
         setData(timelineData);
       } else {
         const token = localStorage.getItem('auth_token');
@@ -47,7 +47,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         
         if (response.ok) {
           const apiData = await response.json();
-            const timelineData: EventTimelineData = {
+            const timelineData: SystemChangesTimelineData = {
             events: apiData.events || [],
             groups: [],
             statistics: {
@@ -80,14 +80,14 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
           setData(timelineData);
         } else {
             const hours = parseTimeRangeToHours(timeRange);
-          const timelineData = generateEventTimelineData(hours);
+          const timelineData = generateSystemChangesTimelineData(hours);
           setData(timelineData);
         }
       }
     } catch (error) {
       console.error('Failed to load timeline data:', error);
       const hours = parseTimeRangeToHours(timeRange);
-      const timelineData = generateEventTimelineData(hours);
+      const timelineData = generateSystemChangesTimelineData(hours);
       setData(timelineData);
     }
   };
@@ -95,8 +95,8 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
   const filteredData = useMemo(() => {
     if (!data) return null;
 
-    const filteredEvents = filterEvents(data.events, selectedCategories, selectedSeverities);
-    const groups = groupEventsByHour(filteredEvents);
+    const filteredEvents = filterSystemChanges(data.events, selectedCategories, selectedSeverities);
+    const groups = groupSystemChangesByHour(filteredEvents);
 
     return {
       ...data,
@@ -294,4 +294,4 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
   );
 };
 
-export default EventTimeline;
+export default SystemChangesTimeline;

@@ -2,6 +2,7 @@ import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { ContainerImage } from '@/types';
+import { formatBytes } from '@utils/formatUtils';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
 import SkeletonLoader from '@components/common/SkeletonLoader';
@@ -20,13 +21,6 @@ const ImagesTab: FC = () => {
     setShowDeployModal(true);
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
 
   return (
     <>
@@ -65,7 +59,7 @@ const ImagesTab: FC = () => {
                 {image.size > 0 && (
                   <div className="flex justify-between">
                     <span className="text-gray-400">Size:</span>
-                    <span>{formatSize(image.size)}</span>
+                    <span>{formatBytes(image.size)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">

@@ -1,7 +1,7 @@
 import { Status, EventCategory } from '@constants';
 export { EventCategory };
 
-export interface TimelineEvent {
+export interface SystemChangeEvent {
   id: string;
   timestamp: string;
   category: EventCategory;
@@ -24,9 +24,9 @@ export interface TimelineEvent {
   metadata?: Record<string, any>;
 }
 
-export interface EventGroup {
+export interface SystemChangeGroup {
   hour: string;
-  events: TimelineEvent[];
+  events: SystemChangeEvent[];
   summary: {
     critical: number;
     warning: number;
@@ -35,9 +35,9 @@ export interface EventGroup {
   };
 }
 
-export interface EventTimelineData {
-  events: TimelineEvent[];
-  groups: EventGroup[];
+export interface SystemChangesTimelineData {
+  events: SystemChangeEvent[];
+  groups: SystemChangeGroup[];
   statistics: {
     total: number;
     bySeverity: Partial<Record<Status, number>>;

@@ -1,10 +1,10 @@
 import React from 'react';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { Status, EventCategory } from '@constants';
-import type { TimelineEvent } from '@/types/eventTimeline';
+import type { SystemChangeEvent } from '@/types/systemChangesTimeline';
 
 /**
- * Gets the appropriate icon for event severity
+ * Gets the appropriate icon for system change severity
  */
 export const getSeverityIcon = (severity: Status): React.ReactElement => {
   switch (severity) {
@@ -17,7 +17,7 @@ export const getSeverityIcon = (severity: Status): React.ReactElement => {
 };
 
 /**
- * Gets the appropriate icon for event category
+ * Gets the appropriate icon for system change category
  */
 export const getCategoryIcon = (category: EventCategory): React.ReactElement => {
   switch (category) {
@@ -63,10 +63,10 @@ export const formatTimeAgo = (timestamp: string) => {
 };
 
 /**
- * Groups timeline events by hour
+ * Groups system change events by hour
  */
-export const groupEventsByHour = (events: TimelineEvent[]) => {
-  const groupMap = new Map<string, TimelineEvent[]>();
+export const groupSystemChangesByHour = (events: SystemChangeEvent[]) => {
+  const groupMap = new Map<string, SystemChangeEvent[]>();
   
   events.forEach(event => {
     const hour = new Date(event.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';
@@ -89,13 +89,13 @@ export const groupEventsByHour = (events: TimelineEvent[]) => {
 };
 
 /**
- * Filters events by category and severity
+ * Filters system changes by category and severity
  */
-export const filterEvents = (
-  events: TimelineEvent[],
+export const filterSystemChanges = (
+  events: SystemChangeEvent[],
   selectedCategories: EventCategory[] = [],
   selectedSeverities: Status[] = []
-): TimelineEvent[] => {
+): SystemChangeEvent[] => {
   return events.filter(event => {
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(event.category);
     const matchesSeverity = selectedSeverities.length === 0 || selectedSeverities.includes(event.severity);

@@ -1,7 +1,8 @@
 import { useState, type FC } from 'react';
-import { Trash2, TestTube, CheckCircle, XCircle, Clock, Package } from 'lucide-react';
+import { Trash2, TestTube, Package } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import RegistryForm from '../forms/RegistryForm';
+import { getRegistryStatusColor, getRegistryStatusIcon } from '@utils/statusUtils';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import SkeletonLoader from '@components/common/SkeletonLoader';
@@ -34,31 +35,6 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
     testRegistry 
   } = useDeploymentStore();
 
-  const getStatusColor = (status: Registry['status']) => {
-    switch (status) {
-      case 'connected':
-        return 'text-green-400';
-      case 'error':
-        return 'text-red-400';
-      case 'pending':
-        return 'text-yellow-400';
-      default:
-        return 'text-gray-400';
-    }
-  };
-
-  const getStatusIcon = (status: Registry['status']) => {
-    switch (status) {
-      case 'connected':
-        return CheckCircle;
-      case 'error':
-        return XCircle;
-      case 'pending':
-        return Clock;
-      default:
-        return Clock;
-    }
-  };
 
   const handleTestRegistry = async (registry: Registry) => {
     const success = await testRegistry(registry.id);
@@ -116,7 +92,7 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {registries.map((registry) => {
-            const StatusIcon = getStatusIcon(registry.status);
+            const StatusIcon = getRegistryStatusIcon(registry.status);
             return (
               <div key={registry.id} className="border border-white/20 p-4 hover:border-white/40 transition-colors flex flex-col h-full">
                 <div className="flex items-start justify-between mb-3">
@@ -125,8 +101,8 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
                     <p className="text-sm text-gray-400">{registry.type.toUpperCase()}</p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <StatusIcon size={16} className={getStatusColor(registry.status)} />
-                    <span className={`text-xs font-mono ${getStatusColor(registry.status)}`}>
+                    <StatusIcon size={16} className={getRegistryStatusColor(registry.status)} />
+                    <span className={`text-xs font-mono ${getRegistryStatusColor(registry.status)}`}>
                       {registry.status.toUpperCase()}
                     </span>
                   </div>

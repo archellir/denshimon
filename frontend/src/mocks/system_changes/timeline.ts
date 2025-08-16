@@ -1,4 +1,4 @@
-import { TimelineEvent, EventGroup, EventTimelineData, EventCategory } from '@/types/eventTimeline';
+import { SystemChangeEvent, SystemChangeGroup, SystemChangesTimelineData, EventCategory } from '@/types/systemChangesTimeline';
 import { Status } from '@constants';
 
 const EVENT_TEMPLATES = {
@@ -142,7 +142,7 @@ const fillTemplate = (template: string): string => {
     .replace('{snapshot}', `snap-${Date.now()}`);
 };
 
-const generateEvent = (hoursAgo: number): TimelineEvent => {
+const generateEvent = (hoursAgo: number): SystemChangeEvent => {
   const categories = Object.keys(EVENT_TEMPLATES) as EventCategory[];
   const category = categories[Math.floor(Math.random() * categories.length)];
   const categoryTemplates = EVENT_TEMPLATES[category];
@@ -170,7 +170,7 @@ const generateEvent = (hoursAgo: number): TimelineEvent => {
   const template = templates[Math.floor(Math.random() * templates.length)];
   const timestamp = new Date(Date.now() - hoursAgo * 3600000 - Math.random() * 3600000);
   
-  const event: TimelineEvent = {
+  const event: SystemChangeEvent = {
     id: generateEventId(),
     timestamp: timestamp.toISOString(),
     category,
@@ -205,8 +205,8 @@ const generateEvent = (hoursAgo: number): TimelineEvent => {
   return event;
 };
 
-export const generateEventTimelineData = (hours: number = 24): EventTimelineData => {
-  const events: TimelineEvent[] = [];
+export const generateSystemChangesTimelineData = (hours: number = 24): SystemChangesTimelineData => {
+  const events: SystemChangeEvent[] = [];
   const eventsPerHour = 3 + Math.floor(Math.random() * 5);
   
   // Generate events for each hour
@@ -221,8 +221,8 @@ export const generateEventTimelineData = (hours: number = 24): EventTimelineData
   events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   
   // Group events by hour
-  const groups: EventGroup[] = [];
-  const groupMap = new Map<string, TimelineEvent[]>();
+  const groups: SystemChangeGroup[] = [];
+  const groupMap = new Map<string, SystemChangeEvent[]>();
   
   events.forEach(event => {
     const hour = new Date(event.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';

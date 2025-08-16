@@ -31,7 +31,7 @@ import ResourceCharts from '@components/metrics/ResourceCharts';
 import NodeList from '@components/metrics/NodeList';
 import NamespaceMetrics from '@components/metrics/NamespaceMetrics';
 import NetworkTraffic from '@components/network/NetworkTraffic';
-import EventTimeline from '@components/events/EventTimeline';
+import SystemChangesTimeline from '@components/system_changes/SystemChangesTimeline';
 import ServiceMesh from '@components/services/ServiceMesh';
 import LogData from '@components/observability/LogData';
 import LiveStreams from '@components/observability/LiveStreams';
@@ -916,7 +916,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         
         {/* Observability Tab Content */}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOG_DATA && <LogData />}
-        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.SYSTEM_CHANGES && <EventTimeline timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.SYSTEM_CHANGES && <SystemChangesTimeline timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LIVE_STREAMS && <LiveStreams />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.ANALYTICS && <LogAnalytics timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.SERVICE_HEALTH && <ServiceHealthDashboard />}
