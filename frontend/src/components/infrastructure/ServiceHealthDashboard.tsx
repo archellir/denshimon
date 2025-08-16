@@ -9,7 +9,6 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  RefreshCw,
   Eye,
   TrendingUp,
   HardDrive,
@@ -25,7 +24,8 @@ import {
 } from 'lucide-react';
 import useServiceHealthStore from '@stores/serviceHealthStore';
 import { ServiceHealth, ServiceType } from '@/types/serviceHealth';
-import { Status } from '@constants';
+import { Status, WebSocketEventType } from '@constants';
+import { useWebSocket } from '@hooks/useWebSocket';
 
 const ServiceHealthDashboard: FC = () => {
   const {
@@ -36,35 +36,46 @@ const ServiceHealthDashboard: FC = () => {
     isLoading,
     error,
     lastUpdated,
-    fetchServiceHealth,
-    fetchInfrastructureStatus,
-    fetchAlerts,
-    refreshAllServices,
+    setServiceHealthData,
+    setServiceHealthStats,
     acknowledgeAlert,
     clearError
   } = useServiceHealthStore();
 
   const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
   const [showInfrastructureDetails, setShowInfrastructureDetails] = useState(false);
 
+  // WebSocket connection for real-time service health data
+  const { data: serviceHealthData } = useWebSocket<{
+    services: ServiceHealth[];
+    alerts: any[];
+    infrastructure: any;
+    timestamp: string;
+    source: string;
+  }>(WebSocketEventType.SERVICE_HEALTH);
+
+  const { data: serviceHealthStatsData } = useWebSocket<{
+    stats: any;
+    timestamp: string;
+  }>(WebSocketEventType.SERVICE_HEALTH_STATS);
+
+  // Handle WebSocket service health data
   useEffect(() => {
-    fetchServiceHealth();
-    fetchInfrastructureStatus();
-    fetchAlerts();
-  }, [fetchServiceHealth, fetchInfrastructureStatus, fetchAlerts]);
+    if (serviceHealthData) {
+      setServiceHealthData(
+        serviceHealthData.services,
+        serviceHealthData.alerts,
+        serviceHealthData.infrastructure
+      );
+    }
+  }, [serviceHealthData, setServiceHealthData]);
 
+  // Handle WebSocket service health stats
   useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      fetchServiceHealth();
-      fetchInfrastructureStatus();
-      fetchAlerts();
-    }, 2 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [autoRefresh, fetchServiceHealth, fetchInfrastructureStatus, fetchAlerts]);
+    if (serviceHealthStatsData) {
+      setServiceHealthStats(serviceHealthStatsData.stats);
+    }
+  }, [serviceHealthStatsData, setServiceHealthStats]);
 
   const getStatusColor = (status: Status) => {
     switch (status) {
@@ -215,32 +226,12 @@ const ServiceHealthDashboard: FC = () => {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="auto-refresh-services"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="bg-black border-white"
-            />
-            <label htmlFor="auto-refresh-services" className="font-mono text-sm">
-              AUTO REFRESH
-            </label>
-          </div>
           <button
             onClick={() => setShowInfrastructureDetails(!showInfrastructureDetails)}
             className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
           >
             <Shield size={16} />
             <span>INFRASTRUCTURE</span>
-          </button>
-          <button
-            onClick={refreshAllServices}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-3 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm disabled:opacity-50"
-          >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-            <span>REFRESH</span>
           </button>
         </div>
       </div>
