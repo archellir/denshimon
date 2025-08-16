@@ -39,6 +39,23 @@ const SQLQueryInterface: FC = () => {
   const [queryName, setQueryName] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
+  // Load saved queries from localStorage on mount
+  useEffect(() => {
+    const storedQueries = localStorage.getItem('denshimon_saved_queries');
+    if (storedQueries) {
+      try {
+        setSavedQueries(JSON.parse(storedQueries));
+      } catch (error) {
+        console.error('Failed to load saved queries:', error);
+      }
+    }
+  }, []);
+
+  // Save queries to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('denshimon_saved_queries', JSON.stringify(savedQueries));
+  }, [savedQueries]);
+
   useEffect(() => {
     fetchConnections();
   }, [fetchConnections]);
@@ -99,13 +116,6 @@ const SQLQueryInterface: FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const quickQueries = [
-    { name: 'Show Tables', sql: 'SHOW TABLES;' },
-    { name: 'Current User', sql: 'SELECT CURRENT_USER;' },
-    { name: 'Database Size', sql: 'SELECT pg_size_pretty(pg_database_size(current_database()));' },
-    { name: 'Active Connections', sql: 'SELECT count(*) FROM pg_stat_activity;' },
-    { name: 'Table Sizes', sql: 'SELECT schemaname,tablename,pg_size_pretty(pg_total_relation_size(schemaname||\'.\' ||tablename)) as size FROM pg_tables ORDER BY pg_total_relation_size(schemaname||\'.\'||tablename) DESC;' }
-  ];
 
   return (
     <div className={`space-y-6 ${isFullscreen ? 'fixed inset-0 z-50 bg-black p-6' : ''}`}>
@@ -164,22 +174,6 @@ const SQLQueryInterface: FC = () => {
       <div className="grid grid-cols-12 gap-6">
         {/* Left Panel - Query Editor */}
         <div className={`${showHistory ? 'col-span-8' : 'col-span-12'} space-y-4`}>
-          {/* Quick Queries */}
-          <div className="border border-white/20 p-3">
-            <h4 className="font-mono text-sm mb-2">QUICK QUERIES</h4>
-            <div className="flex flex-wrap gap-2">
-              {quickQueries.map((query, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSqlQuery(query.sql)}
-                  className="px-2 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-xs"
-                >
-                  {query.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* SQL Editor */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -332,6 +326,9 @@ SELECT * FROM users LIMIT 10;"
                   <div className="p-4 text-center">
                     <FileText size={24} className="mx-auto opacity-40 mb-2" />
                     <div className="text-xs font-mono opacity-60">No saved queries</div>
+                    <div className="text-xs font-mono opacity-40 mt-1">
+                      Save frequently used queries for quick access
+                    </div>
                   </div>
                 ) : (
                   savedQueries.map((query) => (
