@@ -584,7 +584,7 @@ func (s *Service) recordHistory(deploymentID, action, oldImage, newImage string,
 // syncToGitOps automatically syncs deployment changes to GitOps repository
 func (s *Service) syncToGitOps(deploymentID, action, user string) {
 	ctx := context.Background()
-	
+
 	// Get deployment details
 	deployment, err := s.GetDeployment(ctx, deploymentID)
 	if err != nil {
@@ -618,20 +618,20 @@ func (s *Service) syncToGitOps(deploymentID, action, user string) {
 	}
 
 	// Try to create the application (will fail silently if exists)
-	s.gitopsService.CreateApplication(ctx, 
-		gitopsApp.Name, 
-		gitopsApp.Namespace, 
+	s.gitopsService.CreateApplication(ctx,
+		gitopsApp.Name,
+		gitopsApp.Namespace,
 		"", // repository ID will be auto-configured
 		"", // path will be auto-configured
-		gitopsApp.Image, 
-		gitopsApp.Replicas, 
-		gitopsApp.Resources, 
+		gitopsApp.Image,
+		gitopsApp.Replicas,
+		gitopsApp.Resources,
 		gitopsApp.Environment)
 
 	// Sync application to Git repository
 	syncConfig := gitops.DefaultSyncConfig()
 	syncConfig.CommitMessage = fmt.Sprintf("feat(%s): %s deployment %s", deployment.Namespace, action, deployment.Name)
-	
+
 	s.syncEngine.SyncApplicationToGit(ctx, deploymentID, syncConfig)
 }
 
@@ -687,20 +687,20 @@ func (s *Service) CreateRegistry(ctx context.Context, registry providers.Registr
 		INSERT INTO container_registries (id, name, type, config, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
-	
-	_, err = s.db.ExecContext(ctx, query, 
-		registry.ID, 
-		registry.Name, 
-		registry.Type, 
-		string(configJSON), 
-		registry.CreatedAt, 
+
+	_, err = s.db.ExecContext(ctx, query,
+		registry.ID,
+		registry.Name,
+		registry.Type,
+		string(configJSON),
+		registry.CreatedAt,
 		registry.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		return fmt.Errorf("failed to create registry: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -711,18 +711,18 @@ func (s *Service) ListRegistries(ctx context.Context) ([]providers.Registry, err
 		FROM container_registries
 		ORDER BY created_at DESC
 	`
-	
+
 	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query registries: %w", err)
 	}
 	defer rows.Close()
-	
+
 	var registries []providers.Registry
 	for rows.Next() {
 		var registry providers.Registry
 		var configJSON string
-		
+
 		err := rows.Scan(
 			&registry.ID,
 			&registry.Name,
@@ -734,42 +734,42 @@ func (s *Service) ListRegistries(ctx context.Context) ([]providers.Registry, err
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan registry: %w", err)
 		}
-		
+
 		// Parse config JSON
 		if err := json.Unmarshal([]byte(configJSON), &registry.Config); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal registry config: %w", err)
 		}
-		
+
 		// Set default status (could be enhanced to store/retrieve actual status)
 		registry.Status = "connected"
-		
+
 		registries = append(registries, registry)
 	}
-	
+
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("failed to iterate registries: %w", err)
 	}
-	
+
 	return registries, nil
 }
 
 // DeleteRegistry removes a container registry from the database
 func (s *Service) DeleteRegistry(ctx context.Context, id string) error {
 	query := `DELETE FROM container_registries WHERE id = ?`
-	
+
 	result, err := s.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete registry: %w", err)
 	}
-	
+
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
-	
+
 	if rowsAffected == 0 {
 		return fmt.Errorf("registry not found: %s", id)
 	}
-	
+
 	return nil
 }
