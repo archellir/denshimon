@@ -78,6 +78,18 @@ const ServiceHealthDashboard: FC = () => {
     }
   }, [serviceHealthStatsData, setServiceHealthStats]);
 
+  // Handle infrastructure modal trigger from parent component
+  useEffect(() => {
+    const handleShowInfrastructureModal = () => {
+      setShowInfrastructureDetails(true);
+    };
+
+    window.addEventListener('showInfrastructureModal', handleShowInfrastructureModal);
+    return () => {
+      window.removeEventListener('showInfrastructureModal', handleShowInfrastructureModal);
+    };
+  }, []);
+
   const getStatusColor = (status: Status) => {
     switch (status) {
       case Status.HEALTHY:
@@ -219,17 +231,6 @@ const ServiceHealthDashboard: FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowInfrastructureDetails(!showInfrastructureDetails)}
-            className="flex items-center space-x-2 px-3 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
-          >
-            <Shield size={16} />
-            <span>INFRASTRUCTURE</span>
-          </button>
-        </div>
-      </div>
 
       {error && (
         <div className="p-4 border border-red-400 bg-red-900/20 text-red-400 font-mono text-sm flex items-center justify-between">
@@ -344,8 +345,8 @@ const ServiceHealthDashboard: FC = () => {
                 {getServiceIcon(service.type)}
                 <div>
                   <div className="flex items-center space-x-2">
-                    {getStatusIcon(service.status)}
                     <span className="font-mono text-sm font-semibold">{service.name}</span>
+                    {getStatusIcon(service.status)}
                   </div>
                   <div className="font-mono text-xs opacity-60">{service.type.toUpperCase()}</div>
                 </div>
@@ -359,7 +360,7 @@ const ServiceHealthDashboard: FC = () => {
                     onClick={(e) => e.stopPropagation()}
                     className="p-1 hover:bg-white/10 transition-colors"
                   >
-                    <ExternalLink size={12} />
+                    <ExternalLink size={24} />
                   </a>
                 )}
                 <button
@@ -369,7 +370,7 @@ const ServiceHealthDashboard: FC = () => {
                   }}
                   className="p-1 hover:bg-white/10 transition-colors"
                 >
-                  <Eye size={12} />
+                  <Eye size={24} />
                 </button>
               </div>
             </div>
