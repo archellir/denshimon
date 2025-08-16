@@ -744,6 +744,15 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                     badge={stat.label === 'SUCCESS RATE' ? { text: 'STABLE', color: 'green' } : undefined}
                     trend={stat.label === 'RECENT DEPLOYS' ? { direction: 'up', value: '+2', color: 'green' } : undefined}
                   />
+                ) : activePrimaryTab === PrimaryTab.DATABASE ? (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    status={stat.status}
+                    variant="default"
+                  />
                 ) : (
                   <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
                     <div className="flex items-center justify-between">
