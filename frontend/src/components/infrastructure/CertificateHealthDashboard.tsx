@@ -5,17 +5,18 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  XCircle,
   RefreshCw,
   Plus,
   Eye,
   Server,
-  Globe,
-  AlertCircle,
   X
 } from 'lucide-react';
 import useCertificateStore from '@stores/certificateStore';
-import { CertificateStatus } from '@/types/certificates';
+import { 
+  getCertificateStatusColor, 
+  getCertificateStatusIcon, 
+  formatCertificateDate 
+} from '@utils/certificate';
 
 const CertificateHealthDashboard: FC = () => {
   const {
@@ -58,53 +59,6 @@ const CertificateHealthDashboard: FC = () => {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchCertificates, fetchCertificateStats, fetchAlerts]);
 
-  const getStatusColor = (status: CertificateStatus) => {
-    switch (status) {
-      case CertificateStatus.VALID:
-        return 'border-green-400 text-green-400';
-      case CertificateStatus.EXPIRING_SOON:
-        return 'border-yellow-400 text-yellow-400';
-      case CertificateStatus.EXPIRING_CRITICAL:
-        return 'border-red-400 text-red-400';
-      case CertificateStatus.EXPIRED:
-        return 'border-red-600 text-red-600';
-      case CertificateStatus.INVALID:
-        return 'border-purple-400 text-purple-400';
-      case CertificateStatus.UNREACHABLE:
-        return 'border-gray-400 text-gray-400';
-      default:
-        return 'border-white';
-    }
-  };
-
-  const getStatusIcon = (status: CertificateStatus) => {
-    switch (status) {
-      case CertificateStatus.VALID:
-        return <CheckCircle size={16} className="text-green-400" />;
-      case CertificateStatus.EXPIRING_SOON:
-        return <Clock size={16} className="text-yellow-400" />;
-      case CertificateStatus.EXPIRING_CRITICAL:
-        return <AlertTriangle size={16} className="text-red-400" />;
-      case CertificateStatus.EXPIRED:
-        return <XCircle size={16} className="text-red-600" />;
-      case CertificateStatus.INVALID:
-        return <AlertCircle size={16} className="text-purple-400" />;
-      case CertificateStatus.UNREACHABLE:
-        return <Globe size={16} className="text-gray-400" />;
-      default:
-        return <Shield size={16} />;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   const selectedCert = certificates.find(cert => cert.id === selectedCertificate);
 
@@ -232,7 +186,7 @@ const CertificateHealthDashboard: FC = () => {
                     <Clock size={16} className="text-yellow-400" />
                   )}
                   <span className="font-mono text-sm">{alert.message}</span>
-                  <span className="font-mono text-xs opacity-60">{formatDate(alert.timestamp)}</span>
+                  <span className="font-mono text-xs opacity-60">{formatCertificateDate(alert.timestamp)}</span>
                 </div>
                 <button
                   onClick={() => acknowledgeAlert(alert.id)}
@@ -251,12 +205,12 @@ const CertificateHealthDashboard: FC = () => {
         {certificates.map((cert) => (
           <div
             key={cert.id}
-            className={`border p-4 cursor-pointer transition-colors hover:bg-white/5 ${getStatusColor(cert.status)}`}
+            className={`border p-4 cursor-pointer transition-colors hover:bg-white/5 ${getCertificateStatusColor(cert.status)}`}
             onClick={() => setSelectedCertificate(cert.id)}
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2">
-                {getStatusIcon(cert.status)}
+                {getCertificateStatusIcon(cert.status)}
                 <span className="font-mono text-sm font-semibold">{cert.domain}</span>
               </div>
               <button
@@ -281,7 +235,7 @@ const CertificateHealthDashboard: FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs opacity-60">Expires</span>
-                <span className="font-mono text-xs">{formatDate(cert.notAfter)}</span>
+                <span className="font-mono text-xs">{formatCertificateDate(cert.notAfter)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs opacity-60">Days Left</span>
@@ -326,8 +280,8 @@ const CertificateHealthDashboard: FC = () => {
                   </div>
                   <div>
                     <label className="font-mono text-sm opacity-60">Status</label>
-                    <div className={`flex items-center space-x-2 ${getStatusColor(selectedCert.status)}`}>
-                      {getStatusIcon(selectedCert.status)}
+                    <div className={`flex items-center space-x-2 ${getCertificateStatusColor(selectedCert.status)}`}>
+                      {getCertificateStatusIcon(selectedCert.status)}
                       <span className="font-mono uppercase">{selectedCert.status.replace('_', ' ')}</span>
                     </div>
                   </div>
@@ -355,11 +309,11 @@ const CertificateHealthDashboard: FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="font-mono text-xs opacity-60">Valid From</label>
-                    <div className="font-mono text-sm">{formatDate(selectedCert.notBefore)}</div>
+                    <div className="font-mono text-sm">{formatCertificateDate(selectedCert.notBefore)}</div>
                   </div>
                   <div>
                     <label className="font-mono text-xs opacity-60">Valid Until</label>
-                    <div className="font-mono text-sm">{formatDate(selectedCert.notAfter)}</div>
+                    <div className="font-mono text-sm">{formatCertificateDate(selectedCert.notAfter)}</div>
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-white/10">
@@ -411,7 +365,7 @@ const CertificateHealthDashboard: FC = () => {
                         <div className="font-mono text-xs space-y-1">
                           <div>Subject: {chainCert.subject}</div>
                           <div>Issuer: {chainCert.issuer}</div>
-                          <div>Valid: {formatDate(chainCert.notBefore)} - {formatDate(chainCert.notAfter)}</div>
+                          <div>Valid: {formatCertificateDate(chainCert.notBefore)} - {formatCertificateDate(chainCert.notAfter)}</div>
                         </div>
                       </div>
                     ))}
@@ -426,7 +380,7 @@ const CertificateHealthDashboard: FC = () => {
       {/* Last Updated */}
       {lastUpdated && (
         <div className="text-center text-xs font-mono opacity-60">
-          Last updated: {formatDate(lastUpdated)}
+          Last updated: {formatCertificateDate(lastUpdated)}
         </div>
       )}
     </div>

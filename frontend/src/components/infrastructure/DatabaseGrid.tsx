@@ -7,7 +7,11 @@ import ConfirmDialog from '@components/common/ConfirmDialog';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus, DatabaseType } from '@/types/database';
-import { Status } from '@constants';
+import { 
+  getStatusFromDatabaseStatus, 
+  getDatabaseTypeIcon, 
+  getDatabaseTypeLabel 
+} from '@utils/databaseGrid';
 
 interface DatabaseGridProps {
   onAddConnection: () => void;
@@ -47,41 +51,6 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
     fetchConnections();
   }, [fetchConnections]);
 
-  const getStatusFromDatabaseStatus = (dbStatus: DatabaseStatus): Status => {
-    switch (dbStatus) {
-      case DatabaseStatus.CONNECTED:
-        return Status.HEALTHY;
-      case DatabaseStatus.CONNECTING:
-        return Status.WARNING;
-      case DatabaseStatus.ERROR:
-        return Status.CRITICAL;
-      case DatabaseStatus.DISCONNECTED:
-      default:
-        return Status.UNKNOWN;
-    }
-  };
-
-  const getDatabaseTypeIcon = (type: DatabaseType) => {
-    switch (type) {
-      case DatabaseType.POSTGRESQL:
-        return '🐘'; // PostgreSQL elephant
-      case DatabaseType.SQLITE:
-        return '📁'; // SQLite file
-      default:
-        return '💾';
-    }
-  };
-
-  const getDatabaseTypeLabel = (type: DatabaseType) => {
-    switch (type) {
-      case DatabaseType.POSTGRESQL:
-        return 'PostgreSQL';
-      case DatabaseType.SQLITE:
-        return 'SQLite';
-      default:
-        return String(type).toUpperCase();
-    }
-  };
 
   const handleConnect = async (id: string) => {
     setConnectingIds(prev => new Set(prev).add(id));

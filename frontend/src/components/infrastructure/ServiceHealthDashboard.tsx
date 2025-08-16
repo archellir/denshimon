@@ -28,6 +28,9 @@ import useServiceHealthStore from '@stores/serviceHealthStore';
 import { ServiceHealth, ServiceType, InfrastructureAlert, InfrastructureStatus, ServiceHealthStats } from '@/types/serviceHealth';
 import { Status, WebSocketEventType } from '@constants';
 import { useWebSocket } from '@hooks/useWebSocket';
+import { 
+  getServiceHealthStatusColor
+} from '@utils/serviceHealth';
 
 const ServiceHealthDashboard: FC = () => {
   const {
@@ -90,22 +93,6 @@ const ServiceHealthDashboard: FC = () => {
     };
   }, []);
 
-  const getStatusColor = (status: Status) => {
-    switch (status) {
-      case Status.HEALTHY:
-        return 'border-green-400 text-green-400';
-      case Status.WARNING:
-        return 'border-yellow-400 text-yellow-400';
-      case Status.CRITICAL:
-        return 'border-red-400 text-red-400';
-      case Status.DOWN:
-        return 'border-red-600 text-red-600';
-      case Status.UNKNOWN:
-        return 'border-gray-400 text-gray-400';
-      default:
-        return 'border-white';
-    }
-  };
 
   const getStatusIcon = (status: Status) => {
     switch (status) {
@@ -337,7 +324,7 @@ const ServiceHealthDashboard: FC = () => {
         {services.map((service) => (
           <div
             key={service.id}
-            className={`border p-4 cursor-pointer transition-colors hover:bg-white/5 ${getStatusColor(service.status)}`}
+            className={`border p-4 cursor-pointer transition-colors hover:bg-white/5 ${getServiceHealthStatusColor(service.status)}`}
             onClick={() => setSelectedService(service.id)}
           >
             <div className="flex items-start justify-between mb-3">
@@ -418,7 +405,7 @@ const ServiceHealthDashboard: FC = () => {
                 </div>
                 <div>
                   <label className="font-mono text-sm opacity-60">Status</label>
-                  <div className={`flex items-center space-x-2 ${getStatusColor(selectedSvc.status)}`}>
+                  <div className={`flex items-center space-x-2 ${getServiceHealthStatusColor(selectedSvc.status)}`}>
                     {getStatusIcon(selectedSvc.status)}
                     <span className="font-mono uppercase">{selectedSvc.status}</span>
                   </div>
