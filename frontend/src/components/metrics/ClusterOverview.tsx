@@ -112,7 +112,17 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
         <div className="border border-white p-4 h-96">
           <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
-            {chartData.length === 0 ? (
+            {isLoadingHistory ? (
+              <div className="h-full bg-white/5 animate-pulse rounded flex items-end justify-around p-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="bg-white/10 animate-pulse rounded w-8"
+                    style={{ height: `${Math.random() * 60 + 20}%` }}
+                  />
+                ))}
+              </div>
+            ) : chartData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
                 <span className="font-mono text-sm text-yellow-400">{UI_MESSAGES.CHART_NO_DATA}</span>
               </div>
