@@ -141,7 +141,15 @@ const ConfigurationTab = () => {
   }
 
   if (!repository) {
-    return <NoRepositoryConnected />;
+    return (
+      <NoRepositoryConnected 
+        onRepositoryConnected={(connectedRepo) => {
+          setRepository(connectedRepo);
+          // Optionally refresh metrics after connection
+          fetchBaseRepository();
+        }}
+      />
+    );
   }
 
   return (
