@@ -513,8 +513,8 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             ERROR: {queryResults.error}
           </div>
         ) : (
-          <div className="border border-white overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px' }}>
-            <table className="text-sm font-mono" style={{ minWidth: '100%' }}>
+          <div className="border border-white" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px', overflow: 'auto', maxWidth: '100%' }}>
+            <table className="text-sm font-mono" style={{ width: 'max-content', minWidth: '100%' }}>
               <thead className="bg-white/10 sticky top-0">
                 <tr>
                   {queryResults.columns.map((col, i) => (
