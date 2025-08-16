@@ -115,17 +115,11 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         set({ registries: response.data, loading: { ...get().loading, registries: false } });
       }
     } catch (error) {
-      // Fallback to mock data on error
-      try {
-        const registries = await mockApiResponse(mockRegistries, 300);
-        set({ registries, loading: { ...get().loading, registries: false }, error: null });
-      } catch (mockError) {
-        const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch registries';
-        set(state => ({
-          error: errorMessage,
-          loading: { ...state.loading, registries: false }
-        }));
-      }
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch registries';
+      set(state => ({
+        error: errorMessage,
+        loading: { ...state.loading, registries: false }
+      }));
     }
   },
   
@@ -161,20 +155,38 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
   
   testRegistry: async (id) => {
     try {
-      const { generateMockRegistryTest } = await import('@mocks/deployments/registries');
-      const success = await mockApiResponse(generateMockRegistryTest(id), 500);
-      
-      // Update registry status
-      const registries = get().registries.map(r => 
-        r.id === id ? { 
-          ...r, 
-          status: success ? RegistryStatus.CONNECTED : RegistryStatus.ERROR, 
-          error: success ? undefined : 'Connection timeout'
-        } : r
-      );
-      set({ registries });
-      
-      return success;
+      if (MOCK_ENABLED) {
+        const { generateMockRegistryTest } = await import('@mocks/deployments/registries');
+        const success = await mockApiResponse(generateMockRegistryTest(id), 500);
+        
+        // Update registry status
+        const registries = get().registries.map(r => 
+          r.id === id ? { 
+            ...r, 
+            status: success ? RegistryStatus.CONNECTED : RegistryStatus.ERROR, 
+            error: success ? undefined : 'Connection timeout'
+          } : r
+        );
+        set({ registries });
+        
+        return success;
+      } else {
+        const response = await apiService.post<{ success: boolean; message?: string; error?: string }>(
+          `${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries/${id}/test`
+        );
+        
+        // Update registry status based on response
+        const registries = get().registries.map(r => 
+          r.id === id ? { 
+            ...r, 
+            status: response.data.success ? RegistryStatus.CONNECTED : RegistryStatus.ERROR, 
+            error: response.data.error
+          } : r
+        );
+        set({ registries });
+        
+        return response.data.success;
+      }
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to test registry' });
       return false;
@@ -200,17 +212,10 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         set({ images: response.data, loading: { ...get().loading, images: false } });
       }
     } catch (error) {
-      try {
-        const { searchMockImages } = await import('@mocks/deployments/images');
-        const registryName = registryId ? get().registries.find(r => r.id === registryId)?.name : undefined;
-        const images = await mockApiResponse(searchMockImages('', registryName), 400);
-        set({ images, loading: { ...get().loading, images: false }, error: null });
-      } catch (mockError) {
-        set(state => ({
-          error: error instanceof Error ? error.message : 'Failed to fetch images',
-          loading: { ...state.loading, images: false }
-        }));
-      }
+      set(state => ({
+        error: error instanceof Error ? error.message : 'Failed to fetch images',
+        loading: { ...state.loading, images: false }
+      }));
     }
   },
   
@@ -239,17 +244,10 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         set({ images: result.data || result, loading: { ...get().loading, images: false } });
       }
     } catch (error) {
-      try {
-        const { searchMockImages } = await import('@mocks/deployments/images');
-        const registryName = get().selectedRegistry ? get().registries.find(r => r.id === get().selectedRegistry)?.name : undefined;
-        const images = await mockApiResponse(searchMockImages(query, registryName), 300);
-        set({ images, loading: { ...get().loading, images: false }, error: null });
-      } catch (mockError) {
-        set(state => ({
-          error: error instanceof Error ? error.message : 'Failed to search images',
-          loading: { ...state.loading, images: false }
-        }));
-      }
+      set(state => ({
+        error: error instanceof Error ? error.message : 'Failed to search images',
+        loading: { ...state.loading, images: false }
+      }));
     }
   },
   
@@ -296,16 +294,10 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         set({ deployments: result.data || result, loading: { ...get().loading, deployments: false } });
       }
     } catch (error) {
-      try {
-        const { filterDeploymentsByNamespace } = await import('@mocks/deployments/deployments');
-        const deployments = await mockApiResponse(filterDeploymentsByNamespace(namespace || 'all'), 350);
-        set({ deployments, loading: { ...get().loading, deployments: false }, error: null });
-      } catch (mockError) {
-        set(state => ({
-          error: error instanceof Error ? error.message : 'Failed to fetch deployments',
-          loading: { ...state.loading, deployments: false }
-        }));
-      }
+      set(state => ({
+        error: error instanceof Error ? error.message : 'Failed to fetch deployments',
+        loading: { ...state.loading, deployments: false }
+      }));
     }
   },
   
@@ -399,16 +391,10 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         set({ nodes: result.data || result, loading: { ...get().loading, nodes: false } });
       }
     } catch (error) {
-      try {
-        const { mockNodes } = await import('@mocks/deployments/deployments');
-        const nodes = await mockApiResponse(mockNodes, 250);
-        set({ nodes, loading: { ...get().loading, nodes: false }, error: null });
-      } catch (mockError) {
-        set(state => ({
-          error: error instanceof Error ? error.message : 'Failed to fetch nodes',
-          loading: { ...state.loading, nodes: false }
-        }));
-      }
+      set(state => ({
+        error: error instanceof Error ? error.message : 'Failed to fetch nodes',
+        loading: { ...state.loading, nodes: false }
+      }));
     }
   },
   
@@ -435,16 +421,10 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
         set({ history: result.data || result, loading: { ...get().loading, history: false } });
       }
     } catch (error) {
-      try {
-        const { generateMockHistoryForDeployment } = await import('@mocks/deployments/history');
-        const history = await mockApiResponse(generateMockHistoryForDeployment(deploymentId), 300);
-        set({ history, loading: { ...get().loading, history: false }, error: null });
-      } catch (mockError) {
-        set(state => ({
-          error: error instanceof Error ? error.message : 'Failed to fetch history',
-          loading: { ...state.loading, history: false }
-        }));
-      }
+      set(state => ({
+        error: error instanceof Error ? error.message : 'Failed to fetch history',
+        loading: { ...state.loading, history: false }
+      }));
     }
   },
   
