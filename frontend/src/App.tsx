@@ -447,8 +447,7 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, showHelp, setShowHelp }
     },
     [PrimaryTab.DATABASE]: {
       [DatabaseTab.CONNECTIONS]: UI_LABELS.CONNECTIONS,
-      [DatabaseTab.BROWSER]: UI_LABELS.BROWSER,
-      [DatabaseTab.QUERIES]: UI_LABELS.QUERIES,
+      [DatabaseTab.EXPLORER]: 'EXPLORER',
       [DatabaseTab.MONITORING]: UI_LABELS.MONITORING
     },
     [PrimaryTab.OBSERVABILITY]: {
