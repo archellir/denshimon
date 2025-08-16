@@ -45,9 +45,7 @@ import APIGatewayAnalytics from '@components/gateway/APIGatewayAnalytics';
 import ServicesList from '@components/workloads/ServicesList';
 import DatabaseGrid from '@components/infrastructure/DatabaseGrid';
 import AddDatabaseConnectionModal from '@components/infrastructure/AddDatabaseConnectionModal';
-import DatabaseManagement from '@components/infrastructure/DatabaseManagement';
-import DatabaseBrowser from '@components/database/DatabaseBrowser';
-import SQLQueryInterface from '@components/database/SQLQueryInterface';
+import DatabaseExplorer from '@components/database/DatabaseExplorer';
 import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
 import CertificateHealthDashboard from '@components/infrastructure/CertificateHealthDashboard';
 import ServiceHealthDashboard from '@components/infrastructure/ServiceHealthDashboard';
@@ -77,7 +75,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
   // Database management state
   const [showAddDatabaseModal, setShowAddDatabaseModal] = useState(false);
-  const [selectedDatabaseConnection, setSelectedDatabaseConnection] = useState<string | null>(null);
   
   // Deployment management state
   const [showDeployModal, setShowDeployModal] = useState(false);
@@ -97,7 +94,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   // Default secondary tabs for each primary tab
   const defaultSecondaryTabs = {
     [PrimaryTab.DEPLOYMENTS]: DeploymentsTab.DEPLOYMENTS,
-    [PrimaryTab.DATABASE]: DatabaseTab.BROWSER,
+    [PrimaryTab.DATABASE]: DatabaseTab.EXPLORER,
     [PrimaryTab.OBSERVABILITY]: ObservabilityTab.SERVICE_HEALTH,
     [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
     [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
@@ -137,10 +134,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       { id: DeploymentsTab.REGISTRIES, label: UI_LABELS.REGISTRIES, icon: Server },
     ],
     [PrimaryTab.DATABASE]: [
-      { id: DatabaseTab.BROWSER, label: UI_LABELS.BROWSER, icon: Eye },
-      { id: DatabaseTab.MONITORING, label: UI_LABELS.MONITORING, icon: TrendingUp },
-      { id: DatabaseTab.QUERIES, label: UI_LABELS.QUERIES, icon: FileText },
       { id: DatabaseTab.CONNECTIONS, label: UI_LABELS.CONNECTIONS, icon: Database },
+      { id: DatabaseTab.EXPLORER, label: 'EXPLORER', icon: Eye },
+      { id: DatabaseTab.MONITORING, label: UI_LABELS.MONITORING, icon: TrendingUp },
     ],
     [PrimaryTab.OBSERVABILITY]: [
       { id: ObservabilityTab.SERVICE_HEALTH, label: UI_LABELS.SERVICE_HEALTH, icon: Server },
@@ -281,10 +277,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         [DeploymentsTab.REGISTRIES]: "Configure and manage container registries for pulling images in Kubernetes deployments."
       },
       [PrimaryTab.DATABASE]: {
-        [DatabaseTab.BROWSER]: "Browse database schemas, tables, views, and explore database structure interactively.",
-        [DatabaseTab.MONITORING]: "Monitor database performance metrics and real-time query execution statistics.",
-        [DatabaseTab.QUERIES]: "Create, save, and execute SQL queries with syntax highlighting and results.",
-        [DatabaseTab.CONNECTIONS]: "Manage database connections and credentials with WebSocket-based connectivity."
+        [DatabaseTab.CONNECTIONS]: "Manage database connections and credentials with WebSocket-based connectivity.",
+        [DatabaseTab.EXPLORER]: "Unified database interface for browsing schemas, executing queries, and managing data with context-aware navigation.",
+        [DatabaseTab.MONITORING]: "Monitor database performance metrics and real-time query execution statistics."
       },
       [PrimaryTab.OBSERVABILITY]: {
         [ObservabilityTab.SERVICE_HEALTH]: "Monitor service health, SLA metrics, and system reliability indicators.",
@@ -681,11 +676,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 </button>
               </div>
             );
-          case DatabaseTab.BROWSER:
+          case DatabaseTab.EXPLORER:
             return (
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-mono opacity-60">
-                  {connections.length} DATABASE{connections.length !== 1 ? 'S' : ''}
+                  {connections.filter(conn => conn.status === 'connected').length} ACTIVE CONNECTION{connections.filter(conn => conn.status === 'connected').length !== 1 ? 'S' : ''}
                 </span>
               </div>
             );
@@ -694,14 +689,6 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
               <div className="flex items-center space-x-4">
                 <span className="text-xs font-mono opacity-60">
                   Real-time Database Monitoring
-                </span>
-              </div>
-            );
-          case DatabaseTab.QUERIES:
-            return (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm font-mono opacity-60">
-                  {connections.filter(conn => conn.status === 'connected').length} CONNECTION{connections.filter(conn => conn.status === 'connected').length !== 1 ? 'S' : ''}
                 </span>
               </div>
             );
@@ -912,20 +899,16 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         
         {/* Database Tab Content */}
         {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.CONNECTIONS && (
-          selectedDatabaseConnection ? (
-            <DatabaseManagement 
-              connectionId={selectedDatabaseConnection}
-              onBack={() => setSelectedDatabaseConnection(null)}
-            />
-          ) : (
-            <DatabaseGrid 
-              onAddConnection={() => setShowAddDatabaseModal(true)}
-              onViewConnection={(id) => setSelectedDatabaseConnection(id)}
-            />
-          )
+          <DatabaseGrid 
+            onAddConnection={() => setShowAddDatabaseModal(true)}
+            onUseConnection={() => {
+              // Switch to EXPLORER tab
+              setActiveSecondaryTab(DatabaseTab.EXPLORER);
+              // Future: Could also pass the selected connection ID to the Explorer
+            }}
+          />
         )}
-        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.BROWSER && <DatabaseBrowser />}
-        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.QUERIES && <SQLQueryInterface />}
+        {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.EXPLORER && <DatabaseExplorer />}
         {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.MONITORING && <DatabaseMonitoring />}
         
         {/* Observability Tab Content */}
