@@ -3,6 +3,7 @@ import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCom
 import { API_ENDPOINTS } from '@constants';
 import { MOCK_ENABLED, mockBaseInfrastructureRepo, mockSyncMetrics, mockMonitoringData, mockWebhookData, simulateSync } from '@/mocks';
 import type { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';
+import NoRepositoryConnected from './NoRepositoryConnected';
 
 
 const ConfigurationTab = () => {
@@ -21,8 +22,9 @@ const ConfigurationTab = () => {
       if (MOCK_ENABLED) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
-        setRepository(mockBaseInfrastructureRepo);
-        setMetrics(mockSyncMetrics);
+        // Temporarily show no repository to demo the connection flow
+        setRepository(null);
+        setMetrics(null);
         setMonitoringData(mockMonitoringData);
         setWebhookData(mockWebhookData);
       } else {
@@ -139,11 +141,7 @@ const ConfigurationTab = () => {
   }
 
   if (!repository) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-black border border-red-400">
-        <div className="text-red-400 font-mono tracking-wider uppercase">FAILED TO LOAD BASE INFRASTRUCTURE REPOSITORY</div>
-      </div>
-    );
+    return <NoRepositoryConnected />;
   }
 
   return (
