@@ -273,16 +273,16 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         [MeshTab.GATEWAY]: "Configure API gateway settings, analyze traffic, and manage ingress rules."
       },
       [PrimaryTab.DEPLOYMENTS]: {
-        [DeploymentsTab.DEPLOYMENTS]: "Deploy new applications, view active deployments, and manage application lifecycle with GitOps.",
-        [DeploymentsTab.HISTORY]: "View deployment history, perform rollbacks, and track all application deployment changes.",
-        [DeploymentsTab.IMAGES]: "Browse container images, tags, and image registry information for deployments.",
-        [DeploymentsTab.REGISTRIES]: "Manage container registries, authentication, and image repositories for application deployments."
+        [DeploymentsTab.DEPLOYMENTS]: "View and manage Kubernetes deployments, including scaling, restarting, and deleting workloads.",
+        [DeploymentsTab.HISTORY]: "Track deployment action history including create, update, scale, restart, and delete operations.",
+        [DeploymentsTab.IMAGES]: "Browse container images and tags available in configured registries for deployments.",
+        [DeploymentsTab.REGISTRIES]: "Configure and manage container registries for pulling images in Kubernetes deployments."
       },
       [PrimaryTab.DATABASE]: {
-        [DatabaseTab.BROWSER]: "Browse database schemas, tables, and execute SQL queries interactively.",
-        [DatabaseTab.MONITORING]: "Monitor database performance, connections, and query execution metrics.",
+        [DatabaseTab.BROWSER]: "Browse database schemas, tables, views, and explore database structure interactively.",
+        [DatabaseTab.MONITORING]: "Monitor database performance metrics and real-time query execution statistics.",
         [DatabaseTab.QUERIES]: "Create, save, and execute SQL queries with syntax highlighting and results.",
-        [DatabaseTab.CONNECTIONS]: "Manage database connections, credentials, and connection pooling."
+        [DatabaseTab.CONNECTIONS]: "Manage database connections and credentials with WebSocket-based connectivity."
       },
       [PrimaryTab.OBSERVABILITY]: {
         [ObservabilityTab.SERVICE_HEALTH]: "Monitor service health, SLA metrics, and system reliability indicators.",
