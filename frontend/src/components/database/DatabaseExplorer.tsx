@@ -316,7 +316,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-4" style={{ maxHeight: isFullscreen ? 'calc(100vh - 80px)' : 'calc(100vh - 200px)' }}>
         {activeTab === 'schema' && renderSchemaTab()}
         {activeTab === 'data' && renderDataTab()}
         {activeTab === 'query' && renderQueryTab()}
