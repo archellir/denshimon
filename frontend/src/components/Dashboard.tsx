@@ -98,7 +98,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     [PrimaryTab.OBSERVABILITY]: ObservabilityTab.SERVICE_HEALTH,
     [PrimaryTab.INFRASTRUCTURE]: InfrastructureTab.OVERVIEW,
     [PrimaryTab.WORKLOADS]: WorkloadsTab.OVERVIEW,
-    [PrimaryTab.MESH]: MeshTab.TOPOLOGY,
+    [PrimaryTab.MESH]: MeshTab.SERVICES,
   };
 
   // Secondary tab definitions
