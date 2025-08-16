@@ -204,3 +204,50 @@ export function useMultipleWebSocket(messageTypes: WebSocketMessage['type'][]) {
     isConnected: connectionState.state === WebSocketState.CONNECTED
   };
 }
+
+// Default export for general WebSocket usage
+function useGeneralWebSocket() {
+  const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+  const [connectionState, setConnectionState] = useState<WebSocketConnectionState>({
+    state: WebSocketState.DISCONNECTED,
+    reconnectAttempts: 0
+  });
+  const wsRef = useRef(getWebSocketInstance());
+
+  useEffect(() => {
+    const ws = wsRef.current;
+    if (!ws) return;
+
+    // Subscribe to all message types to capture any incoming messages
+    const messageTypes = ['metrics', 'logs', 'events', 'pods', 'database', 'database_stats', 'network', 'storage'];
+    const subscriptionIds: string[] = [];
+
+    messageTypes.forEach(messageType => {
+      const subscriptionId = ws.subscribe(messageType as WebSocketEventType, (data) => {
+        setLastMessage({
+          type: messageType as WebSocketMessage['type'],
+          data: { type: messageType, data }
+        });
+      });
+      subscriptionIds.push(subscriptionId);
+    });
+
+    // Subscribe to connection state
+    const connectionSubscriptionId = ws.subscribe('connection', (data) => {
+      setConnectionState(data as unknown as WebSocketConnectionState);
+    });
+    subscriptionIds.push(connectionSubscriptionId);
+
+    return () => {
+      subscriptionIds.forEach(id => ws.unsubscribe(id));
+    };
+  }, []);
+
+  return {
+    lastMessage,
+    isConnected: connectionState.state === WebSocketState.CONNECTED,
+    connectionState
+  };
+}
+
+export default useGeneralWebSocket;
