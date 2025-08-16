@@ -22,6 +22,7 @@ import {
   X,
   ExternalLink
 } from 'lucide-react';
+import StatCard from '@components/common/StatCard';
 import useServiceHealthStore from '@stores/serviceHealthStore';
 import { ServiceHealth, ServiceType, InfrastructureAlert, InfrastructureStatus, ServiceHealthStats } from '@/types/serviceHealth';
 import { Status, WebSocketEventType } from '@constants';
@@ -252,50 +253,55 @@ const ServiceHealthDashboard: FC = () => {
 
       {stats && (
         <div className="grid grid-cols-5 gap-4">
-          <div className="border border-green-400 p-4 text-green-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">HEALTHY</span>
-              <CheckCircle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.healthy}</div>
-            <div className="font-mono text-xs opacity-60">Services OK</div>
-          </div>
+          <StatCard
+            label="HEALTHY"
+            value={stats.healthy.toString()}
+            icon={CheckCircle}
+            status={Status.HEALTHY as any}
+            variant="service-health"
+            description="Services OK"
+            className="text-green-400"
+          />
           
-          <div className="border border-yellow-400 p-4 text-yellow-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">WARNING</span>
-              <AlertTriangle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.warning}</div>
-            <div className="font-mono text-xs opacity-60">Need attention</div>
-          </div>
+          <StatCard
+            label="WARNING"
+            value={stats.warning.toString()}
+            icon={AlertTriangle}
+            status={Status.WARNING as any}
+            variant="service-health"
+            description="Need attention"
+            className="text-yellow-400"
+          />
           
-          <div className="border border-red-400 p-4 text-red-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">CRITICAL</span>
-              <AlertTriangle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.critical}</div>
-            <div className="font-mono text-xs opacity-60">Urgent issues</div>
-          </div>
+          <StatCard
+            label="CRITICAL"
+            value={stats.critical.toString()}
+            icon={AlertTriangle}
+            status={Status.CRITICAL as any}
+            variant="service-health"
+            description="Urgent issues"
+            className="text-red-400"
+          />
 
-          <div className="border border-red-600 p-4 text-red-600">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">DOWN</span>
-              <XCircle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.down}</div>
-            <div className="font-mono text-xs opacity-60">Offline</div>
-          </div>
+          <StatCard
+            label="DOWN"
+            value={stats.down.toString()}
+            icon={XCircle}
+            status={Status.DOWN as any}
+            variant="service-health"
+            description="Offline"
+            className="text-red-600"
+          />
           
-          <div className="border border-white p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">TOTAL</span>
-              <Server size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.total}</div>
-            <div className="font-mono text-xs opacity-60">All services</div>
-          </div>
+          <StatCard
+            label="TOTAL"
+            value={stats.total.toString()}
+            icon={Server}
+            status={Status.HEALTHY as any}
+            variant="service-health"
+            description="All services"
+            className="text-white"
+          />
         </div>
       )}
 

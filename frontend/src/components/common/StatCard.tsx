@@ -8,7 +8,7 @@ export interface StatCardProps {
   value: string;
   icon: LucideIcon;
   status: StatusType;
-  variant?: 'default' | 'compact' | 'minimal';
+  variant?: 'default' | 'compact' | 'minimal' | 'service-health';
   className?: string;
   onClick?: () => void;
   trend?: {
@@ -20,6 +20,7 @@ export interface StatCardProps {
     text: string;
     color: 'green' | 'yellow' | 'red' | 'blue' | 'gray';
   };
+  description?: string;
 }
 
 const StatCard: FC<StatCardProps> = ({
@@ -31,7 +32,8 @@ const StatCard: FC<StatCardProps> = ({
   className = '',
   onClick,
   trend,
-  badge
+  badge,
+  description
 }) => {
   const baseClasses = `border ${getStatusColor(status)} font-mono transition-colors`;
   const clickableClasses = onClick ? 'cursor-pointer hover:bg-white/5' : '';
@@ -39,31 +41,36 @@ const StatCard: FC<StatCardProps> = ({
   const variantClasses = {
     default: 'pl-5 pr-4 py-3',
     compact: 'pl-4 pr-3 py-2',
-    minimal: 'pl-3 pr-2 py-1.5'
+    minimal: 'pl-3 pr-2 py-1.5',
+    'service-health': 'p-4'
   };
 
   const valueClasses = {
     default: 'text-base',
     compact: 'text-sm',
-    minimal: 'text-xs'
+    minimal: 'text-xs',
+    'service-health': 'text-2xl'
   };
 
   const labelClasses = {
     default: 'text-xs',
     compact: 'text-xs',
-    minimal: 'text-xs'
+    minimal: 'text-xs',
+    'service-health': 'text-sm'
   };
 
   const iconSizes = {
     default: 20,
     compact: 18,
-    minimal: 16
+    minimal: 16,
+    'service-health': 16
   };
 
   const statusIconSizes = {
     default: 16,
     compact: 14,
-    minimal: 12
+    minimal: 12,
+    'service-health': 16
   };
 
   const getTrendIcon = () => {
@@ -102,6 +109,24 @@ const StatCard: FC<StatCardProps> = ({
     };
     return badgeColors[color as keyof typeof badgeColors] || badgeColors.gray;
   };
+
+  if (variant === 'service-health') {
+    return (
+      <div 
+        className={`${baseClasses} ${variantClasses['service-health']} ${clickableClasses} ${className}`}
+        onClick={onClick}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className={`${labelClasses['service-health']} font-mono`}>{label}</span>
+          <Icon size={iconSizes['service-health']} />
+        </div>
+        <div className={`${valueClasses['service-health']} font-mono`}>{value}</div>
+        {description && (
+          <div className="font-mono text-xs opacity-60">{description}</div>
+        )}
+      </div>
+    );
+  }
 
   if (variant === 'minimal') {
     return (
