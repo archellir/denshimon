@@ -25,9 +25,7 @@ const ImagesTab: FC = () => {
   return (
     <>
       {loading.images ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          <SkeletonLoader variant="image-card" count={6} />
-        </div>
+        <SkeletonLoader variant="image-card" count={6} />
       ) : images.length === 0 ? (
         <div className="border border-white/20 p-8 text-center">
           <Package size={48} className="mx-auto text-gray-400 mb-4" />
