@@ -447,3 +447,155 @@ func (m *Manager) Cleanup(ctx context.Context) {
 		delete(m.providers, id)
 	}
 }
+
+// GetSavedQueries returns all saved queries
+func (m *Manager) GetSavedQueries(ctx context.Context) ([]SavedQuery, error) {
+	query := `
+		SELECT id, name, sql, connection_id, created_at, updated_at
+		FROM saved_queries
+		ORDER BY created_at DESC
+	`
+	
+	rows, err := m.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query saved queries: %w", err)
+	}
+	defer rows.Close()
+
+	var queries []SavedQuery
+	for rows.Next() {
+		var query SavedQuery
+		var connectionID sql.NullString
+		
+		err := rows.Scan(
+			&query.ID,
+			&query.Name,
+			&query.SQL,
+			&connectionID,
+			&query.CreatedAt,
+			&query.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan saved query: %w", err)
+		}
+		
+		if connectionID.Valid {
+			query.ConnectionID = &connectionID.String
+		}
+		
+		queries = append(queries, query)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating saved queries: %w", err)
+	}
+
+	return queries, nil
+}
+
+// CreateSavedQuery creates a new saved query
+func (m *Manager) CreateSavedQuery(ctx context.Context, req SavedQuery) (*SavedQuery, error) {
+	id := uuid.New().String()
+	now := time.Now()
+	
+	query := `
+		INSERT INTO saved_queries (id, name, sql, connection_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+	
+	_, err := m.db.ExecContext(ctx, query, id, req.Name, req.SQL, req.ConnectionID, now, now)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create saved query: %w", err)
+	}
+
+	return &SavedQuery{
+		ID:           id,
+		Name:         req.Name,
+		SQL:          req.SQL,
+		ConnectionID: req.ConnectionID,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}, nil
+}
+
+// UpdateSavedQuery updates an existing saved query
+func (m *Manager) UpdateSavedQuery(ctx context.Context, id string, req SavedQuery) (*SavedQuery, error) {
+	now := time.Now()
+	
+	query := `
+		UPDATE saved_queries
+		SET name = $1, sql = $2, connection_id = $3, updated_at = $4
+		WHERE id = $5
+	`
+	
+	result, err := m.db.ExecContext(ctx, query, req.Name, req.SQL, req.ConnectionID, now, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update saved query: %w", err)
+	}
+	
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("saved query not found")
+	}
+
+	// Get the updated query
+	return m.GetSavedQuery(ctx, id)
+}
+
+// DeleteSavedQuery deletes a saved query
+func (m *Manager) DeleteSavedQuery(ctx context.Context, id string) error {
+	query := `DELETE FROM saved_queries WHERE id = $1`
+	
+	result, err := m.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete saved query: %w", err)
+	}
+	
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	
+	if rowsAffected == 0 {
+		return fmt.Errorf("saved query not found")
+	}
+
+	return nil
+}
+
+// GetSavedQuery returns a single saved query by ID
+func (m *Manager) GetSavedQuery(ctx context.Context, id string) (*SavedQuery, error) {
+	query := `
+		SELECT id, name, sql, connection_id, created_at, updated_at
+		FROM saved_queries
+		WHERE id = $1
+	`
+	
+	var savedQuery SavedQuery
+	var connectionID sql.NullString
+	
+	err := m.db.QueryRowContext(ctx, query, id).Scan(
+		&savedQuery.ID,
+		&savedQuery.Name,
+		&savedQuery.SQL,
+		&connectionID,
+		&savedQuery.CreatedAt,
+		&savedQuery.UpdatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("saved query not found")
+		}
+		return nil, fmt.Errorf("failed to get saved query: %w", err)
+	}
+	
+	if connectionID.Valid {
+		savedQuery.ConnectionID = &connectionID.String
+	}
+
+	return &savedQuery, nil
+}
