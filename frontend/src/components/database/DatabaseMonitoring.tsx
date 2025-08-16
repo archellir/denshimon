@@ -35,7 +35,9 @@ const DatabaseMonitoring: FC = () => {
     fetchConnections
   } = useDatabaseStore();
 
-  const [selectedConnection, setSelectedConnection] = useState<string>('');
+  const [selectedConnection, setSelectedConnection] = useState<string>(() => {
+    return localStorage.getItem('denshimon_last_database_connection') || '';
+  });
   const [realTimeStats, setRealTimeStats] = useState<any>(null);
   const [, setDatabases] = useState<any[]>([]);
 
@@ -45,6 +47,13 @@ const DatabaseMonitoring: FC = () => {
   useEffect(() => {
     fetchConnections();
   }, [fetchConnections]);
+
+  // Save selected connection to localStorage
+  useEffect(() => {
+    if (selectedConnection) {
+      localStorage.setItem('denshimon_last_database_connection', selectedConnection);
+    }
+  }, [selectedConnection]);
 
   // Handle WebSocket messages for database updates
   useEffect(() => {

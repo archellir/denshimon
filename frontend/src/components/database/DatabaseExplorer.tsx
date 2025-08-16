@@ -32,7 +32,11 @@ import { mockQueryHistory } from '@mocks/database/queries';
 
 type ExplorerTab = 'schema' | 'data' | 'query' | 'saved';
 
-const DatabaseExplorer: FC = () => {
+interface DatabaseExplorerProps {
+  preselectedConnectionId?: string;
+}
+
+const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }) => {
   const {
     connections,
     databases,
@@ -54,7 +58,11 @@ const DatabaseExplorer: FC = () => {
   } = useDatabaseStore();
 
   // Left panel state
-  const [selectedConnection, setSelectedConnection] = useState<string>('');
+  const [selectedConnection, setSelectedConnection] = useState<string>(() => {
+    // Check for preselected connection first, then localStorage
+    if (preselectedConnectionId) return preselectedConnectionId;
+    return localStorage.getItem('denshimon_last_database_connection') || '';
+  });
   const [selectedDatabase, setSelectedDatabase] = useState<string>('');
   const [selectedTable, setSelectedTable] = useState<string>('');
   const [expandedDatabases, setExpandedDatabases] = useState<Set<string>>(new Set());
@@ -73,6 +81,24 @@ const DatabaseExplorer: FC = () => {
     fetchConnections();
     fetchSavedQueries();
   }, [fetchConnections, fetchSavedQueries]);
+
+  // Handle preselected connection
+  useEffect(() => {
+    if (preselectedConnectionId && preselectedConnectionId !== selectedConnection) {
+      setSelectedConnection(preselectedConnectionId);
+      setSelectedDatabase('');
+      setSelectedTable('');
+    }
+  }, [preselectedConnectionId, selectedConnection]);
+
+  // Save selected connection to localStorage
+  useEffect(() => {
+    if (selectedConnection) {
+      localStorage.setItem('denshimon_last_database_connection', selectedConnection);
+      // Auto-fetch databases for the selected connection
+      fetchDatabases(selectedConnection);
+    }
+  }, [selectedConnection, fetchDatabases]);
 
   const connectedConnections = connections.filter(conn => 
     showOnlyConnected ? conn.status === DatabaseStatus.CONNECTED : true
@@ -160,9 +186,6 @@ const DatabaseExplorer: FC = () => {
             setSelectedConnection(value);
             setSelectedDatabase('');
             setSelectedTable('');
-            if (value) {
-              fetchDatabases(value);
-            }
           }}
           placeholder="Select Database Connection"
           icon={Database}
