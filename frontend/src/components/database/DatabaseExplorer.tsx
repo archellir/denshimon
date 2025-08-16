@@ -16,13 +16,19 @@ import {
   Activity,
   Hash,
   Key,
-  Type
+  Type,
+  Maximize2,
+  Minimize2,
+  History,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
 import CustomSelector from '@components/common/CustomSelector';
 import CustomButton from '@components/common/CustomButton';
 import CustomCheckbox from '@components/common/CustomCheckbox';
+import { mockQueryHistory } from '@mocks/database/queries';
 
 type ExplorerTab = 'schema' | 'data' | 'query' | 'saved';
 
@@ -60,6 +66,8 @@ const DatabaseExplorer: FC = () => {
   const [sqlQuery, setSqlQuery] = useState<string>('');
   const [queryName, setQueryName] = useState<string>('');
   const [queryLimit, setQueryLimit] = useState<number>(100);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [showHistory, setShowHistory] = useState<boolean>(false);
 
   useEffect(() => {
     fetchConnections();
@@ -124,6 +132,12 @@ const DatabaseExplorer: FC = () => {
   const loadSavedQuery = (sql: string) => {
     setSqlQuery(sql);
     setActiveTab('query');
+  };
+
+  const loadHistoryQuery = (sql: string) => {
+    setSqlQuery(sql);
+    setActiveTab('query');
+    setShowHistory(false);
   };
 
   const copyToClipboard = (text: string) => {
@@ -233,26 +247,48 @@ const DatabaseExplorer: FC = () => {
   );
 
   const renderRightPanel = () => (
-    <div className="flex-1 flex flex-col">
+    <div className={`flex-1 flex flex-col ${isFullscreen ? 'w-full' : ''}`}>
       {/* Tab Navigation */}
-      <div className="flex border-b border-white/20">
-        {[
-          { id: 'schema', label: 'SCHEMA', icon: Table },
-          { id: 'data', label: 'DATA', icon: Eye },
-          { id: 'query', label: 'QUERY', icon: Play },
-          { id: 'saved', label: 'SAVED', icon: FileText }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as ExplorerTab)}
-            className={`flex items-center space-x-2 px-4 py-3 font-mono text-sm transition-colors border-r border-white/20 last:border-r-0 ${
-              activeTab === tab.id ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <tab.icon size={14} />
-            <span>{tab.label}</span>
-          </button>
-        ))}
+      <div className="flex justify-between items-center border-b border-white/20">
+        <div className="flex">
+          {[
+            { id: 'schema', label: 'SCHEMA', icon: Table },
+            { id: 'data', label: 'DATA', icon: Eye },
+            { id: 'query', label: 'QUERY', icon: Play },
+            { id: 'saved', label: 'SAVED', icon: FileText }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as ExplorerTab)}
+              className={`flex items-center space-x-2 px-4 py-3 font-mono text-sm transition-colors border-r border-white/20 last:border-r-0 ${
+                activeTab === tab.id ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <tab.icon size={14} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+        
+        {/* Fullscreen and History toggles */}
+        <div className="flex items-center space-x-2 px-4">
+          {activeTab === 'query' && (
+            <CustomButton
+              icon={History}
+              onClick={() => setShowHistory(!showHistory)}
+              color={showHistory ? "white" : "gray"}
+              className="w-auto px-2 py-1"
+              title="Query History"
+            />
+          )}
+          <CustomButton
+            icon={isFullscreen ? Minimize2 : Maximize2}
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            color="white"
+            className="w-auto px-2 py-1"
+            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          />
+        </div>
       </div>
 
       {/* Tab Content */}
@@ -453,12 +489,12 @@ const DatabaseExplorer: FC = () => {
             ERROR: {queryResults.error}
           </div>
         ) : (
-          <div className="border border-white overflow-auto max-h-96">
+          <div className="border border-white overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px' }}>
             <table className="w-full text-sm font-mono">
-              <thead className="bg-white/10">
+              <thead className="bg-white/10 sticky top-0">
                 <tr>
                   {queryResults.columns.map((col, i) => (
-                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0">
+                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10">
                       {col}
                     </th>
                   ))}
@@ -468,7 +504,7 @@ const DatabaseExplorer: FC = () => {
                 {queryResults.rows.map((row, i) => (
                   <tr key={i} className="border-t border-white/10 hover:bg-white/5">
                     {row.map((cell, j) => (
-                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0">
+                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap">
                         {cell === null ? (
                           <span className="opacity-50 italic">NULL</span>
                         ) : (
@@ -487,89 +523,130 @@ const DatabaseExplorer: FC = () => {
   };
 
   const renderQueryTab = () => (
-    <div className="space-y-4">
-      {/* Query Header */}
-      <div className="flex items-center justify-between">
-        <h4 className="font-mono text-sm">SQL QUERY EDITOR</h4>
-        <div className="flex items-center space-x-2">
+    <div className={`space-y-4 ${showHistory ? 'grid grid-cols-3 gap-4' : ''}`}>
+      <div className={`space-y-4 ${showHistory ? 'col-span-2' : ''}`}>
+        {/* Query Header */}
+        <div className="flex items-center justify-between">
+          <h4 className="font-mono text-sm">SQL QUERY EDITOR</h4>
           <div className="flex items-center space-x-2">
-            <label className="font-mono text-xs">LIMIT:</label>
+            <div className="flex items-center space-x-2">
+              <label className="font-mono text-xs">LIMIT:</label>
+              <input
+                type="number"
+                value={queryLimit}
+                onChange={(e) => setQueryLimit(parseInt(e.target.value) || 100)}
+                className="bg-black border border-white px-2 py-2 font-mono text-xs w-20 focus:outline-none focus:border-green-400"
+                min="1"
+                max="10000"
+              />
+            </div>
             <input
-              type="number"
-              value={queryLimit}
-              onChange={(e) => setQueryLimit(parseInt(e.target.value) || 100)}
-              className="bg-black border border-white px-2 py-2 font-mono text-xs w-20 focus:outline-none focus:border-green-400"
-              min="1"
-              max="10000"
+              type="text"
+              value={queryName}
+              onChange={(e) => setQueryName(e.target.value)}
+              placeholder="Query name..."
+              className="bg-black border border-white px-2 py-2 font-mono text-xs w-32 focus:outline-none focus:border-green-400"
+            />
+            <CustomButton
+              label="SAVE"
+              icon={Save}
+              onClick={handleSaveQuery}
+              disabled={!queryName.trim() || !sqlQuery.trim()}
+              color="green"
+              className="w-auto px-2 py-1 text-xs"
             />
           </div>
-          <input
-            type="text"
-            value={queryName}
-            onChange={(e) => setQueryName(e.target.value)}
-            placeholder="Query name..."
-            className="bg-black border border-white px-2 py-2 font-mono text-xs w-32 focus:outline-none focus:border-green-400"
-          />
-          <CustomButton
-            label="SAVE"
-            icon={Save}
-            onClick={handleSaveQuery}
-            disabled={!queryName.trim() || !sqlQuery.trim()}
-            color="green"
-            className="w-auto px-2 py-1 text-xs"
-          />
         </div>
-      </div>
 
-      {/* SQL Editor */}
-      <textarea
-        value={sqlQuery}
-        onChange={(e) => setSqlQuery(e.target.value)}
-        placeholder="-- Enter your SQL query here
+        {/* SQL Editor */}
+        <textarea
+          value={sqlQuery}
+          onChange={(e) => setSqlQuery(e.target.value)}
+          placeholder="-- Enter your SQL query here
 SELECT * FROM users LIMIT 10;"
-        className="w-full bg-black border border-white p-4 font-mono text-sm focus:outline-none focus:border-green-400 resize-none h-32"
-      />
+          className={`w-full bg-black border border-white p-4 font-mono text-sm focus:outline-none focus:border-green-400 resize-none ${
+            isFullscreen ? 'h-64' : 'h-32'
+          }`}
+        />
 
-      {/* Query Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-2">
-          <CustomButton
-            label="EXECUTE"
-            icon={isLoading ? Activity : Play}
-            onClick={handleExecuteQuery}
-            disabled={!selectedConnection || !sqlQuery.trim() || isLoading}
-            color="green"
-            className="w-auto px-4 py-2"
-          />
-          <CustomButton
-            label="CLEAR"
-            onClick={() => {
-              setSqlQuery('');
-              clearQueryResults();
-            }}
-            color="white"
-            className="w-auto px-4 py-2"
-          />
-          <CustomButton
-            label="COPY"
-            icon={Copy}
-            onClick={() => copyToClipboard(sqlQuery)}
-            color="white"
-            className="w-auto px-3 py-2"
-          />
+        {/* Query Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex space-x-2">
+            <CustomButton
+              label="EXECUTE"
+              icon={isLoading ? Activity : Play}
+              onClick={handleExecuteQuery}
+              disabled={!selectedConnection || !sqlQuery.trim() || isLoading}
+              color="green"
+              className="w-auto px-4 py-2"
+            />
+            <CustomButton
+              label="CLEAR"
+              onClick={() => {
+                setSqlQuery('');
+                clearQueryResults();
+              }}
+              color="white"
+              className="w-auto px-4 py-2"
+            />
+            <CustomButton
+              label="COPY"
+              icon={Copy}
+              onClick={() => copyToClipboard(sqlQuery)}
+              color="white"
+              className="w-auto px-3 py-2"
+            />
+          </div>
+          
+          {queryResults && (
+            <div className="text-sm font-mono opacity-60">
+              {queryResults.rowCount} rows • {queryResults.duration}ms
+            </div>
+          )}
         </div>
-        
-        {queryResults && (
-          <div className="text-sm font-mono opacity-60">
-            {queryResults.rowCount} rows • {queryResults.duration}ms
+
+        {/* Error Display */}
+        {error && (
+          <div className="p-4 border border-red-400 bg-red-900/20 text-red-400 font-mono text-sm">
+            ERROR: {error}
           </div>
         )}
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="p-4 border border-red-400 bg-red-900/20 text-red-400 font-mono text-sm">
-          ERROR: {error}
+      {/* Query History Panel */}
+      {showHistory && (
+        <div className="col-span-1 border border-white">
+          <div className="bg-white/5 p-3 border-b border-white">
+            <h4 className="font-mono text-sm">QUERY HISTORY</h4>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {mockQueryHistory.map((item) => (
+              <div key={item.id} className="p-2 border-b border-white/10 last:border-b-0">
+                <button
+                  onClick={() => loadHistoryQuery(item.sql)}
+                  className="text-left w-full hover:bg-white/10 p-1 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center space-x-1">
+                      {item.status === 'success' ? (
+                        <CheckCircle size={10} className="text-green-400" />
+                      ) : (
+                        <XCircle size={10} className="text-red-400" />
+                      )}
+                      <span className="font-mono text-xs opacity-60">{item.duration}ms</span>
+                    </div>
+                    <span className="font-mono text-xs opacity-60">{item.rowCount} rows</span>
+                  </div>
+                  <div className="font-mono text-xs opacity-80 truncate">
+                    {item.sql}
+                  </div>
+                  <div className="font-mono text-xs opacity-40">
+                    {new Date(item.timestamp).toLocaleTimeString()}
+                  </div>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -665,8 +742,8 @@ SELECT * FROM users LIMIT 10;"
   }
 
   return (
-    <div className="h-full flex">
-      {renderLeftPanel()}
+    <div className={`h-full flex ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
+      {!isFullscreen && renderLeftPanel()}
       {renderRightPanel()}
     </div>
   );
