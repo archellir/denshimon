@@ -1,4 +1,4 @@
-import { QueryResult } from '@/types/database';
+import { QueryResult, SavedQuery } from '@/types/database';
 
 export const mockQueryResults: Record<string, QueryResult> = {
   'SELECT * FROM users LIMIT 5': {
@@ -124,5 +124,48 @@ export const mockQueryHistory = [
     duration: 125.67,
     rowCount: 45,
     status: 'success'
+  }
+];
+
+export const mockSavedQueries: SavedQuery[] = [
+  {
+    id: 'saved-1',
+    name: 'Active Users',
+    sql: 'SELECT * FROM users WHERE is_active = true ORDER BY last_login DESC',
+    connectionId: 'pg-main',
+    createdAt: '2024-01-15T10:30:00Z',
+    updatedAt: '2024-01-15T10:30:00Z'
+  },
+  {
+    id: 'saved-2', 
+    name: 'Running Pods',
+    sql: 'SELECT name, namespace, status, node_name FROM pods WHERE status = \'Running\'',
+    connectionId: 'pg-main',
+    createdAt: '2024-01-16T14:20:00Z',
+    updatedAt: '2024-01-16T14:20:00Z'
+  },
+  {
+    id: 'saved-3',
+    name: 'Database Tables',
+    sql: 'SHOW TABLES',
+    connectionId: 'pg-main',
+    createdAt: '2024-01-17T09:15:00Z',
+    updatedAt: '2024-01-17T09:15:00Z'
+  },
+  {
+    id: 'saved-4',
+    name: 'Daily Metrics Summary',
+    sql: 'SELECT metric_name, AVG(value) as avg_value, MAX(value) as max_value FROM metrics WHERE timestamp >= CURRENT_DATE GROUP BY metric_name ORDER BY avg_value DESC',
+    connectionId: 'pg-metrics',
+    createdAt: '2024-01-18T16:45:00Z',
+    updatedAt: '2024-01-19T11:30:00Z'
+  },
+  {
+    id: 'saved-5',
+    name: 'Recent Errors',
+    sql: 'SELECT * FROM logs WHERE level = \'ERROR\' AND timestamp >= NOW() - INTERVAL \'1 hour\' ORDER BY timestamp DESC',
+    connectionId: 'pg-logs',
+    createdAt: '2024-01-19T13:20:00Z',
+    updatedAt: '2024-01-19T13:20:00Z'
   }
 ];
