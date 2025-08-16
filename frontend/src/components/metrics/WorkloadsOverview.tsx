@@ -14,10 +14,15 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
-import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
+import { 
+  formatWorkloadChartData, 
+  formatPodStatusData, 
+  generateWorkloadTypesData, 
+  generateNamespaceData
+} from '@utils/workloadMetrics';
 
 interface WorkloadsOverviewProps {
   timeRange?: string;
@@ -35,75 +40,22 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
 
   // Format workload chart data focusing on pod and deployment metrics
   const workloadChartData = useMemo(() => {
-    if (!metricsHistory || !metricsHistory.pods || !Array.isArray(metricsHistory.pods)) {
-      return [];
-    }
-
-    try {
-      const data = metricsHistory.pods.map((podPoint, index) => {
-        if (!podPoint || !podPoint.timestamp || typeof podPoint.value !== 'number') {
-          return null;
-        }
-        
-        return {
-          time: format(new Date(podPoint.timestamp), 'HH:mm'),
-          pods: podPoint.value || 0,
-          // Add CPU utilization trend for cluster context
-          cpu: metricsHistory.cpu?.[index]?.value || 0,
-        };
-      }).filter(Boolean);
-      
-      return data;
-    } catch (error) {
-      console.error('Error formatting workload chart data:', error);
-      return [];
-    }
+    return formatWorkloadChartData(metricsHistory);
   }, [metricsHistory]);
 
   // Pod status data for workloads context
   const podStatusData = useMemo(() => {
-    if (!clusterMetrics) return [];
-
-    return [
-      { name: 'RUNNING', value: clusterMetrics.running_pods, color: '#00FF00' },
-      { name: 'PENDING', value: clusterMetrics.pending_pods, color: '#FFFF00' },
-      { name: 'FAILED', value: clusterMetrics.failed_pods, color: '#FF0000' },
-    ].filter(item => item.value > 0);
+    return formatPodStatusData(clusterMetrics);
   }, [clusterMetrics]);
 
   // Workload types distribution (mock data for demonstration)
   const workloadTypesData = useMemo(() => {
-    if (!clusterMetrics) return [];
-
-    // This would ideally come from actual API data
-    const totalPods = clusterMetrics.running_pods + clusterMetrics.pending_pods + clusterMetrics.failed_pods;
-    const deploymentPods = Math.floor(totalPods * 0.6);
-    const daemonsetPods = Math.floor(totalPods * 0.2);
-    const statefulsetPods = Math.floor(totalPods * 0.15);
-    const standalonePods = totalPods - deploymentPods - daemonsetPods - statefulsetPods;
-
-    return [
-      { name: 'Deployments', value: deploymentPods, color: '#00FF00' },
-      { name: 'DaemonSets', value: daemonsetPods, color: '#FFFF00' },
-      { name: 'StatefulSets', value: statefulsetPods, color: '#00FFFF' },
-      { name: 'Standalone', value: standalonePods, color: '#FF00FF' },
-    ].filter(item => item.value > 0);
+    return generateWorkloadTypesData(clusterMetrics);
   }, [clusterMetrics]);
 
   // Namespace distribution (mock data)
   const namespaceData = useMemo(() => {
-    if (!clusterMetrics) return [];
-
-    // This would ideally come from actual API data
-    const totalPods = clusterMetrics.running_pods + clusterMetrics.pending_pods + clusterMetrics.failed_pods;
-    
-    return [
-      { name: 'default', pods: Math.floor(totalPods * 0.3) },
-      { name: 'kube-system', pods: Math.floor(totalPods * 0.25) },
-      { name: 'monitoring', pods: Math.floor(totalPods * 0.2) },
-      { name: 'ingress', pods: Math.floor(totalPods * 0.15) },
-      { name: 'other', pods: Math.floor(totalPods * 0.1) },
-    ].filter(item => item.pods > 0);
+    return generateNamespaceData(clusterMetrics);
   }, [clusterMetrics]);
 
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {

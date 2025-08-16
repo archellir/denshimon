@@ -1,10 +1,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { FC } from 'react'
-import { Server, AlertCircle, CheckCircle, Terminal, X } from 'lucide-react'
+import { Terminal, X } from 'lucide-react'
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable'
 import PodDebugPanel from '@components/pods/PodDebugPanel'
 import SkeletonLoader from '@components/common/SkeletonLoader'
 import useWorkloadsStore, { Pod as StorePod } from '@stores/workloadsStore'
+import { 
+  getPodStatusIcon, 
+  getPodStatusColor, 
+  filterPods, 
+  sortPods
+} from '@utils/podStatus'
 
 // Using Pod interface from store
 type Pod = StorePod;
@@ -40,91 +46,11 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     fetchPods(selectedNamespace)
   }, [selectedNamespace, fetchPods])
 
-  const getStatusIcon = (phase: string) => {
-    switch (phase) {
-      case 'Running':
-        return <CheckCircle className="text-green-400" size={16} />
-      case 'Failed':
-        return <AlertCircle className="text-red-400" size={16} />
-      default:
-        return <Server className="text-yellow-400" size={16} />
-    }
-  }
-
-  const getStatusColor = (phase: string) => {
-    switch (phase) {
-      case 'Running':
-        return 'text-green-400'
-      case 'Failed':
-        return 'text-red-400'
-      default:
-        return 'text-yellow-400'
-    }
-  }
 
 
   const filteredAndSortedPods = useMemo(() => {
-    if (!pods || !Array.isArray(pods)) {
-      return []
-    }
-
-    let filtered = selectedNamespace === 'all' 
-      ? pods 
-      : pods.filter(pod => pod.namespace === selectedNamespace)
-
-    // Apply search filter
-    if (searchQuery && filtered) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(pod => 
-        pod.name.toLowerCase().includes(query) ||
-        pod.namespace.toLowerCase().includes(query) ||
-        pod.phase.toLowerCase().includes(query) ||
-        pod.node?.toLowerCase().includes(query) ||
-        pod.ip?.toLowerCase().includes(query)
-      )
-    }
-
-    if (!filtered || !Array.isArray(filtered)) {
-      return []
-    }
-
-    return filtered.sort((a, b) => {
-      let valueA: string | number | Date, valueB: string | number | Date
-      
-      switch (sortBy) {
-        case 'namespace':
-          valueA = a.namespace
-          valueB = b.namespace
-          break
-        case 'status':
-        case 'phase':
-          valueA = a.phase
-          valueB = b.phase
-          break
-        case 'restarts':
-          valueA = a.restarts
-          valueB = b.restarts
-          break
-        case 'age':
-          valueA = a.age
-          valueB = b.age
-          break
-        case 'node':
-          valueA = a.node || ''
-          valueB = b.node || ''
-          break
-        default:
-          valueA = a.name
-          valueB = b.name
-      }
-
-      if (typeof valueA === 'number' && typeof valueB === 'number') {
-        return sortOrder === 'asc' ? valueA - valueB : valueB - valueA
-      }
-      
-      const comparison = valueA.toString().localeCompare(valueB.toString())
-      return sortOrder === 'asc' ? comparison : -comparison
-    })
+    const filtered = filterPods(pods, selectedNamespace, searchQuery);
+    return sortPods(filtered, sortBy, sortOrder);
   }, [pods, selectedNamespace, sortBy, sortOrder, searchQuery])
 
   const handleSort = (key: string, order: 'asc' | 'desc') => {
@@ -145,8 +71,8 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
       sortable: true,
       render: (pod: Pod) => (
         <div className="flex items-center space-x-2">
-          {getStatusIcon(pod.phase)}
-          <span className={`text-xs ${getStatusColor(pod.phase)}`}>
+          {getPodStatusIcon(pod.phase)}
+          <span className={`text-xs ${getPodStatusColor(pod.phase)}`}>
             {pod.phase}
           </span>
         </div>

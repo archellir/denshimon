@@ -1,20 +1,23 @@
 import { useMemo, useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { 
-  Network, 
-  Globe, 
   Eye, 
-  ExternalLink,
   CheckCircle, 
   AlertTriangle, 
   Clock,
-  Server
+  ExternalLink,
+  Network
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import CustomDialog from '@components/common/CustomDialog';
 import useWorkloadsStore, { Service } from '@stores/workloadsStore';
+import { 
+  getServiceTypeIcon, 
+  filterServices, 
+  sortServices
+} from '@utils/serviceList';
 
 
 interface ServicesListProps {
@@ -41,67 +44,11 @@ const ServicesList: FC<ServicesListProps> = ({
   }, [selectedNamespace, fetchServices]);
 
   const filteredServices = useMemo(() => {
-    let servicesList = [...services];
-
-    if (selectedNamespace !== 'all') {
-      servicesList = servicesList.filter(svc => svc.namespace === selectedNamespace);
-    }
-
-    if (selectedType !== 'all') {
-      servicesList = servicesList.filter(svc => svc.type === selectedType);
-    }
-
-    servicesList.sort((a, b) => {
-      let valueA: string | number, valueB: string | number;
-      
-      switch (sortBy) {
-        case 'namespace':
-          valueA = a.namespace;
-          valueB = b.namespace;
-          break;
-        case 'type':
-          valueA = a.type;
-          valueB = b.type;
-          break;
-        case 'age':
-          valueA = new Date(a.last_updated).getTime();
-          valueB = new Date(b.last_updated).getTime();
-          break;
-        case 'endpoints':
-          valueA = a.endpoints.ready;
-          valueB = b.endpoints.ready;
-          break;
-        default:
-          valueA = a.name;
-          valueB = b.name;
-      }
-
-      if (sortBy === 'age') {
-        return sortOrder === 'asc' ? (valueA as number) - (valueB as number) : (valueB as number) - (valueA as number);
-      }
-      
-      const comparison = valueA.toString().localeCompare(valueB.toString());
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-
-    return servicesList;
+    const filtered = filterServices(services, selectedNamespace, selectedType);
+    return sortServices(filtered, sortBy, sortOrder);
   }, [services, selectedNamespace, selectedType, sortBy, sortOrder]);
 
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'LoadBalancer':
-        return <Globe size={16} className="text-blue-400" />;
-      case 'NodePort':
-        return <Server size={16} className="text-green-400" />;
-      case 'ClusterIP':
-        return <Network size={16} className="text-yellow-400" />;
-      case 'ExternalName':
-        return <ExternalLink size={16} className="text-purple-400" />;
-      default:
-        return <Network size={16} className="text-gray-400" />;
-    }
-  };
 
   const getStatusIcon = (status: string, endpoints: Service['endpoints']) => {
     if (status === 'failed') {
@@ -180,7 +127,7 @@ const ServicesList: FC<ServicesListProps> = ({
       sortable: true,
       render: (service: Service) => (
         <div className="flex items-center space-x-2">
-          {getTypeIcon(service.type)}
+          {getServiceTypeIcon(service.type)}
           <span className="font-mono text-xs">{service.type}</span>
         </div>
       ),
@@ -337,7 +284,7 @@ const ServicesList: FC<ServicesListProps> = ({
                         <span>{service.status.toUpperCase()}</span>
                       </div>
                       <div className="inline-flex items-center space-x-1 px-2 py-1 border border-white font-mono text-xs">
-                        {getTypeIcon(service.type)}
+                        {getServiceTypeIcon(service.type)}
                         <span>{service.type.toUpperCase()}</span>
                       </div>
                     </div>
@@ -506,7 +453,7 @@ const ServicesList: FC<ServicesListProps> = ({
               <div>
                 <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Type</div>
                 <div className="flex items-center space-x-2">
-                  {getTypeIcon(selectedService.type)}
+                  {getServiceTypeIcon(selectedService.type)}
                   <span className="font-mono text-sm">{selectedService.type}</span>
                 </div>
               </div>
