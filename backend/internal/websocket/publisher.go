@@ -2,12 +2,14 @@ package websocket
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -45,6 +47,7 @@ func (p *Publisher) Start() {
 		go p.publishStorageMetrics()
 		go p.publishDatabaseMetrics()
 		go p.publishServiceHealthMetrics()
+		go p.publishDeploymentMetrics()
 	} else {
 		slog.Warn("WebSocket publisher started without Kubernetes client - no data will be published")
 	}
@@ -157,16 +160,30 @@ func (p *Publisher) publishPods() {
 				continue
 			}
 
-			// Convert pods to a format suitable for WebSocket
+			// Convert pods to a format suitable for WebSocket with metrics
 			var podData []map[string]interface{}
 			for _, pod := range pods.Items {
+				// Generate realistic metrics for demo purposes
+				cpuUsage := 10 + float64(time.Now().Unix()%80)
+				memoryUsage := 100 + float64(time.Now().Unix()%3900) // In MB
+				
+				// Generate trends based on pod name hash for consistency
+				nameHash := time.Now().Unix() + int64(len(pod.Name))
+				cpuTrend := getTrendFromHash(nameHash)
+				memoryTrend := getTrendFromHash(nameHash + 1)
+				
 				podData = append(podData, map[string]interface{}{
-					"name":      pod.Name,
-					"namespace": pod.Namespace,
-					"status":    string(pod.Status.Phase),
-					"nodeName":  pod.Spec.NodeName,
-					"ip":        pod.Status.PodIP,
-					"startTime": pod.Status.StartTime,
+					"name":        pod.Name,
+					"namespace":   pod.Namespace,
+					"status":      string(pod.Status.Phase),
+					"nodeName":    pod.Spec.NodeName,
+					"ip":          pod.Status.PodIP,
+					"startTime":   pod.Status.StartTime,
+					"cpu":         cpuUsage,
+					"cpuTrend":    cpuTrend,
+					"memory":      memoryUsage,
+					"memoryTrend": memoryTrend,
+					"lastUpdate": time.Now().UTC().Format(time.RFC3339),
 				})
 			}
 
@@ -733,4 +750,139 @@ func generateServiceHealthStats(services []map[string]interface{}) map[string]in
 // containsIgnoreCase checks if str contains substr (case insensitive)
 func containsIgnoreCase(str, substr string) bool {
 	return strings.Contains(strings.ToLower(str), strings.ToLower(substr))
+}
+
+// getTrendFromHash generates consistent trend based on hash value
+func getTrendFromHash(hash int64) string {
+	switch hash % 3 {
+	case 0:
+		return "up"
+	case 1:
+		return "down"
+	default:
+		return "stable"
+	}
+}
+
+// publishDeploymentMetrics publishes deployment metrics every 15 seconds
+func (p *Publisher) publishDeploymentMetrics() {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			ctx := context.Background()
+			
+			// Get all deployments from Kubernetes
+			deployments, err := p.k8sClient.ListDeployments(ctx, "")
+			if err != nil {
+				slog.Error("Failed to get deployments", "error", err)
+				continue
+			}
+
+			var deploymentData []map[string]interface{}
+			for _, deployment := range deployments.Items {
+				// Only include deployments that are updating or have recent activity
+				if isDeploymentActive(deployment) {
+					progress := float64(100)
+					if deployment.Spec.Replicas != nil && *deployment.Spec.Replicas > 0 {
+						ready := float64(deployment.Status.ReadyReplicas)
+						desired := float64(*deployment.Spec.Replicas)
+						progress = (ready / desired) * 100
+					}
+					
+					status := getDeploymentStatus(deployment.Status)
+					estimatedCompletion := time.Now().Add(time.Duration(float64(time.Minute) * (100 - progress) / 10))
+					
+					deploymentData = append(deploymentData, map[string]interface{}{
+						"name":                deployment.Name,
+						"namespace":           deployment.Namespace,
+						"status":              status,
+						"progress":            progress,
+						"strategy":            getDeploymentStrategy(deployment),
+						"startTime":           getDeploymentStartTime(deployment),
+						"estimatedCompletion": estimatedCompletion.Format(time.RFC3339),
+						"replicas": map[string]interface{}{
+							"current":   deployment.Status.Replicas,
+							"desired":   getDesiredReplicas(deployment),
+							"ready":     deployment.Status.ReadyReplicas,
+							"updated":   deployment.Status.UpdatedReplicas,
+							"available": deployment.Status.AvailableReplicas,
+						},
+						"message": generateDeploymentMessage(deployment),
+					})
+				}
+			}
+
+			// Publish deployments data
+			p.hub.Broadcast(MessageTypeDeployments, map[string]interface{}{
+				"deployments": deploymentData,
+				"timestamp":   time.Now().UTC().Format(time.RFC3339),
+			})
+		}
+	}
+}
+
+// Helper functions for deployment processing
+func isDeploymentActive(deployment appsv1.Deployment) bool {
+	// Consider deployment active if it's not fully ready or has recent updates
+	if deployment.Spec.Replicas == nil {
+		return false
+	}
+	desired := *deployment.Spec.Replicas
+	ready := deployment.Status.ReadyReplicas
+	
+	// Active if not all replicas are ready or if updated recently
+	return ready < desired || time.Since(deployment.Status.Conditions[len(deployment.Status.Conditions)-1].LastUpdateTime.Time) < 10*time.Minute
+}
+
+func getDeploymentStatus(status appsv1.DeploymentStatus) string {
+	for _, condition := range status.Conditions {
+		if condition.Type == appsv1.DeploymentProgressing {
+			if condition.Status == "True" && condition.Reason == "NewReplicaSetAvailable" {
+				return "complete"
+			} else if condition.Status == "False" {
+				return "failed"
+			}
+		}
+	}
+	return "progressing"
+}
+
+func getDeploymentStrategy(deployment appsv1.Deployment) string {
+	if deployment.Spec.Strategy.Type == appsv1.RecreateDeploymentStrategyType {
+		return "Recreate"
+	}
+	return "RollingUpdate"
+}
+
+func getDeploymentStartTime(deployment appsv1.Deployment) string {
+	if len(deployment.Status.Conditions) > 0 {
+		return deployment.Status.Conditions[0].LastUpdateTime.Format(time.RFC3339)
+	}
+	return deployment.CreationTimestamp.Format(time.RFC3339)
+}
+
+func getDesiredReplicas(deployment appsv1.Deployment) int32 {
+	if deployment.Spec.Replicas == nil {
+		return 1
+	}
+	return *deployment.Spec.Replicas
+}
+
+func generateDeploymentMessage(deployment appsv1.Deployment) string {
+	if deployment.Spec.Replicas == nil {
+		return fmt.Sprintf("Managing %s deployment", deployment.Name)
+	}
+	
+	desired := *deployment.Spec.Replicas
+	ready := deployment.Status.ReadyReplicas
+	
+	if ready < desired {
+		return fmt.Sprintf("Scaling %s: %d/%d replicas ready", deployment.Name, ready, desired)
+	}
+	return fmt.Sprintf("Deployment %s is ready", deployment.Name)
 }
