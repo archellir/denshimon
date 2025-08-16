@@ -23,7 +23,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import StatCard from '@components/common/StatCard';
-import InfrastructureStatusModal from './InfrastructureStatusModal';
+import ServiceHealthModal from './ServiceHealthModal';
 import useServiceHealthStore from '@stores/serviceHealthStore';
 import { ServiceHealth, ServiceType, InfrastructureAlert, InfrastructureStatus, ServiceHealthStats } from '@/types/serviceHealth';
 import { Status, WebSocketEventType } from '@constants';
@@ -398,126 +398,189 @@ const ServiceHealthDashboard: FC = () => {
         ))}
       </div>
 
-      {selectedSvc && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-black border border-white max-w-6xl w-full max-h-screen overflow-y-auto">
-            <div className="p-4 border-b border-white flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {getServiceIcon(selectedSvc.type)}
-                <h3 className="font-mono text-lg">SERVICE DETAILS: {selectedSvc.name}</h3>
+      <ServiceHealthModal 
+        isOpen={!!selectedSvc}
+        onClose={() => setSelectedService(null)}
+        title={selectedSvc ? `SERVICE DETAILS: ${selectedSvc.name}` : ''}
+      >
+        {selectedSvc && (
+          <>
+            <div className="grid grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="font-mono text-sm opacity-60">Service Name</label>
+                  <div className="font-mono text-lg">{selectedSvc.name}</div>
+                </div>
+                <div>
+                  <label className="font-mono text-sm opacity-60">Type</label>
+                  <div className="font-mono">{selectedSvc.type.toUpperCase()}</div>
+                </div>
+                <div>
+                  <label className="font-mono text-sm opacity-60">Status</label>
+                  <div className={`flex items-center space-x-2 ${getStatusColor(selectedSvc.status)}`}>
+                    {getStatusIcon(selectedSvc.status)}
+                    <span className="font-mono uppercase">{selectedSvc.status}</span>
+                  </div>
+                </div>
               </div>
-              <button
-                onClick={() => setSelectedService(null)}
-                className="p-1 hover:bg-white/10 transition-colors"
-              >
-                <X size={20} />
-              </button>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="font-mono text-sm opacity-60">Uptime</label>
+                  <div className="font-mono text-lg">{formatUptime(selectedSvc.uptime)}</div>
+                </div>
+                <div>
+                  <label className="font-mono text-sm opacity-60">Response Time</label>
+                  <div className="font-mono">{selectedSvc.responseTime}ms</div>
+                </div>
+                {selectedSvc.url && (
+                  <div>
+                    <label className="font-mono text-sm opacity-60">URL</label>
+                    <div className="font-mono">
+                      <a
+                        href={selectedSvc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        {selectedSvc.url}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="font-mono text-sm opacity-60">Last Checked</label>
+                  <div className="font-mono">{formatDate(selectedSvc.lastChecked)}</div>
+                </div>
+                <div>
+                  <label className="font-mono text-sm opacity-60">Active Alerts</label>
+                  <div className="font-mono">{selectedSvc.alerts.length}</div>
+                </div>
+              </div>
             </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Service Name</label>
-                    <div className="font-mono text-lg">{selectedSvc.name}</div>
-                  </div>
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Type</label>
-                    <div className="font-mono">{selectedSvc.type.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Status</label>
-                    <div className={`flex items-center space-x-2 ${getStatusColor(selectedSvc.status)}`}>
-                      {getStatusIcon(selectedSvc.status)}
-                      <span className="font-mono uppercase">{selectedSvc.status}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Uptime</label>
-                    <div className="font-mono text-lg">{formatUptime(selectedSvc.uptime)}</div>
-                  </div>
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Response Time</label>
-                    <div className="font-mono">{selectedSvc.responseTime}ms</div>
-                  </div>
-                  {selectedSvc.url && (
-                    <div>
-                      <label className="font-mono text-sm opacity-60">URL</label>
-                      <div className="font-mono">
-                        <a
-                          href={selectedSvc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-300 transition-colors"
-                        >
-                          {selectedSvc.url}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Last Checked</label>
-                    <div className="font-mono">{formatDate(selectedSvc.lastChecked)}</div>
+            <div className="border border-white/20 p-4">
+              <h4 className="font-mono text-sm mb-4">SERVICE METRICS</h4>
+              <div className="grid grid-cols-4 gap-4">
+                {renderServiceMetrics(selectedSvc).map((metric, i) => (
+                  <div key={i} className="border border-white/10 p-3">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <metric.icon size={14} />
+                      <span className="font-mono text-xs">{metric.label}</span>
+                    </div>
+                    <div className="font-mono text-sm font-semibold">{metric.value || 'N/A'}</div>
                   </div>
-                  <div>
-                    <label className="font-mono text-sm opacity-60">Active Alerts</label>
-                    <div className="font-mono">{selectedSvc.alerts.length}</div>
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
 
-              <div className="border border-white/20 p-4">
-                <h4 className="font-mono text-sm mb-4">SERVICE METRICS</h4>
-                <div className="grid grid-cols-4 gap-4">
-                  {renderServiceMetrics(selectedSvc).map((metric, i) => (
-                    <div key={i} className="border border-white/10 p-3">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <metric.icon size={14} />
-                        <span className="font-mono text-xs">{metric.label}</span>
+            {selectedSvc.alerts.length > 0 && (
+              <div className="border border-yellow-400 bg-yellow-900/10">
+                <div className="bg-yellow-400/10 p-3 border-b border-yellow-400">
+                  <h4 className="font-mono text-sm text-yellow-400">SERVICE ALERTS ({selectedSvc.alerts.length})</h4>
+                </div>
+                <div className="p-4 space-y-2">
+                  {selectedSvc.alerts.map((alert) => (
+                    <div key={alert.id} className="flex items-center justify-between py-2 border-b border-yellow-400/20 last:border-b-0">
+                      <div className="flex items-center space-x-3">
+                        <AlertTriangle size={16} className={alert.severity === Status.CRITICAL ? 'text-red-400' : 'text-yellow-400'} />
+                        <span className="font-mono text-sm">{alert.message}</span>
+                        <span className="font-mono text-xs opacity-60">{formatDate(alert.timestamp)}</span>
                       </div>
-                      <div className="font-mono text-sm font-semibold">{metric.value || 'N/A'}</div>
+                      <span className={`px-2 py-1 font-mono text-xs ${alert.severity === Status.CRITICAL ? 'border-red-400 text-red-400' : 'border-yellow-400 text-yellow-400'} border`}>
+                        {alert.severity.toUpperCase()}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
+            )}
+          </>
+        )}
+      </ServiceHealthModal>
 
-              {selectedSvc.alerts.length > 0 && (
-                <div className="border border-yellow-400 bg-yellow-900/10">
-                  <div className="bg-yellow-400/10 p-3 border-b border-yellow-400">
-                    <h4 className="font-mono text-sm text-yellow-400">SERVICE ALERTS ({selectedSvc.alerts.length})</h4>
-                  </div>
-                  <div className="p-4 space-y-2">
-                    {selectedSvc.alerts.map((alert) => (
-                      <div key={alert.id} className="flex items-center justify-between py-2 border-b border-yellow-400/20 last:border-b-0">
-                        <div className="flex items-center space-x-3">
-                          <AlertTriangle size={16} className={alert.severity === Status.CRITICAL ? 'text-red-400' : 'text-yellow-400'} />
-                          <span className="font-mono text-sm">{alert.message}</span>
-                          <span className="font-mono text-xs opacity-60">{formatDate(alert.timestamp)}</span>
-                        </div>
-                        <span className={`px-2 py-1 font-mono text-xs ${alert.severity === Status.CRITICAL ? 'border-red-400 text-red-400' : 'border-yellow-400 text-yellow-400'} border`}>
-                          {alert.severity.toUpperCase()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <InfrastructureStatusModal 
+      <ServiceHealthModal 
         isOpen={showInfrastructureDetails}
         onClose={() => setShowInfrastructureDetails(false)}
-        infrastructureStatus={infrastructureStatus}
-      />
+        title="INFRASTRUCTURE STATUS"
+      >
+        {infrastructureStatus && (
+          <>
+            <div className="border border-white/20 p-4">
+              <h4 className="font-mono text-sm mb-4">DOMAIN ACCESSIBILITY</h4>
+              <div className="space-y-2">
+                {infrastructureStatus.domainAccessibility.map((domain, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/10 last:border-b-0">
+                    <div className="flex items-center space-x-3">
+                      {domain.accessible ? (
+                        <CheckCircle size={16} className="text-green-400" />
+                      ) : (
+                        <XCircle size={16} className="text-red-400" />
+                      )}
+                      <span className="font-mono text-sm">{domain.domain}</span>
+                      <span className="font-mono text-xs opacity-60">{domain.responseTime}ms</span>
+                      <span className="font-mono text-xs opacity-60">HTTP {domain.httpStatus}</span>
+                      {domain.sslValid ? (
+                        <Shield size={12} className="text-green-400" />
+                      ) : (
+                        <Shield size={12} className="text-red-400" />
+                      )}
+                    </div>
+                    {domain.error && (
+                      <span className="font-mono text-xs text-red-400">{domain.error}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border border-white/20 p-4">
+              <h4 className="font-mono text-sm mb-4">INGRESS RULES</h4>
+              <div className="space-y-2">
+                {infrastructureStatus.ingressRules.map((rule, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/10 last:border-b-0">
+                    <div className="flex items-center space-x-3">
+                      {rule.status === 'active' ? (
+                        <CheckCircle size={16} className="text-green-400" />
+                      ) : (
+                        <XCircle size={16} className="text-red-400" />
+                      )}
+                      <span className="font-mono text-sm">{rule.name}</span>
+                      <span className="font-mono text-xs opacity-60">{rule.host}{rule.path}</span>
+                      <span className="font-mono text-xs opacity-60">→ {rule.backend}</span>
+                    </div>
+                    <span className="font-mono text-xs opacity-60">{rule.namespace}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border border-white/20 p-4">
+              <h4 className="font-mono text-sm mb-4">NETWORK POLICIES</h4>
+              <div className="space-y-2">
+                {infrastructureStatus.networkPolicies.map((policy, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/10 last:border-b-0">
+                    <div className="flex items-center space-x-3">
+                      {policy.status === 'active' ? (
+                        <CheckCircle size={16} className="text-green-400" />
+                      ) : (
+                        <XCircle size={16} className="text-red-400" />
+                      )}
+                      <span className="font-mono text-sm">{policy.name}</span>
+                      <span className="font-mono text-xs opacity-60">{policy.rulesApplied} rules</span>
+                      <span className="font-mono text-xs opacity-60">{policy.policyTypes.join(', ')}</span>
+                    </div>
+                    <span className="font-mono text-xs opacity-60">{policy.namespace}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </ServiceHealthModal>
 
       {lastUpdated && (
         <div className="text-center text-xs font-mono opacity-60">
