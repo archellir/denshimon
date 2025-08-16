@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Zap, AlertCircle, AlertTriangle, Shield, Lock, Unlock, Activity, Globe, Database, Server, Layers, X, Grid3x3, GitBranch, Network } from 'lucide-react';
+import { Zap, AlertTriangle, X, Grid3x3, GitBranch, Network, Lock, Unlock } from 'lucide-react';
 import StatusIcon, { normalizeStatus } from '@components/common/StatusIcon';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import ForceGraph from './ForceGraph';
-import { NetworkProtocol, PROTOCOL_COLORS, DIRECTION_COLORS, ConnectionStatus, GraphViewMode, ServiceFilterType, ServiceType, UI_LABELS } from '@constants';
+import { DIRECTION_COLORS, ConnectionStatus, GraphViewMode, ServiceFilterType, UI_LABELS } from '@constants';
 import useServiceMeshStore from '@stores/serviceMeshStore';
+import { 
+  getServiceIcon, 
+  getStatusColor, 
+  getCircuitBreakerIcon, 
+  getSecurityIcon, 
+  getProtocolColor,
+  getMethodColor 
+} from '@utils/serviceMeshVisuals';
+import { filterServices, filterEndpoints } from '@utils/serviceMeshFilters';
 
 interface ServiceMeshProps {
   activeSecondaryTab?: string;
@@ -65,21 +74,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
   const filteredServices = useMemo(() => {
     if (!data) return [];
-    let services = filterType === ServiceFilterType.ALL 
-      ? data.services 
-      : data.services.filter(s => s.type === filterType);
-    
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      services = services.filter(s => 
-        s.name.toLowerCase().includes(query) ||
-        s.namespace.toLowerCase().includes(query) ||
-        s.type.toLowerCase().includes(query)
-      );
-    }
-    
-    return services;
+    return filterServices(data.services, filterType, searchQuery);
   }, [data, filterType, searchQuery]);
 
   const serviceConnections = useMemo(() => {
@@ -89,61 +84,9 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
 
   const filteredEndpoints = useMemo(() => {
     if (!data) return [];
-    if (!searchQuery) return data.endpoints;
-    
-    const query = searchQuery.toLowerCase();
-    return data.endpoints.filter(endpoint =>
-      endpoint.path.toLowerCase().includes(query) ||
-      endpoint.method.toLowerCase().includes(query) ||
-      data.services.find(s => s.id === endpoint.serviceId)?.name.toLowerCase().includes(query)
-    );
+    return filterEndpoints(data.endpoints, data.services, searchQuery);
   }, [data, searchQuery]);
 
-  const getServiceIcon = (type: string) => {
-    switch (type) {
-      case ServiceType.FRONTEND: return <Globe className="w-4 h-4" />;
-      case ServiceType.BACKEND: return <Server className="w-4 h-4" />;
-      case ServiceType.DATABASE: return <Database className="w-4 h-4" />;
-      case ServiceType.CACHE: return <Layers className="w-4 h-4" />;
-      case ServiceType.GATEWAY: return <Network className="w-4 h-4" />;
-      case ServiceType.SIDECAR: return <Shield className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'text-green-500 border-green-500';
-      case 'warning': return 'text-yellow-500 border-yellow-500';
-      case 'error': return 'text-red-500 border-red-500';
-      case 'unknown': return 'text-gray-500 border-gray-500';
-      default: return 'text-white border-white';
-    }
-  };
-
-  const getCircuitBreakerIcon = (status: string) => {
-    switch (status) {
-      case 'open': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'half-open': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'closed': return <Activity className="w-4 h-4 text-green-500" />;
-    }
-  };
-
-  const getSecurityIcon = (encrypted: boolean, mTLS: boolean) => {
-    if (!encrypted) return <Unlock className="w-4 h-4 text-red-500" />;
-    if (mTLS) return <Shield className="w-4 h-4 text-green-500" />;
-    return <Lock className="w-4 h-4 text-yellow-500" />;
-  };
-
-  const getProtocolColor = (protocol: string) => {
-    switch (protocol) {
-      case NetworkProtocol.HTTP: return PROTOCOL_COLORS.TEXT.HTTP;
-      case NetworkProtocol.GRPC: return PROTOCOL_COLORS.TEXT.gRPC;
-      case NetworkProtocol.TCP: return PROTOCOL_COLORS.TEXT.TCP;
-      case NetworkProtocol.UDP: return PROTOCOL_COLORS.TEXT.UDP;
-      default: return PROTOCOL_COLORS.TEXT.DEFAULT;
-    }
-  };
 
   const isConnected = connectionState === ConnectionStatus.ONLINE;
 
@@ -582,13 +525,7 @@ const ServiceMesh: React.FC<ServiceMeshProps> = ({ activeSecondaryTab }) => {
                       </td>
                       <td className="p-3 text-gray-400">{service?.name}</td>
                       <td className="p-3 text-center">
-                        <span className={`px-2 py-1 text-xs border ${
-                          endpoint.method === 'GET' ? 'border-green-500 text-green-500' :
-                          endpoint.method === 'POST' ? 'border-blue-500 text-blue-500' :
-                          endpoint.method === 'PUT' ? 'border-yellow-500 text-yellow-500' :
-                          endpoint.method === 'DELETE' ? 'border-red-500 text-red-500' :
-                          'border-gray-500 text-gray-500'
-                        }`}>
+                        <span className={`px-2 py-1 text-xs border ${getMethodColor(endpoint.method)}`}>
                           {endpoint.method}
                         </span>
                       </td>

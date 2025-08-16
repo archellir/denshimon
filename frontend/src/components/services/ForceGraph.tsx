@@ -5,7 +5,6 @@ import { ForceGraphNode, ForceGraphLink } from '@/types';
 import { 
   CircuitBreakerStatus, 
   NetworkProtocol, 
-  ServiceType as MeshServiceType,
   Status,
   SERVICE_TYPE_COLORS, 
   TRAFFIC_COLORS, 
@@ -13,9 +12,13 @@ import {
   SERVICE_ICONS, 
   GRAPH_CONFIG,
   BASE_COLORS,
-  MESH_ANALYSIS,
   CANVAS_CONSTANTS
 } from '@constants';
+import { 
+  findCriticalPath, 
+  findSinglePointsOfFailure, 
+  calculateDependencyPaths 
+} from '@utils/serviceMeshAnalysis';
 
 interface ForceGraphProps {
   services: ServiceNode[];
@@ -77,81 +80,6 @@ const ForceGraph: FC<ForceGraphProps> = ({
   const [criticalPath, setCriticalPath] = useState<string[]>([]);
   const [singlePointsOfFailure, setSinglePointsOfFailure] = useState<string[]>([]);
 
-  // Dependency analysis functions
-  const findAllPaths = useCallback((connections: ServiceConnection[], startId: string, endId: string, visited: Set<string> = new Set()): string[][] => {
-    if (startId === endId) return [[startId]];
-    if (visited.has(startId)) return [];
-    
-    visited.add(startId);
-    const paths: string[][] = [];
-    
-    const outgoingConnections = connections.filter(conn => conn.source === startId);
-    for (const conn of outgoingConnections) {
-      const subPaths = findAllPaths(connections, conn.target, endId, new Set(visited));
-      for (const subPath of subPaths) {
-        paths.push([startId, ...subPath]);
-      }
-    }
-    
-    return paths;
-  }, []);
-
-  const findCriticalPath = useCallback((services: ServiceNode[], connections: ServiceConnection[]): string[] => {
-    // Find path with highest cumulative request rate (critical for VPS performance)
-    const frontendServices = services.filter(s => s.type === MeshServiceType.FRONTEND);
-    const databaseServices = services.filter(s => s.type === MeshServiceType.DATABASE);
-    
-    if (frontendServices.length === 0 || databaseServices.length === 0) return [];
-    
-    let criticalPath: string[] = [];
-    let maxCriticality = 0;
-    
-    for (const frontend of frontendServices) {
-      for (const database of databaseServices) {
-        const paths = findAllPaths(connections, frontend.id, database.id);
-        for (const path of paths) {
-          // Calculate criticality based on request rate and service importance
-          const pathCriticality = path.reduce((sum, serviceId) => {
-            const service = services.find(s => s.id === serviceId);
-            return sum + (service?.metrics.requestRate || 0) * (service?.type === MeshServiceType.GATEWAY ? MESH_ANALYSIS.CRITICAL_PATH.GATEWAY_WEIGHT_MULTIPLIER : 1);
-          }, 0);
-          
-          if (pathCriticality > maxCriticality) {
-            maxCriticality = pathCriticality;
-            criticalPath = path;
-          }
-        }
-      }
-    }
-    
-    return criticalPath;
-  }, [findAllPaths]);
-
-  const findSinglePointsOfFailure = useCallback((services: ServiceNode[], connections: ServiceConnection[]): string[] => {
-    const spofs: string[] = [];
-    
-    for (const service of services) {
-      // Count incoming and outgoing connections
-      const incomingCount = connections.filter(conn => conn.target === service.id).length;
-      const outgoingCount = connections.filter(conn => conn.source === service.id).length;
-      const totalConnections = incomingCount + outgoingCount;
-      
-      // VPS SPOF Analysis - services that would crash the entire VPS:
-      // 1. Database services with multiple dependents (critical for VPS)
-      // 2. Single instance services with high connectivity
-      // 3. Gateway services handling all external traffic
-      const isDatabaseBottleneck = service.type === MeshServiceType.DATABASE && incomingCount > MESH_ANALYSIS.SPOF_DETECTION.DATABASE_CONNECTION_THRESHOLD;
-      const isGatewayBottleneck = service.type === MeshServiceType.GATEWAY && totalConnections > MESH_ANALYSIS.SPOF_DETECTION.GATEWAY_CONNECTION_THRESHOLD;
-      const isHighTrafficBottleneck = service.metrics.requestRate > MESH_ANALYSIS.SPOF_DETECTION.HIGH_TRAFFIC_THRESHOLD && incomingCount > 1;
-      const isSingleServiceType = services.filter(s => s.type === service.type).length === 1 && totalConnections > 1;
-      
-      if (isDatabaseBottleneck || isGatewayBottleneck || isHighTrafficBottleneck || isSingleServiceType) {
-        spofs.push(service.id);
-      }
-    }
-    
-    return spofs;
-  }, []);
 
   // Calculate node size based on request rate
   const getNodeSize = (service: ServiceNode): number => {
@@ -244,25 +172,13 @@ const ForceGraph: FC<ForceGraphProps> = ({
       
       // Calculate dependency paths for selected service
       if (selectedService && showDependencyPaths) {
-        const allPaths: string[][] = [];
-        // Find all paths from selected service
-        const outgoingConnections = connections.filter(conn => conn.source === selectedService);
-        for (const conn of outgoingConnections) {
-          const paths = findAllPaths(connections, selectedService, conn.target);
-          allPaths.push(...paths);
-        }
-        // Find all paths to selected service
-        const incomingConnections = connections.filter(conn => conn.target === selectedService);
-        for (const conn of incomingConnections) {
-          const paths = findAllPaths(connections, conn.source, selectedService);
-          allPaths.push(...paths);
-        }
+        const allPaths = calculateDependencyPaths(connections, selectedService);
         setDependencyPaths(allPaths);
       } else {
         setDependencyPaths([]);
       }
     }
-  }, [services, connections, selectedService, showCriticalPath, showSinglePointsOfFailure, showDependencyPaths, findCriticalPath, findSinglePointsOfFailure, findAllPaths]);
+  }, [services, connections, selectedService, showCriticalPath, showSinglePointsOfFailure, showDependencyPaths]);
 
   // Update dimensions on mount and resize
   useEffect(() => {
