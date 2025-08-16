@@ -121,7 +121,7 @@ const DeploymentsTab = ({
     <div className="h-full overflow-y-auto">
       {loading.deployments ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <SkeletonLoader variant="card" count={4} />
+          <SkeletonLoader variant="deployment-card" count={4} />
         </div>
       ) : deployments.length === 0 ? (
         <div className="border border-white p-8 text-center bg-black">
