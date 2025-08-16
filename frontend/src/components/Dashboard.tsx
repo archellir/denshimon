@@ -753,6 +753,33 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                     status={stat.status}
                     variant="default"
                   />
+                ) : activePrimaryTab === PrimaryTab.INFRASTRUCTURE ? (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    status={stat.status}
+                    variant="default"
+                  />
+                ) : activePrimaryTab === PrimaryTab.WORKLOADS ? (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    status={stat.status}
+                    variant="default"
+                  />
+                ) : activePrimaryTab === PrimaryTab.MESH ? (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    status={stat.status}
+                    variant="default"
+                  />
                 ) : (
                   <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
                     <div className="flex items-center justify-between">
