@@ -69,22 +69,10 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
       });
     } catch (error) {
       console.error('Failed to load service mesh data:', error);
-      
-      // Fallback to mock data on error
-      try {
-        const meshData = generateServiceMeshData();
-        set({ 
-          data: meshData, 
-          isLoading: false,
-          error: null, // Clear error since we have fallback data
-          lastUpdated: new Date().toISOString()
-        });
-      } catch (mockError) {
-        set({ 
-          error: error instanceof ApiError ? error.message : 'Failed to load service mesh data',
-          isLoading: false 
-        });
-      }
+      set({ 
+        error: error instanceof ApiError ? error.message : 'Failed to load service mesh data',
+        isLoading: false 
+      });
     }
   },
 
