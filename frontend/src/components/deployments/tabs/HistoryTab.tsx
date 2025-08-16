@@ -52,9 +52,28 @@ const HistoryTab: FC = () => {
           </p>
         </div>
       ) : loading.history ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full" />
-          <span className="ml-3 font-mono">Loading history...</span>
+        <div className="space-y-4">
+          {[...Array(5)].map((_, index) => (
+            <div key={`skeleton-${index}`} className="border border-white/20 p-4 animate-pulse">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-4">
+                  <div className="h-5 w-5 bg-white/10 rounded-full"></div>
+                  <div>
+                    <div className="h-5 bg-white/10 rounded w-24 mb-2"></div>
+                    <div className="h-4 bg-white/10 rounded w-32"></div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="h-4 bg-white/10 rounded w-28 mb-1"></div>
+                  <div className="h-3 bg-white/10 rounded w-20"></div>
+                </div>
+              </div>
+              <div className="mt-3 space-y-2">
+                <div className="h-4 bg-white/10 rounded w-48"></div>
+                <div className="h-4 bg-white/10 rounded w-40"></div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : history.length === 0 ? (
         <div className="border border-white/20 p-8 text-center">

@@ -93,9 +93,35 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
   return (
     <>
       {loading.registries ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full" />
-          <span className="ml-3 font-mono">Loading registries...</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, index) => (
+            <div key={`skeleton-${index}`} className="border border-white/20 p-4 animate-pulse flex flex-col h-full">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="h-5 bg-white/10 rounded w-24 mb-2"></div>
+                  <div className="h-4 bg-white/10 rounded w-20"></div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="h-4 w-4 bg-white/10 rounded-full"></div>
+                  <div className="h-3 bg-white/10 rounded w-16"></div>
+                </div>
+              </div>
+              <div className="space-y-2 mb-4 flex-1">
+                <div className="flex">
+                  <div className="h-4 bg-white/10 rounded w-10 mr-2"></div>
+                  <div className="h-4 bg-white/10 rounded w-32"></div>
+                </div>
+                <div className="flex">
+                  <div className="h-4 bg-white/10 rounded w-20 mr-2"></div>
+                  <div className="h-4 bg-white/10 rounded w-24"></div>
+                </div>
+              </div>
+              <div className="flex items-center justify-end space-x-2">
+                <div className="h-8 bg-white/10 rounded w-16"></div>
+                <div className="h-8 bg-white/10 rounded w-8"></div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : registries.length === 0 ? (
         <div className="border border-white/20 p-8 text-center">
