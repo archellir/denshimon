@@ -21,7 +21,8 @@ import {
   Minimize2,
   History,
   CheckCircle,
-  XCircle
+  XCircle,
+  Trash2
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
@@ -173,7 +174,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   const selectedConnectionObj = connections.find(c => c.id === selectedConnection);
 
   const renderLeftPanel = () => (
-    <div className="w-1/3 border-r border-white/20 flex flex-col">
+    <div className="w-80 flex-shrink-0 border-r border-white/20 flex flex-col" style={{ minHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px' }}>
       {/* Connection Selector */}
       <div className="p-4 border-b border-white/20">
         <CustomSelector
@@ -512,12 +513,12 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             ERROR: {queryResults.error}
           </div>
         ) : (
-          <div className="border border-white overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px' }}>
-            <table className="w-full text-sm font-mono">
+          <div className="border border-white overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px', maxWidth: '100%' }}>
+            <table className="text-sm font-mono" style={{ minWidth: '100%', width: 'max-content' }}>
               <thead className="bg-white/10 sticky top-0">
                 <tr>
                   {queryResults.columns.map((col, i) => (
-                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10">
+                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10 whitespace-nowrap" style={{ minWidth: '120px', maxWidth: '300px' }}>
                       {col}
                     </th>
                   ))}
@@ -527,7 +528,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
                 {queryResults.rows.map((row, i) => (
                   <tr key={i} className="border-t border-white/10 hover:bg-white/5">
                     {row.map((cell, j) => (
-                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap">
+                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap text-ellipsis overflow-hidden" style={{ minWidth: '120px', maxWidth: '300px' }}>
                         {cell === null ? (
                           <span className="opacity-50 italic">NULL</span>
                         ) : (
@@ -676,13 +677,13 @@ SELECT * FROM users LIMIT 10;"
   );
 
   const renderSavedTab = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="font-mono text-sm">SAVED QUERIES</h4>
-        <span className="text-xs font-mono opacity-60">{savedQueries.length} queries</span>
-      </div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="font-mono text-sm">SAVED QUERIES</h4>
+          <span className="text-xs font-mono opacity-60">{savedQueries.length} queries</span>
+        </div>
 
-      {savedQueries.length === 0 ? (
+        {savedQueries.length === 0 ? (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <FileText size={48} className="mx-auto opacity-40 mb-4" />
@@ -726,6 +727,16 @@ SELECT * FROM users LIMIT 10;"
                   />
                   <CustomButton
                     icon={Settings}
+                    onClick={() => {
+                      // Settings functionality placeholder
+                      console.log('Query settings for:', query.id);
+                    }}
+                    color="white"
+                    className="w-auto px-1 py-1"
+                    title="Query Settings"
+                  />
+                  <CustomButton
+                    icon={Trash2}
                     onClick={async () => {
                       try {
                         await deleteSavedQuery(query.id);
