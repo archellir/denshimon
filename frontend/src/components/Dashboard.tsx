@@ -515,11 +515,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         }
       
       case PrimaryTab.MESH:
-        return (
-          <span className="text-sm font-mono opacity-60">
-            12 SERVICES • 89.2% mTLS
-          </span>
-        );
+        return null;
       
       case PrimaryTab.DEPLOYMENTS:
         if (deploymentStore.error) {
