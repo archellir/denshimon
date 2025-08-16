@@ -271,7 +271,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   );
 
   const renderRightPanel = () => (
-    <div className={`flex-1 flex flex-col ${isFullscreen ? 'w-full' : ''}`}>
+    <div className={`flex-1 flex flex-col overflow-hidden ${isFullscreen ? 'w-full' : ''}`}>
       {/* Tab Navigation */}
       <div className="flex justify-between items-center border-b border-white/20">
         <div className="flex">
@@ -316,7 +316,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-auto p-4" style={{ maxHeight: isFullscreen ? 'calc(100vh - 80px)' : 'calc(100vh - 200px)' }}>
+      <div className="flex-1 overflow-hidden p-4">
         {activeTab === 'schema' && renderSchemaTab()}
         {activeTab === 'data' && renderDataTab()}
         {activeTab === 'query' && renderQueryTab()}
@@ -513,9 +513,9 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             ERROR: {queryResults.error}
           </div>
         ) : (
-          <div className="border border-white w-full">
-            <div className="overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px', maxWidth: '100%' }}>
-              <table className="text-sm font-mono" style={{ width: 'max-content', minWidth: '100%' }}>
+          <div className="border border-white flex-shrink-0" style={{ height: isFullscreen ? 'calc(100vh - 200px)' : '400px', width: '100%', overflow: 'hidden' }}>
+            <div className="h-full w-full overflow-auto">
+              <table className="text-sm font-mono border-collapse" style={{ tableLayout: 'auto' }}>
               <thead className="bg-white/10 sticky top-0">
                 <tr>
                   {queryResults.columns.map((col, i) => (
@@ -778,7 +778,7 @@ SELECT * FROM users LIMIT 10;"
   }
 
   return (
-    <div className={`h-full flex ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
+    <div className={`h-full flex overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
       {!isFullscreen && renderLeftPanel()}
       {renderRightPanel()}
     </div>
