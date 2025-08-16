@@ -169,3 +169,13 @@ type TestConnectionResult struct {
 	ResponseTime time.Duration `json:"response_time"`
 	Version      string        `json:"version,omitempty"`
 }
+
+// SavedQuery represents a saved SQL query
+type SavedQuery struct {
+	ID           string     `json:"id"`
+	Name         string     `json:"name"`
+	SQL          string     `json:"sql"`
+	ConnectionID *string    `json:"connection_id,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+}
