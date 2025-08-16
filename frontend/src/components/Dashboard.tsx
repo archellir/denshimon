@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
 import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, RefreshCw, type LucideIcon } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
+import StatCard from '@components/common/StatCard';
 import GlobalSearch from '@components/common/GlobalSearch';
 import CustomSelector from '@components/common/CustomSelector';
 import ConnectionStatus from '@components/common/ConnectionStatus';
@@ -717,18 +718,31 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           <div className="max-w-7xl mx-auto px-6 pt-6 pb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {getQuickStatsForTab(activePrimaryTab).map((stat) => (
-                <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-mono opacity-60">{stat.label}</p>
-                      <p className="text-base font-mono">{stat.value}</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <stat.icon size={16} className="text-white" />
-                      <StatusIcon status={stat.status} size={14} />
+                activePrimaryTab === PrimaryTab.DEPLOYMENTS ? (
+                  <StatCard
+                    key={stat.label}
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    status={stat.status}
+                    variant="default"
+                    badge={stat.label === 'SUCCESS RATE' ? { text: 'STABLE', color: 'green' } : undefined}
+                    trend={stat.label === 'RECENT DEPLOYS' ? { direction: 'up', value: '+2', color: 'green' } : undefined}
+                  />
+                ) : (
+                  <div key={stat.label} className={`border ${getStatusColor(stat.status)} p-3`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-mono opacity-60">{stat.label}</p>
+                        <p className="text-base font-mono">{stat.value}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <stat.icon size={16} className="text-white" />
+                        <StatusIcon status={stat.status} size={14} />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
           </div>
