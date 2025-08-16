@@ -2,12 +2,13 @@ import type { FC } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 interface CustomButtonProps {
-  label: string;
+  label?: string;
   icon?: LucideIcon;
-  onClick: () => void;
+  onClick?: () => void;
   color?: 'blue' | 'green' | 'red' | 'yellow' | 'gray' | 'white';
   disabled?: boolean;
   className?: string;
+  title?: string;
 }
 
 const CustomButton: FC<CustomButtonProps> = ({
@@ -16,7 +17,8 @@ const CustomButton: FC<CustomButtonProps> = ({
   onClick,
   color = 'white',
   disabled = false,
-  className = ''
+  className = '',
+  title
 }) => {
   const getColorClasses = (color: string) => {
     const colorMap = {
@@ -36,6 +38,7 @@ const CustomButton: FC<CustomButtonProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={`flex items-center ${isIconOnly ? '' : 'space-x-2'} ${isIconOnly ? 'px-2' : 'px-4'} py-2 border font-mono text-xs transition-all ${isIconOnly ? 'w-auto' : 'w-28'} justify-center ${getColorClasses(color)} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
     >
       {Icon && <Icon size={16} />}
