@@ -7,7 +7,8 @@ import type {
   QueryResult, 
   DatabaseStats,
   TestConnectionResult,
-  DatabaseType
+  DatabaseType,
+  SavedQuery
 } from '@/types/database';
 import { DatabaseStatus } from '@/types/database';
 import { API_ENDPOINTS } from '@constants';
@@ -34,6 +35,7 @@ interface DatabaseStore {
   queryResults: QueryResult | null;
   stats: DatabaseStats | null;
   supportedTypes: DatabaseType[];
+  savedQueries: SavedQuery[];
   isLoading: boolean;
   error: string | null;
   testResult: TestConnectionResult | null;
@@ -52,6 +54,10 @@ interface DatabaseStore {
   executeQuery: (connectionId: string, sql: string, limit?: number, offset?: number) => Promise<void>;
   fetchStats: (connectionId: string) => Promise<void>;
   fetchSupportedTypes: () => Promise<void>;
+  fetchSavedQueries: () => Promise<void>;
+  createSavedQuery: (query: Omit<SavedQuery, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateSavedQuery: (id: string, query: Partial<SavedQuery>) => Promise<void>;
+  deleteSavedQuery: (id: string) => Promise<void>;
   setSelectedConnection: (id: string | null) => void;
   clearError: () => void;
   clearQueryResults: () => void;
@@ -67,6 +73,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   queryResults: null,
   stats: null,
   supportedTypes: [],
+  savedQueries: [],
   isLoading: false,
   error: null,
   testResult: null,
@@ -330,6 +337,64 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
 
   clearQueryResults: () => {
     set({ queryResults: null });
+  },
+
+  fetchSavedQueries: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await apiService.get<SavedQuery[]>(API_ENDPOINTS.DATABASES.SAVED_QUERIES, false);
+      set({ savedQueries: response.data, isLoading: false });
+    } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch saved queries';
+      set({ error: errorMessage, isLoading: false });
+      // Initialize with empty array if fetch fails
+      set({ savedQueries: [] });
+    }
+  },
+
+  createSavedQuery: async (query) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await apiService.post<SavedQuery>(API_ENDPOINTS.DATABASES.SAVED_QUERIES, query, false);
+      const currentQueries = get().savedQueries;
+      set({ savedQueries: [...currentQueries, response.data], isLoading: false });
+    } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to save query';
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
+  updateSavedQuery: async (id, query) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await apiService.put<SavedQuery>(API_ENDPOINTS.DATABASES.SAVED_QUERY(id), query, false);
+      const currentQueries = get().savedQueries;
+      set({ 
+        savedQueries: currentQueries.map(q => q.id === id ? response.data : q), 
+        isLoading: false 
+      });
+    } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to update saved query';
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
+  deleteSavedQuery: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await apiService.delete(API_ENDPOINTS.DATABASES.SAVED_QUERY(id), false);
+      const currentQueries = get().savedQueries;
+      set({ 
+        savedQueries: currentQueries.filter(q => q.id !== id), 
+        isLoading: false 
+      });
+    } catch (error) {
+      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete saved query';
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
   },
 }));
 
