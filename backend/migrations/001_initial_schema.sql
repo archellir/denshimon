@@ -43,6 +43,17 @@ CREATE TABLE IF NOT EXISTS database_connections (
     last_connected TIMESTAMP NULL
 );
 
+-- Saved SQL queries for query browser
+CREATE TABLE IF NOT EXISTS saved_queries (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    sql TEXT NOT NULL,
+    connection_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (connection_id) REFERENCES database_connections(id) ON DELETE SET NULL
+);
+
 -- Certificate domain configurations for monitoring
 CREATE TABLE IF NOT EXISTS certificate_domains (
     id VARCHAR(255) PRIMARY KEY,
@@ -66,6 +77,9 @@ CREATE INDEX IF NOT EXISTS idx_container_registries_name ON container_registries
 
 CREATE INDEX IF NOT EXISTS idx_database_connections_type ON database_connections(type);
 CREATE INDEX IF NOT EXISTS idx_database_connections_last_connected ON database_connections(last_connected);
+
+CREATE INDEX IF NOT EXISTS idx_saved_queries_connection_id ON saved_queries(connection_id);
+CREATE INDEX IF NOT EXISTS idx_saved_queries_created_at ON saved_queries(created_at);
 
 CREATE INDEX IF NOT EXISTS idx_certificate_domains_enabled ON certificate_domains(enabled);
 CREATE INDEX IF NOT EXISTS idx_certificate_domains_check_interval ON certificate_domains(check_interval);
