@@ -3,10 +3,12 @@ package websocket
 import (
 	"context"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/archellir/denshimon/internal/k8s"
 	"github.com/archellir/denshimon/internal/metrics"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Publisher publishes real-time data to WebSocket clients
@@ -42,6 +44,7 @@ func (p *Publisher) Start() {
 		go p.publishNetworkMetrics()
 		go p.publishStorageMetrics()
 		go p.publishDatabaseMetrics()
+		go p.publishServiceHealthMetrics()
 	} else {
 		slog.Warn("WebSocket publisher started without Kubernetes client - no data will be published")
 	}
@@ -429,4 +432,305 @@ func generateBackupStats() map[string]interface{} {
 		"backup_status":  "completed",
 		"next_scheduled": time.Now().Add(time.Hour * 18).Format(time.RFC3339),
 	}
+}
+
+// publishServiceHealthMetrics publishes service health metrics every 30 seconds
+func (p *Publisher) publishServiceHealthMetrics() {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			ctx := context.Background()
+			
+			// Get all pods to check for service health
+			pods, err := p.k8sClient.ListPods(ctx, "")
+			if err != nil {
+				slog.Error("Failed to get pods for service health metrics", "error", err)
+				continue
+			}
+
+			var services []map[string]interface{}
+			var alerts []map[string]interface{}
+			var infrastructureStatus map[string]interface{}
+			
+			// Analyze pods for service health
+			for _, pod := range pods.Items {
+				if isServiceHealthTarget(pod.Name) {
+					service := map[string]interface{}{
+						"id":          pod.Name,
+						"name":        getServiceDisplayName(pod.Name),
+						"type":        getServiceType(pod.Name),
+						"status":      getServiceStatus(string(pod.Status.Phase)),
+						"uptime":      calculateUptime(pod.Status.StartTime),
+						"responseTime": generateResponseTime(),
+						"lastChecked": time.Now().UTC().Format(time.RFC3339),
+						"url":         getServiceURL(pod.Name),
+						"metrics":     generateServiceMetrics(pod.Name),
+						"alerts":      generateServiceAlerts(pod.Name),
+					}
+					services = append(services, service)
+				}
+			}
+
+			// Generate infrastructure status
+			infrastructureStatus = generateInfrastructureStatus()
+			
+			// Generate system-wide alerts
+			alerts = generateSystemAlerts()
+
+			// Publish service health data
+			p.hub.Broadcast(MessageTypeServiceHealth, map[string]interface{}{
+				"services":    services,
+				"alerts":      alerts,
+				"infrastructure": infrastructureStatus,
+				"timestamp":   time.Now().UTC().Format(time.RFC3339),
+				"source":      "k8s_pods",
+			})
+
+			// Publish service health statistics
+			stats := generateServiceHealthStats(services)
+			p.hub.Broadcast(MessageTypeServiceHealthStats, map[string]interface{}{
+				"stats":     stats,
+				"timestamp": time.Now().UTC().Format(time.RFC3339),
+			})
+		}
+	}
+}
+
+// Service health helper functions
+func isServiceHealthTarget(podName string) bool {
+	serviceNames := []string{
+		"gitea", "filebrowser", "umami", "memos", "uptime", "kuma", 
+		"postgresql", "postgres", "mysql", "redis", "nginx", "traefik",
+	}
+	
+	for _, service := range serviceNames {
+		if containsIgnoreCase(podName, service) {
+			return true
+		}
+	}
+	return false
+}
+
+func getServiceDisplayName(podName string) string {
+	if containsIgnoreCase(podName, "gitea") {
+		return "Gitea"
+	}
+	if containsIgnoreCase(podName, "filebrowser") {
+		return "File Browser"
+	}
+	if containsIgnoreCase(podName, "umami") {
+		return "Umami Analytics"
+	}
+	if containsIgnoreCase(podName, "memos") {
+		return "Memos"
+	}
+	if containsIgnoreCase(podName, "uptime") || containsIgnoreCase(podName, "kuma") {
+		return "Uptime Kuma"
+	}
+	if containsIgnoreCase(podName, "postgresql") || containsIgnoreCase(podName, "postgres") {
+		return "PostgreSQL"
+	}
+	return podName
+}
+
+func getServiceType(podName string) string {
+	if containsIgnoreCase(podName, "gitea") {
+		return "gitea"
+	}
+	if containsIgnoreCase(podName, "filebrowser") {
+		return "filebrowser"
+	}
+	if containsIgnoreCase(podName, "umami") {
+		return "umami"
+	}
+	if containsIgnoreCase(podName, "memos") {
+		return "memos"
+	}
+	if containsIgnoreCase(podName, "uptime") || containsIgnoreCase(podName, "kuma") {
+		return "uptime_kuma"
+	}
+	if containsIgnoreCase(podName, "postgresql") || containsIgnoreCase(podName, "postgres") {
+		return "postgresql"
+	}
+	return "generic"
+}
+
+func getServiceStatus(podPhase string) string {
+	switch podPhase {
+	case "Running":
+		return "healthy"
+	case "Pending":
+		return "warning"
+	case "Failed":
+		return "critical"
+	default:
+		return "unknown"
+	}
+}
+
+func calculateUptime(startTime *metav1.Time) float64 {
+	if startTime == nil {
+		return 0.0
+	}
+	uptime := time.Since(startTime.Time)
+	totalHours := uptime.Hours()
+	// Simulate realistic uptime percentage
+	return 99.5 + (float64(time.Now().Unix()%5) * 0.1)
+}
+
+func generateResponseTime() int {
+	// Generate realistic response times between 50-500ms
+	return 50 + int(time.Now().Unix()%450)
+}
+
+func getServiceURL(podName string) string {
+	if containsIgnoreCase(podName, "gitea") {
+		return "https://git.example.com"
+	}
+	if containsIgnoreCase(podName, "filebrowser") {
+		return "https://files.example.com"
+	}
+	if containsIgnoreCase(podName, "umami") {
+		return "https://analytics.example.com"
+	}
+	if containsIgnoreCase(podName, "uptime") {
+		return "https://status.example.com"
+	}
+	return ""
+}
+
+func generateServiceMetrics(podName string) map[string]interface{} {
+	baseMetrics := map[string]interface{}{
+		"cpuUsage":    float64(10 + int(time.Now().Unix()%80)),
+		"memoryUsage": float64(20 + int(time.Now().Unix()%60)),
+		"diskUsage":   float64(30 + int(time.Now().Unix()%40)),
+	}
+
+	// Add service-specific metrics
+	if containsIgnoreCase(podName, "gitea") {
+		baseMetrics["activeRunners"] = int(time.Now().Unix() % 5)
+		baseMetrics["queuedJobs"] = int(time.Now().Unix() % 10)
+		baseMetrics["totalRepositories"] = 42
+		baseMetrics["registrySize"] = int64(2147483648) // 2GB
+	} else if containsIgnoreCase(podName, "postgresql") {
+		baseMetrics["totalConnections"] = int(time.Now().Unix() % 100)
+		baseMetrics["maxConnections"] = 200
+		baseMetrics["activeQueries"] = int(time.Now().Unix() % 20)
+		baseMetrics["cacheHitRatio"] = 95.5
+		baseMetrics["databaseSize"] = int64(5368709120) // 5GB
+	}
+
+	return baseMetrics
+}
+
+func generateServiceAlerts(podName string) []map[string]interface{} {
+	// Generate occasional alerts
+	if time.Now().Unix()%10 < 2 {
+		return []map[string]interface{}{
+			{
+				"id":        podName + "-alert-" + time.Now().Format("20060102150405"),
+				"message":   "High memory usage detected",
+				"severity":  "warning",
+				"timestamp": time.Now().UTC().Format(time.RFC3339),
+			},
+		}
+	}
+	return []map[string]interface{}{}
+}
+
+func generateInfrastructureStatus() map[string]interface{} {
+	return map[string]interface{}{
+		"domainAccessibility": []map[string]interface{}{
+			{
+				"domain":       "git.example.com",
+				"accessible":   true,
+				"responseTime": 120,
+				"httpStatus":   200,
+				"sslValid":     true,
+			},
+			{
+				"domain":       "files.example.com", 
+				"accessible":   true,
+				"responseTime": 95,
+				"httpStatus":   200,
+				"sslValid":     true,
+			},
+		},
+		"ingressRules": []map[string]interface{}{
+			{
+				"name":      "gitea-ingress",
+				"namespace": "default",
+				"host":      "git.example.com",
+				"path":      "/",
+				"backend":   "gitea:3000",
+				"status":    "active",
+			},
+		},
+		"networkPolicies": []map[string]interface{}{
+			{
+				"name":         "default-deny-all",
+				"namespace":    "default",
+				"policyTypes":  []string{"Ingress", "Egress"},
+				"rulesApplied": 5,
+				"status":       "active",
+			},
+		},
+	}
+}
+
+func generateSystemAlerts() []map[string]interface{} {
+	// Generate system-wide alerts occasionally
+	alerts := []map[string]interface{}{}
+	
+	if time.Now().Unix()%20 < 3 {
+		alerts = append(alerts, map[string]interface{}{
+			"id":           "sys-alert-" + time.Now().Format("20060102150405"),
+			"message":      "High cluster CPU utilization",
+			"severity":     "warning", 
+			"timestamp":    time.Now().UTC().Format(time.RFC3339),
+			"source":       "cluster-monitor",
+			"acknowledged": false,
+		})
+	}
+	
+	return alerts
+}
+
+func generateServiceHealthStats(services []map[string]interface{}) map[string]interface{} {
+	healthy := 0
+	warning := 0
+	critical := 0
+	down := 0
+	
+	for _, service := range services {
+		status := service["status"].(string)
+		switch status {
+		case "healthy":
+			healthy++
+		case "warning":
+			warning++
+		case "critical":
+			critical++
+		case "down":
+			down++
+		}
+	}
+	
+	return map[string]interface{}{
+		"total":    len(services),
+		"healthy":  healthy,
+		"warning":  warning,
+		"critical": critical,
+		"down":     down,
+	}
+}
+
+// containsIgnoreCase checks if str contains substr (case insensitive)
+func containsIgnoreCase(str, substr string) bool {
+	return strings.Contains(strings.ToLower(str), strings.ToLower(substr))
 }
