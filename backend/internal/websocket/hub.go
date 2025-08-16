@@ -32,6 +32,8 @@ const (
 	MessageTypeStorage        MessageType = "storage"
 	MessageTypeDatabase       MessageType = "database"
 	MessageTypeDatabaseStats  MessageType = "database_stats"
+	MessageTypeServiceHealth  MessageType = "service_health"
+	MessageTypeServiceHealthStats MessageType = "service_health_stats"
 )
 
 // Message represents a WebSocket message
