@@ -75,15 +75,16 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <SkeletonLoader variant="chart" count={2} />
-        <SkeletonLoader variant="chart" count={1} />
-        <SkeletonLoader variant="table" count={3} />
-      </div>
-    );
-  }
+  // Disable skeleton loading for now to prevent infinite loading
+  // if (isLoading) {
+  //   return (
+  //     <div className="space-y-6">
+  //       <SkeletonLoader variant="chart" count={2} />
+  //       <SkeletonLoader variant="chart" count={1} />
+  //       <SkeletonLoader variant="table" count={3} />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">
@@ -93,11 +94,7 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
         <div className="border border-white p-4">
           <h3 className="font-mono text-sm mb-4">CPU & MEMORY TRENDS</h3>
           <div className="h-64">
-            {isLoadingHistory ? (
-              <div className="h-full">
-                <SkeletonLoader variant="chart" count={1} />
-              </div>
-            ) : historicalData.length === 0 ? (
+            {historicalData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
                 <span className="font-mono text-sm text-yellow-400">NO CHART DATA AVAILABLE</span>
               </div>
@@ -147,11 +144,7 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
         <div className="border border-white p-4">
           <h3 className="font-mono text-sm mb-4">WORKLOAD TRENDS</h3>
           <div className="h-64">
-            {isLoadingHistory ? (
-              <div className="h-full">
-                <SkeletonLoader variant="chart" count={1} />
-              </div>
-            ) : historicalData.length === 0 ? (
+            {historicalData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
                 <span className="font-mono text-sm text-yellow-400">NO CHART DATA AVAILABLE</span>
               </div>
@@ -191,7 +184,7 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
 
 
       {/* Resource Summary */}
-      {nodeResourceData.length > 0 && (
+      {clusterMetrics && (
         <div className="border border-white p-4">
           <h3 className="font-mono text-sm mb-4">DEPLOYMENT CAPACITY</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -201,15 +194,15 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">CPU</span>
-                  <span className="font-mono text-sm text-green-400">{nodeResourceData[0]?.cpu.toFixed(1)}%</span>
+                  <span className="font-mono text-sm text-green-400">{clusterMetrics.cpu_usage.usage_percent.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Memory</span>
-                  <span className="font-mono text-sm text-yellow-400">{nodeResourceData[0]?.memory.toFixed(1)}%</span>
+                  <span className="font-mono text-sm text-yellow-400">{clusterMetrics.memory_usage.usage_percent.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Pod Count</span>
-                  <span className="font-mono text-sm text-cyan-400">{nodeResourceData[0]?.pods}</span>
+                  <span className="font-mono text-sm text-cyan-400">{clusterMetrics.running_pods}</span>
                 </div>
               </div>
             </div>
@@ -220,15 +213,15 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">CPU Cores</span>
-                  <span className="font-mono text-sm">{((100 - (nodeResourceData[0]?.cpu || 0)) * 8 / 100).toFixed(1)}</span>
+                  <span className="font-mono text-sm">{((100 - clusterMetrics.cpu_usage.usage_percent) * 8 / 100).toFixed(1)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Memory</span>
-                  <span className="font-mono text-sm">{((100 - (nodeResourceData[0]?.memory || 0)) * 16 / 100).toFixed(1)}GB</span>
+                  <span className="font-mono text-sm">{((100 - clusterMetrics.memory_usage.usage_percent) * 16 / 100).toFixed(1)}GB</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Pod Slots</span>
-                  <span className="font-mono text-sm">{Math.max(0, 30 - (nodeResourceData[0]?.pods || 0))}</span>
+                  <span className="font-mono text-sm">{Math.max(0, clusterMetrics.total_pods - clusterMetrics.running_pods)}</span>
                 </div>
               </div>
             </div>
@@ -239,15 +232,15 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Small Apps</span>
-                  <span className="font-mono text-sm text-green-400">~{Math.floor((100 - (nodeResourceData[0]?.cpu || 0)) / 10)}</span>
+                  <span className="font-mono text-sm text-green-400">~{Math.floor((100 - clusterMetrics.cpu_usage.usage_percent) / 10)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Medium Apps</span>
-                  <span className="font-mono text-sm text-yellow-400">~{Math.floor((100 - (nodeResourceData[0]?.cpu || 0)) / 25)}</span>
+                  <span className="font-mono text-sm text-yellow-400">~{Math.floor((100 - clusterMetrics.cpu_usage.usage_percent) / 25)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-xs">Large Apps</span>
-                  <span className="font-mono text-sm text-red-400">~{Math.floor((100 - (nodeResourceData[0]?.cpu || 0)) / 50)}</span>
+                  <span className="font-mono text-sm text-red-400">~{Math.floor((100 - clusterMetrics.cpu_usage.usage_percent) / 50)}</span>
                 </div>
               </div>
             </div>
