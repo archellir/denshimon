@@ -153,7 +153,7 @@ const DeploymentsTab = ({
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {deployments.map((deployment) => (
             <div key={deployment.id} className="border border-white p-4 hover:border-green-400 transition-colors bg-black">
               <div className="flex items-center justify-between mb-4">
