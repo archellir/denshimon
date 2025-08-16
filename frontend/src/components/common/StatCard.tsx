@@ -8,7 +8,7 @@ export interface StatCardProps {
   value: string;
   icon: LucideIcon;
   status: StatusType;
-  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered';
+  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered' | 'analytics';
   className?: string;
   onClick?: () => void;
   trend?: {
@@ -43,7 +43,8 @@ const StatCard: FC<StatCardProps> = ({
     compact: 'pl-4 pr-3 py-2',
     minimal: 'pl-3 pr-2 py-1.5',
     'service-health': 'p-4',
-    centered: 'p-3 text-center'
+    centered: 'p-3 text-center',
+    analytics: 'p-4'
   };
 
   const valueClasses = {
@@ -51,7 +52,8 @@ const StatCard: FC<StatCardProps> = ({
     compact: 'text-sm',
     minimal: 'text-xs',
     'service-health': 'text-2xl',
-    centered: 'text-lg'
+    centered: 'text-lg',
+    analytics: 'text-2xl'
   };
 
   const labelClasses = {
@@ -59,7 +61,8 @@ const StatCard: FC<StatCardProps> = ({
     compact: 'text-xs',
     minimal: 'text-xs',
     'service-health': 'text-sm',
-    centered: 'text-xs'
+    centered: 'text-xs',
+    analytics: 'text-xs'
   };
 
   const iconSizes = {
@@ -161,6 +164,24 @@ const StatCard: FC<StatCardProps> = ({
         <div className={`${labelClasses.centered} font-mono opacity-60`}>{label}</div>
         {description && (
           <div className="text-xs font-mono opacity-40">{description}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (variant === 'analytics') {
+    return (
+      <div 
+        className={`${baseClasses} ${variantClasses.analytics} ${clickableClasses} ${className}`}
+        onClick={onClick}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <Icon size={20} />
+          <span className={`${labelClasses.analytics} font-mono text-gray-500`}>{label}</span>
+        </div>
+        <div className={`${valueClasses.analytics} font-mono font-bold`}>{value}</div>
+        {description && (
+          <div className="text-xs text-gray-500">{description}</div>
         )}
       </div>
     );

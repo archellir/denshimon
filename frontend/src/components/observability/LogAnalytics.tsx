@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TimeRange, API_ENDPOINTS } from '@constants';
+import { TimeRange, API_ENDPOINTS, Status } from '@constants';
+import StatCard from '@components/common/StatCard';
 import { MOCK_ENABLED } from '@/mocks';
 
 interface LogAnalyticsProps {
@@ -150,59 +151,61 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Database size={20} />
-            <span className="text-xs font-mono text-gray-500">LOGS</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{metrics.totalLogs.toLocaleString()}</div>
-          <div className="text-xs text-gray-500">last {timeRange}</div>
-        </div>
+        <StatCard
+          label="LOGS"
+          value={metrics.totalLogs.toLocaleString()}
+          icon={Database}
+          status={Status.HEALTHY}
+          variant="analytics"
+          description={`last ${timeRange}`}
+        />
 
-        <div className="border border-red-500 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <AlertTriangle size={20} className="text-red-500" />
-            <span className="text-xs font-mono text-gray-500">ERROR RATE</span>
-          </div>
-          <div className="text-2xl font-mono font-bold text-red-500">{metrics.errorRate.toFixed(1)}%</div>
-          <div className="text-xs text-gray-500">of total logs</div>
-        </div>
+        <StatCard
+          label="ERROR RATE"
+          value={`${metrics.errorRate.toFixed(1)}%`}
+          icon={AlertTriangle}
+          status={Status.CRITICAL}
+          variant="analytics"
+          description="of total logs"
+          className="text-red-500"
+        />
 
-        <div className="border border-yellow-500 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <AlertTriangle size={20} className="text-yellow-500" />
-            <span className="text-xs font-mono text-gray-500">WARNING RATE</span>
-          </div>
-          <div className="text-2xl font-mono font-bold text-yellow-500">{metrics.warningRate.toFixed(1)}%</div>
-          <div className="text-xs text-gray-500">of total logs</div>
-        </div>
+        <StatCard
+          label="WARNING RATE"
+          value={`${metrics.warningRate.toFixed(1)}%`}
+          icon={AlertTriangle}
+          status={Status.WARNING}
+          variant="analytics"
+          description="of total logs"
+          className="text-yellow-500"
+        />
 
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Activity size={20} />
-            <span className="text-xs font-mono text-gray-500">LOGS/MIN</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{metrics.avgLogsPerMinute}</div>
-          <div className="text-xs text-gray-500">average rate</div>
-        </div>
+        <StatCard
+          label="LOGS/MIN"
+          value={metrics.avgLogsPerMinute.toString()}
+          icon={Activity}
+          status={Status.HEALTHY}
+          variant="analytics"
+          description="average rate"
+        />
 
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Server size={20} />
-            <span className="text-xs font-mono text-gray-500">SOURCES</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{metrics.topSources.length}</div>
-          <div className="text-xs text-gray-500">services</div>
-        </div>
+        <StatCard
+          label="SOURCES"
+          value={metrics.topSources.length.toString()}
+          icon={Server}
+          status={Status.HEALTHY}
+          variant="analytics"
+          description="services"
+        />
 
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Clock size={20} />
-            <span className="text-xs font-mono text-gray-500">PATTERNS</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{metrics.errorPatterns.length}</div>
-          <div className="text-xs text-gray-500">error patterns</div>
-        </div>
+        <StatCard
+          label="PATTERNS"
+          value={metrics.errorPatterns.length.toString()}
+          icon={Clock}
+          status={Status.HEALTHY}
+          variant="analytics"
+          description="error patterns"
+        />
       </div>
 
       {/* Metric Selector */}
