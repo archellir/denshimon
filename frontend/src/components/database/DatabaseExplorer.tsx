@@ -175,7 +175,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   const selectedConnectionObj = connections.find(c => c.id === selectedConnection);
 
   const renderLeftPanel = () => (
-    <div className="w-80 flex-shrink-0 border-r border-white/20 flex flex-col" style={{ minHeight: '500px' }}>
+    <div className="w-80 flex-shrink-0 border-r border-white/20 flex flex-col" style={{ height: '600px' }}>
       {/* Connection Selector */}
       <div className="p-4 border-b border-white/20">
         <CustomSelector
@@ -219,7 +219,8 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
       </div>
 
       {/* Database Tree */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 p-4" style={{ height: 'calc(100% - 80px)', overflow: 'hidden' }}>
+        <div className="h-full overflow-y-auto">
         {!selectedConnection ? (
           <div className="text-center py-8">
             <Database size={32} className="mx-auto opacity-40 mb-2" />
@@ -267,6 +268,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
