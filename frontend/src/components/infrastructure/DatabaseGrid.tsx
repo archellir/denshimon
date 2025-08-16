@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 import { Plus, Database, Eye, Trash2, Power, PowerOff, Settings, Activity } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
+import CustomButton from '@components/common/CustomButton';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus, DatabaseType } from '@/types/database';
 import { Status } from '@constants';
@@ -138,13 +139,13 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onViewConnection
                 Add your first database connection to get started
               </p>
             </div>
-            <button
+            <CustomButton
+              label="ADD CONNECTION"
+              icon={Plus}
               onClick={onAddConnection}
-              className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm mx-auto"
-            >
-              <Plus size={16} />
-              <span>ADD CONNECTION</span>
-            </button>
+              color="green"
+              className="mx-auto"
+            />
           </div>
         </div>
       ) : (
