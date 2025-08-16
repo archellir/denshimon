@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Activity, Server, Package, Shield, Network, HardDrive, Settings } from 'lucide-react';
 import { Status, EventCategory } from '@constants';
-import type { SystemChangeEvent } from '@/types/systemChangesTimeline';
+import type { SystemChange } from '@/types/systemChangesTimeline';
 
 /**
  * Gets the appropriate icon for system change severity
@@ -65,8 +65,8 @@ export const formatTimeAgo = (timestamp: string) => {
 /**
  * Groups system change events by hour
  */
-export const groupSystemChangesByHour = (events: SystemChangeEvent[]) => {
-  const groupMap = new Map<string, SystemChangeEvent[]>();
+export const groupSystemChangesByHour = (events: SystemChange[]) => {
+  const groupMap = new Map<string, SystemChange[]>();
   
   events.forEach(event => {
     const hour = new Date(event.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';
@@ -92,10 +92,10 @@ export const groupSystemChangesByHour = (events: SystemChangeEvent[]) => {
  * Filters system changes by category and severity
  */
 export const filterSystemChanges = (
-  events: SystemChangeEvent[],
+  events: SystemChange[],
   selectedCategories: EventCategory[] = [],
   selectedSeverities: Status[] = []
-): SystemChangeEvent[] => {
+): SystemChange[] => {
   return events.filter(event => {
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(event.category);
     const matchesSeverity = selectedSeverities.length === 0 || selectedSeverities.includes(event.severity);

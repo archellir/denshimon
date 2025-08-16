@@ -1,4 +1,4 @@
-import { SystemChangeEvent, SystemChangeGroup, SystemChangesTimelineData, EventCategory } from '@/types/systemChangesTimeline';
+import { SystemChange, SystemChangeGroup, SystemChangesTimelineData, EventCategory } from '@/types/systemChangesTimeline';
 import { Status } from '@constants';
 
 const EVENT_TEMPLATES = {
@@ -142,7 +142,7 @@ const fillTemplate = (template: string): string => {
     .replace('{snapshot}', `snap-${Date.now()}`);
 };
 
-const generateEvent = (hoursAgo: number): SystemChangeEvent => {
+const generateEvent = (hoursAgo: number): SystemChange => {
   const categories = Object.keys(EVENT_TEMPLATES) as EventCategory[];
   const category = categories[Math.floor(Math.random() * categories.length)];
   const categoryTemplates = EVENT_TEMPLATES[category];
@@ -170,7 +170,7 @@ const generateEvent = (hoursAgo: number): SystemChangeEvent => {
   const template = templates[Math.floor(Math.random() * templates.length)];
   const timestamp = new Date(Date.now() - hoursAgo * 3600000 - Math.random() * 3600000);
   
-  const event: SystemChangeEvent = {
+  const event: SystemChange = {
     id: generateEventId(),
     timestamp: timestamp.toISOString(),
     category,
@@ -206,7 +206,7 @@ const generateEvent = (hoursAgo: number): SystemChangeEvent => {
 };
 
 export const generateSystemChangesTimelineData = (hours: number = 24): SystemChangesTimelineData => {
-  const events: SystemChangeEvent[] = [];
+  const events: SystemChange[] = [];
   const eventsPerHour = 3 + Math.floor(Math.random() * 5);
   
   // Generate events for each hour
@@ -222,7 +222,7 @@ export const generateSystemChangesTimelineData = (hours: number = 24): SystemCha
   
   // Group events by hour
   const groups: SystemChangeGroup[] = [];
-  const groupMap = new Map<string, SystemChangeEvent[]>();
+  const groupMap = new Map<string, SystemChange[]>();
   
   events.forEach(event => {
     const hour = new Date(event.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';

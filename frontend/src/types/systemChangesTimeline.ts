@@ -1,7 +1,7 @@
 import { Status, EventCategory } from '@constants';
 export { EventCategory };
 
-export interface SystemChangeEvent {
+export interface SystemChange {
   id: string;
   timestamp: string;
   category: EventCategory;
@@ -26,7 +26,7 @@ export interface SystemChangeEvent {
 
 export interface SystemChangeGroup {
   hour: string;
-  events: SystemChangeEvent[];
+  events: SystemChange[];
   summary: {
     critical: number;
     warning: number;
@@ -36,7 +36,7 @@ export interface SystemChangeGroup {
 }
 
 export interface SystemChangesTimelineData {
-  events: SystemChangeEvent[];
+  events: SystemChange[];
   groups: SystemChangeGroup[];
   statistics: {
     total: number;
