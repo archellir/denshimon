@@ -3,6 +3,7 @@ import { Rocket, RotateCcw, Trash2, Scale } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
 import CustomDialog from '@components/common/CustomDialog';
+import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
 
 interface DeploymentsTabProps {
@@ -145,12 +146,13 @@ const DeploymentsTab = ({
           <p className="text-gray-300 mb-4 font-mono text-sm">
             Initialize application deployment sequence using GitOps protocol.
           </p>
-          <button
+          <CustomButton
+            label="DEPLOY APPLICATION"
+            icon={Rocket}
             onClick={() => setShowDeployModal?.(true)}
-            className="px-6 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm uppercase tracking-wider"
-          >
-            Deploy Application
-          </button>
+            color="green"
+            className="w-auto px-6"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -168,24 +170,26 @@ const DeploymentsTab = ({
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button
+                  <CustomButton
+                    label="SCALE"
                     onClick={() => handleScale(deployment)}
-                    className="px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm tracking-wider"
-                  >
-                    SCALE
-                  </button>
-                  <button
+                    color="blue"
+                    className="w-auto px-3 py-1"
+                  />
+                  <CustomButton
+                    label=""
+                    icon={RotateCcw}
                     onClick={() => handleRestart(deployment)}
-                    className="px-3 py-1 border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black transition-colors font-mono text-sm"
-                  >
-                    <RotateCcw size={14} />
-                  </button>
-                  <button
+                    color="yellow"
+                    className="w-auto px-3 py-1"
+                  />
+                  <CustomButton
+                    label=""
+                    icon={Trash2}
                     onClick={() => handleDelete(deployment)}
-                    className="px-3 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-sm"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                    color="red"
+                    className="w-auto px-3 py-1"
+                  />
                 </div>
               </div>
               <div className="text-sm text-gray-300 font-mono">

@@ -30,14 +30,16 @@ const CustomButton: FC<CustomButtonProps> = ({
     return colorMap[color as keyof typeof colorMap] || colorMap.white;
   };
 
+  const isIconOnly = !label || label === '';
+  
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${getColorClasses(color)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`flex items-center ${isIconOnly ? '' : 'space-x-2'} ${isIconOnly ? 'px-2' : 'px-4'} py-2 border font-mono text-xs transition-all ${isIconOnly ? 'w-auto' : 'w-28'} justify-center ${getColorClasses(color)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
     >
       {Icon && <Icon size={16} />}
-      <span>{label}</span>
+      {!isIconOnly && <span>{label}</span>}
     </button>
   );
 };
