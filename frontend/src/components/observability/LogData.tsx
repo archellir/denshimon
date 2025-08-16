@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Package, AlertCircle, Info, AlertTriangle, Bug, Layers, FileText, Globe, Download } from 'lucide-react';
+import { Package, AlertCircle, Info, AlertTriangle, Bug, Layers, FileText, Globe } from 'lucide-react';
 import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';
@@ -114,39 +114,12 @@ const LogData: React.FC = () => {
     setSelectedNamespace('all');
   };
 
-  const exportLogs = () => {
-    const csvContent = [
-      'Timestamp,Level,Source,Namespace,User,Action,Message,Metadata',
-      ...filteredLogs.map(log => 
-        `"${log.timestamp}","${log.level}","${log.source}","${log.metadata?.namespace || ''}","${log.user || ''}","${log.action || ''}","${log.message}","${JSON.stringify(log.metadata || {})}"`
-      )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `log-data-${new Date().toISOString().split('T')[0]}.csv`);
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   const uniqueSources = Array.from(new Set(logs.map(log => log.source))).sort();
   const uniqueNamespaces = Array.from(new Set(logs.map(log => log.metadata?.namespace || 'default'))).sort();
 
   return (
     <div className="space-y-6">
-      {/* Export Button Only */}
-      <div className="flex justify-end">
-        <button
-          onClick={exportLogs}
-          disabled={filteredLogs.length === 0}
-          className="flex items-center space-x-2 px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Download size={16} />
-          <span>EXPORT CSV</span>
-        </button>
-      </div>
 
       {/* Log Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">

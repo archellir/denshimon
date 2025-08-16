@@ -572,6 +572,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <span className="text-sm font-mono opacity-60">
                   1.2K ENTRIES
                 </span>
+                <div className={`flex items-center space-x-1 px-2 py-1 border font-mono text-xs ${
+                  isConnected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'
+                }`}>
+                  <span>{isConnected ? 'LIVE' : 'OFFLINE'}</span>
+                </div>
                 <button
                   onClick={() => {
                     // Export logs functionality
