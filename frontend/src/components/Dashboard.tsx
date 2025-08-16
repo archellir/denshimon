@@ -7,6 +7,7 @@ import StatCard from '@components/common/StatCard';
 import GlobalSearch from '@components/common/GlobalSearch';
 import CustomSelector from '@components/common/CustomSelector';
 import ConnectionStatus from '@components/common/ConnectionStatus';
+import CustomButton from '@components/common/CustomButton';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import useDeploymentStore from '@stores/deploymentStore';
 import useDatabaseStore from '@stores/databaseStore';
@@ -567,7 +568,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             return (
               <div className="flex items-center space-x-2">
                 <ConnectionStatus isConnected={isConnected} />
-                <button
+                <CustomButton
+                  label="EXPORT"
+                  icon={Download}
+                  color="blue"
                   onClick={() => {
                     // Export logs functionality
                     const timestamp = new Date().toISOString().split('T')[0];
@@ -591,11 +595,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className="flex items-center space-x-1 px-2 py-1 border border-white hover:bg-white hover:text-black transition-colors font-mono text-xs"
-                >
-                  <Download size={12} />
-                  <span>EXPORT</span>
-                </button>
+                />
               </div>
             );
           case ObservabilityTab.LIVE_STREAMS:
