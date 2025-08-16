@@ -855,7 +855,10 @@ export enum WebSocketEventType {
   REPOSITORY_SYNC = 'repository_sync',
   APPLICATION_SYNC = 'application_sync',
   GIT_OPERATION = 'git_operation',
-  DEPLOYMENT_STATUS = 'deployment_status'
+  DEPLOYMENT_STATUS = 'deployment_status',
+  // Service Health events
+  SERVICE_HEALTH = 'service_health',
+  SERVICE_HEALTH_STATS = 'service_health_stats'
 }
 
 // GITEA ENUMS
