@@ -8,13 +8,15 @@ import (
 	"time"
 
 	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/internal/prometheus"
 	corev1 "k8s.io/api/core/v1"
 	metricsclient "k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
 type Service struct {
-	k8sClient     *k8s.Client
-	metricsClient metricsclient.Interface
+	k8sClient         *k8s.Client
+	metricsClient     metricsclient.Interface
+	prometheusService *prometheus.Service
 }
 
 type ClusterMetrics struct {
@@ -107,6 +109,11 @@ func NewService(k8sClient *k8s.Client) *Service {
 			slog.Warn("Failed to create metrics client", "error", err)
 		}
 	}
+
+	// Initialize Prometheus service
+	// Try cluster-internal service first, fallback to localhost for development
+	prometheusURL := "http://prometheus-service.monitoring.svc.cluster.local:9090"
+	s.prometheusService = prometheus.NewService(prometheusURL)
 
 	return s
 }
@@ -225,9 +232,71 @@ func (s *Service) GetPodMetrics(ctx context.Context, namespace, podName string) 
 }
 
 func (s *Service) GetMetricsHistory(ctx context.Context, duration time.Duration) (*MetricsHistory, error) {
-	// Frontend handles mock data
-	// In production, this would query a metrics database like Prometheus
-	return nil, errors.New("metrics history not available - use frontend mock data")
+	if s.prometheusService == nil || !s.prometheusService.IsHealthy(ctx) {
+		// Fallback to mock data if Prometheus is not available
+		return nil, errors.New("prometheus not available - use frontend mock data")
+	}
+
+	// Get cluster metrics from Prometheus
+	clusterMetrics, err := s.prometheusService.GetClusterMetrics(ctx, duration)
+	if err != nil {
+		slog.Warn("Failed to get cluster metrics from Prometheus", "error", err)
+		return nil, errors.New("prometheus query failed - use frontend mock data")
+	}
+
+	// Convert prometheus metrics to our format
+	history := &MetricsHistory{
+		CPU:    make([]TimeSeriesData, len(clusterMetrics.CPUUsage)),
+		Memory: make([]TimeSeriesData, len(clusterMetrics.MemoryUsage)),
+		Pods:   make([]TimeSeriesData, len(clusterMetrics.PodCounts)),
+		Nodes:  make([]TimeSeriesData, len(clusterMetrics.NodeCounts)),
+	}
+
+	for i, point := range clusterMetrics.CPUUsage {
+		history.CPU[i] = TimeSeriesData{
+			Timestamp: point.Timestamp,
+			Value:     point.Value,
+		}
+	}
+
+	for i, point := range clusterMetrics.MemoryUsage {
+		history.Memory[i] = TimeSeriesData{
+			Timestamp: point.Timestamp,
+			Value:     point.Value,
+		}
+	}
+
+	for i, point := range clusterMetrics.PodCounts {
+		history.Pods[i] = TimeSeriesData{
+			Timestamp: point.Timestamp,
+			Value:     point.Value,
+		}
+	}
+
+	for i, point := range clusterMetrics.NodeCounts {
+		history.Nodes[i] = TimeSeriesData{
+			Timestamp: point.Timestamp,
+			Value:     point.Value,
+		}
+	}
+
+	return history, nil
+}
+
+func (s *Service) GetNetworkMetrics(ctx context.Context, duration time.Duration) (*prometheus.NetworkMetrics, error) {
+	if s.prometheusService == nil || !s.prometheusService.IsHealthy(ctx) {
+		return nil, errors.New("prometheus not available - use frontend mock data")
+	}
+
+	return s.prometheusService.GetNetworkMetrics(ctx, duration)
+}
+
+func (s *Service) GetStorageMetrics(ctx context.Context) (*prometheus.StorageMetrics, error) {
+	if s.prometheusService == nil || !s.prometheusService.IsHealthy(ctx) {
+		return nil, errors.New("prometheus not available - use frontend mock data")
+	}
+
+	return s.prometheusService.GetStorageMetrics(ctx)
 }
 
 func (s *Service) isNodeReady(node corev1.Node) bool {
