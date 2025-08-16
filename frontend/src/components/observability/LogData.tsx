@@ -12,6 +12,14 @@ import {
 } from '@constants';
 import CustomSelector from '@components/common/CustomSelector';
 import StatCard from '@components/common/StatCard';
+import { 
+  getLogLevelIcon, 
+  getLogLevelColor, 
+  filterLogs, 
+  getUniqueLogSources, 
+  getUniqueLogNamespaces,
+  formatLogTimestampDisplay
+} from '@utils/logUtils';
 
 const LogData: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -66,48 +74,9 @@ const LogData: React.FC = () => {
 
   // Filter logs
   const filteredLogs = useMemo(() => {
-    return logs.filter(log => {
-      const matchesLevel = selectedLevel === 'all' || log.level === selectedLevel;
-      const matchesSource = selectedSource === 'all' || log.source === selectedSource;
-      
-      // Extract namespace from metadata if available
-      const logNamespace = log.metadata?.namespace || 'default';
-      const matchesNamespace = selectedNamespace === 'all' || logNamespace === selectedNamespace;
-      
-      return matchesLevel && matchesSource && matchesNamespace;
-    });
+    return filterLogs(logs, selectedLevel, selectedSource, selectedNamespace);
   }, [logs, selectedLevel, selectedSource, selectedNamespace]);
 
-  const getLevelIcon = (level: LogLevel) => {
-    switch (level) {
-      case LogLevel.ERROR: return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case LogLevel.WARN: return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case LogLevel.INFO: return <Info className="w-4 h-4 text-blue-500" />;
-      case LogLevel.DEBUG: return <Bug className="w-4 h-4 text-gray-500" />;
-      default: return null;
-    }
-  };
-
-  const getLogLevelColor = (level: LogLevel) => {
-    switch (level) {
-      case LogLevel.ERROR: return 'text-red-400 border-red-400 bg-red-900/10';
-      case LogLevel.WARN: return 'text-yellow-400 border-yellow-400 bg-yellow-900/10';
-      case LogLevel.INFO: return 'text-blue-400 border-blue-400 bg-blue-900/10';
-      case LogLevel.DEBUG: return 'text-gray-400 border-gray-400 bg-gray-900/10';
-      default: return 'text-white border-white bg-white/5';
-    }
-  };
-
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-  };
 
 
   const clearFilters = () => {
@@ -117,8 +86,8 @@ const LogData: React.FC = () => {
   };
 
 
-  const uniqueSources = Array.from(new Set(logs.map(log => log.source))).sort();
-  const uniqueNamespaces = Array.from(new Set(logs.map(log => log.metadata?.namespace || 'default'))).sort();
+  const uniqueSources = getUniqueLogSources(logs);
+  const uniqueNamespaces = getUniqueLogNamespaces(logs);
 
   return (
     <div className="space-y-6">
@@ -269,11 +238,11 @@ const LogData: React.FC = () => {
                   'border-l-transparent'
                 }`}>
                   <div className="flex items-start space-x-3">
-                    {getLevelIcon(log.level)}
+                    {getLogLevelIcon(log.level)}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className="font-mono text-xs text-gray-400">
-                          {formatTimestamp(log.timestamp)}
+                          {formatLogTimestampDisplay(log.timestamp)}
                         </span>
                         <span className={`font-mono text-xs px-2 py-1 border ${getLogLevelColor(log.level)}`}>
                           {log.level.toUpperCase()}
