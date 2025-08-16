@@ -133,9 +133,8 @@ const DeploymentsTab = ({
   };
 
   return (
-    <div className="h-full overflow-hidden">
-      <div className="h-full overflow-y-auto">
-        {loading.deployments ? (
+    <div className="h-full overflow-y-auto">
+      {loading.deployments ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <SkeletonLoader variant="card" count={4} />
         </div>
@@ -201,8 +200,7 @@ const DeploymentsTab = ({
             </div>
           ))}
         </div>
-        )}
-      </div>
+      )}
 
       <DeploymentModal
         isOpen={showDeployModal}

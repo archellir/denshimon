@@ -68,7 +68,7 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
   };
 
   return (
-    <div>
+    <div className="h-full overflow-hidden">
       {renderTabContent()}
     </div>
   );
