@@ -9,7 +9,7 @@ import { Status } from '@constants';
 
 interface DatabaseGridProps {
   onAddConnection: () => void;
-  onUseConnection: (id: string) => void;
+  onUseConnection: (connectionId: string) => void;
 }
 
 const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection }) => {
