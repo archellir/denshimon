@@ -112,7 +112,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
         <div className="border border-white p-4 h-96">
           <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
-            {!metricsHistory ? (
+            {!metricsHistory || !metricsHistory.cpu || !Array.isArray(metricsHistory.cpu) ? (
               <div className="h-full bg-white/5 animate-pulse rounded flex items-end justify-around p-4">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div 
