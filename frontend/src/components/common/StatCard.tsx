@@ -8,7 +8,7 @@ export interface StatCardProps {
   value: string;
   icon: LucideIcon;
   status: StatusType;
-  variant?: 'default' | 'compact' | 'minimal' | 'service-health';
+  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered';
   className?: string;
   onClick?: () => void;
   trend?: {
@@ -42,21 +42,24 @@ const StatCard: FC<StatCardProps> = ({
     default: 'pl-5 pr-4 py-3',
     compact: 'pl-4 pr-3 py-2',
     minimal: 'pl-3 pr-2 py-1.5',
-    'service-health': 'p-4'
+    'service-health': 'p-4',
+    centered: 'p-3 text-center'
   };
 
   const valueClasses = {
     default: 'text-base',
     compact: 'text-sm',
     minimal: 'text-xs',
-    'service-health': 'text-2xl'
+    'service-health': 'text-2xl',
+    centered: 'text-lg'
   };
 
   const labelClasses = {
     default: 'text-xs',
     compact: 'text-xs',
     minimal: 'text-xs',
-    'service-health': 'text-sm'
+    'service-health': 'text-sm',
+    centered: 'text-xs'
   };
 
   const iconSizes = {
@@ -144,6 +147,21 @@ const StatCard: FC<StatCardProps> = ({
           </div>
           <StatusIcon status={status} size={statusIconSizes.minimal} />
         </div>
+      </div>
+    );
+  }
+
+  if (variant === 'centered') {
+    return (
+      <div 
+        className={`${baseClasses} ${variantClasses.centered} ${clickableClasses} ${className}`}
+        onClick={onClick}
+      >
+        <div className={`${valueClasses.centered} font-mono`}>{value}</div>
+        <div className={`${labelClasses.centered} font-mono opacity-60`}>{label}</div>
+        {description && (
+          <div className="text-xs font-mono opacity-40">{description}</div>
+        )}
       </div>
     );
   }

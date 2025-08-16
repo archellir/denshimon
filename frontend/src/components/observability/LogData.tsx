@@ -7,9 +7,11 @@ import {
   LogLevel, 
   UI_LABELS, 
   UI_MESSAGES,
-  API_ENDPOINTS 
+  API_ENDPOINTS,
+  Status 
 } from '@constants';
 import CustomSelector from '@components/common/CustomSelector';
+import StatCard from '@components/common/StatCard';
 
 const LogData: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -123,25 +125,53 @@ const LogData: React.FC = () => {
 
       {/* Log Stats */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div className="border border-white p-3 text-center">
-          <div className="text-lg font-mono">{filteredLogs.length}</div>
-          <div className="text-xs font-mono opacity-60">{UI_LABELS.CONTAINER_LOGS}</div>
-        </div>
+        <StatCard
+          label={UI_LABELS.CONTAINER_LOGS}
+          value={filteredLogs.length.toString()}
+          icon={FileText}
+          status={Status.HEALTHY}
+          variant="centered"
+        />
         {([LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO, LogLevel.DEBUG] as const).map(level => {
           const count = filteredLogs.filter(log => log.level === level).length;
           const percentage = filteredLogs.length > 0 ? ((count / filteredLogs.length) * 100).toFixed(1) : '0';
+          const getIconForLevel = (level: LogLevel) => {
+            switch (level) {
+              case LogLevel.ERROR: return AlertCircle;
+              case LogLevel.WARN: return AlertTriangle;
+              case LogLevel.INFO: return Info;
+              case LogLevel.DEBUG: return Bug;
+              default: return Info;
+            }
+          };
+          const getStatusForLevel = (level: LogLevel) => {
+            switch (level) {
+              case LogLevel.ERROR: return Status.CRITICAL;
+              case LogLevel.WARN: return Status.WARNING;
+              case LogLevel.INFO: return Status.INFO;
+              case LogLevel.DEBUG: return Status.INFO;
+              default: return Status.HEALTHY;
+            }
+          };
           return (
-            <div key={level} className={`border p-3 text-center ${getLogLevelColor(level)}`}>
-              <div className="text-lg font-mono">{count}</div>
-              <div className="text-xs font-mono opacity-60">{level.toUpperCase()}</div>
-              <div className="text-xs font-mono opacity-40">{percentage}%</div>
-            </div>
+            <StatCard
+              key={level}
+              label={level.toUpperCase()}
+              value={count.toString()}
+              icon={getIconForLevel(level)}
+              status={getStatusForLevel(level)}
+              variant="centered"
+              description={`${percentage}%`}
+            />
           );
         })}
-        <div className="border border-white p-3 text-center">
-          <div className="text-lg font-mono">{uniqueSources.length}</div>
-          <div className="text-xs font-mono opacity-60">{UI_LABELS.CONTAINER_SERVICES}</div>
-        </div>
+        <StatCard
+          label={UI_LABELS.CONTAINER_SERVICES}
+          value={uniqueSources.length.toString()}
+          icon={Globe}
+          status={Status.HEALTHY}
+          variant="centered"
+        />
       </div>
 
       {/* Filters */}
