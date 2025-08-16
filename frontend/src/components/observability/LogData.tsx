@@ -19,7 +19,7 @@ import {
   getUniqueLogSources, 
   getUniqueLogNamespaces,
   formatLogTimestampDisplay
-} from '@utils/logUtils';
+} from '@utils/log';
 
 const LogData: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);

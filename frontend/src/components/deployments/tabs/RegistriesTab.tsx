@@ -2,7 +2,7 @@ import { useState, type FC } from 'react';
 import { Trash2, TestTube, Package } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import RegistryForm from '../forms/RegistryForm';
-import { getRegistryStatusColor, getRegistryStatusIcon } from '@utils/statusUtils';
+import { getRegistryStatusColor, getRegistryStatusIcon } from '@utils/status';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import SkeletonLoader from '@components/common/SkeletonLoader';

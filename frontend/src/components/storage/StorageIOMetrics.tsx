@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TimeRange } from '@constants';
-import { getDataPointsForTimeRange } from '@utils/timeUtils';
+import { getDataPointsForTimeRange } from '@utils/time';
 import { HardDrive, Database, Activity, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import SkeletonLoader from '@components/common/SkeletonLoader';

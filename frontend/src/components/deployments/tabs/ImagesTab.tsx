@@ -2,7 +2,7 @@ import { useEffect, useState, type FC } from 'react';
 import { Package, Play } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { ContainerImage } from '@/types';
-import { formatBytes } from '@utils/formatUtils';
+import { formatBytes } from '@utils/format';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
 import SkeletonLoader from '@components/common/SkeletonLoader';

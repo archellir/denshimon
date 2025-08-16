@@ -1,8 +1,8 @@
 import { useState, type FC } from 'react';
 import { Copy } from 'lucide-react';
 import { QueryResult } from '@/types/database';
-import { getCellId, getColumnWidth } from '@utils/tableUtils';
-import { truncateText } from '@utils/formatUtils';
+import { getCellId, getColumnWidth } from '@utils/table';
+import { truncateText } from '@utils/format';
 
 interface QueryResultsTableProps {
   queryResults: QueryResult;

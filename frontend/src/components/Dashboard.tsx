@@ -23,7 +23,7 @@ import {
   generateDatabaseStats,
   generateObservabilityStats,
   type QuickStat
-} from '@utils/quickStatsUtils';
+} from '@utils/quickStats';
 import ClusterOverview from '@components/metrics/ClusterOverview';
 import WorkloadsOverview from '@components/metrics/WorkloadsOverview';
 import HealthDashboard from '@components/metrics/HealthDashboard';

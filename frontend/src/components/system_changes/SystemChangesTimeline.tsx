@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { parseTimeRangeToHours } from '@utils/timeUtils';
+import { parseTimeRangeToHours } from '@utils/time';
 import { 
   getSeverityIcon, 
   getCategoryIcon, 
@@ -7,7 +7,7 @@ import {
   formatTimeAgo,
   groupSystemChangesByHour,
   filterSystemChanges
-} from '@utils/systemChangesUtils';
+} from '@utils/systemChanges';
 import { SystemChangesTimelineData } from '@/types/systemChangesTimeline';
 import { generateSystemChangesTimelineData } from '@mocks/system_changes/timeline';
 import { MOCK_ENABLED } from '@mocks/index';

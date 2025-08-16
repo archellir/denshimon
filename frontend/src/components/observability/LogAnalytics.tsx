@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TimeRange, API_ENDPOINTS, Status } from '@constants';
 import StatCard from '@components/common/StatCard';
 import { MOCK_ENABLED } from '@/mocks';
-import { getTrendColor, getTrendIcon, generateMockAnalyticsMetrics, ANALYTICS_COLORS } from '@utils/analyticsUtils';
+import { getTrendColor, getTrendIcon, generateMockAnalyticsMetrics, ANALYTICS_COLORS } from '@utils/analytics';
 
 interface LogAnalyticsProps {
   timeRange?: string;

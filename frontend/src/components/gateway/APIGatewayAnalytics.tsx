@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TimeRange, Status, ConnectionStatus, HttpMethod } from '@constants';
-import { getDataPointsForTimeRange } from '@utils/timeUtils';
+import { getDataPointsForTimeRange } from '@utils/time';
 import { Globe, Activity, AlertTriangle, Clock, Users, Lock, Unlock } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 

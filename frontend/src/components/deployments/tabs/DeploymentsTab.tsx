@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Rocket, RotateCcw, Trash2, Scale } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 import { Deployment } from '@/types/deployments';
-import { getDeploymentStatusColor } from '@utils/statusUtils';
+import { getDeploymentStatusColor } from '@utils/status';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';

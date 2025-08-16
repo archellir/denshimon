@@ -30,8 +30,8 @@ import CustomCheckbox from '@components/common/CustomCheckbox';
 import QueryResultsTable from './QueryResultsTable';
 import ConfirmDialog from '@components/common/ConfirmDialog';
 import { mockQueryHistory } from '@mocks/database/queries';
-import { exportQueryResultsToCSV } from '@utils/csvUtils';
-import { copyWithNotification, createNotificationHandler } from '@utils/clipboardUtils';
+import { exportQueryResultsToCSV } from '@utils/csv';
+import { copyWithNotification, createNotificationHandler } from '@utils/clipboard';
 import { 
   filterConnections, 
   generateDatabaseKey, 
@@ -39,7 +39,7 @@ import {
   formatConnectionOptions,
   saveLastDatabaseConnection,
   getLastDatabaseConnection
-} from '@utils/databaseUtils';
+} from '@utils/database';
 
 type ExplorerTab = 'schema' | 'data' | 'query' | 'saved';
 
