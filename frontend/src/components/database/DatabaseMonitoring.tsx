@@ -17,6 +17,7 @@ import {
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
 import { mockDatabaseStats } from '@mocks/database';
+import useWebSocket from '@hooks/useWebSocket';
 import CustomSelector from '@components/common/CustomSelector';
 
 interface MetricCard {
@@ -31,25 +32,37 @@ const DatabaseMonitoring: FC = () => {
   const {
     connections,
     stats,
-    fetchConnections,
-    fetchStats
+    fetchConnections
   } = useDatabaseStore();
 
   const [selectedConnection, setSelectedConnection] = useState<string>('');
-  const [refreshInterval, setRefreshInterval] = useState<number>(30);
-  const [_, setLastRefresh] = useState<Date>(new Date());
+  const [realTimeStats, setRealTimeStats] = useState<any>(null);
+  const [, setDatabases] = useState<any[]>([]);
+
+  // WebSocket integration for real-time database updates
+  const { lastMessage, isConnected } = useWebSocket();
 
   useEffect(() => {
     fetchConnections();
   }, [fetchConnections]);
 
+  // Handle WebSocket messages for database updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLastRefresh(new Date());
-    }, refreshInterval * 1000);
-
-    return () => clearInterval(interval);
-  }, [refreshInterval]);
+    if (lastMessage && lastMessage.data) {
+      try {
+        const messageData = typeof lastMessage.data === 'string' ? JSON.parse(lastMessage.data) : lastMessage.data;
+        
+        if (messageData.type === 'database_stats') {
+          setRealTimeStats(messageData.data.stats);
+          // setStats is not available, we'll use realTimeStats directly
+        } else if (messageData.type === 'database') {
+          setDatabases(messageData.data.databases || []);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    }
+  }, [lastMessage]);
 
 
   const connectedConnections = connections.filter(conn => 
@@ -57,7 +70,8 @@ const DatabaseMonitoring: FC = () => {
   );
 
   const selectedConnectionObj = connectedConnections.find(c => c.id === selectedConnection);
-  const currentStats = stats || (selectedConnection ? mockDatabaseStats[selectedConnection] : null);
+  // Prioritize real-time WebSocket data, fallback to store data or mock data
+  const currentStats = realTimeStats || stats || (selectedConnection ? mockDatabaseStats[selectedConnection] : null);
 
   const getMetricCards = (): MetricCard[] => {
     if (!currentStats) return [];
@@ -144,31 +158,11 @@ const DatabaseMonitoring: FC = () => {
             }))}
             onChange={(value) => {
               setSelectedConnection(value);
-              if (value) {
-                fetchStats(value);
-              }
             }}
             placeholder="Select Connection to Monitor"
             icon={Zap}
             size="md"
             className="min-w-72"
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <label className="font-mono text-sm">REFRESH INTERVAL:</label>
-          <CustomSelector
-            value={refreshInterval.toString()}
-            options={[
-              { value: '10', label: '10s' },
-              { value: '30', label: '30s' },
-              { value: '60', label: '1m' },
-              { value: '300', label: '5m' }
-            ]}
-            onChange={(value) => setRefreshInterval(parseInt(value))}
-            icon={Clock}
-            size="sm"
-            variant="compact"
-            className="min-w-20"
           />
         </div>
       </div>
@@ -333,9 +327,8 @@ const DatabaseMonitoring: FC = () => {
           <div className="flex justify-center space-x-4">
             <button 
               onClick={() => {
-                if (selectedConnection) {
-                  fetchStats(selectedConnection);
-                }
+                // Real-time metrics are automatically updated via WebSocket
+                console.log('Real-time metrics are displayed above');
               }}
               className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
             >
