@@ -19,6 +19,7 @@ import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
 import { mockQueryHistory } from '@mocks/database';
 import CustomSelector from '@components/common/CustomSelector';
+import CustomButton from '@components/common/CustomButton';
 
 const SQLQueryInterface: FC = () => {
   const {
@@ -128,6 +129,8 @@ const SQLQueryInterface: FC = () => {
             size="md"
             className="min-w-64"
           />
+        </div>
+        <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <label className="font-mono text-sm">LIMIT:</label>
             <input
@@ -139,24 +142,20 @@ const SQLQueryInterface: FC = () => {
               max="10000"
             />
           </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
+          <CustomButton
+            label="HISTORY"
+            icon={History}
             onClick={() => setShowHistory(!showHistory)}
-            className={`flex items-center space-x-2 px-3 py-2 border font-mono text-sm transition-colors ${
-              showHistory ? 'bg-white text-black' : 'border-white hover:bg-white/10'
-            }`}
-          >
-            <History size={16} />
-            <span>HISTORY</span>
-          </button>
-          <button
+            color={showHistory ? "white" : "gray"}
+            className="w-auto"
+          />
+          <CustomButton
+            label="FULLSCREEN"
+            icon={Maximize2}
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="flex items-center space-x-2 px-3 py-2 border border-white hover:bg-white/10 transition-colors font-mono text-sm"
-          >
-            <Maximize2 size={16} />
-            <span>FULLSCREEN</span>
-          </button>
+            color="white"
+            className="w-auto"
+          />
         </div>
       </div>
 
@@ -173,16 +172,16 @@ const SQLQueryInterface: FC = () => {
                   value={queryName}
                   onChange={(e) => setQueryName(e.target.value)}
                   placeholder="Query name..."
-                  className="bg-black border border-white px-2 py-1 font-mono text-xs w-32 focus:outline-none focus:border-green-400"
+                  className="bg-black border border-white px-2 py-2 font-mono text-xs w-32 focus:outline-none focus:border-green-400"
                 />
-                <button
+                <CustomButton
+                  label="SAVE"
+                  icon={Save}
                   onClick={handleSaveQuery}
                   disabled={!queryName.trim() || !sqlQuery.trim()}
-                  className="flex items-center space-x-1 px-2 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs disabled:opacity-50"
-                >
-                  <Save size={12} />
-                  <span>SAVE</span>
-                </button>
+                  color="green"
+                  className="w-auto px-2 py-1 text-xs"
+                />
               </div>
             </div>
             
@@ -198,34 +197,30 @@ SELECT * FROM users LIMIT 10;"
             
             <div className="flex items-center justify-between">
               <div className="flex space-x-2">
-                <button
+                <CustomButton
+                  label="EXECUTE"
+                  icon={isLoading ? Activity : Play}
                   onClick={handleExecuteQuery}
                   disabled={!selectedConnection || !sqlQuery.trim() || isLoading}
-                  className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <Activity size={16} className="animate-spin" />
-                  ) : (
-                    <Play size={16} />
-                  )}
-                  <span>EXECUTE</span>
-                </button>
-                <button
+                  color="green"
+                  className="w-auto px-4 py-2"
+                />
+                <CustomButton
+                  label="CLEAR"
                   onClick={() => {
                     setSqlQuery('');
                     clearQueryResults();
                   }}
-                  className="px-4 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
-                >
-                  CLEAR
-                </button>
-                <button
+                  color="white"
+                  className="w-auto px-4 py-2"
+                />
+                <CustomButton
+                  label="COPY"
+                  icon={Copy}
                   onClick={() => copyToClipboard(sqlQuery)}
-                  className="flex items-center space-x-1 px-3 py-2 border border-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
-                >
-                  <Copy size={16} />
-                  <span>COPY</span>
-                </button>
+                  color="white"
+                  className="w-auto px-3 py-2"
+                />
               </div>
               
               {queryResults && (

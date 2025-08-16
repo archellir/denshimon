@@ -132,15 +132,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ clusterMetrics: response.data });
           }
         } catch (error) {
-          // Fallback to mock data on error
-          try {
-            const mockData = await mockApiResponse(mockClusterMetrics);
-            set({ clusterMetrics: mockData, error: null });
-          } catch (mockError) {
-            set({ error: 'Failed to fetch cluster metrics' });
-          }
-        } finally {
-          set({ isLoading: false });
+          set({ error: 'Failed to fetch cluster metrics', isLoading: false });
         }
       },
       
@@ -156,13 +148,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ nodeMetrics: response.data.nodes || response.data || [] });
           }
         } catch (error) {
-          // Fallback to mock data on error
-          try {
-            const mockData = await mockApiResponse(mockNodes);
-            set({ nodeMetrics: mockData, error: null });
-          } catch (mockError) {
-            set({ error: 'Failed to fetch node metrics' });
-          }
+          set({ error: 'Failed to fetch node metrics' });
         }
       },
       
@@ -178,13 +164,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ podMetrics: response.data.pods || response.data || [] });
           }
         } catch (error) {
-          // Fallback to mock data on error
-          try {
-            const mockData = await mockApiResponse(mockPods);
-            set({ podMetrics: mockData, error: null });
-          } catch (mockError) {
-            set({ error: 'Failed to fetch pod metrics' });
-          }
+          set({ error: 'Failed to fetch pod metrics' });
         }
       },
       
@@ -200,13 +180,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ namespaceMetrics: response.data.namespaces || response.data || [] });
           }
         } catch (error) {
-          // Fallback to mock data on error
-          try {
-            const mockData = await mockApiResponse(mockNamespaces);
-            set({ namespaceMetrics: mockData, error: null });
-          } catch (mockError) {
-            set({ error: 'Failed to fetch namespace metrics' });
-          }
+          set({ error: 'Failed to fetch namespace metrics' });
         }
       },
       
@@ -236,15 +210,7 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
             set({ metricsHistory: response.data });
           }
         } catch (error) {
-          // Fallback to mock data on error
-          try {
-            const mockData = await mockApiResponse(generateMockMetricsHistory(timeRange));
-            set({ metricsHistory: mockData, error: null });
-          } catch (mockError) {
-            set({ error: 'Failed to fetch metrics history' });
-          }
-        } finally {
-          set({ isLoadingHistory: false });
+          set({ error: 'Failed to fetch metrics history', isLoadingHistory: false });
         }
       },
       
