@@ -18,6 +18,7 @@ export {
   mockColumns,
   mockQueryResults,
   mockQueryHistory,
+  mockSavedQueries,
   mockDatabaseStats,
   mockTestResults,
   mockSupportedTypes
