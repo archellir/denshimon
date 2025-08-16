@@ -12,7 +12,6 @@ import {
   FileText,
   Copy,
   Download,
-  Settings,
   Activity,
   Hash,
   Key,
@@ -30,6 +29,7 @@ import CustomSelector from '@components/common/CustomSelector';
 import CustomButton from '@components/common/CustomButton';
 import CustomCheckbox from '@components/common/CustomCheckbox';
 import QueryResultsTable from './QueryResultsTable';
+import ConfirmDialog from '@components/common/ConfirmDialog';
 import { mockQueryHistory } from '@mocks/database/queries';
 
 type ExplorerTab = 'schema' | 'data' | 'query' | 'saved';
@@ -78,6 +78,8 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   const [queryLimit, setQueryLimit] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showHistory, setShowHistory] = useState<boolean>(false);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; queryId: string | null }>({ open: false, queryId: null });
 
   useEffect(() => {
     fetchConnections();
@@ -170,6 +172,55 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    setCopySuccess('Copied to clipboard!');
+    setTimeout(() => setCopySuccess(null), 2000);
+  };
+
+  const exportToCSV = () => {
+    if (!queryResults || !queryResults.columns || !queryResults.rows) {
+      setCopySuccess('No data to export');
+      setTimeout(() => setCopySuccess(null), 2000);
+      return;
+    }
+
+    // Create CSV content
+    const csvContent = [
+      // Header row
+      queryResults.columns.join(','),
+      // Data rows
+      ...queryResults.rows.map(row => 
+        row.map(cell => {
+          // Handle null values and escape quotes
+          if (cell === null) return '';
+          const cellStr = String(cell);
+          // If cell contains comma, quote, or newline, wrap in quotes and escape quotes
+          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join(',')
+      )
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `query_results_${timestamp}.csv`;
+    link.setAttribute('download', filename);
+    
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success message
+    setCopySuccess('CSV exported successfully!');
+    setTimeout(() => setCopySuccess(null), 2000);
   };
 
   const selectedConnectionObj = connections.find(c => c.id === selectedConnection);
@@ -501,10 +552,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             <CustomButton
               label="EXPORT CSV"
               icon={Download}
-              onClick={() => {
-                // Export functionality would go here
-                console.log('Export CSV functionality');
-              }}
+              onClick={exportToCSV}
               color="white"
               className="w-auto"
             />
@@ -673,22 +721,22 @@ SELECT * FROM users LIMIT 10;"
         <div className="space-y-2">
           {savedQueries.map((query) => (
             <div key={query.id} className="border border-white/20 p-3 hover:bg-white/5 transition-colors">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start gap-3">
                 <button
                   onClick={() => loadSavedQuery(query.sql)}
-                  className="text-left flex-1"
+                  className="text-left flex-1 min-w-0"
                 >
                   <div className="font-mono text-sm font-semibold">{query.name}</div>
-                  <div className="font-mono text-xs opacity-60 truncate mt-1">
-                    {query.sql.substring(0, 100)}...
+                  <div className="font-mono text-xs opacity-60 mt-1 break-words">
+                    {query.sql.length > 80 ? `${query.sql.substring(0, 80)}...` : query.sql}
                   </div>
                 </button>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 flex-shrink-0">
                   <CustomButton
                     icon={Copy}
                     onClick={() => copyToClipboard(query.sql)}
                     color="white"
-                    className="w-auto px-1 py-1"
+                    className="w-auto px-2 py-1 text-xs"
                     title="Copy SQL"
                   />
                   <CustomButton
@@ -698,30 +746,14 @@ SELECT * FROM users LIMIT 10;"
                       setActiveTab('query');
                     }}
                     color="green"
-                    className="w-auto px-1 py-1"
+                    className="w-auto px-2 py-1 text-xs"
                     title="Load Query"
                   />
                   <CustomButton
-                    icon={Settings}
-                    onClick={() => {
-                      // Settings functionality placeholder
-                      console.log('Query settings for:', query.id);
-                    }}
-                    color="white"
-                    className="w-auto px-1 py-1"
-                    title="Query Settings"
-                  />
-                  <CustomButton
                     icon={Trash2}
-                    onClick={async () => {
-                      try {
-                        await deleteSavedQuery(query.id);
-                      } catch (error) {
-                        console.error('Failed to delete query:', error);
-                      }
-                    }}
+                    onClick={() => setDeleteConfirmDialog({ open: true, queryId: query.id })}
                     color="red"
-                    className="w-auto px-1 py-1"
+                    className="w-auto px-2 py-1 text-xs"
                     title="Delete Query"
                   />
                 </div>
@@ -755,6 +787,36 @@ SELECT * FROM users LIMIT 10;"
     <div className={`h-full flex overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
       {!isFullscreen && renderLeftPanel()}
       {renderRightPanel()}
+      
+      {/* Copy Success Indicator */}
+      {copySuccess && (
+        <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded font-mono text-sm z-50">
+          {copySuccess}
+        </div>
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmDialog.open}
+        onClose={() => setDeleteConfirmDialog({ open: false, queryId: null })}
+        onConfirm={async () => {
+          if (deleteConfirmDialog.queryId) {
+            try {
+              await deleteSavedQuery(deleteConfirmDialog.queryId);
+              setDeleteConfirmDialog({ open: false, queryId: null });
+            } catch (error) {
+              console.error('Failed to delete query:', error);
+            }
+          }
+        }}
+        title="Delete Saved Query"
+        message="Are you sure you want to permanently delete this saved query? This action cannot be undone."
+        confirmLabel="DELETE"
+        confirmColor="red"
+        cancelLabel="CANCEL"
+        icon="danger"
+      />
+      
     </div>
   );
 };
