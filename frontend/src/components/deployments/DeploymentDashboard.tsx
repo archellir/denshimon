@@ -12,6 +12,8 @@ interface DeploymentDashboardProps {
   setShowDeployModal?: (show: boolean) => void;
   showAddRegistry?: boolean;
   setShowAddRegistry?: (show: boolean) => void;
+  selectedDeployment?: string;
+  setSelectedDeployment?: (deployment: string) => void;
 }
 
 const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ 
@@ -19,7 +21,9 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
   showDeployModal, 
   setShowDeployModal,
   showAddRegistry,
-  setShowAddRegistry
+  setShowAddRegistry,
+  selectedDeployment,
+  setSelectedDeployment
 }) => {
   const { fetchRegistries, fetchDeployments, fetchNodes } = useDeploymentStore();
 
@@ -57,7 +61,7 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
           />
         );
       case DeploymentsTabEnum.HISTORY:
-        return <HistoryTab />;
+        return <HistoryTab selectedDeployment={selectedDeployment} setSelectedDeployment={setSelectedDeployment} />;
       default:
         return <DeploymentsTab />;
     }

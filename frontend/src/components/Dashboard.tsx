@@ -82,6 +82,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   // Deployment management state
   const [showDeployModal, setShowDeployModal] = useState(false);
   const [showAddRegistry, setShowAddRegistry] = useState(false);
+  const [selectedDeployment, setSelectedDeployment] = useState<string>('');
   
   // Backup management state
   const [backupRefreshing, setBackupRefreshing] = useState(false);
@@ -315,6 +316,13 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   
   // Deployment store for secondary nav controls
   const deploymentStore = useDeploymentStore();
+  
+  // Create deployment options for history selector
+  const deploymentOptions = deploymentStore.deployments.map(deployment => ({
+    value: deployment.id,
+    label: deployment.name.toUpperCase(),
+    description: `${deployment.namespace} • ${deployment.replicas} replicas`
+  }));
   
   // Database store for secondary nav controls
   const { connections } = useDatabaseStore();
@@ -557,6 +565,25 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <Plus size={16} />
                 <span>ADD REGISTRY</span>
               </button>
+            );
+          case DeploymentsTab.HISTORY:
+            return (
+              <div className="flex items-center space-x-4">
+                <label className="text-sm font-mono text-gray-400 whitespace-nowrap">
+                  SELECT DEPLOYMENT:
+                </label>
+                <div className="max-w-md">
+                  <CustomSelector
+                    value={selectedDeployment}
+                    options={deploymentOptions}
+                    onChange={setSelectedDeployment}
+                    placeholder="Choose a deployment"
+                    icon={Package}
+                    variant="default"
+                    size="sm"
+                  />
+                </div>
+              </div>
             );
           default:
             return null;
@@ -878,6 +905,8 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
             setShowDeployModal={setShowDeployModal}
             showAddRegistry={showAddRegistry}
             setShowAddRegistry={setShowAddRegistry}
+            selectedDeployment={selectedDeployment}
+            setSelectedDeployment={setSelectedDeployment}
           />
         )}
         

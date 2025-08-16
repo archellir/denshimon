@@ -1,9 +1,13 @@
-import { useState, useEffect, type FC } from 'react';
+import { useEffect, type FC } from 'react';
 import { History, CheckCircle, XCircle, User, Calendar } from 'lucide-react';
 import useDeploymentStore from '@stores/deploymentStore';
 
-const HistoryTab: FC = () => {
-  const [selectedDeployment] = useState<string>('');
+interface HistoryTabProps {
+  selectedDeployment?: string;
+  setSelectedDeployment?: (deployment: string) => void;
+}
+
+const HistoryTab: FC<HistoryTabProps> = ({ selectedDeployment = '' }) => {
   const { 
     history, 
     loading,
@@ -48,7 +52,7 @@ const HistoryTab: FC = () => {
           <History size={48} className="mx-auto text-gray-400 mb-4" />
           <h3 className="text-lg font-mono mb-2">SELECT DEPLOYMENT</h3>
           <p className="text-gray-400">
-            Choose a deployment from the dropdown to view its history.
+            Choose a deployment from the dropdown in the secondary menu to view its history.
           </p>
         </div>
       ) : loading.history ? (
