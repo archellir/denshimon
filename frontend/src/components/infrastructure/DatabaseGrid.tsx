@@ -3,6 +3,8 @@ import type { FC } from 'react';
 import { Plus, Database, Eye, Trash2, Power, PowerOff, Settings, Activity } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import CustomButton from '@components/common/CustomButton';
+import ConfirmDialog from '@components/common/ConfirmDialog';
+import SkeletonLoader from '@components/common/SkeletonLoader';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus, DatabaseType } from '@/types/database';
 import { Status } from '@constants';
@@ -25,6 +27,21 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
   } = useDatabaseStore();
 
   const [connectingIds, setConnectingIds] = useState<Set<string>>(new Set());
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; connectionId: string; connectionName: string }>({
+    isOpen: false,
+    connectionId: '',
+    connectionName: ''
+  });
+  const [disconnectDialog, setDisconnectDialog] = useState<{ isOpen: boolean; connectionId: string; connectionName: string }>({
+    isOpen: false,
+    connectionId: '',
+    connectionName: ''
+  });
+  const [settingsDialog, setSettingsDialog] = useState<{ isOpen: boolean; connectionId: string; connectionName: string }>({
+    isOpen: false,
+    connectionId: '',
+    connectionName: ''
+  });
 
   useEffect(() => {
     fetchConnections();
@@ -93,9 +110,19 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this database connection?')) {
-      await deleteConnection(id);
-    }
+    await deleteConnection(id);
+  };
+
+  const openDeleteDialog = (id: string, name: string) => {
+    setDeleteDialog({ isOpen: true, connectionId: id, connectionName: name });
+  };
+
+  const openDisconnectDialog = (id: string, name: string) => {
+    setDisconnectDialog({ isOpen: true, connectionId: id, connectionName: name });
+  };
+
+  const openSettingsDialog = (id: string, name: string) => {
+    setSettingsDialog({ isOpen: true, connectionId: id, connectionName: name });
   };
 
   if (error) {
@@ -123,11 +150,8 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
     <div className="space-y-6">
       {/* Grid */}
       {isLoading && connections.length === 0 ? (
-        <div className="min-h-96 flex items-center justify-center">
-          <div className="flex items-center space-x-2 text-white font-mono">
-            <Activity className="animate-spin" size={20} />
-            <span>LOADING CONNECTIONS...</span>
-          </div>
+        <div className="min-h-96">
+          <SkeletonLoader variant="card" count={3} />
         </div>
       ) : connections.length === 0 ? (
         <div className="min-h-96 flex items-center justify-center">
@@ -199,7 +223,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                     {connection.status === DatabaseStatus.CONNECTED ? (
                       <CustomButton
                         icon={isConnecting ? Activity : PowerOff}
-                        onClick={() => handleDisconnect(connection.id)}
+                        onClick={() => openDisconnectDialog(connection.id, connection.name)}
                         disabled={isConnecting}
                         color="red"
                         className="w-auto px-1 py-1"
@@ -229,6 +253,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                   <div className="flex items-center space-x-1">
                     <CustomButton
                       icon={Settings}
+                      onClick={() => openSettingsDialog(connection.id, connection.name)}
                       color="white"
                       className="w-auto px-1 py-1"
                       title="Settings"
@@ -236,7 +261,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                     
                     <CustomButton
                       icon={Trash2}
-                      onClick={() => handleDelete(connection.id)}
+                      onClick={() => openDeleteDialog(connection.id, connection.name)}
                       color="red"
                       className="w-auto px-1 py-1"
                       title="Delete"
@@ -248,6 +273,43 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
           })}
         </div>
       )}
+
+      {/* Dialogs */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, connectionId: '', connectionName: '' })}
+        onConfirm={() => handleDelete(deleteDialog.connectionId)}
+        title="Delete Database Connection"
+        message={`Are you sure you want to delete the database connection "${deleteDialog.connectionName}"? This action cannot be undone.`}
+        confirmLabel="DELETE"
+        confirmColor="red"
+        icon="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={disconnectDialog.isOpen}
+        onClose={() => setDisconnectDialog({ isOpen: false, connectionId: '', connectionName: '' })}
+        onConfirm={() => handleDisconnect(disconnectDialog.connectionId)}
+        title="Disconnect Database"
+        message={`Are you sure you want to disconnect from "${disconnectDialog.connectionName}"? Any active queries will be terminated.`}
+        confirmLabel="DISCONNECT"
+        confirmColor="red"
+        icon="warning"
+      />
+
+      <ConfirmDialog
+        isOpen={settingsDialog.isOpen}
+        onClose={() => setSettingsDialog({ isOpen: false, connectionId: '', connectionName: '' })}
+        onConfirm={() => {
+          // Settings functionality placeholder
+          console.log('Open settings for:', settingsDialog.connectionId);
+        }}
+        title="Connection Settings"
+        message={`Configure settings for database connection "${settingsDialog.connectionName}".`}
+        confirmLabel="OPEN SETTINGS"
+        confirmColor="blue"
+        icon="warning"
+      />
     </div>
   );
 };
