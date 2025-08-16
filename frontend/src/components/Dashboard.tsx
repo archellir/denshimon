@@ -725,7 +725,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="bg-black text-white">
       {/* Tab Descriptions */}
       {showHelp && isSectionVisible(DASHBOARD_SECTIONS.SECONDARY_TABS) && (
         <div className="border-b border-white">

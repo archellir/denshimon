@@ -232,7 +232,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
 
   const timeRanges = DEFAULT_TIME_RANGES
   return (
-    <div className="min-h-screen bg-black text-white font-mono">
+    <div className="flex flex-col h-screen bg-black text-white font-mono">
       {/* Header */}
       <header className="border-b border-white">
         <div className="flex items-center justify-between p-4">
@@ -304,7 +304,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
       )}
 
       {/* Main Content */}
-      <main>
+      <main className="flex-grow overflow-y-auto">
         <Routes>
           <Route path="/" element={<Navigate to={`/${PrimaryTab.DEPLOYMENTS}`} replace />} />
           <Route path={`/${PrimaryTab.DEPLOYMENTS}`} element={<Dashboard activePrimaryTab={PrimaryTab.DEPLOYMENTS} onSecondaryTabChange={setCurrentSecondaryTab} timeRange={selectedTimeRange} showHelp={showHelp} />} />
