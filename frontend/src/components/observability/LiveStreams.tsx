@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, Play, Pause, Square, FileText, Wifi, WifiOff, RotateCcw, AlertCircle } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter } from '@/types/liveTerminal';
 import { startLiveTerminalUpdates, stopLiveTerminalUpdates } from '@mocks/terminal/liveData';
-import { getWebSocketInstance } from '@services/websocket';
-import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, API_ENDPOINTS } from '@constants';
+import { useWebSocket } from '@hooks/useWebSocket';
+import { WebSocketState, LiveStreamViewMode, DeploymentProgressStatus, PodStatus, UI_LABELS, UI_MESSAGES, WebSocketEventType } from '@constants';
 import { MOCK_ENABLED } from '@/mocks';
 import { KubernetesPodAPI, Deployment } from '@/types';
 import RealtimeLogViewer from './RealtimeLogViewer';
@@ -14,121 +14,60 @@ const LiveStreams: React.FC = () => {
   const [autoScroll] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [viewMode, setViewMode] = useState<LiveStreamViewMode>(LiveStreamViewMode.PODS);
-  const [connectionState, setConnectionState] = useState<WebSocketState>(WebSocketState.DISCONNECTED);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
-  // WebSocket connection status
+  // WebSocket connections for real-time data
+  const { data: podsData, connectionState } = useWebSocket<{
+    pods: any[];
+    timestamp: string;
+  }>(WebSocketEventType.PODS);
+
+  const { data: eventsData } = useWebSocket<{
+    events: any[];
+    timestamp: string;
+  }>(WebSocketEventType.EVENTS);
+
+  // Handle WebSocket pods data
   useEffect(() => {
-    const ws = getWebSocketInstance();
-    if (!ws) return;
+    if (podsData && !MOCK_ENABLED) {
+      // Transform WebSocket pods data to LiveTerminalData format
+      const transformedData: LiveTerminalData = {
+        topPods: podsData.pods.slice(0, 10).map((pod: any) => ({
+          name: pod.name,
+          namespace: pod.namespace,
+          cpu: Math.random() * 100, // TODO: Get actual CPU metrics from pod data
+          cpuTrend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
+          memory: Math.random() * 4000, // TODO: Get actual memory metrics from pod data
+          memoryTrend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
+          status: pod.status || PodStatus.RUNNING,
+          lastUpdate: pod.startTime || new Date().toISOString(),
+        })),
+        deployments: [], // TODO: Add deployments from WebSocket
+        logs: [],
+        stats: {
+          logsPerSecond: 10 + Math.random() * 50,
+          activeStreams: 3 + Math.round(Math.random() * 7),
+          errorRate: 0.5 + Math.random() * 2,
+          warningRate: 2 + Math.random() * 5
+        },
+        lastUpdate: podsData.timestamp,
+      };
+      setLiveData(transformedData);
+    }
+  }, [podsData]);
 
-    // Subscribe to connection status
-    const connectionSubId = ws.subscribe('connection', (state) => {
-      setConnectionState((state as any).state);
-    });
-
-    // Initial connection state
-    setConnectionState(ws.getConnectionState() as WebSocketState);
-
-    return () => {
-      ws.unsubscribe(connectionSubId);
-    };
-  }, []);
-
-  // Live data updates - API or mock
+  // Use mock data only when MOCK_ENABLED
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
-    let intervalId: NodeJS.Timeout | null = null;
     
-    if (!isPaused) {
-      if (MOCK_ENABLED) {
-        unsubscribe = startLiveTerminalUpdates(setLiveData);
-      } else {
-        // Real API calls for live data
-        const fetchLiveData = async () => {
-          try {
-            const token = localStorage.getItem('auth_token');
-            const headers: Record<string, string> = {};
-            if (token) {
-              headers['Authorization'] = `Bearer ${token}`;
-            }
-            
-            // Fetch pods metrics
-            const podsResponse = await fetch(API_ENDPOINTS.KUBERNETES.PODS, { headers });
-            const deploymentsResponse = await fetch(API_ENDPOINTS.KUBERNETES.DEPLOYMENTS, { headers });
-            
-            if (podsResponse.ok && deploymentsResponse.ok) {
-              const podsData = await podsResponse.json();
-              const deploymentsData = await deploymentsResponse.json();
-              
-              // Transform API data to LiveTerminalData format
-              const transformedData: LiveTerminalData = {
-                topPods: podsData.data?.slice(0, 10).map((pod: KubernetesPodAPI) => ({
-                  name: pod.name,
-                  namespace: pod.namespace,
-                  cpu: pod.metrics?.cpuUsage || Math.random() * 100,
-                  cpuTrend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-                  memory: pod.metrics?.memoryUsage || Math.random() * 4000,
-                  memoryTrend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-                  status: pod.status || PodStatus.RUNNING,
-                  lastUpdate: new Date().toISOString(),
-                })) || [],
-                deployments: deploymentsData.data?.filter((dep: Deployment) => dep.status === 'updating').map((dep: Deployment) => ({
-                  name: dep.name,
-                  namespace: dep.namespace,
-                  status: dep.status === 'updating' ? DeploymentProgressStatus.PROGRESSING : DeploymentProgressStatus.PROGRESSING,
-                  progress: dep.availableReplicas ? (dep.availableReplicas / dep.replicas) * 100 : Math.random() * 100,
-                  strategy: dep.strategy?.type || 'RollingUpdate',
-                  startTime: dep.updatedAt || new Date().toISOString(),
-                  estimatedCompletion: new Date(Date.now() + Math.random() * 300000).toISOString(),
-                  replicas: {
-                    current: dep.availableReplicas || 0,
-                    desired: dep.replicas || 1,
-                    ready: dep.readyReplicas || 0,
-                    updated: dep.updatedReplicas || 0,
-                    available: dep.availableReplicas || 0,
-                  },
-                  message: `Updating ${dep.name} deployment...`,
-                })) || [],
-                logs: [],
-                stats: {
-                  logsPerSecond: 10 + Math.random() * 50,
-                  activeStreams: 3 + Math.round(Math.random() * 7),
-                  errorRate: 0.5 + Math.random() * 2,
-                  warningRate: 2 + Math.random() * 5
-                },
-                lastUpdate: new Date().toISOString(),
-              };
-              
-              setLiveData(transformedData);
-            } else {
-              // Fallback to mock data on API error
-              const mockUnsubscribe = startLiveTerminalUpdates(setLiveData);
-              return () => mockUnsubscribe && mockUnsubscribe();
-            }
-          } catch (error) {
-            console.error('Failed to fetch live data:', error);
-            // Fallback to mock data on error
-            const mockUnsubscribe = startLiveTerminalUpdates(setLiveData);
-            return () => mockUnsubscribe && mockUnsubscribe();
-          }
-        };
-        
-        // Initial fetch
-        fetchLiveData();
-        
-        // Set up interval for periodic updates
-        intervalId = setInterval(fetchLiveData, 5000); // Update every 5 seconds
-      }
+    if (MOCK_ENABLED && !isPaused) {
+      unsubscribe = startLiveTerminalUpdates(setLiveData);
     }
     
     return () => {
       if (unsubscribe) {
         unsubscribe();
         stopLiveTerminalUpdates();
-      }
-      if (intervalId) {
-        clearInterval(intervalId);
       }
     };
   }, [isPaused]);
@@ -138,7 +77,7 @@ const LiveStreams: React.FC = () => {
     if (autoScroll && logsEndRef.current && viewMode === LiveStreamViewMode.LOGS) {
       logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [liveData?.logs, autoScroll, viewMode]);
+  }, [displayData?.logs, autoScroll, viewMode]);
 
   // Filter live logs
   // const filteredLogs = liveData ? liveData.logs.filter(log => {
@@ -180,8 +119,8 @@ const LiveStreams: React.FC = () => {
   };
 
   const clearTerminal = () => {
-    if (liveData) {
-      setLiveData({ ...liveData, logs: [] });
+    if (displayData) {
+      setLiveData({ ...displayData, logs: [] });
     }
   };
 
@@ -233,6 +172,9 @@ const LiveStreams: React.FC = () => {
 
   const isConnected = connectionState === WebSocketState.CONNECTED;
 
+  // Show data from WebSocket when available, otherwise show mock data if enabled
+  const displayData = (!MOCK_ENABLED && liveData) || (MOCK_ENABLED && liveData) || null;
+
   return (
     <div className="space-y-6">
       {/* Header with integrated tabs and controls */}
@@ -270,7 +212,7 @@ const LiveStreams: React.FC = () => {
         
         <div className="flex items-center gap-4">
           {/* Stream Controls - Only show on logs tab */}
-          {liveData && viewMode === LiveStreamViewMode.LOGS && (
+          {displayData && viewMode === LiveStreamViewMode.LOGS && (
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleStream}
@@ -320,7 +262,7 @@ const LiveStreams: React.FC = () => {
 
 
       {/* Top Pods View */}
-      {viewMode === LiveStreamViewMode.PODS && liveData && (
+      {viewMode === LiveStreamViewMode.PODS && displayData && (
         <div className="border border-white">
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-sm">
@@ -337,7 +279,7 @@ const LiveStreams: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {liveData.topPods.map((pod) => (
+                {displayData.topPods.map((pod) => (
                   <tr key={`${pod.namespace}-${pod.name}`} className="border-b border-white/10 hover:bg-white/5">
                     <td className="p-3">
                       <span className="text-cyan-400 font-bold">{pod.name}</span>
@@ -393,9 +335,9 @@ const LiveStreams: React.FC = () => {
       )}
 
       {/* Deployments View */}
-      {viewMode === LiveStreamViewMode.DEPLOYMENTS && liveData && (
+      {viewMode === LiveStreamViewMode.DEPLOYMENTS && displayData && (
         <div className="space-y-4">
-          {liveData.deployments.map((deployment) => (
+          {displayData.deployments.map((deployment) => (
             <div key={`${deployment.namespace}-${deployment.name}`} className="border border-white p-4">
               <div className="flex justify-between items-start mb-3">
                 <div>
