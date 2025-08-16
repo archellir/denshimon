@@ -84,6 +84,7 @@ func RegisterRoutes(
 	metricsHandlers := NewMetricsHandlers(metricsService)
 	servicesHandlers := NewServicesHandlers(k8sClient)
 	observabilityHandlers := NewObservabilityHandlers(k8sClient)
+	infrastructureHandlers := NewInfrastructureHandlers()
 
 	// Auth endpoints (no auth required)
 	mux.HandleFunc("POST /api/auth/login", corsMiddleware(authHandlers.Login))
@@ -150,6 +151,21 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/logs/streams", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetLogStreams)))
 	mux.HandleFunc("GET /api/logs/analytics", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetLogAnalytics)))
 	mux.HandleFunc("GET /api/events", corsMiddleware(authService.AuthMiddleware(observabilityHandlers.GetEvents)))
+
+	// Infrastructure endpoints (require authentication)
+	mux.HandleFunc("GET /api/infrastructure/services", corsMiddleware(authService.AuthMiddleware(infrastructureHandlers.GetServices)))
+	mux.HandleFunc("GET /api/infrastructure/status", corsMiddleware(authService.AuthMiddleware(infrastructureHandlers.GetStatus)))
+	mux.HandleFunc("GET /api/infrastructure/alerts", corsMiddleware(authService.AuthMiddleware(infrastructureHandlers.GetAlerts)))
+	mux.HandleFunc("POST /api/infrastructure/refresh", corsMiddleware(authService.AuthMiddleware(infrastructureHandlers.RefreshServices)))
+
+	// Infrastructure alert operations
+	mux.Handle("/api/infrastructure/alerts/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/acknowledge") && r.Method == "POST" {
+			infrastructureHandlers.AcknowledgeAlert(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	}))))
 
 	// Deployment endpoints (require authentication)
 	// Registry management
