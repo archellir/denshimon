@@ -206,14 +206,38 @@ const NoRepositoryConnected = () => {
             />
           </div>
 
-          <div className="bg-gray-900 border border-gray-600 p-3 text-xs text-gray-400 font-mono">
-            <p className="mb-2">Connection will validate:</p>
-            <ul className="space-y-1 ml-4">
-              <li>• Repository accessibility</li>
-              <li>• Authentication credentials</li>
-              <li>• Kubernetes manifest structure</li>
-              <li>• Branch existence and permissions</li>
-            </ul>
+          <div className="bg-black border border-cyan-400 p-4 text-xs font-mono relative overflow-hidden">
+            {/* Cyberpunk scanning lines */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/5 to-transparent animate-pulse" />
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50 animate-scan" />
+            
+            {/* Corner accents */}
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-400" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-400" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-cyan-400" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-cyan-400" />
+            
+            <div className="relative z-10">
+              <p className="mb-3 text-cyan-400 uppercase tracking-wider font-bold">⟨ VALIDATION PROTOCOL ⟩</p>
+              <ul className="space-y-2 ml-4 text-gray-300">
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                  <span>REPOSITORY NETWORK ACCESSIBILITY</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                  <span>AUTHENTICATION CREDENTIAL VERIFICATION</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                  <span>KUBERNETES MANIFEST STRUCTURE ANALYSIS</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                  <span>BRANCH EXISTENCE & PERMISSION MATRIX</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </CustomDialog>
