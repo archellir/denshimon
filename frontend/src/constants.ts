@@ -232,10 +232,10 @@ export enum DatabaseTab {
 
 export enum ObservabilityTab {
   SERVICE_HEALTH = 'service_health',
-  STREAMS = 'streams',
-  LOGS = 'logs',
+  LIVE_STREAMS = 'live_streams',
+  LOG_DATA = 'log_data',
   ANALYTICS = 'analytics',
-  EVENTS = 'events'
+  SYSTEM_CHANGES = 'system_changes'
 }
 
 // NAMESPACE ENUMS
@@ -448,8 +448,8 @@ export const UI_LABELS = {
   IMAGES: 'Images',
   HISTORY: 'History',
   CONFIGURATION: 'Configuration',
-  LOGS: 'Log Data',
-  EVENTS: 'System Changes',
+  LOG_DATA: 'Log Data',
+  SYSTEM_CHANGES: 'System Changes',
   LIVE_STREAMS: 'Live Streams',
   ANALYTICS: 'Analytics',
   SERVICE_HEALTH: 'Service Health',
@@ -689,10 +689,10 @@ export const API_ENDPOINTS = {
   },
   OBSERVABILITY: {
     BASE: API_BASE_PATHS.OBSERVABILITY,
-    LOGS: `${API_BASE_PATHS.OBSERVABILITY}/logs`,
-    LOG_STREAMS: `${API_BASE_PATHS.OBSERVABILITY}/logs/streams`,
-    LOG_ANALYTICS: `${API_BASE_PATHS.OBSERVABILITY}/logs/analytics`,
-    EVENTS: `${API_BASE_PATHS.OBSERVABILITY}/events`,
+    LOG_DATA: `${API_BASE_PATHS.OBSERVABILITY}/log_data`,
+    LIVE_STREAMS: `${API_BASE_PATHS.OBSERVABILITY}/live_streams`,
+    LOG_ANALYTICS: `${API_BASE_PATHS.OBSERVABILITY}/log_data/analytics`,
+    SYSTEM_CHANGES: `${API_BASE_PATHS.OBSERVABILITY}/system_changes`,
     SLOS: `${API_BASE_PATHS.OBSERVABILITY}/slos`,
     METRICS_HISTORY: `${API_BASE_PATHS.OBSERVABILITY}/metrics/history`
   },

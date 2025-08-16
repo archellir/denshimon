@@ -130,7 +130,7 @@ const MainApp: FC<MainAppProps> = ({ currentUser, handleLogout }) => {
     // Observability tabs that need timeframe selector
     if (currentPath === PrimaryTab.OBSERVABILITY) {
       return [
-        ObservabilityTab.LOGS,
+        ObservabilityTab.LOG_DATA,
         ObservabilityTab.ANALYTICS
       ].includes(currentSecondaryTab as ObservabilityTab)
     }
@@ -452,9 +452,9 @@ const Breadcrumb: FC<BreadcrumbProps> = ({ secondaryTab, showHelp, setShowHelp }
       [DatabaseTab.MONITORING]: UI_LABELS.MONITORING
     },
     [PrimaryTab.OBSERVABILITY]: {
-      [ObservabilityTab.LOGS]: UI_LABELS.LOGS,
-      [ObservabilityTab.EVENTS]: UI_LABELS.EVENTS,
-      [ObservabilityTab.STREAMS]: UI_LABELS.LIVE_STREAMS,
+      [ObservabilityTab.LOG_DATA]: UI_LABELS.LOG_DATA,
+      [ObservabilityTab.SYSTEM_CHANGES]: UI_LABELS.SYSTEM_CHANGES,
+      [ObservabilityTab.LIVE_STREAMS]: UI_LABELS.LIVE_STREAMS,
       [ObservabilityTab.ANALYTICS]: UI_LABELS.ANALYTICS,
       [ObservabilityTab.SERVICE_HEALTH]: UI_LABELS.SERVICE_HEALTH
     }

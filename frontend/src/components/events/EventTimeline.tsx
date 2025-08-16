@@ -34,7 +34,7 @@ const EventTimeline: React.FC<EventTimelineProps> = ({ timeRange = TimeRange.TWE
         setData(timelineData);
       } else {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.EVENTS}?timeRange=${timeRange}&limit=100`, {
+        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.SYSTEM_CHANGES}?timeRange=${timeRange}&limit=100`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         

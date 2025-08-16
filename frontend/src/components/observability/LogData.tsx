@@ -41,7 +41,7 @@ const LogData: React.FC = () => {
       } else {
         // Load from API
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.LOGS}?limit=200`, {
+        const response = await fetch(`${API_ENDPOINTS.OBSERVABILITY.LOG_DATA}?limit=200`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         

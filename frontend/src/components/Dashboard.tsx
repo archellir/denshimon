@@ -142,10 +142,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     ],
     [PrimaryTab.OBSERVABILITY]: [
       { id: ObservabilityTab.SERVICE_HEALTH, label: UI_LABELS.SERVICE_HEALTH, icon: Server },
-      { id: ObservabilityTab.STREAMS, label: UI_LABELS.LIVE_STREAMS, icon: Activity },
-      { id: ObservabilityTab.LOGS, label: UI_LABELS.LOGS, icon: FileText },
+      { id: ObservabilityTab.LIVE_STREAMS, label: UI_LABELS.LIVE_STREAMS, icon: Activity },
+      { id: ObservabilityTab.LOG_DATA, label: UI_LABELS.LOG_DATA, icon: FileText },
       { id: ObservabilityTab.ANALYTICS, label: UI_LABELS.ANALYTICS, icon: TrendingUp },
-      { id: ObservabilityTab.EVENTS, label: UI_LABELS.EVENTS, icon: Clock },
+      { id: ObservabilityTab.SYSTEM_CHANGES, label: UI_LABELS.SYSTEM_CHANGES, icon: Clock },
     ],
   };
 
@@ -286,10 +286,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       },
       [PrimaryTab.OBSERVABILITY]: {
         [ObservabilityTab.SERVICE_HEALTH]: "Monitor service health, SLA metrics, and system reliability indicators.",
-        [ObservabilityTab.STREAMS]: "Real-time log monitoring for immediate debugging and incident response - ephemeral data with live pods and deployments.",
-        [ObservabilityTab.LOGS]: "Historical log analysis with retention, filtering, categorization, and export for compliance and trend analysis.",
+        [ObservabilityTab.LIVE_STREAMS]: "Real-time log monitoring for immediate debugging and incident response - ephemeral data with live pods and deployments.",
+        [ObservabilityTab.LOG_DATA]: "Historical log analysis with retention, filtering, categorization, and export for compliance and trend analysis.",
         [ObservabilityTab.ANALYTICS]: "Generate insights from log data with patterns, trends, and anomaly detection.",
-        [ObservabilityTab.EVENTS]: "Track system events, alerts, and operational changes in timeline view."
+        [ObservabilityTab.SYSTEM_CHANGES]: "Track system events, alerts, and operational changes in timeline view."
       }
     };
 
@@ -563,7 +563,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       
       case PrimaryTab.OBSERVABILITY:
         switch (secondaryTab) {
-          case ObservabilityTab.LOGS:
+          case ObservabilityTab.LOG_DATA:
             return (
               <div className="flex items-center space-x-2">
                 <ConnectionStatus isConnected={isConnected} />
@@ -598,7 +598,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 </button>
               </div>
             );
-          case ObservabilityTab.STREAMS:
+          case ObservabilityTab.LIVE_STREAMS:
             return (
               <div className="flex items-center space-x-2">
                 <ConnectionStatus isConnected={isConnected} />
@@ -619,7 +619,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 </button>
               </div>
             );
-          case ObservabilityTab.EVENTS:
+          case ObservabilityTab.SYSTEM_CHANGES:
             return (
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-mono opacity-60">
@@ -864,9 +864,9 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.DATABASE && activeSecondaryTab === DatabaseTab.MONITORING && <DatabaseMonitoring />}
         
         {/* Observability Tab Content */}
-        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOGS && <LogData />}
-        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.EVENTS && <EventTimeline timeRange={timeRange} />}
-        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.STREAMS && <LiveStreams />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LOG_DATA && <LogData />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.SYSTEM_CHANGES && <EventTimeline timeRange={timeRange} />}
+        {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.LIVE_STREAMS && <LiveStreams />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.ANALYTICS && <LogAnalytics timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.OBSERVABILITY && activeSecondaryTab === ObservabilityTab.SERVICE_HEALTH && <ServiceHealthDashboard />}
       </div>
