@@ -15,6 +15,7 @@ import {
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
 import useWebSocket from '@hooks/useWebSocket';
+import CustomCheckbox from '@components/common/CustomCheckbox';
 
 const DatabaseBrowser: FC = () => {
   const {
@@ -144,18 +145,14 @@ const DatabaseBrowser: FC = () => {
             className="bg-transparent border-none outline-none flex-1 font-mono text-sm"
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="connected-only"
-            checked={showOnlyConnected}
-            onChange={(e) => setShowOnlyConnected(e.target.checked)}
-            className="bg-black border-white"
-          />
-          <label htmlFor="connected-only" className="font-mono text-sm">
-            CONNECTED ONLY
-          </label>
-        </div>
+        <CustomCheckbox
+          id="connected-only"
+          checked={showOnlyConnected}
+          onChange={setShowOnlyConnected}
+          label="CONNECTED ONLY"
+          variant="cyber"
+          size="md"
+        />
       </div>
 
       <div className="grid grid-cols-12 gap-6">
