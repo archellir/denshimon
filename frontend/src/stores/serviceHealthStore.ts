@@ -23,6 +23,8 @@ interface ServiceHealthStore {
   fetchAlerts: () => Promise<void>;
   refreshAllServices: () => Promise<void>;
   acknowledgeAlert: (alertId: string) => Promise<void>;
+  setServiceHealthData: (services: ServiceHealth[], alerts: InfrastructureAlert[], infrastructure: InfrastructureStatus) => void;
+  setServiceHealthStats: (stats: ServiceHealthStats) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
 }
@@ -439,6 +441,19 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
       console.error('Failed to acknowledge alert:', error);
       set({ error: error instanceof ApiError ? error.message : 'Failed to acknowledge alert' });
     }
+  },
+
+  setServiceHealthData: (services: ServiceHealth[], alerts: InfrastructureAlert[], infrastructure: InfrastructureStatus) => {
+    set({ 
+      services,
+      alerts,
+      infrastructureStatus: infrastructure,
+      lastUpdated: new Date().toISOString()
+    });
+  },
+
+  setServiceHealthStats: (stats: ServiceHealthStats) => {
+    set({ stats });
   },
 
   setError: (error: string | null) => {
