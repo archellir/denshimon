@@ -30,6 +30,8 @@ const (
 	MessageTypePong           MessageType = "pong"
 	MessageTypeNetwork        MessageType = "network"
 	MessageTypeStorage        MessageType = "storage"
+	MessageTypeDatabase       MessageType = "database"
+	MessageTypeDatabaseStats  MessageType = "database_stats"
 )
 
 // Message represents a WebSocket message
