@@ -569,13 +569,20 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           case ObservabilityTab.LOGS:
             return (
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-mono opacity-60">
-                  1.2K ENTRIES
-                </span>
-                <div className={`flex items-center space-x-1 px-2 py-1 border font-mono text-xs ${
-                  isConnected ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'
+                <div className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${
+                  isConnected ? 'border-green-500 text-green-500' : 'border-gray-500 text-gray-500'
                 }`}>
-                  <span>{isConnected ? 'LIVE' : 'OFFLINE'}</span>
+                  {isConnected ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>LIVE</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                      <span>OFFLINE</span>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => {
@@ -606,6 +613,26 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                   <Download size={12} />
                   <span>EXPORT</span>
                 </button>
+              </div>
+            );
+          case ObservabilityTab.STREAMS:
+            return (
+              <div className="flex items-center space-x-2">
+                <div className={`flex items-center space-x-2 px-4 py-2 border font-mono text-xs transition-all w-28 justify-center ${
+                  isConnected ? 'border-green-500 text-green-500' : 'border-gray-500 text-gray-500'
+                }`}>
+                  {isConnected ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>LIVE</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                      <span>OFFLINE</span>
+                    </>
+                  )}
+                </div>
               </div>
             );
           case ObservabilityTab.EVENTS:
