@@ -37,9 +37,9 @@ const StatCard: FC<StatCardProps> = ({
   const clickableClasses = onClick ? 'cursor-pointer hover:bg-white/5' : '';
   
   const variantClasses = {
-    default: 'p-3',
-    compact: 'p-2',
-    minimal: 'p-2'
+    default: 'p-2',
+    compact: 'p-1.5',
+    minimal: 'p-1'
   };
 
   const valueClasses = {
@@ -55,15 +55,15 @@ const StatCard: FC<StatCardProps> = ({
   };
 
   const iconSizes = {
-    default: 16,
-    compact: 14,
-    minimal: 12
+    default: 20,
+    compact: 18,
+    minimal: 16
   };
 
   const statusIconSizes = {
-    default: 14,
-    compact: 12,
-    minimal: 10
+    default: 16,
+    compact: 14,
+    minimal: 12
   };
 
   const getTrendIcon = () => {
@@ -130,7 +130,7 @@ const StatCard: FC<StatCardProps> = ({
     >
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-0.5">
             <p className={`${labelClasses[variant]} opacity-60 uppercase tracking-wider`}>{label}</p>
             {badge && (
               <span className={`px-1.5 py-0.5 border text-xs ${getBadgeClasses(badge.color)}`}>
@@ -147,7 +147,7 @@ const StatCard: FC<StatCardProps> = ({
             )}
           </div>
         </div>
-        <div className="flex items-center space-x-2 ml-3">
+        <div className="flex items-center space-x-2 ml-2">
           <Icon size={iconSizes[variant]} className="text-white" />
           <StatusIcon status={status} size={statusIconSizes[variant]} />
         </div>
