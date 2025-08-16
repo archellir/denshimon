@@ -429,7 +429,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
 
   acknowledgeAlert: async (alertId: string) => {
     try {
-      await apiService.post(`/api/infrastructure/alerts/${alertId}/acknowledge`);
+      await apiService.post(API_ENDPOINTS.INFRASTRUCTURE.ALERT_ACKNOWLEDGE(alertId));
 
       const { alerts } = get();
       const updatedAlerts = alerts.map(alert => 
