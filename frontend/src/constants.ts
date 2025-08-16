@@ -224,10 +224,9 @@ export enum DeploymentsTab {
 }
 
 export enum DatabaseTab {
-  BROWSER = 'browser',
-  MONITORING = 'monitoring',
-  QUERIES = 'queries',
-  CONNECTIONS = 'connections'
+  CONNECTIONS = 'connections',
+  EXPLORER = 'explorer',
+  MONITORING = 'monitoring'
 }
 
 export enum ObservabilityTab {
