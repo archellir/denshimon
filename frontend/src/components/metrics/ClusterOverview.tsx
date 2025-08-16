@@ -15,7 +15,7 @@ import {
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import ResourceCharts from '@components/metrics/ResourceCharts';
-import SkeletonLoader from '@components/common/SkeletonLoader';
+import HealthDashboard from '@components/metrics/HealthDashboard';
 import { ChartTooltipProps, PieChartTooltipProps } from '@/types/common';
 
 interface ClusterOverviewProps {
@@ -105,32 +105,14 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     return null;
   };
 
-  // Error boundary fallback
-  if (!clusterMetrics) {
-    return (
-      <div className="space-y-6">
-        <SkeletonLoader variant="chart" count={1} />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SkeletonLoader variant="chart" count={1} />
-          <SkeletonLoader variant="chart" count={1} />
-        </div>
-      </div>
-    );
-  }
-
   try {
     return (
-    <div className="space-y-6">
-
-      {/* Resource Usage Over Time */}
-      <div className="border border-white p-4 h-96">
+      <div className="space-y-6">
+        {/* Resource Usage Over Time */}
+        <div className="border border-white p-4 h-96">
           <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
-            {isLoadingHistory ? (
-              <div className="h-full">
-                <SkeletonLoader variant="chart" count={1} />
-              </div>
-            ) : chartData.length === 0 ? (
+            {chartData.length === 0 ? (
               <div className="flex items-center justify-center h-full border border-yellow-400">
                 <span className="font-mono text-sm text-yellow-400">{UI_MESSAGES.CHART_NO_DATA}</span>
               </div>
@@ -180,109 +162,116 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           </div>
         </div>
 
-      {/* Status & Capacity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pod Status */}
-        <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">WORKLOAD DISTRIBUTION</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={podStatusData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  fill="#8884d8"
-                  dataKey="value"
-                  stroke="#FFFFFF"
-                  strokeWidth={2}
-                >
-                  {podStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomPieTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 space-y-1">
-            {podStatusData.map((entry) => (
-              <div key={entry.name} className="flex items-center justify-between font-mono text-xs">
-                <div className="flex items-center">
-                  <div
-                    className="w-3 h-3 border border-white mr-2"
-                    style={{ backgroundColor: entry.color }}
-                  />
-                  <span>{entry.name}</span>
+        {/* Status & Capacity */}
+        {clusterMetrics && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pod Status */}
+            <div className="border border-white p-4">
+              <h3 className="font-mono text-sm mb-4">WORKLOAD DISTRIBUTION</h3>
+              <div className="h-64">
+                {podStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={podStatusData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        fill="#8884d8"
+                        dataKey="value"
+                        stroke="#FFFFFF"
+                        strokeWidth={2}
+                      >
+                        {podStatusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomPieTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full border border-yellow-400">
+                    <span className="font-mono text-sm text-yellow-400">NO POD DATA AVAILABLE</span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 space-y-1">
+                {podStatusData.map((entry) => (
+                  <div key={entry.name} className="flex items-center justify-between font-mono text-xs">
+                    <div className="flex items-center">
+                      <div
+                        className="w-3 h-3 border border-white mr-2"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <span>{entry.name}</span>
+                    </div>
+                    <span>{entry.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Capacity Status */}
+            <div className="border border-white p-4">
+              <h3 className="font-mono text-sm mb-4">CAPACITY STATUS</h3>
+              <div className="space-y-4 mt-6">
+                {/* CPU Capacity */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-mono text-xs">CPU</span>
+                    <span className="font-mono text-xs">{clusterMetrics.cpu_usage.usage_percent.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-800 border border-white h-3">
+                    <div 
+                      className="h-full bg-green-400"
+                      style={{ width: `${Math.min(clusterMetrics.cpu_usage.usage_percent, 100)}%` }}
+                    />
+                  </div>
+                  <div className="text-xs font-mono opacity-60 mt-1">
+                    {(8 - (8 * clusterMetrics.cpu_usage.usage_percent / 100)).toFixed(1)} cores available
+                  </div>
                 </div>
-                <span>{entry.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+                
+                {/* Memory Capacity */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-mono text-xs">MEMORY</span>
+                    <span className="font-mono text-xs">{clusterMetrics.memory_usage.usage_percent.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-800 border border-white h-3">
+                    <div 
+                      className="h-full bg-yellow-400"
+                      style={{ width: `${Math.min(clusterMetrics.memory_usage.usage_percent, 100)}%` }}
+                    />
+                  </div>
+                  <div className="text-xs font-mono opacity-60 mt-1">
+                    {(16 - (16 * clusterMetrics.memory_usage.usage_percent / 100)).toFixed(1)}GB available
+                  </div>
+                </div>
 
-        {/* Capacity Status */}
-        <div className="border border-white p-4">
-          <h3 className="font-mono text-sm mb-4">CAPACITY STATUS</h3>
-          <div className="space-y-4 mt-6">
-            {/* CPU Capacity */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-mono text-xs">CPU</span>
-                <span className="font-mono text-xs">{clusterMetrics ? `${clusterMetrics.cpu_usage.usage_percent.toFixed(0)}%` : '--'}</span>
-              </div>
-              <div className="w-full bg-gray-800 border border-white h-3">
-                <div 
-                  className="h-full bg-green-400"
-                  style={{ width: `${Math.min(clusterMetrics?.cpu_usage.usage_percent || 0, 100)}%` }}
-                />
-              </div>
-              <div className="text-xs font-mono opacity-60 mt-1">
-                {clusterMetrics ? `${(8 - (8 * clusterMetrics.cpu_usage.usage_percent / 100)).toFixed(1)} cores available` : 'Loading...'}
-              </div>
-            </div>
-            
-            {/* Memory Capacity */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-mono text-xs">MEMORY</span>
-                <span className="font-mono text-xs">{clusterMetrics ? `${clusterMetrics.memory_usage.usage_percent.toFixed(0)}%` : '--'}</span>
-              </div>
-              <div className="w-full bg-gray-800 border border-white h-3">
-                <div 
-                  className="h-full bg-yellow-400"
-                  style={{ width: `${Math.min(clusterMetrics?.memory_usage.usage_percent || 0, 100)}%` }}
-                />
-              </div>
-              <div className="text-xs font-mono opacity-60 mt-1">
-                {clusterMetrics ? `${(16 - (16 * clusterMetrics.memory_usage.usage_percent / 100)).toFixed(1)}GB available` : 'Loading...'}
-              </div>
-            </div>
-
-            {/* Pod Capacity */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-mono text-xs">PODS</span>
-                <span className="font-mono text-xs">{clusterMetrics ? `${clusterMetrics.running_pods}/${clusterMetrics.total_pods}` : '--'}</span>
-              </div>
-              <div className="w-full bg-gray-800 border border-white h-3">
-                <div 
-                  className="h-full bg-cyan-400"
-                  style={{ width: `${clusterMetrics ? (clusterMetrics.running_pods / clusterMetrics.total_pods) * 100 : 0}%` }}
-                />
-              </div>
-              <div className="text-xs font-mono opacity-60 mt-1">
-                {clusterMetrics ? `${clusterMetrics.total_pods - clusterMetrics.running_pods} slots available` : 'Loading...'}
+                {/* Pod Capacity */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-mono text-xs">PODS</span>
+                    <span className="font-mono text-xs">{clusterMetrics.running_pods}/{clusterMetrics.total_pods}</span>
+                  </div>
+                  <div className="w-full bg-gray-800 border border-white h-3">
+                    <div 
+                      className="h-full bg-cyan-400"
+                      style={{ width: `${(clusterMetrics.running_pods / clusterMetrics.total_pods) * 100}%` }}
+                    />
+                  </div>
+                  <div className="text-xs font-mono opacity-60 mt-1">
+                    {clusterMetrics.total_pods - clusterMetrics.running_pods} slots available
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+
       </div>
-
-      {/* Detailed Resource Charts */}
-      <ResourceCharts />
-    </div>
     );
   } catch (error) {
     console.error('ClusterOverview render error:', error);
