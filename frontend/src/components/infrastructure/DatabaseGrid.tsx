@@ -197,58 +197,50 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onViewConnection
                 <div className="flex items-center justify-between space-x-2">
                   <div className="flex items-center space-x-1">
                     {connection.status === DatabaseStatus.CONNECTED ? (
-                      <button
+                      <CustomButton
+                        icon={isConnecting ? Activity : PowerOff}
                         onClick={() => handleDisconnect(connection.id)}
                         disabled={isConnecting}
-                        className="p-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        color="red"
+                        className="w-auto px-1 py-1"
                         title="Disconnect"
-                      >
-                        {isConnecting ? (
-                          <Activity size={12} className="animate-spin" />
-                        ) : (
-                          <PowerOff size={12} />
-                        )}
-                      </button>
+                      />
                     ) : (
-                      <button
+                      <CustomButton
+                        icon={isConnecting ? Activity : Power}
                         onClick={() => handleConnect(connection.id)}
                         disabled={isConnecting}
-                        className="p-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        color="green"
+                        className="w-auto px-1 py-1"
                         title="Connect"
-                      >
-                        {isConnecting ? (
-                          <Activity size={12} className="animate-spin" />
-                        ) : (
-                          <Power size={12} />
-                        )}
-                      </button>
+                      />
                     )}
                     
-                    <button
+                    <CustomButton
+                      icon={Eye}
                       onClick={() => onViewConnection(connection.id)}
                       disabled={connection.status !== DatabaseStatus.CONNECTED}
-                      className="p-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      color="blue"
+                      className="w-auto px-1 py-1"
                       title="View Database"
-                    >
-                      <Eye size={12} />
-                    </button>
+                    />
                   </div>
 
                   <div className="flex items-center space-x-1">
-                    <button
-                      className="p-1 border border-white text-white hover:bg-white hover:text-black transition-colors"
+                    <CustomButton
+                      icon={Settings}
+                      color="white"
+                      className="w-auto px-1 py-1"
                       title="Settings"
-                    >
-                      <Settings size={12} />
-                    </button>
+                    />
                     
-                    <button
+                    <CustomButton
+                      icon={Trash2}
                       onClick={() => handleDelete(connection.id)}
-                      className="p-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors"
+                      color="red"
+                      className="w-auto px-1 py-1"
                       title="Delete"
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    />
                   </div>
                 </div>
               </div>
