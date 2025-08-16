@@ -5,8 +5,20 @@ import RegistryForm from '../forms/RegistryForm';
 import CustomDialog from '@components/common/CustomDialog';
 import type { Registry } from '@/types/deployments';
 
-const RegistriesTab: FC = () => {
-  const [showForm, setShowForm] = useState(false);
+interface RegistriesTabProps {
+  showForm?: boolean;
+  setShowForm?: (show: boolean) => void;
+}
+
+const RegistriesTab: FC<RegistriesTabProps> = ({ 
+  showForm: externalShowForm, 
+  setShowForm: externalSetShowForm 
+}) => {
+  const [internalShowForm, setInternalShowForm] = useState(false);
+  
+  // Use external state if provided, otherwise use internal state
+  const showForm = externalShowForm !== undefined ? externalShowForm : internalShowForm;
+  const setShowForm = externalSetShowForm || setInternalShowForm;
   const [editingRegistry, setEditingRegistry] = useState<Registry | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; registry: Registry | null }>({ 
     open: false, 

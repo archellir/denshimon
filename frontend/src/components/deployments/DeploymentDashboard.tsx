@@ -11,12 +11,16 @@ interface DeploymentDashboardProps {
   activeTab?: string;
   showDeployModal?: boolean;
   setShowDeployModal?: (show: boolean) => void;
+  showAddRegistry?: boolean;
+  setShowAddRegistry?: (show: boolean) => void;
 }
 
 const DeploymentDashboard: FC<DeploymentDashboardProps> = ({ 
   activeTab = DeploymentsTabEnum.DEPLOYMENTS, 
   showDeployModal, 
-  setShowDeployModal
+  setShowDeployModal,
+  showAddRegistry,
+  setShowAddRegistry
 }) => {
   const { fetchRegistries, fetchDeployments, fetchNodes } = useDeploymentStore();
 
@@ -43,7 +47,7 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
   const renderTabContent = () => {
     switch (activeTab) {
       case DeploymentsTabEnum.REGISTRIES:
-        return <RegistriesTab />;
+        return <RegistriesTab showForm={showAddRegistry} setShowForm={setShowAddRegistry} />;
       case DeploymentsTabEnum.IMAGES:
         return <ImagesTab />;
       case DeploymentsTabEnum.DEPLOYMENTS:
