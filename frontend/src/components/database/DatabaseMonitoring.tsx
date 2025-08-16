@@ -40,7 +40,7 @@ const DatabaseMonitoring: FC = () => {
   const [, setDatabases] = useState<any[]>([]);
 
   // WebSocket integration for real-time database updates
-  const { lastMessage, isConnected } = useWebSocket();
+  const { lastMessage } = useWebSocket();
 
   useEffect(() => {
     fetchConnections();
