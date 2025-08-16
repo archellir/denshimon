@@ -18,7 +18,8 @@ interface CustomDialogProps {
   icon?: LucideIcon;
   showCloseButton?: boolean;
   preventClickOutside?: boolean;
-  width?: 'sm' | 'md' | 'lg' | 'xl';
+  width?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  height?: 'auto' | 'sm' | 'md' | 'lg' | 'xl' | 'screen';
   loading?: boolean;
   inputField?: {
     label: string;
@@ -47,6 +48,7 @@ const CustomDialog: FC<CustomDialogProps> = ({
   showCloseButton = true,
   preventClickOutside = false,
   width = 'md',
+  height = 'auto',
   loading = false,
   inputField
 }) => {
@@ -59,7 +61,18 @@ const CustomDialog: FC<CustomDialogProps> = ({
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
+    xl: 'max-w-4xl',
+    '2xl': 'max-w-6xl',
+    '3xl': 'max-w-7xl'
+  };
+
+  const heightClasses = {
+    auto: '',
+    sm: 'max-h-96',
+    md: 'max-h-[32rem]',
+    lg: 'max-h-[40rem]',
+    xl: 'max-h-[48rem]',
+    screen: 'max-h-[90vh]'
   };
 
   const variantConfig = {
@@ -154,11 +167,12 @@ const CustomDialog: FC<CustomDialogProps> = ({
         id="custom-dialog"
         ref={dialogRef}
         className={`
-          bg-black border-2 ${config.borderColor} p-6 ${widthClasses[width]} w-full mx-4
+          bg-black border-2 ${config.borderColor} p-6 ${widthClasses[width]} ${heightClasses[height]} w-full mx-4
           transform transition-all duration-200 font-mono
           ${isAnimating ? 'scale-100 translate-y-0' : 'scale-95 -translate-y-4'}
           shadow-[0_0_30px_rgba(0,255,0,0.1)]
           relative overflow-hidden
+          ${height !== 'auto' ? 'flex flex-col' : ''}
         `}
         onClick={preventClickThrough}
       >
@@ -192,7 +206,7 @@ const CustomDialog: FC<CustomDialogProps> = ({
         </div>
 
         {/* Content */}
-        <div className="mb-6">
+        <div className={`mb-6 ${height !== 'auto' ? 'flex-1 overflow-y-auto' : ''}`}>
           {message && (
             <p className="text-gray-300 text-sm leading-relaxed mb-4">
               {message}

@@ -487,13 +487,14 @@ const ServicesList: FC<ServicesListProps> = ({
         title="Service Details"
         variant="info"
         icon={Network}
-        width="lg"
+        width="2xl"
+        height="screen"
         cancelText="CLOSE"
       >
         {selectedService && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Basic Info */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div>
                 <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Name</div>
                 <div className="font-mono text-sm text-cyan-400">{selectedService.name}</div>
@@ -523,107 +524,127 @@ const ServicesList: FC<ServicesListProps> = ({
             {/* Network Information */}
             <div>
               <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Network</div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Cluster IP</div>
                   <div className="font-mono text-sm">{selectedService.cluster_ip}</div>
                 </div>
-                {selectedService.external_ip && (
-                  <div>
-                    <div className="text-xs font-mono text-gray-400 mb-1 uppercase">External IP</div>
-                    <div className="font-mono text-sm text-blue-400">{selectedService.external_ip}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Ports */}
-            <div>
-              <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Ports</div>
-              <div className="space-y-2">
-                {selectedService.ports.map((port, idx) => (
-                  <div key={idx} className="flex justify-between items-center border border-white/20 p-2">
-                    <div className="font-mono text-sm">
-                      {port.name && <span className="text-green-400">{port.name}: </span>}
-                      {port.port}:{port.target_port}/{port.protocol}
-                    </div>
-                    {port.node_port && (
-                      <div className="font-mono text-xs text-gray-400">
-                        NodePort: {port.node_port}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Endpoints */}
-            <div>
-              <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Endpoints</div>
-              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Ready</div>
-                  <div className={`font-mono text-lg ${selectedService.endpoints.ready > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                    {selectedService.endpoints.ready}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Not Ready</div>
-                  <div className={`font-mono text-lg ${selectedService.endpoints.not_ready > 0 ? 'text-yellow-400' : 'text-gray-400'}`}>
-                    {selectedService.endpoints.not_ready}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Total</div>
-                  <div className="font-mono text-lg text-cyan-400">
-                    {selectedService.endpoints.total}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Selector */}
-            <div>
-              <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Selector</div>
-              <div className="space-y-1">
-                {Object.entries(selectedService.selector).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center border border-white/20 p-2">
-                    <span className="font-mono text-xs text-gray-400">{key}</span>
-                    <span className="font-mono text-sm">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Labels */}
-            <div>
-              <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Labels</div>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {Object.entries(selectedService.labels).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center border border-white/20 p-2">
-                    <span className="font-mono text-xs text-gray-400">{key}</span>
-                    <span className="font-mono text-sm">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Metadata */}
-            <div>
-              <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Metadata</div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Age</div>
-                  <div className="font-mono text-sm">{selectedService.age}</div>
+                  <div className="text-xs font-mono text-gray-400 mb-1 uppercase">External IP</div>
+                  <div className="font-mono text-sm text-blue-400">{selectedService.external_ip || 'None'}</div>
                 </div>
                 <div>
                   <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Session Affinity</div>
                   <div className="font-mono text-sm">{selectedService.session_affinity}</div>
                 </div>
-                <div className="col-span-2">
-                  <div className="text-xs font-mono text-gray-400 mb-1 uppercase">Last Updated</div>
-                  <div className="font-mono text-sm">
-                    {formatDistanceToNow(new Date(selectedService.last_updated), { addSuffix: true })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-4">
+                {/* Ports */}
+                <div>
+                  <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Ports</div>
+                  <div className="space-y-2">
+                    {selectedService.ports.map((port, idx) => (
+                      <div key={idx} className="border border-white/20 p-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-400">Name:</span> {port.name || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Protocol:</span> {port.protocol}
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Port:</span> {port.port}
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Target:</span> {port.target_port}
+                          </div>
+                          {port.node_port && (
+                            <div className="col-span-2">
+                              <span className="text-gray-400">NodePort:</span> {port.node_port}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Endpoints */}
+                <div>
+                  <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Endpoints</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center border border-white/20 p-2">
+                      <div className={`font-mono text-lg ${selectedService.endpoints.ready > 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                        {selectedService.endpoints.ready}
+                      </div>
+                      <div className="text-xs text-gray-400">READY</div>
+                    </div>
+                    <div className="text-center border border-white/20 p-2">
+                      <div className={`font-mono text-lg ${selectedService.endpoints.not_ready > 0 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                        {selectedService.endpoints.not_ready}
+                      </div>
+                      <div className="text-xs text-gray-400">NOT READY</div>
+                    </div>
+                    <div className="text-center border border-white/20 p-2">
+                      <div className="font-mono text-lg text-cyan-400">
+                        {selectedService.endpoints.total}
+                      </div>
+                      <div className="text-xs text-gray-400">TOTAL</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-4">
+                {/* Selector */}
+                <div>
+                  <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Selector</div>
+                  <div className="border border-white/20 p-3">
+                    <div className="grid grid-cols-1 gap-2">
+                      {Object.entries(selectedService.selector).map(([key, value]) => (
+                        <div key={key} className="flex justify-between text-xs">
+                          <span className="text-gray-400">{key}:</span>
+                          <span className="font-mono">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Labels */}
+                <div>
+                  <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Labels</div>
+                  <div className="border border-white/20 p-3 max-h-40 overflow-y-auto">
+                    <div className="grid grid-cols-1 gap-2">
+                      {Object.entries(selectedService.labels).map(([key, value]) => (
+                        <div key={key} className="flex justify-between text-xs">
+                          <span className="text-gray-400">{key}:</span>
+                          <span className="font-mono break-all ml-2">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metadata */}
+                <div>
+                  <div className="text-sm font-mono text-gray-400 mb-3 uppercase border-b border-white/20 pb-2">Metadata</div>
+                  <div className="border border-white/20 p-3">
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Age:</span>
+                        <span className="font-mono">{selectedService.age}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Last Updated:</span>
+                        <span className="font-mono">{formatDistanceToNow(new Date(selectedService.last_updated), { addSuffix: true })}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
