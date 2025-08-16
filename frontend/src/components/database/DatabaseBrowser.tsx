@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
 import { DatabaseStatus } from '@/types/database';
+import useWebSocket from '@hooks/useWebSocket';
 
 const DatabaseBrowser: FC = () => {
   const {
@@ -36,10 +37,31 @@ const DatabaseBrowser: FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showOnlyConnected, setShowOnlyConnected] = useState<boolean>(true);
   const [, setShowTableData] = useState<boolean>(false);
+  const [realTimeDatabases, setRealTimeDatabases] = useState<any[]>([]);
+
+  // WebSocket integration for real-time database updates
+  const { lastMessage } = useWebSocket();
 
   useEffect(() => {
     fetchConnections();
   }, [fetchConnections]);
+
+  // Handle WebSocket messages for database updates
+  useEffect(() => {
+    if (lastMessage && lastMessage.data) {
+      try {
+        const messageData = typeof lastMessage.data === 'string' ? JSON.parse(lastMessage.data) : lastMessage.data;
+        
+        if (messageData.type === 'database') {
+          setRealTimeDatabases(messageData.data.databases || []);
+          // Log real-time database data for debugging
+          console.log('Real-time database pods:', messageData.data.databases);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    }
+  }, [lastMessage, realTimeDatabases]);
 
   const connectedConnections = connections.filter(conn => 
     showOnlyConnected ? conn.status === DatabaseStatus.CONNECTED : true
