@@ -60,6 +60,12 @@ func (h *DatabasesHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/databases/connections/{id}/tables/{table}/rows", h.InsertRow)
 	mux.HandleFunc("GET /api/databases/connections/{id}/stats", h.GetStats)
 	mux.HandleFunc("GET /api/databases/types", h.GetSupportedTypes)
+	
+	// Saved queries routes
+	mux.HandleFunc("GET /api/databases/saved-queries", h.GetSavedQueries)
+	mux.HandleFunc("POST /api/databases/saved-queries", h.CreateSavedQuery)
+	mux.HandleFunc("PUT /api/databases/saved-queries/{id}", h.UpdateSavedQuery)
+	mux.HandleFunc("DELETE /api/databases/saved-queries/{id}", h.DeleteSavedQuery)
 }
 
 // ListConnections returns all database connections
@@ -542,6 +548,127 @@ func (h *DatabasesHandler) GetSupportedTypes(w http.ResponseWriter, r *http.Requ
 	response := response.APIResponse{
 		Success: true,
 		Data:    types,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// GetSavedQueries returns all saved queries
+func (h *DatabasesHandler) GetSavedQueries(w http.ResponseWriter, r *http.Request) {
+	queries, err := h.manager.GetSavedQueries(r.Context())
+	if err != nil {
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to get saved queries", err)
+		return
+	}
+
+	response := response.APIResponse{
+		Success: true,
+		Data:    queries,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// CreateSavedQuery creates a new saved query
+func (h *DatabasesHandler) CreateSavedQuery(w http.ResponseWriter, r *http.Request) {
+	var req databases.SavedQuery
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Validate required fields
+	if req.Name == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "Query name is required", nil)
+		return
+	}
+	if req.SQL == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "SQL query is required", nil)
+		return
+	}
+
+	savedQuery, err := h.manager.CreateSavedQuery(r.Context(), req)
+	if err != nil {
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to create saved query", err)
+		return
+	}
+
+	response := response.APIResponse{
+		Success: true,
+		Data:    savedQuery,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+}
+
+// UpdateSavedQuery updates an existing saved query
+func (h *DatabasesHandler) UpdateSavedQuery(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "Query ID is required", nil)
+		return
+	}
+
+	var req databases.SavedQuery
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Validate required fields
+	if req.Name == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "Query name is required", nil)
+		return
+	}
+	if req.SQL == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "SQL query is required", nil)
+		return
+	}
+
+	savedQuery, err := h.manager.UpdateSavedQuery(r.Context(), id, req)
+	if err != nil {
+		if err.Error() == "saved query not found" {
+			writeErrorResponse(w, http.StatusNotFound, "Saved query not found", nil)
+			return
+		}
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to update saved query", err)
+		return
+	}
+
+	response := response.APIResponse{
+		Success: true,
+		Data:    savedQuery,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// DeleteSavedQuery deletes a saved query
+func (h *DatabasesHandler) DeleteSavedQuery(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "Query ID is required", nil)
+		return
+	}
+
+	err := h.manager.DeleteSavedQuery(r.Context(), id)
+	if err != nil {
+		if err.Error() == "saved query not found" {
+			writeErrorResponse(w, http.StatusNotFound, "Saved query not found", nil)
+			return
+		}
+		writeErrorResponse(w, http.StatusInternalServerError, "Failed to delete saved query", err)
+		return
+	}
+
+	response := response.APIResponse{
+		Success: true,
+		Data:    map[string]string{"message": "Saved query deleted successfully"},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
