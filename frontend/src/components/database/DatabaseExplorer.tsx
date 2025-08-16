@@ -513,12 +513,12 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             ERROR: {queryResults.error}
           </div>
         ) : (
-          <div className="border border-white overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px', maxWidth: '100%' }}>
-            <table className="text-sm font-mono" style={{ minWidth: '100%', width: 'max-content' }}>
+          <div className="border border-white overflow-auto" style={{ maxHeight: isFullscreen ? 'calc(100vh - 200px)' : '400px', width: '100%' }}>
+            <table className="text-sm font-mono w-full table-fixed">
               <thead className="bg-white/10 sticky top-0">
                 <tr>
                   {queryResults.columns.map((col, i) => (
-                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10 whitespace-nowrap" style={{ minWidth: '120px', maxWidth: '300px' }}>
+                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10 whitespace-nowrap" style={{ width: `${Math.max(8, 100 / queryResults.columns.length)}%` }}>
                       {col}
                     </th>
                   ))}
@@ -528,7 +528,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
                 {queryResults.rows.map((row, i) => (
                   <tr key={i} className="border-t border-white/10 hover:bg-white/5">
                     {row.map((cell, j) => (
-                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap text-ellipsis overflow-hidden" style={{ minWidth: '120px', maxWidth: '300px' }}>
+                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap text-ellipsis overflow-hidden">
                         {cell === null ? (
                           <span className="opacity-50 italic">NULL</span>
                         ) : (
