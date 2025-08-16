@@ -9,10 +9,10 @@ import { Status } from '@constants';
 
 interface DatabaseGridProps {
   onAddConnection: () => void;
-  onViewConnection: (id: string) => void;
+  onUseConnection: (id: string) => void;
 }
 
-const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onViewConnection }) => {
+const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection }) => {
   const {
     connections,
     isLoading,
@@ -218,11 +218,11 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onViewConnection
                     
                     <CustomButton
                       icon={Eye}
-                      onClick={() => onViewConnection(connection.id)}
+                      onClick={() => onUseConnection(connection.id)}
                       disabled={connection.status !== DatabaseStatus.CONNECTED}
                       color="blue"
                       className="w-auto px-1 py-1"
-                      title="View Database"
+                      title="Use Connection"
                     />
                   </div>
 
