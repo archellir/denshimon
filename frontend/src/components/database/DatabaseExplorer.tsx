@@ -24,13 +24,22 @@ import {
   Trash2
 } from 'lucide-react';
 import useDatabaseStore from '@stores/databaseStore';
-import { DatabaseStatus } from '@/types/database';
 import CustomSelector from '@components/common/CustomSelector';
 import CustomButton from '@components/common/CustomButton';
 import CustomCheckbox from '@components/common/CustomCheckbox';
 import QueryResultsTable from './QueryResultsTable';
 import ConfirmDialog from '@components/common/ConfirmDialog';
 import { mockQueryHistory } from '@mocks/database/queries';
+import { exportQueryResultsToCSV } from '@utils/csvUtils';
+import { copyWithNotification, createNotificationHandler } from '@utils/clipboardUtils';
+import { 
+  filterConnections, 
+  generateDatabaseKey, 
+  generateSelectQuery,
+  formatConnectionOptions,
+  saveLastDatabaseConnection,
+  getLastDatabaseConnection
+} from '@utils/databaseUtils';
 
 type ExplorerTab = 'schema' | 'data' | 'query' | 'saved';
 
@@ -63,7 +72,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   const [selectedConnection, setSelectedConnection] = useState<string>(() => {
     // Check for preselected connection first, then localStorage
     if (preselectedConnectionId) return preselectedConnectionId;
-    return localStorage.getItem('denshimon_last_database_connection') || '';
+    return getLastDatabaseConnection() || '';
   });
   const [selectedDatabase, setSelectedDatabase] = useState<string>('');
   const [selectedTable, setSelectedTable] = useState<string>('');
@@ -80,6 +89,9 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   const [showHistory, setShowHistory] = useState<boolean>(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; queryId: string | null }>({ open: false, queryId: null });
+  
+  // Create notification handler
+  const showNotification = createNotificationHandler(setCopySuccess);
 
   useEffect(() => {
     fetchConnections();
@@ -98,22 +110,16 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
   // Save selected connection to localStorage
   useEffect(() => {
     if (selectedConnection) {
-      localStorage.setItem('denshimon_last_database_connection', selectedConnection);
+      saveLastDatabaseConnection(selectedConnection);
       // Auto-fetch databases for the selected connection
       fetchDatabases(selectedConnection);
     }
   }, [selectedConnection, fetchDatabases]);
 
-  const connectedConnections = connections.filter(conn => 
-    showOnlyConnected ? conn.status === DatabaseStatus.CONNECTED : true
-  ).filter(conn => 
-    searchQuery === '' || 
-    conn.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conn.database.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const connectedConnections = filterConnections(connections, showOnlyConnected, searchQuery);
 
   const handleDatabaseToggle = (connectionId: string, databaseName: string) => {
-    const dbKey = `${connectionId}:${databaseName}`;
+    const dbKey = generateDatabaseKey(connectionId, databaseName);
     const newExpanded = new Set(expandedDatabases);
     if (newExpanded.has(dbKey)) {
       newExpanded.delete(dbKey);
@@ -131,7 +137,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
     fetchColumns(connectionId, databaseName, tableName);
     
     // Auto-generate SELECT query for the table
-    const autoQuery = `SELECT * FROM ${tableName} LIMIT ${queryLimit}`;
+    const autoQuery = generateSelectQuery(tableName, queryLimit);
     setSqlQuery(autoQuery);
     
     // Switch to schema tab to show table details
@@ -170,57 +176,22 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
     setShowHistory(false);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopySuccess('Copied to clipboard!');
-    setTimeout(() => setCopySuccess(null), 2000);
+  const handleCopyToClipboard = (text: string) => {
+    copyWithNotification(text, showNotification);
   };
 
-  const exportToCSV = () => {
-    if (!queryResults || !queryResults.columns || !queryResults.rows) {
-      setCopySuccess('No data to export');
-      setTimeout(() => setCopySuccess(null), 2000);
-      return;
+  const handleExportToCSV = () => {
+    try {
+      if (!queryResults) {
+        showNotification('No data to export');
+        return;
+      }
+      exportQueryResultsToCSV(queryResults);
+      showNotification('CSV exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      showNotification('No data to export');
     }
-
-    // Create CSV content
-    const csvContent = [
-      // Header row
-      queryResults.columns.join(','),
-      // Data rows
-      ...queryResults.rows.map(row => 
-        row.map(cell => {
-          // Handle null values and escape quotes
-          if (cell === null) return '';
-          const cellStr = String(cell);
-          // If cell contains comma, quote, or newline, wrap in quotes and escape quotes
-          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-            return `"${cellStr.replace(/"/g, '""')}"`;
-          }
-          return cellStr;
-        }).join(',')
-      )
-    ].join('\n');
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    
-    // Generate filename with timestamp
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const filename = `query_results_${timestamp}.csv`;
-    link.setAttribute('download', filename);
-    
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Show success message
-    setCopySuccess('CSV exported successfully!');
-    setTimeout(() => setCopySuccess(null), 2000);
   };
 
   const selectedConnectionObj = connections.find(c => c.id === selectedConnection);
@@ -231,10 +202,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
       <div className="p-4 border-b border-white/20">
         <CustomSelector
           value={selectedConnection}
-          options={connectedConnections.map(conn => ({
-            value: conn.id,
-            label: `${conn.name} (${conn.type.toUpperCase()})`
-          }))}
+          options={formatConnectionOptions(connectedConnections)}
           onChange={(value) => {
             setSelectedConnection(value);
             setSelectedDatabase('');
@@ -287,7 +255,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
                   onClick={() => handleDatabaseToggle(selectedConnection, db.name)}
                   className="flex items-center space-x-2 w-full text-left p-1 hover:bg-white/10 transition-colors font-mono text-xs"
                 >
-                  {expandedDatabases.has(`${selectedConnection}:${db.name}`) ? (
+                  {expandedDatabases.has(generateDatabaseKey(selectedConnection, db.name)) ? (
                     <ChevronDown size={12} />
                   ) : (
                     <ChevronRight size={12} />
@@ -298,7 +266,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
                 </button>
 
                 {/* Tables */}
-                {expandedDatabases.has(`${selectedConnection}:${db.name}`) && (
+                {expandedDatabases.has(generateDatabaseKey(selectedConnection, db.name)) && (
                   <div className="ml-4 space-y-1">
                     {tables.map((table) => (
                       <button
@@ -415,7 +383,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
               icon={Eye}
               onClick={() => {
                 if (selectedConnection && selectedTable) {
-                  const query = `SELECT * FROM ${selectedTable} LIMIT ${queryLimit}`;
+                  const query = generateSelectQuery(selectedTable, queryLimit);
                   setSqlQuery(query);
                   executeQuery(selectedConnection, query, queryLimit);
                   setActiveTab('data');
@@ -429,7 +397,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
               icon={Play}
               onClick={() => {
                 if (selectedTable) {
-                  setSqlQuery(`SELECT * FROM ${selectedTable} LIMIT ${queryLimit}`);
+                  setSqlQuery(generateSelectQuery(selectedTable, queryLimit));
                   setActiveTab('query');
                 }
               }}
@@ -552,7 +520,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             <CustomButton
               label="EXPORT CSV"
               icon={Download}
-              onClick={exportToCSV}
+              onClick={handleExportToCSV}
               color="white"
               className="w-auto"
             />
@@ -640,7 +608,7 @@ SELECT * FROM users LIMIT 10;"
             <CustomButton
               label="COPY"
               icon={Copy}
-              onClick={() => copyToClipboard(sqlQuery)}
+              onClick={() => handleCopyToClipboard(sqlQuery)}
               color="white"
               className="w-auto px-3 py-2"
             />
@@ -734,7 +702,7 @@ SELECT * FROM users LIMIT 10;"
                 <div className="flex items-center space-x-1 flex-shrink-0">
                   <CustomButton
                     icon={Copy}
-                    onClick={() => copyToClipboard(query.sql)}
+                    onClick={() => handleCopyToClipboard(query.sql)}
                     color="white"
                     className="w-auto px-2 py-1 text-xs"
                     title="Copy SQL"
