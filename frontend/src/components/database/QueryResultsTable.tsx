@@ -23,13 +23,21 @@ const QueryResultsTable: FC<QueryResultsTableProps> = ({ queryResults, isFullscr
 
   const getColumnWidth = (colName: string) => {
     const lowerCol = colName.toLowerCase();
-    if (lowerCol.includes('id') || lowerCol === 'id') return '80px';
-    if (lowerCol.includes('status') || lowerCol.includes('phase')) return '100px';
-    if (lowerCol.includes('count') || lowerCol.includes('cpu') || lowerCol.includes('memory')) return '120px';
-    if (lowerCol.includes('timestamp') || lowerCol.includes('created') || lowerCol.includes('updated')) return '180px';
-    if (lowerCol.includes('name') || lowerCol.includes('namespace')) return '200px';
-    if (lowerCol.includes('notes') || lowerCol.includes('description') || lowerCol.includes('skills')) return '300px';
-    return '150px'; // default
+    
+    // Calculate minimum width based on column title length (roughly 8px per character + padding)
+    const minWidthForTitle = Math.max(colName.length * 8 + 32, 80);
+    
+    let suggestedWidth = 150; // default
+    
+    if (lowerCol.includes('id') || lowerCol === 'id') suggestedWidth = 80;
+    else if (lowerCol.includes('status') || lowerCol.includes('phase')) suggestedWidth = 100;
+    else if (lowerCol.includes('count') || lowerCol.includes('cpu') || lowerCol.includes('memory')) suggestedWidth = 120;
+    else if (lowerCol.includes('timestamp') || lowerCol.includes('created') || lowerCol.includes('updated')) suggestedWidth = 180;
+    else if (lowerCol.includes('name') || lowerCol.includes('namespace')) suggestedWidth = 200;
+    else if (lowerCol.includes('notes') || lowerCol.includes('description') || lowerCol.includes('skills')) suggestedWidth = 300;
+    
+    // Return the larger of suggested width or minimum title width
+    return `${Math.max(suggestedWidth, minWidthForTitle)}px`;
   };
 
   return (
