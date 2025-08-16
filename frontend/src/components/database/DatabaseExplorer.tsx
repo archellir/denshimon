@@ -29,6 +29,7 @@ import { DatabaseStatus } from '@/types/database';
 import CustomSelector from '@components/common/CustomSelector';
 import CustomButton from '@components/common/CustomButton';
 import CustomCheckbox from '@components/common/CustomCheckbox';
+import QueryResultsTable from './QueryResultsTable';
 import { mockQueryHistory } from '@mocks/database/queries';
 
 type ExplorerTab = 'schema' | 'data' | 'query' | 'saved';
@@ -513,36 +514,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             ERROR: {queryResults.error}
           </div>
         ) : (
-          <div className="border border-white flex-shrink-0" style={{ height: isFullscreen ? 'calc(100vh - 200px)' : '400px', width: '100%', overflow: 'hidden' }}>
-            <div className="h-full w-full overflow-auto">
-              <table className="text-sm font-mono border-collapse" style={{ tableLayout: 'auto' }}>
-              <thead className="bg-white/10 sticky top-0">
-                <tr>
-                  {queryResults.columns.map((col, i) => (
-                    <th key={i} className="text-left p-2 border-r border-white/20 last:border-r-0 bg-white/10 whitespace-nowrap" style={{ minWidth: '150px' }}>
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {queryResults.rows.map((row, i) => (
-                  <tr key={i} className="border-t border-white/10 hover:bg-white/5">
-                    {row.map((cell, j) => (
-                      <td key={j} className="p-2 border-r border-white/10 last:border-r-0 whitespace-nowrap" style={{ minWidth: '150px', maxWidth: '300px' }}>
-                        {cell === null ? (
-                          <span className="opacity-50 italic">NULL</span>
-                        ) : (
-                          String(cell)
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-          </div>
+          <QueryResultsTable queryResults={queryResults} isFullscreen={isFullscreen} />
         )}
       </div>
     );
