@@ -186,30 +186,42 @@ func (p *Publisher) publishNetworkMetrics() {
 		case <-ticker.C:
 			ctx := context.Background()
 			
-			// Get real network metrics from Kubernetes
-			// This would typically involve querying metrics-server or prometheus
-			// For now, we'll get service and ingress information
-			services, err := p.k8sClient.ListServices(ctx, "")
+			// Try to get network metrics from Prometheus (1 hour duration for WebSocket)
+			networkMetrics, err := p.metricsService.GetNetworkMetrics(ctx, time.Hour)
 			if err != nil {
-				slog.Error("Failed to get services for network metrics", "error", err)
-				continue
-			}
+				slog.Debug("Failed to get network metrics from Prometheus, using basic service data", "error", err)
+				
+				// Fallback: get basic service information
+				services, err := p.k8sClient.ListServices(ctx, "")
+				if err != nil {
+					slog.Error("Failed to get services for network metrics", "error", err)
+					continue
+				}
 
-			var serviceData []map[string]interface{}
-			for _, svc := range services.Items {
-				serviceData = append(serviceData, map[string]interface{}{
-					"name":       svc.Name,
-					"namespace":  svc.Namespace,
-					"type":       string(svc.Spec.Type),
-					"clusterIP":  svc.Spec.ClusterIP,
-					"ports":      svc.Spec.Ports,
+				var serviceData []map[string]interface{}
+				for _, svc := range services.Items {
+					serviceData = append(serviceData, map[string]interface{}{
+						"name":       svc.Name,
+						"namespace":  svc.Namespace,
+						"type":       string(svc.Spec.Type),
+						"clusterIP":  svc.Spec.ClusterIP,
+						"ports":      svc.Spec.Ports,
+					})
+				}
+
+				p.hub.Broadcast(MessageTypeNetwork, map[string]interface{}{
+					"services":  serviceData,
+					"timestamp": time.Now().UTC().Format(time.RFC3339),
+					"source":    "k8s_basic",
+				})
+			} else {
+				// Use real Prometheus network metrics
+				p.hub.Broadcast(MessageTypeNetwork, map[string]interface{}{
+					"data":      networkMetrics,
+					"timestamp": time.Now().UTC().Format(time.RFC3339),
+					"source":    "prometheus",
 				})
 			}
-
-			p.hub.Broadcast(MessageTypeNetwork, map[string]interface{}{
-				"services":  serviceData,
-				"timestamp": time.Now().UTC().Format(time.RFC3339),
-			})
 		}
 	}
 }
@@ -226,17 +238,31 @@ func (p *Publisher) publishStorageMetrics() {
 		case <-ticker.C:
 			ctx := context.Background()
 			
-			// Get storage information from Kubernetes
-			storageInfo, err := p.k8sClient.GetStorageInfo(ctx)
+			// Try to get storage metrics from Prometheus
+			storageMetrics, err := p.metricsService.GetStorageMetrics(ctx)
 			if err != nil {
-				slog.Error("Failed to get storage info", "error", err)
-				continue
-			}
+				slog.Debug("Failed to get storage metrics from Prometheus, using basic storage info", "error", err)
+				
+				// Fallback: get basic storage information from Kubernetes
+				storageInfo, err := p.k8sClient.GetStorageInfo(ctx)
+				if err != nil {
+					slog.Error("Failed to get storage info", "error", err)
+					continue
+				}
 
-			p.hub.Broadcast(MessageTypeStorage, map[string]interface{}{
-				"storage":   storageInfo,
-				"timestamp": time.Now().UTC().Format(time.RFC3339),
-			})
+				p.hub.Broadcast(MessageTypeStorage, map[string]interface{}{
+					"storage":   storageInfo,
+					"timestamp": time.Now().UTC().Format(time.RFC3339),
+					"source":    "k8s_basic",
+				})
+			} else {
+				// Use real Prometheus storage metrics
+				p.hub.Broadcast(MessageTypeStorage, map[string]interface{}{
+					"data":      storageMetrics,
+					"timestamp": time.Now().UTC().Format(time.RFC3339),
+					"source":    "prometheus",
+				})
+			}
 		}
 	}
 }
