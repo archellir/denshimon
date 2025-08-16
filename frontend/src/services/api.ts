@@ -2,7 +2,7 @@ import type { ApiResponse } from '@/types';
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
   requireAuth?: boolean;
 }
@@ -78,7 +78,7 @@ class ApiService {
   // POST request
   async post<T>(
     url: string, 
-    body?: any, 
+    body?: unknown, 
     requireAuth = true
   ): Promise<ApiResponse<T>> {
     return this.request<T>(url, { method: 'POST', body, requireAuth });
@@ -87,7 +87,7 @@ class ApiService {
   // PUT request
   async put<T>(
     url: string, 
-    body?: any, 
+    body?: unknown, 
     requireAuth = true
   ): Promise<ApiResponse<T>> {
     return this.request<T>(url, { method: 'PUT', body, requireAuth });
@@ -101,7 +101,7 @@ class ApiService {
   // PATCH request
   async patch<T>(
     url: string, 
-    body?: any, 
+    body?: unknown, 
     requireAuth = true
   ): Promise<ApiResponse<T>> {
     return this.request<T>(url, { method: 'PATCH', body, requireAuth });
