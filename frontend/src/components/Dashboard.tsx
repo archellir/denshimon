@@ -623,6 +623,21 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
 
       case PrimaryTab.DATABASE:
         switch (secondaryTab) {
+          case DatabaseTab.CONNECTIONS:
+            return (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-mono opacity-60">
+                  {connections.length} CONNECTION{connections.length !== 1 ? 'S' : ''}
+                </span>
+                <button
+                  onClick={() => setShowAddDatabaseModal(true)}
+                  className="flex items-center space-x-2 px-3 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
+                >
+                  <Plus size={16} />
+                  <span>ADD CONNECTION</span>
+                </button>
+              </div>
+            );
           case DatabaseTab.BROWSER:
             return (
               <div className="flex items-center space-x-4">
