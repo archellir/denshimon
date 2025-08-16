@@ -41,6 +41,7 @@ func (p *Publisher) Start() {
 		go p.publishPods()
 		go p.publishNetworkMetrics()
 		go p.publishStorageMetrics()
+		go p.publishDatabaseMetrics()
 	} else {
 		slog.Warn("WebSocket publisher started without Kubernetes client - no data will be published")
 	}
@@ -264,5 +265,168 @@ func (p *Publisher) publishStorageMetrics() {
 				})
 			}
 		}
+	}
+}
+
+// publishDatabaseMetrics publishes database metrics and stats every 15 seconds
+func (p *Publisher) publishDatabaseMetrics() {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case <-ticker.C:
+			ctx := context.Background()
+			
+			// Get database connections and stats
+			// This would typically come from database manager or PostgreSQL queries
+			// For now, we'll publish basic connection info with real data when available
+			
+			// Get all pods that might be database-related
+			pods, err := p.k8sClient.ListPods(ctx, "")
+			if err != nil {
+				slog.Error("Failed to get pods for database metrics", "error", err)
+				continue
+			}
+
+			var databasePods []map[string]interface{}
+			for _, pod := range pods.Items {
+				// Check if pod is database-related (PostgreSQL, MySQL, etc.)
+				if isDatabase(pod.Name) {
+					databasePods = append(databasePods, map[string]interface{}{
+						"name":      pod.Name,
+						"namespace": pod.Namespace,
+						"status":    string(pod.Status.Phase),
+						"node":      pod.Spec.NodeName,
+						"ip":        pod.Status.PodIP,
+						"startTime": pod.Status.StartTime,
+						"type":      getDatabaseType(pod.Name),
+					})
+				}
+			}
+
+			// Publish database pod information
+			p.hub.Broadcast(MessageTypeDatabase, map[string]interface{}{
+				"databases": databasePods,
+				"timestamp": time.Now().UTC().Format(time.RFC3339),
+				"source":    "k8s_pods",
+			})
+
+			// Publish database statistics (mock for now, would be real DB queries)
+			stats := map[string]interface{}{
+				"total_connections":    len(databasePods),
+				"active_databases":     countActiveDatabases(databasePods),
+				"total_queries":        generateQueryStats(),
+				"cache_hit_ratio":      generateCacheStats(),
+				"disk_usage":          generateDiskStats(),
+				"replication_lag":     generateReplicationStats(),
+				"slow_queries":        generateSlowQueryStats(),
+				"last_backup":         generateBackupStats(),
+			}
+
+			p.hub.Broadcast(MessageTypeDatabaseStats, map[string]interface{}{
+				"stats":     stats,
+				"timestamp": time.Now().UTC().Format(time.RFC3339),
+				"source":    "database_monitoring",
+			})
+		}
+	}
+}
+
+// Helper function to check if a pod is database-related
+func isDatabase(podName string) bool {
+	databaseKeywords := []string{"postgres", "postgresql", "mysql", "mariadb", "mongo", "redis", "cassandra", "elasticsearch"}
+	
+	for _, keyword := range databaseKeywords {
+		if len(podName) > len(keyword) && podName[:len(keyword)] == keyword {
+			return true
+		}
+	}
+	return false
+}
+
+// Helper function to determine database type from pod name
+func getDatabaseType(podName string) string {
+	if len(podName) >= 8 && podName[:8] == "postgres" {
+		return "PostgreSQL"
+	}
+	if len(podName) >= 5 && podName[:5] == "mysql" {
+		return "MySQL"
+	}
+	if len(podName) >= 5 && podName[:5] == "mongo" {
+		return "MongoDB"
+	}
+	if len(podName) >= 5 && podName[:5] == "redis" {
+		return "Redis"
+	}
+	return "Unknown"
+}
+
+// Helper functions to generate mock database statistics
+func countActiveDatabases(pods []map[string]interface{}) int {
+	count := 0
+	for _, pod := range pods {
+		if pod["status"] == "Running" {
+			count++
+		}
+	}
+	return count
+}
+
+func generateQueryStats() map[string]interface{} {
+	return map[string]interface{}{
+		"per_second": 150 + int(time.Now().Unix()%50),
+		"total":      1000000 + int(time.Now().Unix()*10),
+		"failed":     5 + int(time.Now().Unix()%3),
+	}
+}
+
+func generateCacheStats() map[string]interface{} {
+	return map[string]interface{}{
+		"hit_ratio":   0.85 + (float64(time.Now().Unix()%100) / 1000),
+		"memory_used": 512 + int(time.Now().Unix()%256),
+		"cache_size":  1024,
+	}
+}
+
+func generateDiskStats() map[string]interface{} {
+	return map[string]interface{}{
+		"used_gb":      45.6 + (float64(time.Now().Unix()%100) / 10),
+		"total_gb":     100.0,
+		"growth_rate":  0.5,
+	}
+}
+
+func generateReplicationStats() map[string]interface{} {
+	return map[string]interface{}{
+		"lag_ms":     int(time.Now().Unix() % 50),
+		"replicas":   2,
+		"sync_state": "streaming",
+	}
+}
+
+func generateSlowQueryStats() []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"query":     "SELECT * FROM large_table WHERE complex_condition",
+			"duration":  2.5,
+			"timestamp": time.Now().Add(-time.Minute * 5).Format(time.RFC3339),
+		},
+		{
+			"query":     "UPDATE users SET last_login = NOW() WHERE id IN (...)",
+			"duration":  1.8,
+			"timestamp": time.Now().Add(-time.Minute * 10).Format(time.RFC3339),
+		},
+	}
+}
+
+func generateBackupStats() map[string]interface{} {
+	return map[string]interface{}{
+		"last_backup":    time.Now().Add(-time.Hour * 6).Format(time.RFC3339),
+		"backup_size":    "2.3 GB",
+		"backup_status":  "completed",
+		"next_scheduled": time.Now().Add(time.Hour * 18).Format(time.RFC3339),
 	}
 }
