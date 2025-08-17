@@ -12,6 +12,7 @@ import {
   X
 } from 'lucide-react';
 import useCertificateStore from '@stores/certificateStore';
+import StatCard from '@components/common/StatCard';
 import { 
   getCertificateStatusColor, 
   getCertificateStatusIcon, 
@@ -132,41 +133,41 @@ const CertificateHealthDashboard: FC = () => {
       {/* Statistics Cards */}
       {stats && (
         <div className="grid grid-cols-4 gap-4">
-          <div className="border border-green-400 p-4 text-green-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">VALID</span>
-              <CheckCircle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.valid}</div>
-            <div className="font-mono text-xs opacity-60">Certificates OK</div>
-          </div>
+          <StatCard
+            label="VALID"
+            value={stats.valid.toString()}
+            icon={CheckCircle}
+            status="success"
+            variant="analytics"
+            description="Certificates OK"
+          />
           
-          <div className="border border-yellow-400 p-4 text-yellow-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">EXPIRING SOON</span>
-              <Clock size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.expiringSoon}</div>
-            <div className="font-mono text-xs opacity-60">&lt; 30 days</div>
-          </div>
+          <StatCard
+            label="EXPIRING SOON"
+            value={stats.expiringSoon.toString()}
+            icon={Clock}
+            status="warning"
+            variant="analytics"
+            description="< 30 days"
+          />
           
-          <div className="border border-red-400 p-4 text-red-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">CRITICAL</span>
-              <AlertTriangle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.expiringCritical + stats.expired}</div>
-            <div className="font-mono text-xs opacity-60">&lt; 7 days / Expired</div>
-          </div>
+          <StatCard
+            label="CRITICAL"
+            value={(stats.expiringCritical + stats.expired).toString()}
+            icon={AlertTriangle}
+            status="error"
+            variant="analytics"
+            description="< 7 days / Expired"
+          />
           
-          <div className="border border-white p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">TOTAL</span>
-              <Shield size={16} />
-            </div>
-            <div className="font-mono text-2xl">{stats.total}</div>
-            <div className="font-mono text-xs opacity-60">All certificates</div>
-          </div>
+          <StatCard
+            label="TOTAL"
+            value={stats.total.toString()}
+            icon={Shield}
+            status="neutral"
+            variant="analytics"
+            description="All certificates"
+          />
         </div>
       )}
 
