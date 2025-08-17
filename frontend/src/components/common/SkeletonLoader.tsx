@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface SkeletonLoaderProps {
-  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview';
+  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config';
   count?: number;
   className?: string;
 }
@@ -251,6 +251,109 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
                       <div className="h-3 bg-white/10 animate-pulse rounded w-24 mt-1" />
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'infra-config':
+        return (
+          <div className="space-y-6">
+            {/* Repository Status Header Skeleton */}
+            <div className="border border-white/20 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-6 h-6 bg-white/10 animate-pulse rounded" />
+                  <div>
+                    <div className="h-6 bg-white/10 animate-pulse rounded w-48 mb-2" />
+                    <div className="h-4 bg-white/10 animate-pulse rounded w-64" />
+                  </div>
+                </div>
+                <div className="h-10 bg-white/10 animate-pulse rounded w-32" />
+              </div>
+            </div>
+
+            {/* Three Cards Grid Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Repository Status Card */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-3" />
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sync Information Card */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-3" />
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Activity Card */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-3" />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="h-3 bg-white/10 animate-pulse rounded w-28" />
+                    <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-white/10 animate-pulse rounded" />
+                    <div className="h-3 bg-white/10 animate-pulse rounded w-48" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Two Large Panels Grid Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* GitOps Monitoring Panel */}
+              <div className="border border-white/20 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-5 h-5 bg-white/10 animate-pulse rounded" />
+                  <div className="h-5 bg-white/10 animate-pulse rounded w-40" />
+                </div>
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-24" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                    </div>
+                  ))}
+                  <div className="h-10 bg-white/10 animate-pulse rounded w-full mt-4" />
+                </div>
+              </div>
+
+              {/* Webhook Integration Panel */}
+              <div className="border border-white/20 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-5 h-5 bg-white/10 animate-pulse rounded" />
+                  <div className="h-5 bg-white/10 animate-pulse rounded w-40" />
+                </div>
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                    </div>
+                  ))}
+                  <div className="flex space-x-2 mt-4">
+                    <div className="flex-1 h-10 bg-white/10 animate-pulse rounded" />
+                    <div className="h-10 w-10 bg-white/10 animate-pulse rounded" />
+                  </div>
                 </div>
               </div>
             </div>

@@ -134,17 +134,7 @@ const ConfigurationTab = () => {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <SkeletonLoader variant="card" count={1} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <SkeletonLoader variant="card" count={3} />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SkeletonLoader variant="card" count={2} />
-        </div>
-      </div>
-    );
+    return <SkeletonLoader variant="infra-config" />;
   }
 
   if (!repository) {
