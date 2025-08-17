@@ -5,6 +5,7 @@ import { MOCK_ENABLED, mockBaseInfrastructureRepo, mockSyncMetrics, mockMonitori
 import type { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 import NoRepositoryConnected from './NoRepositoryConnected';
+import ConfigCard from './ConfigCard';
 
 
 const ConfigurationTab = () => {
@@ -23,9 +24,9 @@ const ConfigurationTab = () => {
       if (MOCK_ENABLED) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
-        // Temporarily show no repository to demo the connection flow
-        setRepository(null);
-        setMetrics(null);
+        // Show mock base infrastructure repository
+        setRepository(mockBaseInfrastructureRepo);
+        setMetrics(mockSyncMetrics);
         setMonitoringData(mockMonitoringData);
         setWebhookData(mockWebhookData);
       } else {
@@ -174,163 +175,182 @@ const ConfigurationTab = () => {
 
       {/* Repository Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Status Card */}
-        <div className="bg-black border border-white p-4">
-          <h3 className="text-sm font-bold text-white mb-3 font-mono tracking-wider uppercase">REPOSITORY STATUS</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">STATUS</span>
-              <div className="flex items-center space-x-2">
-                {(() => {
-                  const StatusIcon = getStatusIcon(repository.status);
-                  return <StatusIcon size={16} className={getStatusColor(repository.status)} />;
-                })()}
-                <span className={`text-sm font-mono tracking-wider uppercase ${getStatusColor(repository.status)}`}>
-                  {repository.status}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">BRANCH</span>
-              <span className="text-sm text-white font-mono tracking-wider uppercase">{repository.branch}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">SYNC STATUS</span>
-              <span className={`text-sm font-mono tracking-wider uppercase ${getStatusColor(repository.sync_status)}`}>
-                {repository.sync_status}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">HEALTH</span>
-              <span className={`text-sm font-mono tracking-wider uppercase ${getStatusColor(repository.health)}`}>
-                {repository.health}
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Repository Status Card */}
+        <ConfigCard
+          title="REPOSITORY STATUS"
+          icon={Eye}
+          iconColor="text-blue-400"
+          items={[
+            {
+              label: 'STATUS',
+              value: (
+                <div className="flex items-center space-x-2">
+                  {(() => {
+                    const StatusIcon = getStatusIcon(repository.status);
+                    return <StatusIcon size={16} className={getStatusColor(repository.status)} />;
+                  })()}
+                  <span className={`uppercase ${getStatusColor(repository.status)}`}>
+                    {repository.status}
+                  </span>
+                </div>
+              )
+            },
+            {
+              label: 'BRANCH',
+              value: repository.branch.toUpperCase()
+            },
+            {
+              label: 'SYNC STATUS',
+              value: repository.sync_status.toUpperCase(),
+              valueColor: getStatusColor(repository.sync_status)
+            },
+            {
+              label: 'HEALTH',
+              value: repository.health.toUpperCase(),
+              valueColor: getStatusColor(repository.health)
+            }
+          ]}
+        />
 
-        {/* Sync Information */}
-        <div className="bg-black border border-white p-4">
-          <h3 className="text-sm font-bold text-white mb-3 font-mono tracking-wider uppercase">SYNC INFORMATION</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">LAST SYNC</span>
-              <span className="text-sm text-white font-mono tracking-wider">
-                {repository.last_sync 
-                  ? new Date(repository.last_sync).toLocaleString().toUpperCase()
-                  : 'NEVER'
-                }
-              </span>
-            </div>
-            {metrics && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300 font-mono tracking-wider">TOTAL APPS</span>
-                  <span className="text-sm text-white font-mono tracking-wider">{metrics.total_applications}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300 font-mono tracking-wider">SYNCED</span>
-                  <span className="text-sm text-green-400 font-mono tracking-wider">{metrics.synced_applications}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300 font-mono tracking-wider">OUT OF SYNC</span>
-                  <span className="text-sm text-yellow-400 font-mono tracking-wider">{metrics.out_of_sync_applications}</span>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        {/* Sync Information Card */}
+        <ConfigCard
+          title="SYNC INFORMATION"
+          icon={Activity}
+          iconColor="text-green-400"
+          items={[
+            {
+              label: 'LAST SYNC',
+              value: repository.last_sync 
+                ? new Date(repository.last_sync).toLocaleString().toUpperCase()
+                : 'NEVER'
+            },
+            ...(metrics ? [
+              {
+                label: 'TOTAL APPS',
+                value: metrics.total_applications.toString()
+              },
+              {
+                label: 'SYNCED',
+                value: metrics.synced_applications.toString(),
+                valueColor: 'text-green-400'
+              },
+              {
+                label: 'OUT OF SYNC',
+                value: metrics.out_of_sync_applications.toString(),
+                valueColor: 'text-yellow-400'
+              }
+            ] : [])
+          ]}
+        />
 
-        {/* Recent Activity */}
-        <div className="bg-black border border-white p-4">
-          <h3 className="text-sm font-bold text-white mb-3 font-mono tracking-wider uppercase">RECENT ACTIVITY</h3>
-          <div className="space-y-3">
-            {metrics && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-300 font-mono tracking-wider">RECENT DEPLOYMENTS</span>
-                <span className="text-sm text-white font-mono tracking-wider">{metrics.recent_deployments}</span>
-              </div>
-            )}
-            <div className="flex items-center space-x-2 text-sm text-gray-300">
-              <GitCommit size={14} />
-              <span className="font-mono tracking-wider">ALL KUBERNETES CONFIGURATIONS MANAGED IN BASE REPOSITORY</span>
-            </div>
-          </div>
-        </div>
+        {/* Recent Activity Card */}
+        <ConfigCard
+          title="RECENT ACTIVITY"
+          icon={GitCommit}
+          iconColor="text-yellow-400"
+          items={[
+            ...(metrics ? [{
+              label: 'RECENT DEPLOYMENTS',
+              value: metrics.recent_deployments.toString()
+            }] : []),
+            {
+              label: '',
+              value: (
+                <div className="flex items-center space-x-2 text-gray-300">
+                  <GitCommit size={14} />
+                  <span className="text-xs">ALL KUBERNETES CONFIGURATIONS MANAGED IN BASE REPOSITORY</span>
+                </div>
+              )
+            }
+          ]}
+        />
       </div>
 
       {/* Monitoring & Webhooks Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monitoring Panel */}
-        <div className="bg-black border border-white p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <Monitor size={20} className="text-blue-400" />
-            <h3 className="text-lg font-bold text-white font-mono tracking-wider uppercase">GITOPS MONITORING</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">HEALTH CHECKS</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">{monitoringData.healthChecks}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">DRIFT DETECTION</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">{monitoringData.driftDetection}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">AUTO SYNC</span>
-              <span className="text-sm text-blue-400 font-mono tracking-wider">{monitoringData.autoSyncInterval} INTERVAL</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">ALERTS</span>
-              <div className="flex items-center space-x-2">
-                <Bell size={14} className="text-yellow-400" />
-                <span className="text-sm text-white font-mono tracking-wider">{monitoringData.activeAlerts} ACTIVE</span>
-              </div>
-            </div>
-            <button className="w-full mt-4 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm tracking-wider uppercase">
-              VIEW MONITORING DASHBOARD
-            </button>
-          </div>
-        </div>
+        {/* GitOps Monitoring Card */}
+        <ConfigCard
+          title="GITOPS MONITORING"
+          icon={Monitor}
+          iconColor="text-blue-400"
+          items={[
+            {
+              label: 'HEALTH CHECKS',
+              value: monitoringData.healthChecks,
+              valueColor: 'text-green-400'
+            },
+            {
+              label: 'DRIFT DETECTION',
+              value: monitoringData.driftDetection,
+              valueColor: 'text-green-400'
+            },
+            {
+              label: 'AUTO SYNC',
+              value: `${monitoringData.autoSyncInterval} INTERVAL`,
+              valueColor: 'text-blue-400'
+            },
+            {
+              label: 'ALERTS',
+              value: (
+                <div className="flex items-center space-x-2">
+                  <Bell size={14} className="text-yellow-400" />
+                  <span>{monitoringData.activeAlerts} ACTIVE</span>
+                </div>
+              )
+            }
+          ]}
+          buttons={[
+            {
+              label: 'VIEW MONITORING DASHBOARD',
+              onClick: () => {},
+              color: 'blue'
+            }
+          ]}
+        />
 
-        {/* Webhook Panel */}
-        <div className="bg-black border border-white p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <Webhook size={20} className="text-green-400" />
-            <h3 className="text-lg font-bold text-white font-mono tracking-wider uppercase">WEBHOOK INTEGRATION</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">GIT PUSH EVENTS</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">{webhookData.gitPushEvents}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">AUTO DEPLOY</span>
-              <span className="text-sm text-green-400 font-mono tracking-wider">{webhookData.autoDeploy}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">NOTIFICATIONS</span>
-              <span className="text-sm text-blue-400 font-mono tracking-wider">{webhookData.notifications.join(', ')}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300 font-mono tracking-wider">LAST TRIGGER</span>
-              <span className="text-sm text-white font-mono tracking-wider">
-                {webhookData.lastTrigger 
-                  ? `${Math.floor((Date.now() - new Date(webhookData.lastTrigger).getTime()) / 60000)}MIN AGO`
-                  : 'NEVER'
-                }
-              </span>
-            </div>
-            <div className="flex space-x-2 mt-4">
-              <button className="flex-1 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm tracking-wider uppercase">
-                TEST WEBHOOK
-              </button>
-              <button className="px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors">
-                <Settings size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Webhook Integration Card */}
+        <ConfigCard
+          title="WEBHOOK INTEGRATION"
+          icon={Webhook}
+          iconColor="text-green-400"
+          items={[
+            {
+              label: 'GIT PUSH EVENTS',
+              value: webhookData.gitPushEvents,
+              valueColor: 'text-green-400'
+            },
+            {
+              label: 'AUTO DEPLOY',
+              value: webhookData.autoDeploy,
+              valueColor: 'text-green-400'
+            },
+            {
+              label: 'NOTIFICATIONS',
+              value: webhookData.notifications.join(', '),
+              valueColor: 'text-blue-400'
+            },
+            {
+              label: 'LAST TRIGGER',
+              value: webhookData.lastTrigger 
+                ? `${Math.floor((Date.now() - new Date(webhookData.lastTrigger).getTime()) / 60000)}MIN AGO`
+                : 'NEVER'
+            }
+          ]}
+          buttons={[
+            {
+              label: 'TEST WEBHOOK',
+              onClick: () => {},
+              color: 'green'
+            },
+            {
+              label: 'SETTINGS',
+              onClick: () => {},
+              color: 'white',
+              icon: Settings,
+              variant: 'icon'
+            }
+          ]}
+        />
       </div>
     </div>
   );
