@@ -68,7 +68,7 @@ const useServiceMeshStore = create<ServiceMeshStore>((set, get) => ({
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to load service mesh data:', error);
+      // console.error('Failed to load service mesh data:', error);
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to load service mesh data',
         isLoading: false 

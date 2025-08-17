@@ -14,7 +14,7 @@ export const parseTimeRangeToHours = (timeRange: string): number => {
   const matches = timeRange.match(/^(\d+)([mhd])$/);
   
   if (!matches) {
-    console.warn(`Invalid time range format: ${timeRange}, defaulting to 24 hours`);
+    // Invalid time range format, defaulting to 24 hours
     return 24;
   }
   

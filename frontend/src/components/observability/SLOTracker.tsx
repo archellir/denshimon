@@ -208,7 +208,7 @@ const SLOTracker: FC<SLOTrackerProps> = ({
         }
       }
     } catch (error) {
-      console.error('Failed to load SLOs:', error);
+      // console.error('Failed to load SLOs:', error);
       // Fallback to mock data on error
       setSLOs(generateSLOs());
     }

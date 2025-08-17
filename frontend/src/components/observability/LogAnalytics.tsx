@@ -50,7 +50,7 @@ const LogAnalytics: React.FC<LogAnalyticsProps> = ({ timeRange = TimeRange.TWENT
         }
       }
     } catch (error) {
-      console.error('Failed to load log analytics:', error);
+      // console.error('Failed to load log analytics:', error);
       // Fallback to mock data on error
       generateMockMetrics();
     }

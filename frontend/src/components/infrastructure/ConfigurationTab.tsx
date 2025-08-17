@@ -44,7 +44,7 @@ const ConfigurationTab = () => {
       }
       
     } catch (error) {
-      console.error('Failed to fetch base repository:', error);
+      // console.error('Failed to fetch base repository:', error);
       // Fallback to mock data on error
       setRepository(mockBaseInfrastructureRepo);
       setMetrics(mockSyncMetrics);
@@ -80,7 +80,7 @@ const ConfigurationTab = () => {
             recent_deployments: prev.recent_deployments + Math.floor(Math.random() * 3)
           } : null);
         }
-        console.log(result.message);
+        // console.log(result.message);
       } else {
         const response = await fetch(API_ENDPOINTS.GITOPS.REPOSITORY_SYNC(repository.id), {
           method: 'POST'
@@ -91,7 +91,7 @@ const ConfigurationTab = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to sync repository:', error);
+      // console.error('Failed to sync repository:', error);
     } finally {
       setSyncing(false);
     }

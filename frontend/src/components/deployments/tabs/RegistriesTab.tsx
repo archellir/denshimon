@@ -38,7 +38,7 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
 
   const handleTestRegistry = async (registry: Registry) => {
     const success = await testRegistry(registry.id);
-    console.log(`Registry test ${success ? 'passed' : 'failed'}`);
+    // Registry test completed
   };
 
   const handleDeleteRegistry = (registry: Registry) => {
@@ -56,7 +56,7 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
       await deleteRegistry(deleteDialog.registry.id);
       setDeleteDialog({ open: false, registry: null });
     } catch (error) {
-      console.error('Failed to delete registry:', error);
+      // Failed to delete registry
     } finally {
       setActionLoading(false);
     }

@@ -370,7 +370,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to fetch service health:', error);
+      // console.error('Failed to fetch service health:', error);
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch service health';
       set({ 
         error: errorMessage,
@@ -389,7 +389,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.INFRASTRUCTURE.STATUS);
       set({ infrastructureStatus: response.data.data || response.data });
     } catch (error) {
-      console.error('Failed to fetch infrastructure status:', error);
+      // console.error('Failed to fetch infrastructure status:', error);
     }
   },
 
@@ -403,7 +403,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.INFRASTRUCTURE.ALERTS);
       set({ alerts: response.data.data || response.data || [] });
     } catch (error) {
-      console.error('Failed to fetch infrastructure alerts:', error);
+      // console.error('Failed to fetch infrastructure alerts:', error);
     }
   },
 
@@ -419,7 +419,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
       
       set({ isLoading: false });
     } catch (error) {
-      console.error('Failed to refresh services:', error);
+      // console.error('Failed to refresh services:', error);
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to refresh services',
         isLoading: false 
@@ -438,7 +438,7 @@ const useServiceHealthStore = create<ServiceHealthStore>((set, get) => ({
       
       set({ alerts: updatedAlerts });
     } catch (error) {
-      console.error('Failed to acknowledge alert:', error);
+      // console.error('Failed to acknowledge alert:', error);
       set({ error: error instanceof ApiError ? error.message : 'Failed to acknowledge alert' });
     }
   },

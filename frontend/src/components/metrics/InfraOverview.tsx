@@ -27,7 +27,7 @@ const InfraOverview: FC<InfraOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR 
   // Fetch initial cluster metrics only (history is fetched by Dashboard)
   useEffect(() => {
     fetchClusterMetrics().catch(error => {
-      console.error('Error fetching cluster metrics:', error);
+      // Error fetching cluster metrics - handle silently
     });
   }, [fetchClusterMetrics]);
 
@@ -46,7 +46,7 @@ const InfraOverview: FC<InfraOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR 
         nodes: metricsHistory.nodes?.[index]?.value || 0,
       }));
     } catch (error) {
-      console.error('Error formatting chart data:', error);
+      // Error formatting chart data
       return [];
     }
   }, [metricsHistory]);
@@ -266,7 +266,7 @@ const InfraOverview: FC<InfraOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR 
       </div>
     );
   } catch (error) {
-    console.error('InfraOverview render error:', error);
+    // InfraOverview render error
     return (
       <div className="flex items-center justify-center h-64 border border-red-400">
         <div className="text-center">

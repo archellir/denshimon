@@ -271,7 +271,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
         onClose={() => setSettingsDialog({ isOpen: false, connectionId: '', connectionName: '' })}
         onConfirm={() => {
           // Settings functionality placeholder
-          console.log('Open settings for:', settingsDialog.connectionId);
+          // Open settings for connection
         }}
         title="Connection Settings"
         message={`Configure settings for database connection "${settingsDialog.connectionName}".`}

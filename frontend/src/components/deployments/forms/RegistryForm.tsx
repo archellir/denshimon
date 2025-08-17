@@ -60,7 +60,7 @@ const RegistryForm: FC<RegistryFormProps> = ({ registry, onClose, onSave }) => {
       });
       onSave();
     } catch (error) {
-      console.error('Failed to save registry:', error);
+      // console.error('Failed to save registry:', error);
     }
   };
 

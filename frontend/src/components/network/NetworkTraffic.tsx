@@ -37,7 +37,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
         const data = generateNetworkMetrics(timeRange);
         setNetworkData(data);
       } catch (error) {
-        console.error('Error fetching network data:', error);
+        // Error fetching network data
       } finally {
         setIsLoading(false);
       }

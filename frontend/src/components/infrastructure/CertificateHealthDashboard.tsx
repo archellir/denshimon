@@ -93,7 +93,7 @@ const CertificateHealthDashboard: FC = () => {
               if (domain && domain.trim()) {
                 // Here we would call the certificate store's addDomain function
                 // For now, just log the action
-                console.log('Adding domain for monitoring:', domain.trim());
+                // Adding domain for monitoring
                 // You could also show a notification here
                 alert(`Domain "${domain.trim()}" added for SSL monitoring`);
               }

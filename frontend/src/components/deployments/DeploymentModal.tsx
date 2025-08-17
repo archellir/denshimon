@@ -216,7 +216,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         });
       }
     } catch (error) {
-      console.error('Failed to deploy application:', error);
+      // console.error('Failed to deploy application:', error);
     } finally {
       setDeploying(false);
     }

@@ -251,51 +251,51 @@ export const handleResourceAction = async (
 ) => {
   const resourceId = namespace ? `${namespace}/${resourceName}` : resourceName;
   
-  console.log(`Executing action: ${action} on ${resourceKind} ${resourceId}`);
+  // Executing action on resource
   
   // In a real implementation, these would make API calls
   switch (action) {
     case 'describe':
-      console.log(`kubectl describe ${resourceKind} ${resourceId}`);
+      // kubectl describe resource
       // API call to get resource details
       break;
       
     case 'logs':
-      console.log(`kubectl logs ${resourceId}`);
+      // kubectl logs
       // API call to stream logs
       break;
       
     case 'exec':
-      console.log(`kubectl exec -it ${resourceId} -- /bin/sh`);
+      // kubectl exec
       // Open terminal connection
       break;
       
     case 'edit':
-      console.log(`kubectl edit ${resourceKind} ${resourceId}`);
+      // kubectl edit
       // Open YAML editor
       break;
       
     case 'delete':
-      console.log(`kubectl delete ${resourceKind} ${resourceId}`);
+      // kubectl delete
       // API call to delete resource
       break;
       
     case 'scale':
-      console.log(`kubectl scale ${resourceKind} ${resourceId} --replicas=?`);
+      // kubectl scale
       // Open scale dialog
       break;
       
     case 'restart':
-      console.log(`kubectl rollout restart ${resourceKind} ${resourceId}`);
+      // kubectl rollout restart
       // API call to restart
       break;
       
     case 'rollback':
-      console.log(`kubectl rollout undo ${resourceKind} ${resourceId}`);
+      // kubectl rollout undo
       // API call to rollback
       break;
       
     default:
-      console.log(`Unknown action: ${action}`);
+      // Unknown action
   }
 };

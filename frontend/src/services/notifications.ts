@@ -59,7 +59,7 @@ class NotificationService {
       try {
         listener(notifications);
       } catch (error) {
-        console.error('Error in notification listener:', error);
+        // Error in notification listener
       }
     });
   }

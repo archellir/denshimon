@@ -112,7 +112,7 @@ const AddDatabaseConnectionModal: FC<AddDatabaseConnectionModalProps> = ({ isOpe
       });
       setHasTestedSuccessfully(false);
     } catch (error) {
-      console.error('Failed to create connection:', error);
+      // console.error('Failed to create connection:', error);
     }
   };
 

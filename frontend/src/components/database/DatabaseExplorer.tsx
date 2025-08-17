@@ -161,7 +161,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
       });
       setQueryName('');
     } catch (error) {
-      console.error('Failed to save query:', error);
+      // Failed to save query
     }
   };
 
@@ -189,7 +189,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
       exportQueryResultsToCSV(queryResults);
       showNotification('CSV exported successfully!');
     } catch (error) {
-      console.error('Export failed:', error);
+      // Export failed
       showNotification('No data to export');
     }
   };
@@ -773,7 +773,7 @@ SELECT * FROM users LIMIT 10;"
               await deleteSavedQuery(deleteConfirmDialog.queryId);
               setDeleteConfirmDialog({ open: false, queryId: null });
             } catch (error) {
-              console.error('Failed to delete query:', error);
+              // Failed to delete query
             }
           }
         }}

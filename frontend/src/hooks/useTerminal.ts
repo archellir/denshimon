@@ -94,10 +94,10 @@ export const useTerminal = (): UseTerminalReturn => {
               setError(message.data as string);
               break;
             default:
-              console.warn('Unknown terminal message type:', message.type);
+              // console.warn('Unknown terminal message type:', message.type);
           }
         } catch (err) {
-          console.error('Failed to parse terminal message:', err);
+          // console.error('Failed to parse terminal message:', err);
           setError('Failed to parse server message');
         }
       };
@@ -121,13 +121,13 @@ export const useTerminal = (): UseTerminalReturn => {
       };
 
       ws.onerror = (event) => {
-        console.error('WebSocket error:', event);
+        // console.error('WebSocket error:', event);
         setError('WebSocket connection error');
         setIsConnecting(false);
       };
 
     } catch (err) {
-      console.error('Failed to create WebSocket connection:', err);
+      // console.error('Failed to create WebSocket connection:', err);
       setError('Failed to create terminal connection');
       setIsConnecting(false);
     }

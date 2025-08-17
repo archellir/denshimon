@@ -420,7 +420,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.JOBS);
       set({ jobs: response.data.data || response.data || [], isLoading: false });
     } catch (error) {
-      console.error('Failed to fetch backup jobs:', error);
+      // Failed to fetch backup jobs
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to fetch backup jobs',
         isLoading: false 
@@ -448,7 +448,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await apiService.get<any>(url);
       set({ history: response.data.data || response.data || [], isLoading: false });
     } catch (error) {
-      console.error('Failed to fetch backup history:', error);
+      // Failed to fetch backup history
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to fetch backup history',
         isLoading: false 
@@ -466,7 +466,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.STORAGE);
       set({ storage: response.data.data || response.data || [] });
     } catch (error) {
-      console.error('Failed to fetch backup storage:', error);
+      // Failed to fetch backup storage
     }
   },
 
@@ -480,7 +480,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.STATISTICS);
       set({ statistics: response.data.data || response.data });
     } catch (error) {
-      console.error('Failed to fetch backup statistics:', error);
+      // Failed to fetch backup statistics
     }
   },
 
@@ -494,7 +494,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.RECOVERIES_ACTIVE);
       set({ activeRecoveries: response.data.data || response.data || [] });
     } catch (error) {
-      console.error('Failed to fetch active recoveries:', error);
+      // Failed to fetch active recoveries
     }
   },
 
@@ -508,7 +508,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.BACKUP.ALERTS);
       set({ alerts: response.data.data || response.data || [] });
     } catch (error) {
-      console.error('Failed to fetch backup alerts:', error);
+      // Failed to fetch backup alerts
     }
   },
 
@@ -519,7 +519,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       // Refresh job status
       await get().fetchBackupJobs();
     } catch (error) {
-      console.error('Failed to run backup:', error);
+      // Failed to run backup
       set({ error: error instanceof ApiError ? error.message : 'Failed to run backup' });
     }
   },
@@ -531,7 +531,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       // Refresh job status
       await get().fetchBackupJobs();
     } catch (error) {
-      console.error('Failed to cancel backup:', error);
+      // Failed to cancel backup
       set({ error: error instanceof ApiError ? error.message : 'Failed to cancel backup' });
     }
   },
@@ -543,7 +543,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       // Refresh history
       await get().fetchBackupHistory();
     } catch (error) {
-      console.error('Failed to verify backup:', error);
+      // Failed to verify backup
       set({ error: error instanceof ApiError ? error.message : 'Failed to verify backup' });
     }
   },
@@ -555,7 +555,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       // Refresh active recoveries
       await get().fetchActiveRecoveries();
     } catch (error) {
-      console.error('Failed to start recovery:', error);
+      // Failed to start recovery
       set({ error: error instanceof ApiError ? error.message : 'Failed to start recovery' });
     }
   },
@@ -567,7 +567,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       // Refresh history
       await get().fetchBackupHistory();
     } catch (error) {
-      console.error('Failed to delete backup:', error);
+      // Failed to delete backup
       set({ error: error instanceof ApiError ? error.message : 'Failed to delete backup' });
     }
   },
@@ -579,7 +579,7 @@ const useBackupStore = create<BackupStore>((set, get) => ({
       // Refresh jobs
       await get().fetchBackupJobs();
     } catch (error) {
-      console.error('Failed to update schedule:', error);
+      // Failed to update schedule
       set({ error: error instanceof ApiError ? error.message : 'Failed to update schedule' });
     }
   },

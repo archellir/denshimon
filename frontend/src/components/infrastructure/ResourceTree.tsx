@@ -123,8 +123,7 @@ const ResourceTree: FC<ResourceTreeProps> = ({ selectedNamespace }) => {
         setIsLoading(false);
       }
     } catch (error) {
-      console.error('Failed to load resources:', error);
-      // Fallback to mock data on error
+      // Failed to load resources - fallback to mock data on error
       let mockResources = generateMockResources();
       
       if (selectedNamespace && selectedNamespace !== 'all') {

@@ -73,7 +73,7 @@ const NoRepositoryConnected = ({ onRepositoryConnected }: NoRepositoryConnectedP
       
       if (response.success && response.data) {
         // Successfully connected repository
-        console.log('Repository connected successfully:', response.data);
+        // console.log('Repository connected successfully:', response.data);
         
         // Close dialog and reset form
         setShowConnectDialog(false);
@@ -89,7 +89,7 @@ const NoRepositoryConnected = ({ onRepositoryConnected }: NoRepositoryConnectedP
       }
       
     } catch (error) {
-      console.error('Repository connection failed:', error);
+      // console.error('Repository connection failed:', error);
       
       // Handle different types of errors
       if (error instanceof Error) {

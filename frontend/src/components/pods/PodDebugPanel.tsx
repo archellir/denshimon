@@ -85,7 +85,7 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
         );
       }, 2000);
     } catch (error) {
-      console.error('Failed to create port forward:', error);
+      // console.error('Failed to create port forward:', error);
     }
   };
 
@@ -322,11 +322,11 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
                       pod={pod}
                       selectedContainer={selectedContainer}
                       onFileDownload={(file) => {
-                        console.log('Download file:', file);
+                        // console.log('Download file:', file);
                         // TODO: Implement actual file download via API
                       }}
                       onFileUpload={(path, file) => {
-                        console.log('Upload file to:', path, file);
+                        // console.log('Upload file to:', path, file);
                         // TODO: Implement actual file upload via API
                       }}
                     />

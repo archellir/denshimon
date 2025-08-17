@@ -49,7 +49,7 @@ export const copyWithNotification = async (
     await copyToClipboard(text);
     showNotification(successMessage);
   } catch (error) {
-    console.error('Copy failed:', error);
+    // Copy failed
     showNotification(errorMessage);
   }
 };

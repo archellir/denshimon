@@ -71,7 +71,7 @@ const PodLifecycle: FC = () => {
           setTimelineEvents(timeline);
         }
       } catch (error) {
-        console.error('Error fetching lifecycle data:', error);
+        // console.error('Error fetching lifecycle data:', error);
       } finally {
         setIsLoading(false);
       }

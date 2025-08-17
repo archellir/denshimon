@@ -350,7 +350,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to fetch services:', error);
+      // console.error('Failed to fetch services:', error);
       set({ 
         error: `Failed to fetch services: ${error instanceof Error ? error.message : 'Unknown error'}`,
         isLoading: false 
@@ -411,7 +411,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to fetch pods:', error);
+      // console.error('Failed to fetch pods:', error);
       set({ 
         error: `Failed to fetch pods: ${error instanceof Error ? error.message : 'Unknown error'}`,
         isLoading: false 
@@ -450,7 +450,7 @@ const useWorkloadsStore = create<WorkloadsStore>((set, get) => ({
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to fetch namespaces:', error);
+      // console.error('Failed to fetch namespaces:', error);
       set({ 
         error: `Failed to fetch namespaces: ${error instanceof Error ? error.message : 'Unknown error'}`,
         isLoading: false 

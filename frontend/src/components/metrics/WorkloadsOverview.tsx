@@ -34,7 +34,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
   // Fetch workload metrics
   useEffect(() => {
     fetchAllMetrics().catch(error => {
-      console.error('Error fetching workload metrics:', error);
+      // Error fetching workload metrics
     });
   }, [fetchAllMetrics]);
 
@@ -367,7 +367,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
       </div>
     );
   } catch (error) {
-    console.error('WorkloadsOverview render error:', error);
+    // WorkloadsOverview render error
     return (
       <div className="flex items-center justify-center h-64 border border-red-400">
         <div className="text-center">

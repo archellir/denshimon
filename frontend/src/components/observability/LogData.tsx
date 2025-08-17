@@ -65,7 +65,7 @@ const LogData: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to load logs:', error);
+      // console.error('Failed to load logs:', error);
       // Fallback to mock data on error
       const mockLogs = await mockApiResponse(generateMockLogs(200));
       setLogs(mockLogs);

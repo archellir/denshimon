@@ -56,10 +56,10 @@ const DatabaseBrowser: FC = () => {
         if (messageData.type === 'database') {
           setRealTimeDatabases(messageData.data.databases || []);
           // Log real-time database data for debugging
-          console.log('Real-time database pods:', messageData.data.databases);
+          // console.log('Real-time database pods:', messageData.data.databases);
         }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        // console.error('Error parsing WebSocket message:', error);
       }
     }
   }, [lastMessage, realTimeDatabases]);
@@ -257,7 +257,7 @@ const DatabaseBrowser: FC = () => {
                   <button 
                     onClick={() => {
                       // This could integrate with the SQL Query Interface to show table data
-                      console.log('Viewing data for table:', selectedTable);
+                      // console.log('Viewing data for table:', selectedTable);
                       setShowTableData(true);
                     }}
                     className="flex items-center space-x-1 px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-xs"
@@ -270,7 +270,7 @@ const DatabaseBrowser: FC = () => {
                       // Navigate to analytics or generate insights about the table
                       const table = tables.find(t => t.name === selectedTable);
                       if (table) {
-                        console.log('Analyzing table:', {
+                        // console.log('Analyzing table:', {
                           name: table.name,
                           rowCount: table.rowCount,
                           size: table.size,

@@ -85,7 +85,7 @@ const SystemChangesTimeline: React.FC<SystemChangesTimelineProps> = ({ timeRange
         }
       }
     } catch (error) {
-      console.error('Failed to load timeline data:', error);
+      // console.error('Failed to load timeline data:', error);
       const hours = parseTimeRangeToHours(timeRange);
       const timelineData = generateSystemChangesTimelineData(hours);
       setData(timelineData);

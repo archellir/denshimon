@@ -37,7 +37,7 @@ const DeploymentDashboard: FC<DeploymentDashboardProps> = ({
           fetchNodes(),
         ]);
       } catch (error) {
-        console.error('Failed to initialize deployment data:', error);
+        // console.error('Failed to initialize deployment data:', error);
       }
     };
 

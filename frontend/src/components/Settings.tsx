@@ -61,7 +61,7 @@ const Settings: FC = () => {
         const parsed = JSON.parse(savedSettings);
         setSettings(prev => ({ ...prev, ...parsed }));
       } catch (error) {
-        console.error('Failed to load settings:', error);
+        // console.error('Failed to load settings:', error);
       }
     }
   };
@@ -84,7 +84,7 @@ const Settings: FC = () => {
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      // console.error('Failed to save settings:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
     } finally {

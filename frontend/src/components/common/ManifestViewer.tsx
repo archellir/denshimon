@@ -84,7 +84,7 @@ const ManifestViewer: FC<ManifestViewerProps> = ({
       setCopyStatus('copied');
       setTimeout(() => setCopyStatus('idle'), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error);
+      // console.error('Failed to copy:', error);
     }
   };
 

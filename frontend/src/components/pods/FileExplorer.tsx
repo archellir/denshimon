@@ -161,7 +161,7 @@ const FileExplorer: FC<FileExplorerProps> = ({
   };
 
   const handleDownload = (file: FileItem) => {
-    console.log('Downloading:', file.path);
+    // console.log('Downloading:', file.path);
     onFileDownload?.(file);
     
     // Simulate download
@@ -175,7 +175,7 @@ const FileExplorer: FC<FileExplorerProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
     
-    console.log('Uploading to:', currentPath, file);
+    // console.log('Uploading to:', currentPath, file);
     onFileUpload?.(currentPath, file);
   };
 
@@ -195,7 +195,7 @@ const FileExplorer: FC<FileExplorerProps> = ({
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      console.log('Dropped files:', files);
+      // console.log('Dropped files:', files);
       onFileUpload?.(currentPath, files[0]);
     }
   };

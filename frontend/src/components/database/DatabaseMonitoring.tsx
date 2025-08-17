@@ -68,7 +68,7 @@ const DatabaseMonitoring: FC = () => {
           setDatabases(messageData.data.databases || []);
         }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        // console.error('Error parsing WebSocket message:', error);
       }
     }
   }, [lastMessage]);
@@ -337,7 +337,7 @@ const DatabaseMonitoring: FC = () => {
             <button 
               onClick={() => {
                 // Real-time metrics are automatically updated via WebSocket
-                console.log('Real-time metrics are displayed above');
+                // console.log('Real-time metrics are displayed above');
               }}
               className="flex items-center space-x-2 px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
             >
@@ -347,7 +347,7 @@ const DatabaseMonitoring: FC = () => {
             <button 
               onClick={() => {
                 // Navigate to performance analysis view (could integrate with observability tab)
-                console.log('Performance analysis for connection:', selectedConnection);
+                // console.log('Performance analysis for connection:', selectedConnection);
               }}
               className="flex items-center space-x-2 px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm"
             >

@@ -83,7 +83,7 @@ const DeploymentsTab = ({
       await scaleDeployment(scaleDialog.deployment.id, Number(scaleDialog.value));
       setScaleDialog({ open: false, deployment: null, value: '' });
     } catch (error) {
-      console.error('Failed to scale deployment:', error);
+      // Failed to scale deployment
     } finally {
       setActionLoading(false);
     }
@@ -97,7 +97,7 @@ const DeploymentsTab = ({
       await restartDeployment(restartDialog.deployment.id);
       setRestartDialog({ open: false, deployment: null });
     } catch (error) {
-      console.error('Failed to restart deployment:', error);
+      // Failed to restart deployment
     } finally {
       setActionLoading(false);
     }
@@ -111,7 +111,7 @@ const DeploymentsTab = ({
       await deleteDeployment(deleteDialog.deployment.id);
       setDeleteDialog({ open: false, deployment: null });
     } catch (error) {
-      console.error('Failed to delete deployment:', error);
+      // Failed to delete deployment
     } finally {
       setActionLoading(false);
     }

@@ -228,7 +228,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         lastUpdated: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to fetch certificates:', error);
+      // Failed to fetch certificates
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to fetch certificates',
         isLoading: false 
@@ -246,7 +246,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.STATS);
       set({ stats: response.data.data || response.data });
     } catch (error) {
-      console.error('Failed to fetch certificate stats:', error);
+      // Failed to fetch certificate stats
     }
   },
 
@@ -260,7 +260,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.ALERTS);
       set({ alerts: response.data.data || response.data || [] });
     } catch (error) {
-      console.error('Failed to fetch certificate alerts:', error);
+      // Failed to fetch certificate alerts
     }
   },
 
@@ -274,7 +274,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       const response = await apiService.get<any>(API_ENDPOINTS.CERTIFICATES.DOMAINS);
       set({ domains: response.data.data || response.data || [] });
     } catch (error) {
-      console.error('Failed to fetch domain configs:', error);
+      // Failed to fetch domain configs
     }
   },
 
@@ -300,7 +300,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
         set({ isLoading: false });
       }
     } catch (error) {
-      console.error('Failed to check certificate:', error);
+      // Failed to check certificate
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to check certificate',
         isLoading: false 
@@ -321,7 +321,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       
       set({ isLoading: false });
     } catch (error) {
-      console.error('Failed to refresh certificates:', error);
+      // Failed to refresh certificates
       set({ 
         error: error instanceof ApiError ? error.message : 'Failed to refresh certificates',
         isLoading: false 
@@ -336,7 +336,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       // Refresh domains list
       await get().fetchDomains();
     } catch (error) {
-      console.error('Failed to add domain:', error);
+      // Failed to add domain
       set({ error: error instanceof ApiError ? error.message : 'Failed to add domain' });
     }
   },
@@ -349,7 +349,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       await get().fetchDomains();
       await get().fetchCertificates();
     } catch (error) {
-      console.error('Failed to remove domain:', error);
+      // Failed to remove domain
       set({ error: error instanceof ApiError ? error.message : 'Failed to remove domain' });
     }
   },
@@ -366,7 +366,7 @@ const useCertificateStore = create<CertificateStore>((set, get) => ({
       
       set({ alerts: updatedAlerts });
     } catch (error) {
-      console.error('Failed to acknowledge alert:', error);
+      // Failed to acknowledge alert
       set({ error: error instanceof ApiError ? error.message : 'Failed to acknowledge alert' });
     }
   },

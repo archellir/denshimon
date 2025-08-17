@@ -69,7 +69,7 @@ const SQLQueryInterface: FC = () => {
       });
       setQueryName('');
     } catch (error) {
-      console.error('Failed to save query:', error);
+      // console.error('Failed to save query:', error);
     }
   };
 
@@ -332,7 +332,7 @@ SELECT * FROM users LIMIT 10;"
                             try {
                               await deleteSavedQuery(query.id);
                             } catch (error) {
-                              console.error('Failed to delete query:', error);
+                              // console.error('Failed to delete query:', error);
                             }
                           }}
                           className="p-1 hover:bg-red-400/20 text-red-400 transition-colors"

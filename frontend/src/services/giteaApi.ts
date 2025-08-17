@@ -151,7 +151,7 @@ class GiteaApiClient {
 
       return await response.json();
     } catch (error) {
-      console.error('Gitea API request failed:', error);
+      // Gitea API request failed
       throw error;
     }
   }

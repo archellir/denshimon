@@ -24,7 +24,7 @@ export const formatWorkloadChartData = (metricsHistory: any) => {
     
     return data;
   } catch (error) {
-    console.error('Error formatting workload chart data:', error);
+    // Error formatting workload chart data
     return [];
   }
 };
