@@ -8,7 +8,7 @@ export interface StatCardProps {
   value: string;
   icon: LucideIcon;
   status: StatusType;
-  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered' | 'analytics' | 'network';
+  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered' | 'analytics' | 'network' | 'health';
   className?: string;
   onClick?: () => void;
   trend?: {
@@ -45,7 +45,8 @@ const StatCard: FC<StatCardProps> = ({
     'service-health': 'p-4',
     centered: 'p-3 text-center',
     analytics: 'px-6 py-3',
-    network: 'p-4'
+    network: 'p-4',
+    health: 'p-3'
   };
 
   const valueClasses = {
@@ -55,7 +56,8 @@ const StatCard: FC<StatCardProps> = ({
     'service-health': 'text-2xl',
     centered: 'text-lg',
     analytics: 'text-2xl',
-    network: 'text-lg'
+    network: 'text-lg',
+    health: 'text-xs'
   };
 
   const labelClasses = {
@@ -65,7 +67,8 @@ const StatCard: FC<StatCardProps> = ({
     'service-health': 'text-sm',
     centered: 'text-xs',
     analytics: 'text-xs',
-    network: 'text-xs'
+    network: 'text-xs',
+    health: 'text-xs'
   };
 
   const iconSizes = {
@@ -208,6 +211,51 @@ const StatCard: FC<StatCardProps> = ({
       >
         <h3 className={`${labelClasses.network} font-mono mb-2 opacity-60`}>{label}</h3>
         <div className={`${valueClasses.network} font-mono ${getNetworkValueColor()}`}>{value}</div>
+      </div>
+    );
+  }
+
+  if (variant === 'health') {
+    // Health variant expects metrics data passed through description as JSON
+    let metrics: any[] = [];
+    try {
+      metrics = description ? JSON.parse(description) : [];
+    } catch {
+      metrics = [];
+    }
+
+    return (
+      <div 
+        className={`${baseClasses} ${variantClasses.health} ${clickableClasses} ${className}`}
+        onClick={onClick}
+      >
+        {/* Header row: Icon + title on left, status icon on right */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <Icon size={14} className="text-white" />
+            <span className="font-mono text-xs font-bold">{label.toUpperCase()}</span>
+          </div>
+          <StatusIcon status={status} size={12} />
+        </div>
+        
+        {/* 2x2 grid of metrics */}
+        <div className="grid grid-cols-2 gap-2">
+          {metrics.slice(0, 4).map((metric: any, index: number) => (
+            <div key={index} className="text-xs font-mono">
+              <div className="text-gray-500">{metric.label}</div>
+              <div className="flex items-center space-x-1">
+                <span className="text-white">
+                  {metric.value}{metric.unit || ''}
+                </span>
+                {metric.trend && (
+                  <span className="text-xs">
+                    {metric.trend === 'up' ? '↗' : metric.trend === 'down' ? '↘' : '→'}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

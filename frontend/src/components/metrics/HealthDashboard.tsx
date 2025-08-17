@@ -7,7 +7,10 @@ import HealthSummaryCard, {
   createNetworkHealthCard,
   createStorageHealthCard
 } from '@components/common/HealthSummaryCard';
+import StatCard from '@components/common/StatCard';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { Status, PrimaryTab, InfrastructureTab, WorkloadsTab, ObservabilityTab } from '@constants';
+import type { StatusType } from '@components/common/StatusIcon';
 
 // Generate mock health data
 const generateHealthData = () => {
@@ -60,6 +63,16 @@ const generateHealthData = () => {
   };
 };
 
+// Utility function to calculate overall status from metrics
+const calculateOverallStatus = (metrics: any[]): StatusType => {
+  if (metrics.some(m => m.status === Status.CRITICAL)) return Status.CRITICAL;
+  if (metrics.some(m => m.status === Status.ERROR)) return Status.ERROR;
+  if (metrics.some(m => m.status === Status.WARNING)) return Status.WARNING;
+  if (metrics.some(m => m.status === Status.PENDING)) return Status.PENDING;
+  if (metrics.every(m => m.status === Status.HEALTHY)) return Status.HEALTHY;
+  return Status.UNKNOWN;
+};
+
 interface HealthDashboardProps {
   compact?: boolean;
   showAll?: boolean;
@@ -103,27 +116,67 @@ const HealthDashboard: FC<HealthDashboardProps> = ({
   const storageCard = createStorageHealthCard(healthData.storage);
 
   if (compact) {
+    const handleClusterHealthClick = () => {
+      window.dispatchEvent(new CustomEvent('navigateToPrimaryTab', {
+        detail: { primaryTab: PrimaryTab.WORKLOADS, secondaryTab: WorkloadsTab.OVERVIEW }
+      }));
+    };
+
+    const handleApplicationHealthClick = () => {
+      window.dispatchEvent(new CustomEvent('navigateToPrimaryTab', {
+        detail: { primaryTab: PrimaryTab.OBSERVABILITY, secondaryTab: ObservabilityTab.SERVICE_HEALTH }
+      }));
+    };
+
+    const handleNetworkHealthClick = () => {
+      window.dispatchEvent(new CustomEvent('navigateToPrimaryTab', {
+        detail: { primaryTab: PrimaryTab.INFRASTRUCTURE, secondaryTab: InfrastructureTab.NETWORK }
+      }));
+    };
+
+    const handleStorageHealthClick = () => {
+      window.dispatchEvent(new CustomEvent('navigateToPrimaryTab', {
+        detail: { primaryTab: PrimaryTab.INFRASTRUCTURE, secondaryTab: InfrastructureTab.STORAGE }
+      }));
+    };
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <HealthSummaryCard
-          {...clusterCard}
+        <StatCard
+          label={clusterCard.title}
+          value=""
           icon={Server}
-          compact
+          status={calculateOverallStatus(clusterCard.metrics)}
+          variant="health"
+          description={JSON.stringify(clusterCard.metrics)}
+          onClick={handleClusterHealthClick}
         />
-        <HealthSummaryCard
-          {...applicationCard}
+        <StatCard
+          label={applicationCard.title}
+          value=""
           icon={Activity}
-          compact
+          status={calculateOverallStatus(applicationCard.metrics)}
+          variant="health"
+          description={JSON.stringify(applicationCard.metrics)}
+          onClick={handleApplicationHealthClick}
         />
-        <HealthSummaryCard
-          {...networkCard}
+        <StatCard
+          label={networkCard.title}
+          value=""
           icon={Network}
-          compact
+          status={calculateOverallStatus(networkCard.metrics)}
+          variant="health"
+          description={JSON.stringify(networkCard.metrics)}
+          onClick={handleNetworkHealthClick}
         />
-        <HealthSummaryCard
-          {...storageCard}
+        <StatCard
+          label={storageCard.title}
+          value=""
           icon={HardDrive}
-          compact
+          status={calculateOverallStatus(storageCard.metrics)}
+          variant="health"
+          description={JSON.stringify(storageCard.metrics)}
+          onClick={handleStorageHealthClick}
         />
       </div>
     );
