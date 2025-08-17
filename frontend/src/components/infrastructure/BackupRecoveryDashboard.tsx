@@ -19,6 +19,7 @@ import {
   FileText
 } from 'lucide-react';
 import useBackupStore from '@stores/backupStore';
+import StatCard from '@components/common/StatCard';
 import { 
   BackupStatus, 
   BackupSource,
@@ -210,50 +211,50 @@ const BackupRecoveryDashboard: FC = () => {
       {/* Statistics Cards */}
       {statistics && (
         <div className="grid grid-cols-5 gap-4">
-          <div className="border border-white p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">TOTAL BACKUPS</span>
-              <Archive size={16} />
-            </div>
-            <div className="font-mono text-2xl">{statistics.totalBackups}</div>
-            <div className="font-mono text-xs opacity-60">{formatBytes(statistics.totalSize)}</div>
-          </div>
+          <StatCard
+            label="TOTAL BACKUPS"
+            value={statistics.totalBackups.toString()}
+            icon={Archive}
+            status="neutral"
+            variant="analytics"
+            description={formatBytes(statistics.totalSize)}
+          />
           
-          <div className="border border-green-400 p-4 text-green-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">SUCCESS RATE</span>
-              <CheckCircle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{statistics.successRate.toFixed(1)}%</div>
-            <div className="font-mono text-xs opacity-60">Last 30 days</div>
-          </div>
+          <StatCard
+            label="SUCCESS RATE"
+            value={`${statistics.successRate.toFixed(1)}%`}
+            icon={CheckCircle}
+            status="success"
+            variant="analytics"
+            description="Last 30 days"
+          />
           
-          <div className="border border-blue-400 p-4 text-blue-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">AVG DURATION</span>
-              <Clock size={16} />
-            </div>
-            <div className="font-mono text-2xl">{formatDuration(statistics.averageDuration)}</div>
-            <div className="font-mono text-xs opacity-60">Per backup</div>
-          </div>
+          <StatCard
+            label="AVG DURATION"
+            value={formatDuration(statistics.averageDuration)}
+            icon={Clock}
+            status="info"
+            variant="analytics"
+            description="Per backup"
+          />
 
-          <div className="border border-yellow-400 p-4 text-yellow-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">RUNNING</span>
-              <RefreshCw size={16} />
-            </div>
-            <div className="font-mono text-2xl">{jobs.filter(j => j.status === BackupStatus.RUNNING).length}</div>
-            <div className="font-mono text-xs opacity-60">Active jobs</div>
-          </div>
+          <StatCard
+            label="RUNNING"
+            value={jobs.filter(j => j.status === BackupStatus.RUNNING).length.toString()}
+            icon={RefreshCw}
+            status="warning"
+            variant="analytics"
+            description="Active jobs"
+          />
 
-          <div className="border border-red-400 p-4 text-red-400">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm">ALERTS</span>
-              <AlertTriangle size={16} />
-            </div>
-            <div className="font-mono text-2xl">{alerts.filter(a => !a.acknowledged).length}</div>
-            <div className="font-mono text-xs opacity-60">Unacknowledged</div>
-          </div>
+          <StatCard
+            label="ALERTS"
+            value={alerts.filter(a => !a.acknowledged).length.toString()}
+            icon={AlertTriangle}
+            status="error"
+            variant="analytics"
+            description="Unacknowledged"
+          />
         </div>
       )}
 

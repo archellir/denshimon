@@ -116,7 +116,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
         {/* Status & Capacity Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Workload Distribution Skeleton */}
-          <div className="border border-gray-700 p-4">
+          <div className="border border-white/20 p-4">
             <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
             <div className="h-64 bg-white/5 animate-pulse rounded flex items-center justify-center">
               <div className="w-32 h-32 bg-white/10 animate-pulse rounded-full" />
@@ -135,7 +135,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           </div>
           
           {/* Capacity Status Skeleton */}
-          <div className="border border-gray-700 p-4">
+          <div className="border border-white/20 p-4">
             <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
             <div className="space-y-4 mt-6">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -144,7 +144,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
                     <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
                     <div className="h-3 bg-white/10 animate-pulse rounded w-10" />
                   </div>
-                  <div className="w-full bg-gray-800 border border-gray-700 h-3">
+                  <div className="w-full bg-gray-800 border border-white/20 h-3">
                     <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
                   </div>
                   <div className="h-3 bg-white/10 animate-pulse rounded w-24 mt-1" />

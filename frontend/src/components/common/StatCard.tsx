@@ -44,7 +44,7 @@ const StatCard: FC<StatCardProps> = ({
     minimal: 'pl-3 pr-2 py-1.5',
     'service-health': 'p-4',
     centered: 'p-3 text-center',
-    analytics: 'p-4'
+    analytics: 'px-6 py-3'
   };
 
   const valueClasses = {
@@ -175,14 +175,16 @@ const StatCard: FC<StatCardProps> = ({
         className={`${baseClasses} ${variantClasses.analytics} ${clickableClasses} ${className}`}
         onClick={onClick}
       >
-        <div className="flex items-center justify-between mb-2">
-          <Icon size={20} />
-          <span className={`${labelClasses.analytics} font-mono text-gray-500`}>{label}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <span className={`${labelClasses.analytics} font-mono text-gray-500 block mb-2`}>{label}</span>
+            <div className={`${valueClasses.analytics} font-mono font-bold`}>{value}</div>
+            {description && (
+              <div className="text-xs text-gray-500 mt-1">{description}</div>
+            )}
+          </div>
+          <Icon size={36} className="ml-4 flex-shrink-0" />
         </div>
-        <div className={`${valueClasses.analytics} font-mono font-bold`}>{value}</div>
-        {description && (
-          <div className="text-xs text-gray-500">{description}</div>
-        )}
       </div>
     );
   }
