@@ -24,7 +24,7 @@ import {
   generateObservabilityStats,
   type QuickStat
 } from '@utils/quickStats';
-import ClusterOverview from '@components/metrics/ClusterOverview';
+import InfraOverview from '@components/metrics/InfraOverview';
 import WorkloadsOverview from '@components/metrics/WorkloadsOverview';
 import HealthDashboard from '@components/metrics/HealthDashboard';
 import ResourceCharts from '@components/metrics/ResourceCharts';
@@ -854,7 +854,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.OVERVIEW && (
           <div className="space-y-6">
             <HealthDashboard compact />
-            <ClusterOverview timeRange={timeRange} />
+            <InfraOverview timeRange={timeRange} />
           </div>
         )}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <ConfigurationTab />}

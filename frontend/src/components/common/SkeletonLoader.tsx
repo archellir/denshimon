@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface SkeletonLoaderProps {
-  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card';
+  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview';
   count?: number;
   className?: string;
 }
@@ -197,6 +197,65 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
           </div>
         );
 
+      case 'infra-overview':
+        return (
+          <div className="space-y-6">
+            {/* Resource Usage Over Time Skeleton */}
+            <div className="border border-white/20 p-4 h-96">
+              <div className="h-4 bg-white/10 animate-pulse rounded w-48 mb-4" />
+              <div className="h-80 bg-white/5 animate-pulse rounded flex items-end justify-around p-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="bg-white/10 animate-pulse rounded w-8"
+                    style={{ height: `${Math.random() * 60 + 20}%` }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Status & Capacity Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Workload Distribution Skeleton */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
+                <div className="h-64 bg-white/5 animate-pulse rounded flex items-center justify-center">
+                  <div className="w-32 h-32 bg-white/10 animate-pulse rounded-full" />
+                </div>
+                <div className="mt-4 space-y-1">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-white/10 animate-pulse rounded mr-2" />
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                      </div>
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Capacity Status Skeleton */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
+                <div className="space-y-4 mt-6">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-10" />
+                      </div>
+                      <div className="w-full bg-gray-800 border border-white/20 h-3">
+                        <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
+                      </div>
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-24 mt-1" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
 
       default:
         return null;
