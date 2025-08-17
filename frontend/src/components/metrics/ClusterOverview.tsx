@@ -14,8 +14,6 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
-import ResourceCharts from '@components/metrics/ResourceCharts';
-import HealthDashboard from '@components/metrics/HealthDashboard';
 import { ChartTooltipProps, PieChartTooltipProps } from '@/types/common';
 
 interface ClusterOverviewProps {
@@ -23,7 +21,7 @@ interface ClusterOverviewProps {
 }
 
 const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
-  const { clusterMetrics, metricsHistory, isLoadingHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
+  const { clusterMetrics, metricsHistory, isLoading, isLoadingHistory, fetchClusterMetrics } = useWebSocketMetricsStore();
 
   // Fetch initial cluster metrics only (history is fetched by Dashboard)
   useEffect(() => {
@@ -35,27 +33,17 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
 
   // Format chart data
   const chartData = useMemo(() => {
-    if (!metricsHistory || !metricsHistory.cpu || !Array.isArray(metricsHistory.cpu)) {
-      return [];
-    }
+    if (!metricsHistory?.cpu?.length) return [];
 
     try {
-      const data = metricsHistory.cpu.map((cpuPoint, index) => {
-        if (!cpuPoint || !cpuPoint.timestamp || typeof cpuPoint.value !== 'number') {
-          return null;
-        }
-        
-        return {
-          time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
-          cpu: cpuPoint.value || 0,
-          memory: metricsHistory.memory?.[index]?.value || 0,
-          storage: metricsHistory.storage?.[index]?.value || 0,
-          pods: metricsHistory.pods?.[index]?.value || 0,
-          nodes: metricsHistory.nodes?.[index]?.value || 0,
-        };
-      }).filter(Boolean); // Remove null entries
-      
-      return data;
+      return metricsHistory.cpu.map((cpuPoint, index) => ({
+        time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
+        cpu: cpuPoint.value || 0,
+        memory: metricsHistory.memory?.[index]?.value || 0,
+        storage: metricsHistory.storage?.[index]?.value || 0,
+        pods: metricsHistory.pods?.[index]?.value || 0,
+        nodes: metricsHistory.nodes?.[index]?.value || 0,
+      }));
     } catch (error) {
       console.error('Error formatting chart data:', error);
       return [];
@@ -105,14 +93,14 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     return null;
   };
 
-  // Show skeleton when either clusterMetrics or metricsHistory are not available
-  const isLoading = !clusterMetrics || !metricsHistory || !metricsHistory.cpu || !Array.isArray(metricsHistory.cpu);
+  // Show skeleton when loading or essential data not available
+  const showSkeleton = isLoading || isLoadingHistory || !clusterMetrics || !metricsHistory?.cpu?.length;
 
-  if (isLoading) {
+  if (showSkeleton) {
     return (
       <div className="space-y-6">
         {/* Resource Usage Over Time Skeleton */}
-        <div className="border border-white p-4 h-96">
+        <div className="border border-white/20 p-4 h-96">
           <div className="h-4 bg-white/10 animate-pulse rounded w-48 mb-4" />
           <div className="h-80 bg-white/5 animate-pulse rounded flex items-end justify-around p-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -128,7 +116,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
         {/* Status & Capacity Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Workload Distribution Skeleton */}
-          <div className="border border-white p-4">
+          <div className="border border-gray-700 p-4">
             <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
             <div className="h-64 bg-white/5 animate-pulse rounded flex items-center justify-center">
               <div className="w-32 h-32 bg-white/10 animate-pulse rounded-full" />
@@ -147,7 +135,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           </div>
           
           {/* Capacity Status Skeleton */}
-          <div className="border border-white p-4">
+          <div className="border border-gray-700 p-4">
             <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
             <div className="space-y-4 mt-6">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -156,7 +144,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
                     <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
                     <div className="h-3 bg-white/10 animate-pulse rounded w-10" />
                   </div>
-                  <div className="w-full bg-gray-800 border border-white h-3">
+                  <div className="w-full bg-gray-800 border border-gray-700 h-3">
                     <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
                   </div>
                   <div className="h-3 bg-white/10 animate-pulse rounded w-24 mt-1" />
@@ -173,7 +161,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
     return (
       <div className="space-y-6">
         {/* Resource Usage Over Time */}
-        <div className="border border-white p-4 h-96">
+        <div className="border border-white/20 p-4 h-96">
           <h3 className="font-mono text-sm mb-4">RESOURCE USAGE OVER TIME</h3>
           <div className="h-80">
             {chartData.length === 0 ? (
@@ -229,7 +217,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
         {/* Status & Capacity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pod Status */}
-          <div className="border border-white p-4">
+          <div className="border border-white/20 p-4">
             <h3 className="font-mono text-sm mb-4">WORKLOAD DISTRIBUTION</h3>
             <div className="h-64">
               {podStatusData.length > 0 ? (
@@ -275,7 +263,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
           </div>
 
           {/* Capacity Status */}
-          <div className="border border-white p-4">
+          <div className="border border-white/20 p-4">
             <h3 className="font-mono text-sm mb-4">CAPACITY STATUS</h3>
             <div className="space-y-4 mt-6">
               {/* CPU Capacity */}
@@ -284,7 +272,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
                   <span className="font-mono text-xs">CPU</span>
                   <span className="font-mono text-xs">{clusterMetrics.cpu_usage.usage_percent.toFixed(0)}%</span>
                 </div>
-                <div className="w-full bg-gray-800 border border-white h-3">
+                <div className="w-full bg-gray-800 border border-white/20 h-3">
                   <div 
                     className="h-full bg-green-400"
                     style={{ width: `${Math.min(clusterMetrics.cpu_usage.usage_percent, 100)}%` }}
@@ -301,7 +289,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
                   <span className="font-mono text-xs">MEMORY</span>
                   <span className="font-mono text-xs">{clusterMetrics.memory_usage.usage_percent.toFixed(0)}%</span>
                 </div>
-                <div className="w-full bg-gray-800 border border-white h-3">
+                <div className="w-full bg-gray-800 border border-white/20 h-3">
                   <div 
                     className="h-full bg-yellow-400"
                     style={{ width: `${Math.min(clusterMetrics.memory_usage.usage_percent, 100)}%` }}
@@ -318,7 +306,7 @@ const ClusterOverview: FC<ClusterOverviewProps> = ({ timeRange = TimeRange.ONE_H
                   <span className="font-mono text-xs">PODS</span>
                   <span className="font-mono text-xs">{clusterMetrics.running_pods}/{clusterMetrics.total_pods}</span>
                 </div>
-                <div className="w-full bg-gray-800 border border-white h-3">
+                <div className="w-full bg-gray-800 border border-white/20 h-3">
                   <div 
                     className="h-full bg-cyan-400"
                     style={{ width: `${(clusterMetrics.running_pods / clusterMetrics.total_pods) * 100}%` }}
