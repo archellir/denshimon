@@ -4,6 +4,7 @@ import { getDataPointsForTimeRange } from '@utils/time';
 import { HardDrive, Database, Activity, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import StatCard from '@components/common/StatCard';
 
 interface VolumeMetrics {
   name: string;
@@ -217,47 +218,41 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
     <div className="space-y-6">
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <HardDrive size={20} />
-            <span className="text-xs font-mono text-gray-500">STORAGE</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{totalUsed}GB</div>
-          <div className="text-xs text-gray-500">of {totalCapacity}GB used</div>
-          <div className="w-full bg-gray-800 h-1 mt-2">
-            <div 
-              className="h-full bg-white transition-all"
-              style={{ width: `${(totalUsed / totalCapacity) * 100}%` }}
-            />
-          </div>
-        </div>
+        <StatCard
+          label="STORAGE"
+          value={`${totalUsed}GB`}
+          icon={HardDrive}
+          status="neutral"
+          variant="analytics"
+          description={`of ${totalCapacity}GB used`}
+        />
 
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Activity size={20} />
-            <span className="text-xs font-mono text-gray-500">TOTAL IOPS</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{totalIOPS.toFixed(0)}</div>
-          <div className="text-xs text-gray-500">operations/sec</div>
-        </div>
+        <StatCard
+          label="TOTAL IOPS"
+          value={totalIOPS.toFixed(0)}
+          icon={Activity}
+          status="neutral"
+          variant="analytics"
+          description="operations/sec"
+        />
 
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Zap size={20} />
-            <span className="text-xs font-mono text-gray-500">AVG LATENCY</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{avgLatency.toFixed(1)}ms</div>
-          <div className="text-xs text-gray-500">read/write avg</div>
-        </div>
+        <StatCard
+          label="AVG LATENCY"
+          value={`${avgLatency.toFixed(1)}ms`}
+          icon={Zap}
+          status="neutral"
+          variant="analytics"
+          description="read/write avg"
+        />
 
-        <div className="border border-white p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Database size={20} />
-            <span className="text-xs font-mono text-gray-500">VOLUMES</span>
-          </div>
-          <div className="text-2xl font-mono font-bold">{volumes.length}</div>
-          <div className="text-xs text-gray-500">active volumes</div>
-        </div>
+        <StatCard
+          label="VOLUMES"
+          value={volumes.length.toString()}
+          icon={Database}
+          status="neutral"
+          variant="analytics"
+          description="active volumes"
+        />
       </div>
 
 
