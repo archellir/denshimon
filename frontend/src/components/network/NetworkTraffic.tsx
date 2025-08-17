@@ -109,17 +109,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
   };
 
   if (isLoading && !networkData) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <SkeletonLoader variant="chart" count={2} />
-          <SkeletonLoader variant="chart" count={1} />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SkeletonLoader variant="card" count={2} />
-        </div>
-      </div>
-    );
+    return <SkeletonLoader variant="infra-network" />;
   }
 
   return (

@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface SkeletonLoaderProps {
-  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config';
+  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config' | 'infra-network';
   count?: number;
   className?: string;
 }
@@ -355,6 +355,90 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
                     <div className="h-10 w-10 bg-white/10 animate-pulse rounded" />
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'infra-network':
+        return (
+          <div className="space-y-6">
+            {/* Current Bandwidth Stats Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="border border-white/20 p-4">
+                  <div className="h-3 bg-white/10 animate-pulse rounded w-24 mb-2" />
+                  <div className="h-5 bg-white/10 animate-pulse rounded w-16" />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Charts Grid Skeleton */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Bandwidth Over Time Chart (2/3 width) */}
+              <div className="xl:col-span-2 border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
+                <div className="h-80 bg-white/5 animate-pulse rounded flex items-end justify-around p-4">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="bg-white/10 animate-pulse rounded w-4"
+                      style={{ height: `${Math.random() * 60 + 20}%` }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Protocol Breakdown Chart (1/3 width) */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
+                <div className="h-80">
+                  {/* Pie chart skeleton */}
+                  <div className="h-48 flex items-center justify-center">
+                    <div className="w-32 h-32 bg-white/10 animate-pulse rounded-full" />
+                  </div>
+                  {/* Legend skeleton */}
+                  <div className="space-y-2 mt-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-white/10 animate-pulse rounded mr-2" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                        </div>
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Network Talkers Table Skeleton */}
+            <div className="border border-white/20 p-4">
+              <div className="h-4 bg-white/10 animate-pulse rounded w-40 mb-4" />
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/20">
+                      {['RANK', 'POD NAME', 'NAMESPACE', 'INGRESS', 'EGRESS', 'TOTAL', 'CONNECTIONS'].map((header, i) => (
+                        <th key={i} className="text-left p-2">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <tr key={i} className="border-b border-white/20">
+                        {Array.from({ length: 7 }).map((_, j) => (
+                          <td key={j} className="p-2">
+                            <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
