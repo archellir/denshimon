@@ -11,7 +11,6 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
-import SkeletonLoader from '@components/common/SkeletonLoader';
 import { ChartTooltipProps } from '@/types';
 
 interface ResourceChartsProps {
@@ -19,7 +18,7 @@ interface ResourceChartsProps {
 }
 
 const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' }) => {
-  const { clusterMetrics, metricsHistory, nodeMetrics, isLoadingHistory, isLoading } = useWebSocketMetricsStore();
+  const { clusterMetrics, metricsHistory, nodeMetrics } = useWebSocketMetricsStore();
 
   // Historical data for line charts
   const historicalData = useMemo(() => {
@@ -75,16 +74,6 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Disable skeleton loading for now to prevent infinite loading
-  // if (isLoading) {
-  //   return (
-  //     <div className="space-y-6">
-  //       <SkeletonLoader variant="chart" count={2} />
-  //       <SkeletonLoader variant="chart" count={1} />
-  //       <SkeletonLoader variant="table" count={3} />
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="space-y-6">
