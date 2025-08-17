@@ -204,14 +204,7 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
   const avgLatency = volumes.reduce((sum, v) => sum + (v.latency.read + v.latency.write) / 2, 0) / volumes.length;
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SkeletonLoader variant="chart" count={2} />
-        </div>
-        <SkeletonLoader variant="table" count={6} />
-      </div>
-    );
+    return <SkeletonLoader variant="infra-storage" />;
   }
 
   return (

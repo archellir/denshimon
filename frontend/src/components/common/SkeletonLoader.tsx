@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface SkeletonLoaderProps {
-  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config' | 'infra-network';
+  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config' | 'infra-network' | 'infra-storage';
   count?: number;
   className?: string;
 }
@@ -439,6 +439,131 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'infra-storage':
+        return (
+          <div className="space-y-6">
+            {/* Overview Stats Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="border border-white/20 px-6 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-16 mb-2" />
+                      <div className="h-6 bg-white/10 animate-pulse rounded w-12 mb-1" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                    </div>
+                    <div className="w-9 h-9 bg-white/10 animate-pulse rounded ml-4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* IO Performance Charts Grid Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* IOPS Chart */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-24 mb-4" />
+                <div className="h-48 bg-white/5 animate-pulse rounded flex items-end justify-around p-4">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="bg-white/10 animate-pulse rounded w-4"
+                      style={{ height: `${Math.random() * 60 + 20}%` }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Throughput Chart */}
+              <div className="border border-white/20 p-4">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
+                <div className="h-48 bg-white/5 animate-pulse rounded flex items-center justify-center">
+                  <div className="w-full h-full bg-white/10 animate-pulse rounded" />
+                </div>
+              </div>
+            </div>
+
+            {/* Persistent Volumes Table Skeleton */}
+            <div className="border border-white/20">
+              <div className="border-b border-white/20 px-4 py-2">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-40" />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/20">
+                      {['NAME', 'TYPE', 'CAPACITY', 'USED', 'IOPS', 'THROUGHPUT', 'LATENCY', 'STATUS'].map((header, i) => (
+                        <th key={i} className="text-left p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="border-b border-white/10">
+                        <td className="p-3">
+                          <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-1" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-12 mb-1" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-8 mb-1" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-12 mb-1" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-8 mb-1" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                        </td>
+                        <td className="p-3">
+                          <div className="h-6 bg-white/10 animate-pulse rounded w-16" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Storage Classes Grid Skeleton */}
+            <div className="border border-white/20">
+              <div className="border-b border-white/20 px-4 py-2">
+                <div className="h-4 bg-white/10 animate-pulse rounded w-32" />
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="border border-white/30 p-3">
+                      <div className="h-4 bg-white/10 animate-pulse rounded w-24 mb-2" />
+                      <div className="space-y-1">
+                        {Array.from({ length: 4 }).map((_, j) => (
+                          <div key={j} className="flex justify-between">
+                            <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                            <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
