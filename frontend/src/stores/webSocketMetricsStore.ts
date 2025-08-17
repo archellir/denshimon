@@ -80,7 +80,8 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
               nodeMetrics: metricsData.nodes || [],
               podMetrics: metricsData.pods || [],
               namespaceMetrics: metricsData.namespaces || [],
-              error: null
+              error: null,
+              isLoading: false
             });
           });
 
@@ -125,11 +126,11 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
         try {
           if (MOCK_ENABLED) {
             const mockData = await mockApiResponse(mockClusterMetrics);
-            set({ clusterMetrics: mockData });
+            set({ clusterMetrics: mockData, isLoading: false });
           } else {
             // Real API call
             const response = await apiService.get<ClusterMetrics>(API_ENDPOINTS.METRICS.CLUSTER);
-            set({ clusterMetrics: response.data });
+            set({ clusterMetrics: response.data, isLoading: false });
           }
         } catch (error) {
           set({ error: 'Failed to fetch cluster metrics', isLoading: false });
@@ -203,11 +204,11 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()(
         try {
           if (MOCK_ENABLED) {
             const mockData = await mockApiResponse(generateMockMetricsHistory(duration));
-            set({ metricsHistory: mockData });
+            set({ metricsHistory: mockData, isLoadingHistory: false });
           } else {
             // Real API call
             const response = await apiService.get<MetricsHistory>(`${API_ENDPOINTS.METRICS.HISTORY}?duration=${duration}`);
-            set({ metricsHistory: response.data });
+            set({ metricsHistory: response.data, isLoadingHistory: false });
           }
         } catch (error) {
           set({ error: 'Failed to fetch metrics history', isLoadingHistory: false });
