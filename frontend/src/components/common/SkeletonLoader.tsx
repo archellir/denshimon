@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface SkeletonLoaderProps {
-  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'cluster-overview';
+  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card';
   count?: number;
   className?: string;
 }
@@ -197,99 +197,6 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
           </div>
         );
 
-      case 'cluster-overview':
-        return (
-          <div className="space-y-6">
-            {/* Health cards at the top (4 cards in a row) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="border border-white/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="h-4 bg-white/10 animate-pulse rounded w-20" />
-                  <div className="h-6 w-6 bg-white/10 animate-pulse rounded" />
-                </div>
-                <div className="space-y-2">
-                  <div className="h-8 bg-white/10 animate-pulse rounded w-16" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-24" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
-                </div>
-              </div>
-              <div className="border border-white/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="h-4 bg-white/10 animate-pulse rounded w-20" />
-                  <div className="h-6 w-6 bg-white/10 animate-pulse rounded" />
-                </div>
-                <div className="space-y-2">
-                  <div className="h-8 bg-white/10 animate-pulse rounded w-16" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-24" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
-                </div>
-              </div>
-              <div className="border border-white/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="h-4 bg-white/10 animate-pulse rounded w-20" />
-                  <div className="h-6 w-6 bg-white/10 animate-pulse rounded" />
-                </div>
-                <div className="space-y-2">
-                  <div className="h-8 bg-white/10 animate-pulse rounded w-16" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-24" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
-                </div>
-              </div>
-              <div className="border border-white/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="h-4 bg-white/10 animate-pulse rounded w-20" />
-                  <div className="h-6 w-6 bg-white/10 animate-pulse rounded" />
-                </div>
-                <div className="space-y-2">
-                  <div className="h-8 bg-white/10 animate-pulse rounded w-16" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-24" />
-                  <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
-                </div>
-              </div>
-            </div>
-
-            {/* Status & Capacity Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Workload Distribution Pie Chart */}
-              <div className="border border-white p-4">
-                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
-                <div className="h-64 bg-white/5 animate-pulse rounded flex items-center justify-center">
-                  <div className="w-32 h-32 bg-white/10 animate-pulse rounded-full" />
-                </div>
-                <div className="mt-4 space-y-1">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-white/10 animate-pulse rounded mr-2" />
-                        <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
-                      </div>
-                      <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Capacity Status Progress Bars */}
-              <div className="border border-white p-4">
-                <div className="h-4 bg-white/10 animate-pulse rounded w-32 mb-4" />
-                <div className="space-y-4 mt-6">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
-                        <div className="h-3 bg-white/10 animate-pulse rounded w-10" />
-                      </div>
-                      <div className="w-full bg-gray-800 border border-white h-3">
-                        <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
-                      </div>
-                      <div className="h-3 bg-white/10 animate-pulse rounded w-24 mt-1" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
 
       default:
         return null;
