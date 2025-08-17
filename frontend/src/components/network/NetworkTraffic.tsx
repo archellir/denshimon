@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { generateNetworkMetrics } from '@mocks/network/traffic';
 import type { NetworkMetrics } from '@/types/network';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import StatCard from '@components/common/StatCard';
 import { ChartTooltipProps, PieChartTooltipProps } from '@/types';
 
 interface NetworkTrafficProps {
@@ -126,30 +127,37 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 
       {/* Current Bandwidth Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">CURRENT INGRESS</h3>
-          <div className="font-mono text-lg text-green-400">
-            {networkData ? formatBandwidth(networkData.totalBandwidth.ingress) : '--'}
-          </div>
-        </div>
-        <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">CURRENT EGRESS</h3>
-          <div className="font-mono text-lg text-cyan-400">
-            {networkData ? formatBandwidth(networkData.totalBandwidth.egress) : '--'}
-          </div>
-        </div>
-        <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">PEAK BANDWIDTH</h3>
-          <div className="font-mono text-lg text-yellow-400">
-            {networkData ? formatBandwidth(networkData.totalBandwidth.peak) : '--'}
-          </div>
-        </div>
-        <div className="border border-white p-4">
-          <h3 className="font-mono text-xs mb-2 opacity-60">ACTIVE CONNECTIONS</h3>
-          <div className="font-mono text-lg text-white">
-            {networkData ? networkData.connectionCount.active : '--'}
-          </div>
-        </div>
+        <StatCard
+          label="CURRENT INGRESS"
+          value={networkData ? formatBandwidth(networkData.totalBandwidth.ingress) : '--'}
+          icon={() => null}
+          status="neutral"
+          variant="network"
+        />
+        
+        <StatCard
+          label="CURRENT EGRESS"
+          value={networkData ? formatBandwidth(networkData.totalBandwidth.egress) : '--'}
+          icon={() => null}
+          status="neutral"
+          variant="network"
+        />
+        
+        <StatCard
+          label="PEAK BANDWIDTH"
+          value={networkData ? formatBandwidth(networkData.totalBandwidth.peak) : '--'}
+          icon={() => null}
+          status="neutral"
+          variant="network"
+        />
+        
+        <StatCard
+          label="ACTIVE CONNECTIONS"
+          value={networkData ? networkData.connectionCount.active?.toString() || '--' : '--'}
+          icon={() => null}
+          status="neutral"
+          variant="network"
+        />
       </div>
 
       {/* Main Charts Grid */}

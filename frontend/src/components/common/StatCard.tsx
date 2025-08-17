@@ -8,7 +8,7 @@ export interface StatCardProps {
   value: string;
   icon: LucideIcon;
   status: StatusType;
-  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered' | 'analytics';
+  variant?: 'default' | 'compact' | 'minimal' | 'service-health' | 'centered' | 'analytics' | 'network';
   className?: string;
   onClick?: () => void;
   trend?: {
@@ -44,7 +44,8 @@ const StatCard: FC<StatCardProps> = ({
     minimal: 'pl-3 pr-2 py-1.5',
     'service-health': 'p-4',
     centered: 'p-3 text-center',
-    analytics: 'px-6 py-3'
+    analytics: 'px-6 py-3',
+    network: 'p-4'
   };
 
   const valueClasses = {
@@ -53,7 +54,8 @@ const StatCard: FC<StatCardProps> = ({
     minimal: 'text-xs',
     'service-health': 'text-2xl',
     centered: 'text-lg',
-    analytics: 'text-2xl'
+    analytics: 'text-2xl',
+    network: 'text-lg'
   };
 
   const labelClasses = {
@@ -62,7 +64,8 @@ const StatCard: FC<StatCardProps> = ({
     minimal: 'text-xs',
     'service-health': 'text-sm',
     centered: 'text-xs',
-    analytics: 'text-xs'
+    analytics: 'text-xs',
+    network: 'text-xs'
   };
 
   const iconSizes = {
@@ -185,6 +188,26 @@ const StatCard: FC<StatCardProps> = ({
           </div>
           <Icon size={36} className="ml-4 flex-shrink-0" />
         </div>
+      </div>
+    );
+  }
+
+  if (variant === 'network') {
+    const getNetworkValueColor = () => {
+      if (label === 'CURRENT INGRESS') return 'text-green-400';
+      if (label === 'CURRENT EGRESS') return 'text-cyan-400';
+      if (label === 'PEAK BANDWIDTH') return 'text-yellow-400';
+      if (label === 'ACTIVE CONNECTIONS') return 'text-white';
+      return 'text-white';
+    };
+
+    return (
+      <div 
+        className={`${baseClasses} ${variantClasses.network} ${clickableClasses} ${className}`}
+        onClick={onClick}
+      >
+        <h3 className={`${labelClasses.network} font-mono mb-2 opacity-60`}>{label}</h3>
+        <div className={`${valueClasses.network} font-mono ${getNetworkValueColor()}`}>{value}</div>
       </div>
     );
   }
