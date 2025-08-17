@@ -73,11 +73,7 @@ const NodeList: FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <SkeletonLoader variant="table" count={6} />
-      </div>
-    );
+    return <SkeletonLoader variant="infra-nodes" count={3} />;
   }
 
   if (filteredAndSortedNodes.length === 0) {

@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 interface SkeletonLoaderProps {
-  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config' | 'infra-network' | 'infra-storage';
+  variant?: 'text' | 'card' | 'table' | 'chart' | 'list' | 'deployment-card' | 'image-card' | 'history-item' | 'health-card' | 'infra-overview' | 'infra-config' | 'infra-network' | 'infra-storage' | 'infra-nodes';
   count?: number;
   className?: string;
 }
@@ -565,6 +565,102 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        );
+
+      case 'infra-nodes':
+        return (
+          <div className="space-y-4">
+            {/* Node Cards Skeleton */}
+            <div className="grid gap-4">
+              {Array.from({ length: count || 3 }).map((_, i) => (
+                <div key={i} className="border border-white/20 bg-black">
+                  {/* Header Skeleton */}
+                  <div className="p-4 border-b border-white/20">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-5 h-5 bg-white/10 animate-pulse rounded" />
+                        <div>
+                          <div className="h-5 bg-white/10 animate-pulse rounded w-32 mb-1" />
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 bg-white/10 animate-pulse rounded" />
+                            <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-8 mb-1" />
+                        <div className="h-5 bg-white/10 animate-pulse rounded w-6" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Resource Usage Skeleton */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                    {/* CPU Section */}
+                    <div className="p-4 border-b md:border-b-0 md:border-r border-white/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 bg-white/10 animate-pulse rounded" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-8" />
+                        </div>
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                      </div>
+                      <div className="w-full bg-gray-800 border border-white/20 h-2">
+                        <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
+                      </div>
+                      <div className="mt-2">
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                      </div>
+                    </div>
+
+                    {/* Memory Section */}
+                    <div className="p-4 border-b md:border-b-0 lg:border-r border-white/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 bg-white/10 animate-pulse rounded" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                        </div>
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                      </div>
+                      <div className="w-full bg-gray-800 border border-white/20 h-2">
+                        <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
+                      </div>
+                      <div className="mt-2">
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-24" />
+                      </div>
+                    </div>
+
+                    {/* Storage Section */}
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 bg-white/10 animate-pulse rounded" />
+                          <div className="h-3 bg-white/10 animate-pulse rounded w-14" />
+                        </div>
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                      </div>
+                      <div className="w-full bg-gray-800 border border-white/20 h-2">
+                        <div className="h-full bg-white/10 animate-pulse rounded" style={{ width: `${Math.random() * 80 + 20}%` }} />
+                      </div>
+                      <div className="mt-2">
+                        <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Skeleton */}
+                  <div className="p-4 border-t border-white/20 bg-gray-900/20">
+                    <div className="flex justify-between items-center">
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-20" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
+                      <div className="h-3 bg-white/10 animate-pulse rounded w-12" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );
