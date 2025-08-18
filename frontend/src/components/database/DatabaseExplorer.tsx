@@ -323,7 +323,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
             <CustomButton
               icon={History}
               onClick={() => setShowHistory(!showHistory)}
-              color={showHistory ? "white" : "gray"}
+              color={showHistory ? ButtonColor.WHITE : ButtonColor.GRAY}
               className="w-auto px-2 py-1"
               title="Query History"
             />

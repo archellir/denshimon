@@ -136,7 +136,7 @@ const SQLQueryInterface: FC = () => {
             label="HISTORY"
             icon={History}
             onClick={() => setShowHistory(!showHistory)}
-            color={showHistory ? "white" : "gray"}
+            color={showHistory ? ButtonColor.WHITE : ButtonColor.GRAY}
             className="w-auto"
           />
           <CustomButton

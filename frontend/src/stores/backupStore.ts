@@ -13,13 +13,12 @@ import {
   StorageStatus,
   VerificationStatus,
   BackupAlertType,
-  AlertSeverity,
   CompressionType,
   BackupSchedule,
   RecoveryOptions,
   RestoreType
 } from '@/types/backup';
-import { API_ENDPOINTS } from '@constants';
+import { API_ENDPOINTS, Status } from '@constants';
 import { MOCK_ENABLED } from '@mocks';
 import { apiService, ApiError } from '@services/api';
 
@@ -370,7 +369,7 @@ const mockBackupAlerts: BackupAlert[] = [
   {
     id: 'alert-001',
     type: BackupAlertType.BACKUP_FAILED,
-    severity: AlertSeverity.CRITICAL,
+    severity: Status.CRITICAL,
     message: 'Configuration Files backup failed: Permission denied',
     timestamp: '2024-01-20T00:00:05Z',
     jobId: 'backup-config-files',
@@ -379,7 +378,7 @@ const mockBackupAlerts: BackupAlert[] = [
   {
     id: 'alert-002',
     type: BackupAlertType.STORAGE_FULL,
-    severity: AlertSeverity.WARNING,
+    severity: Status.WARNING,
     message: 'NFS Backup Share is 80% full',
     timestamp: '2024-01-20T10:00:00Z',
     acknowledged: false
@@ -387,7 +386,7 @@ const mockBackupAlerts: BackupAlert[] = [
   {
     id: 'alert-003',
     type: BackupAlertType.VERIFICATION_FAILED,
-    severity: AlertSeverity.WARNING,
+    severity: Status.WARNING,
     message: 'Gitea Data Volume backup verification pending for 5 days',
     timestamp: '2024-01-20T12:00:00Z',
     jobId: 'backup-gitea-data',

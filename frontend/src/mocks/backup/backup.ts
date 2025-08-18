@@ -11,9 +11,9 @@ import {
   StorageStatus,
   VerificationStatus,
   BackupAlertType,
-  AlertSeverity,
   CompressionType
 } from '@/types/backup';
+import { Status } from '@constants';
 
 // Export all mock data for easy import
 export const mockBackupJobs: BackupJob[] = [
@@ -264,7 +264,7 @@ export const mockBackupAlerts: BackupAlert[] = [
   {
     id: 'alert-001',
     type: BackupAlertType.BACKUP_FAILED,
-    severity: AlertSeverity.CRITICAL,
+    severity: Status.CRITICAL,
     message: 'Configuration Files backup failed: Permission denied',
     timestamp: '2024-01-20T00:00:05Z',
     jobId: 'backup-config-files',
@@ -273,7 +273,7 @@ export const mockBackupAlerts: BackupAlert[] = [
   {
     id: 'alert-002',
     type: BackupAlertType.STORAGE_FULL,
-    severity: AlertSeverity.WARNING,
+    severity: Status.WARNING,
     message: 'Local storage is approaching 80% capacity',
     timestamp: '2024-01-20T10:00:00Z',
     acknowledged: false
