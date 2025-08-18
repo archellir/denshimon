@@ -444,6 +444,126 @@ func (h *DeploymentHandlers) GetDeploymentHistory(w http.ResponseWriter, r *http
 	writeJSON(w, history)
 }
 
+// ApplyDeployment manually applies a committed deployment to Kubernetes
+func (h *DeploymentHandlers) ApplyDeployment(w http.ResponseWriter, r *http.Request) {
+	deploymentID := extractIDFromPath(r.URL.Path, "/api/deployments/")
+	deploymentID = strings.TrimSuffix(deploymentID, "/apply")
+	
+	if deploymentID == "" {
+		http.Error(w, "Deployment ID is required", http.StatusBadRequest)
+		return
+	}
+	
+	var req struct {
+		AppliedBy string `json:"applied_by"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	
+	if req.AppliedBy == "" {
+		req.AppliedBy = "system"
+	}
+	
+	if err := h.service.ApplyDeployment(r.Context(), deploymentID, req.AppliedBy); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	writeJSON(w, map[string]string{
+		"status": "applied",
+		"message": "Deployment applied successfully",
+	})
+}
+
+// GetPendingDeployments returns all deployments with pending_apply status
+func (h *DeploymentHandlers) GetPendingDeployments(w http.ResponseWriter, r *http.Request) {
+	deployments, err := h.service.GetPendingDeployments(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	writeJSON(w, deployments)
+}
+
+// BatchApplyDeployments applies multiple deployments at once
+func (h *DeploymentHandlers) BatchApplyDeployments(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		DeploymentIDs []string `json:"deployment_ids"`
+		AppliedBy     string   `json:"applied_by"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	
+	if len(req.DeploymentIDs) == 0 {
+		http.Error(w, "At least one deployment ID is required", http.StatusBadRequest)
+		return
+	}
+	
+	if req.AppliedBy == "" {
+		req.AppliedBy = "system"
+	}
+	
+	results := h.service.BatchApplyDeployments(r.Context(), req.DeploymentIDs, req.AppliedBy)
+	
+	// Count successes and failures
+	var successes, failures int
+	for _, err := range results {
+		if err == nil {
+			successes++
+		} else {
+			failures++
+		}
+	}
+	
+	response := map[string]interface{}{
+		"status":    "completed",
+		"successes": successes,
+		"failures":  failures,
+		"results":   results,
+	}
+	
+	if failures > 0 {
+		w.WriteHeader(http.StatusPartialContent)
+	}
+	
+	writeJSON(w, response)
+}
+
+// GetDeploymentManifest returns the generated YAML manifest for a deployment
+func (h *DeploymentHandlers) GetDeploymentManifest(w http.ResponseWriter, r *http.Request) {
+	deploymentID := extractIDFromPath(r.URL.Path, "/api/deployments/")
+	deploymentID = strings.TrimSuffix(deploymentID, "/manifest")
+	
+	if deploymentID == "" {
+		http.Error(w, "Deployment ID is required", http.StatusBadRequest)
+		return
+	}
+	
+	deployment, err := h.service.GetDeployment(r.Context(), deploymentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	
+	// Return deployment manifest information
+	// TODO: Add actual manifest generation when needed
+	response := map[string]interface{}{
+		"deployment_id": deployment.ID,
+		"manifest_path": deployment.ManifestPath,
+		"git_commit":    deployment.GitCommitSHA,
+		"status":        deployment.Status,
+	}
+	
+	writeJSON(w, response)
+}
+
 // Helper functions
 
 func writeJSON(w http.ResponseWriter, data interface{}) {
