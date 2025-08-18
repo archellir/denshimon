@@ -52,6 +52,7 @@ export interface DeploymentRequest {
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
   environment?: Record<string, string>;
+  service_type?: string;
 }
 
 export interface Deployment {
