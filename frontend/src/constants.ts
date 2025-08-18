@@ -698,6 +698,8 @@ export const API_ENDPOINTS = {
   DEPLOYMENTS: {
     BASE: API_BASE_PATHS.DEPLOYMENTS,
     CREATE: API_BASE_PATHS.DEPLOYMENTS,
+    PENDING: `${API_BASE_PATHS.DEPLOYMENTS}/pending`,
+    BATCH_APPLY: `${API_BASE_PATHS.DEPLOYMENTS}/batch-apply`,
     REGISTRIES: `${API_BASE_PATHS.DEPLOYMENTS}/registries`,
     REGISTRY: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/registries/${id}`,
     REGISTRY_TEST: (id: string) => `${API_BASE_PATHS.DEPLOYMENTS}/registries/${id}/test`,
