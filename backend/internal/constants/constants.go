@@ -2,19 +2,27 @@ package constants
 
 // WebSocket Message Types - matching frontend WebSocketEventType
 const (
-	MessageTypeHeartbeat      = "heartbeat"
-	MessageTypeConnection     = "connection"
-	MessageTypeMetrics        = "metrics"
-	MessageTypePods           = "pods"
-	MessageTypeServices       = "services"
-	MessageTypeLogs           = "logs"
-	MessageTypeEvents         = "events"
-	MessageTypeWorkflows      = "workflows"
-	MessageTypeDeployments    = "deployments"
-	MessageTypeAlerts         = "alerts"
-	MessageTypeGiteaWebhook   = "gitea_webhook"
-	MessageTypeGithubWebhook  = "github_webhook"
-	MessageTypePipelineUpdate = "pipeline_update"
+	MessageTypeHeartbeat        = "heartbeat"
+	MessageTypeConnection       = "connection"
+	MessageTypeMetrics          = "metrics"
+	MessageTypePods             = "pods"
+	MessageTypeServices         = "services"
+	MessageTypeLogs             = "logs"
+	MessageTypeEvents           = "events"
+	MessageTypeWorkflows        = "workflows"
+	MessageTypeDeployments      = "deployments"
+	MessageTypeAlerts           = "alerts"
+	MessageTypeGiteaWebhook     = "gitea_webhook"
+	MessageTypeGithubWebhook    = "github_webhook"
+	MessageTypePipelineUpdate   = "pipeline_update"
+	// GitOps-specific events
+	MessageTypeRepositorySync   = "repository_sync"
+	MessageTypeApplicationSync  = "application_sync"
+	MessageTypeGitOperation     = "git_operation"
+	MessageTypeDeploymentStatus = "deployment_status"
+	// Service Health events
+	MessageTypeServiceHealth      = "service_health"
+	MessageTypeServiceHealthStats = "service_health_stats"
 )
 
 // Log Levels - matching frontend LogLevel enum
@@ -64,8 +72,12 @@ const (
 // Deployment Status - matching frontend DeploymentStatus enum
 const (
 	DeploymentStatusPending     = "pending"
+	DeploymentStatusCommitted   = "committed"           // GitOps: committed to git
+	DeploymentStatusPendingApply = "pending_apply"     // GitOps: ready to apply
+	DeploymentStatusApplying    = "applying"           // GitOps: currently applying
 	DeploymentStatusRunning     = "running"
 	DeploymentStatusFailed      = "failed"
+	DeploymentStatusApplyFailed = "apply_failed"       // GitOps: apply failed
 	DeploymentStatusUpdating    = "updating"
 	DeploymentStatusTerminating = "terminating"
 )
@@ -154,11 +166,25 @@ const (
 	DefaultMaxNamespaces = 10
 )
 
-// API Response status codes
+// Status enum - matching frontend Status enum
 const (
-	StatusSuccess = "success"
-	StatusError   = "error"
-	StatusPending = "pending"
+	StatusHealthy     = "healthy"
+	StatusDegraded    = "degraded"
+	StatusCritical    = "critical"
+	StatusWarning     = "warning"
+	StatusError       = "error"
+	StatusInfo        = "info"
+	StatusSuccess     = "success"
+	StatusPending     = "pending"
+	StatusProgressing = "progressing"
+	StatusUnknown     = "unknown"
+	StatusSuspended   = "suspended"
+	StatusMissing     = "missing"
+	StatusDown        = "down"
+	// Alert severity levels
+	StatusHigh   = "high"
+	StatusMedium = "medium"
+	StatusLow    = "low"
 )
 
 // Time ranges
