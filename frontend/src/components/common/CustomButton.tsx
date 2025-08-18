@@ -1,11 +1,12 @@
 import type { FC } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { ButtonColor, BUTTON_COLORS } from '@constants';
 
 interface CustomButtonProps {
   label?: string;
   icon?: LucideIcon;
   onClick?: () => void;
-  color?: 'blue' | 'green' | 'red' | 'yellow' | 'gray' | 'white';
+  color?: ButtonColor;
   disabled?: boolean;
   className?: string;
   title?: string;
@@ -15,21 +16,13 @@ const CustomButton: FC<CustomButtonProps> = ({
   label,
   icon: Icon,
   onClick,
-  color = 'white',
+  color = ButtonColor.WHITE,
   disabled = false,
   className = '',
   title
 }) => {
-  const getColorClasses = (color: string) => {
-    const colorMap = {
-      blue: 'border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-black',
-      green: 'border-green-500 text-green-500 hover:bg-green-500 hover:text-black',
-      red: 'border-red-500 text-red-500 hover:bg-red-500 hover:text-black',
-      yellow: 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black',
-      gray: 'border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-black',
-      white: 'border-white text-white hover:bg-white hover:text-black'
-    };
-    return colorMap[color as keyof typeof colorMap] || colorMap.white;
+  const getColorClasses = (color: ButtonColor): string => {
+    return BUTTON_COLORS[color] || BUTTON_COLORS[ButtonColor.WHITE];
   };
 
   const isIconOnly = !label || label === '';
