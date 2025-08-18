@@ -1,65 +1,55 @@
 import React from 'react';
-import { Server, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Pod } from '@stores/workloadsStore';
+import { Status, PodStatus, SortDirection } from '@constants';
+import { getStatusIcon, getStatusColor, getStatusBgColor } from './status';
+
+/**
+ * Map pod phase string to Status enum
+ */
+const mapPodPhaseToStatus = (phase: string): Status => {
+  switch (phase.toLowerCase()) {
+    case 'running':
+      return Status.HEALTHY;
+    case 'failed':
+      return Status.ERROR;
+    case 'pending':
+      return Status.PENDING;
+    case 'succeeded':
+      return Status.SUCCESS;
+    case 'unknown':
+    default:
+      return Status.UNKNOWN;
+  }
+};
 
 /**
  * Gets the appropriate icon for pod phase/status
  */
 export const getPodStatusIcon = (phase: string): React.ReactElement => {
-  switch (phase) {
-    case 'Running':
-      return React.createElement(CheckCircle, { className: "text-green-400", size: 16 });
-    case 'Failed':
-      return React.createElement(AlertCircle, { className: "text-red-400", size: 16 });
-    case 'Pending':
-      return React.createElement(Clock, { className: "text-yellow-400", size: 16 });
-    case 'Succeeded':
-      return React.createElement(CheckCircle, { className: "text-blue-400", size: 16 });
-    case 'Unknown':
-      return React.createElement(XCircle, { className: "text-gray-400", size: 16 });
-    default:
-      return React.createElement(Server, { className: "text-yellow-400", size: 16 });
-  }
+  const status = mapPodPhaseToStatus(phase);
+  const IconComponent = getStatusIcon(status);
+  const color = getStatusColor(status);
+  
+  return React.createElement(IconComponent, { 
+    className: color, 
+    size: 16 
+  });
 };
 
 /**
  * Gets the CSS color class for pod phase/status
  */
 export const getPodStatusColor = (phase: string): string => {
-  switch (phase) {
-    case 'Running':
-      return 'text-green-400';
-    case 'Failed':
-      return 'text-red-400';
-    case 'Pending':
-      return 'text-yellow-400';
-    case 'Succeeded':
-      return 'text-blue-400';
-    case 'Unknown':
-      return 'text-gray-400';
-    default:
-      return 'text-yellow-400';
-  }
+  const status = mapPodPhaseToStatus(phase);
+  return getStatusColor(status);
 };
 
 /**
  * Gets background color for pod status
  */
 export const getPodStatusBackground = (phase: string): string => {
-  switch (phase) {
-    case 'Running':
-      return 'bg-green-500/10';
-    case 'Failed':
-      return 'bg-red-500/10';
-    case 'Pending':
-      return 'bg-yellow-500/10';
-    case 'Succeeded':
-      return 'bg-blue-500/10';
-    case 'Unknown':
-      return 'bg-gray-500/10';
-    default:
-      return 'bg-yellow-500/10';
-  }
+  const status = mapPodPhaseToStatus(phase);
+  return getStatusBgColor(status);
 };
 
 /**
@@ -99,7 +89,7 @@ export const filterPods = (
 export const sortPods = (
   pods: Pod[],
   sortBy: string,
-  sortOrder: 'asc' | 'desc'
+  sortOrder: SortDirection
 ): Pod[] => {
   if (!pods || !Array.isArray(pods)) {
     return [];
@@ -124,7 +114,7 @@ export const sortPods = (
         break;
       case 'age':
         valueA = new Date(a.created || a.age);
-        valueB = new Date(b.created || b.age);
+        valueB = new Date(b.created || a.age);
         break;
       case 'restarts':
         valueA = a.restarts || 0;
@@ -136,19 +126,19 @@ export const sortPods = (
     }
 
     if (sortBy === 'age') {
-      return sortOrder === 'asc' 
+      return sortOrder === SortDirection.ASC 
         ? (valueA as Date).getTime() - (valueB as Date).getTime()
         : (valueB as Date).getTime() - (valueA as Date).getTime();
     }
 
     if (sortBy === 'restarts') {
-      return sortOrder === 'asc' 
+      return sortOrder === SortDirection.ASC 
         ? (valueA as number) - (valueB as number)
         : (valueB as number) - (valueA as number);
     }
     
     const comparison = valueA.toString().localeCompare(valueB.toString());
-    return sortOrder === 'asc' ? comparison : -comparison;
+    return sortOrder === SortDirection.ASC ? comparison : -comparison;
   });
 };
 
@@ -181,23 +171,23 @@ export const getPodReadiness = (ready: number, total: number): string => {
  * Checks if pod is healthy
  */
 export const isPodHealthy = (phase: string, ready: number, total: number): boolean => {
-  return phase === 'Running' && ready === total;
+  return phase === PodStatus.RUNNING && ready === total;
 };
 
 /**
  * Gets pod CPU usage color based on percentage
  */
 export const getCpuUsageColor = (usage: number): string => {
-  if (usage >= 90) return 'text-red-400';
-  if (usage >= 70) return 'text-yellow-400';
-  return 'text-green-400';
+  if (usage >= 90) return getStatusColor(Status.CRITICAL);
+  if (usage >= 70) return getStatusColor(Status.WARNING);
+  return getStatusColor(Status.HEALTHY);
 };
 
 /**
  * Gets pod memory usage color based on percentage
  */
 export const getMemoryUsageColor = (usage: number): string => {
-  if (usage >= 90) return 'text-red-400';
-  if (usage >= 80) return 'text-yellow-400';
-  return 'text-green-400';
+  if (usage >= 90) return getStatusColor(Status.CRITICAL);
+  if (usage >= 80) return getStatusColor(Status.WARNING);
+  return getStatusColor(Status.HEALTHY);
 };

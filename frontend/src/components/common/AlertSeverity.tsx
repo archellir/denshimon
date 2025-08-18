@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { AlertCircle, AlertTriangle, Info, XOctagon, Bell } from 'lucide-react';
+import { Status } from '@constants';
 
-export type AlertSeverity = 'critical' | 'high' | 'medium' | 'low' | 'info';
+export type AlertSeverity = Status.CRITICAL | Status.HIGH | Status.MEDIUM | Status.LOW | Status.INFO;
 
 export interface Alert {
   id: string;
@@ -31,7 +32,7 @@ export const AlertSeverityIcon: FC<AlertSeverityIconProps> = ({
 }) => {
   const getSeverityConfig = (severity: AlertSeverity) => {
     switch (severity) {
-      case 'critical':
+      case Status.CRITICAL:
         return {
           icon: XOctagon,
           color: 'text-red-600',
@@ -40,7 +41,7 @@ export const AlertSeverityIcon: FC<AlertSeverityIconProps> = ({
           label: 'CRITICAL',
           priority: 1,
         };
-      case 'high':
+      case Status.HIGH:
         return {
           icon: AlertTriangle,
           color: 'text-red-500',
@@ -49,7 +50,7 @@ export const AlertSeverityIcon: FC<AlertSeverityIconProps> = ({
           label: 'HIGH',
           priority: 2,
         };
-      case 'medium':
+      case Status.MEDIUM:
         return {
           icon: AlertCircle,
           color: 'text-yellow-500',
@@ -58,7 +59,7 @@ export const AlertSeverityIcon: FC<AlertSeverityIconProps> = ({
           label: 'MEDIUM',
           priority: 3,
         };
-      case 'low':
+      case Status.LOW:
         return {
           icon: Bell,
           color: 'text-blue-500',
@@ -67,7 +68,7 @@ export const AlertSeverityIcon: FC<AlertSeverityIconProps> = ({
           label: 'LOW',
           priority: 4,
         };
-      case 'info':
+      case Status.INFO:
         return {
           icon: Info,
           color: 'text-gray-500',
@@ -136,7 +137,7 @@ export const AlertBadge: FC<AlertBadgeProps> = ({
 // Utility functions
 export const getSeverityConfig = (severity: AlertSeverity) => {
   switch (severity) {
-    case 'critical':
+    case Status.CRITICAL:
       return {
         icon: XOctagon,
         color: 'text-red-600',
@@ -145,7 +146,7 @@ export const getSeverityConfig = (severity: AlertSeverity) => {
         label: 'CRITICAL',
         priority: 1,
       };
-    case 'high':
+    case Status.HIGH:
       return {
         icon: AlertTriangle,
         color: 'text-red-500',
@@ -154,7 +155,7 @@ export const getSeverityConfig = (severity: AlertSeverity) => {
         label: 'HIGH',
         priority: 2,
       };
-    case 'medium':
+    case Status.MEDIUM:
       return {
         icon: AlertCircle,
         color: 'text-yellow-500',
@@ -163,7 +164,7 @@ export const getSeverityConfig = (severity: AlertSeverity) => {
         label: 'MEDIUM',
         priority: 3,
       };
-    case 'low':
+    case Status.LOW:
       return {
         icon: Bell,
         color: 'text-blue-500',
@@ -172,7 +173,7 @@ export const getSeverityConfig = (severity: AlertSeverity) => {
         label: 'LOW',
         priority: 4,
       };
-    case 'info':
+    case Status.INFO:
       return {
         icon: Info,
         color: 'text-gray-500',
@@ -186,11 +187,11 @@ export const getSeverityConfig = (severity: AlertSeverity) => {
 
 export const sortAlertsBySeverity = (alerts: Alert[]): Alert[] => {
   const severityOrder: Record<AlertSeverity, number> = {
-    critical: 1,
-    high: 2,
-    medium: 3,
-    low: 4,
-    info: 5,
+    [Status.CRITICAL]: 1,
+    [Status.HIGH]: 2,
+    [Status.MEDIUM]: 3,
+    [Status.LOW]: 4,
+    [Status.INFO]: 5,
   };
 
   return [...alerts].sort((a, b) => {
@@ -225,11 +226,11 @@ export const filterAlertsBySeverity = (
 
 export const getAlertCounts = (alerts: Alert[]): Record<AlertSeverity, number> => {
   const counts: Record<AlertSeverity, number> = {
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-    info: 0,
+    [Status.CRITICAL]: 0,
+    [Status.HIGH]: 0,
+    [Status.MEDIUM]: 0,
+    [Status.LOW]: 0,
+    [Status.INFO]: 0,
   };
 
   alerts.forEach(alert => {
@@ -243,7 +244,7 @@ export const getAlertCounts = (alerts: Alert[]): Record<AlertSeverity, number> =
 
 // Alert severity definitions for reference
 export const ALERT_SEVERITY_DEFINITIONS = {
-  critical: {
+  [Status.CRITICAL]: {
     description: 'Service is completely down or data loss is occurring',
     responseTime: 'Immediate',
     examples: [
@@ -253,7 +254,7 @@ export const ALERT_SEVERITY_DEFINITIONS = {
       'Security breach detected',
     ],
   },
-  high: {
+  [Status.HIGH]: {
     description: 'Service is severely degraded or will fail soon',
     responseTime: 'Within 30 minutes',
     examples: [
@@ -263,7 +264,7 @@ export const ALERT_SEVERITY_DEFINITIONS = {
       'Memory pressure critical',
     ],
   },
-  medium: {
+  [Status.MEDIUM]: {
     description: 'Service is degraded but functional',
     responseTime: 'Within 2 hours',
     examples: [
@@ -273,7 +274,7 @@ export const ALERT_SEVERITY_DEFINITIONS = {
       'High CPU usage',
     ],
   },
-  low: {
+  [Status.LOW]: {
     description: 'Minor issue that should be investigated',
     responseTime: 'Within 24 hours',
     examples: [
@@ -283,7 +284,7 @@ export const ALERT_SEVERITY_DEFINITIONS = {
       'Unusual traffic pattern',
     ],
   },
-  info: {
+  [Status.INFO]: {
     description: 'Informational message, no action required',
     responseTime: 'No SLA',
     examples: [

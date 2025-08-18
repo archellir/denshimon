@@ -12,7 +12,8 @@ import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import useDeploymentStore from '@stores/deploymentStore';
 import useDatabaseStore from '@stores/databaseStore';
 import { SearchResult } from '@stores/globalSearchStore';
-import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS } from '@constants';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS, ServiceViewMode, SortDirection, CommonNamespace, FilterOption, KubernetesServiceType } from '@constants';
+import { TrendDirection } from '@utils/status';
 import useSettingsStore from '@stores/settingsStore';
 import NotificationContainer from '@components/common/NotificationContainer';
 import { 
@@ -67,11 +68,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
   const previousPrimaryTab = useRef<string>(activePrimaryTab);
 
   // Workload controls state
-  const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
-  const [selectedServiceType, setSelectedServiceType] = useState<string>('all');
-  const [serviceViewMode, setServiceViewMode] = useState<'cards' | 'table'>('cards');
+  const [selectedNamespace, setSelectedNamespace] = useState<string>(FilterOption.ALL_NAMESPACES);
+  const [selectedServiceType, setSelectedServiceType] = useState<string>(FilterOption.ALL_TYPES);
+  const [serviceViewMode, setServiceViewMode] = useState<ServiceViewMode>(ServiceViewMode.CARDS);
   const [serviceSortBy, setServiceSortBy] = useState<string>('name');
-  const [serviceSortOrder, setServiceSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [serviceSortOrder, setServiceSortOrder] = useState<SortDirection>(SortDirection.ASC);
 
   // Database management state
   const [showAddDatabaseModal, setShowAddDatabaseModal] = useState(false);
@@ -418,11 +419,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <CustomSelector
                   value={selectedNamespace}
                   options={[
-                    { value: 'all', label: 'ALL NAMESPACES' },
-                    { value: 'default', label: 'DEFAULT' },
+                    { value: FilterOption.ALL_NAMESPACES, label: 'ALL NAMESPACES' },
+                    { value: CommonNamespace.DEFAULT, label: 'DEFAULT' },
                     { value: 'denshimon-test', label: 'DENSHIMON-TEST' },
-                    { value: 'monitoring', label: 'MONITORING' },
-                    { value: 'production', label: 'PRODUCTION' }
+                    { value: CommonNamespace.MONITORING, label: 'MONITORING' },
+                    { value: CommonNamespace.PRODUCTION, label: 'PRODUCTION' }
                   ]}
                   onChange={(value) => setSelectedNamespace(value)}
                   placeholder="Select Namespace"
@@ -439,10 +440,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <CustomSelector
                   value={selectedNamespace}
                   options={[
-                    { value: 'all', label: 'ALL NAMESPACES' },
-                    { value: 'default', label: 'DEFAULT' },
-                    { value: 'monitoring', label: 'MONITORING' },
-                    { value: 'production', label: 'PRODUCTION' }
+                    { value: FilterOption.ALL_NAMESPACES, label: 'ALL NAMESPACES' },
+                    { value: CommonNamespace.DEFAULT, label: 'DEFAULT' },
+                    { value: CommonNamespace.MONITORING, label: 'MONITORING' },
+                    { value: CommonNamespace.PRODUCTION, label: 'PRODUCTION' }
                   ]}
                   onChange={(value) => setSelectedNamespace(value)}
                   placeholder="Select Namespace"
@@ -454,11 +455,11 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <CustomSelector
                   value={selectedServiceType}
                   options={[
-                    { value: 'all', label: 'ALL TYPES' },
-                    { value: 'ClusterIP', label: 'CLUSTER IP' },
-                    { value: 'NodePort', label: 'NODE PORT' },
-                    { value: 'LoadBalancer', label: 'LOAD BALANCER' },
-                    { value: 'ExternalName', label: 'EXTERNAL NAME' }
+                    { value: FilterOption.ALL_TYPES, label: 'ALL TYPES' },
+                    { value: KubernetesServiceType.CLUSTER_IP, label: 'CLUSTER IP' },
+                    { value: KubernetesServiceType.NODE_PORT, label: 'NODE PORT' },
+                    { value: KubernetesServiceType.LOAD_BALANCER, label: 'LOAD BALANCER' },
+                    { value: KubernetesServiceType.EXTERNAL_NAME, label: 'EXTERNAL NAME' }
                   ]}
                   onChange={(value) => setSelectedServiceType(value)}
                   placeholder="Select Type"
@@ -757,7 +758,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                     status={stat.status}
                     variant="default"
                     badge={stat.label === 'SUCCESS RATE' ? { text: 'STABLE', color: 'green' } : undefined}
-                    trend={stat.label === 'RECENT DEPLOYS' ? { direction: 'up', value: '+2', color: 'green' } : undefined}
+                    trend={stat.label === 'RECENT DEPLOYS' ? { direction: TrendDirection.UP, value: '+2', color: 'green' } : undefined}
                   />
                 ) : activePrimaryTab === PrimaryTab.DATABASE ? (
                   <StatCard

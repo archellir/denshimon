@@ -1,4 +1,5 @@
 // Backup and Recovery Types
+import { Status } from '@constants';
 
 export interface BackupJob {
   id: string;
@@ -222,7 +223,7 @@ export interface StorageTrend {
 export interface BackupAlert {
   id: string;
   type: BackupAlertType;
-  severity: AlertSeverity;
+  severity: Status.CRITICAL | Status.WARNING | Status.INFO;
   message: string;
   timestamp: string;
   jobId?: string;
@@ -236,10 +237,4 @@ export enum BackupAlertType {
   RETENTION_POLICY_VIOLATION = 'retention_policy_violation',
   SCHEDULE_MISSED = 'schedule_missed',
   RECOVERY_FAILED = 'recovery_failed'
-}
-
-export enum AlertSeverity {
-  INFO = 'info',
-  WARNING = 'warning',
-  CRITICAL = 'critical'
 }

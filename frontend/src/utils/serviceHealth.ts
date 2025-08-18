@@ -1,39 +1,18 @@
 import { Status } from '@constants';
+import { getStatusColor, getStatusBgColor, getStatusBorderColor } from './status';
 
 /**
  * Gets the CSS color classes for service health status
  */
 export const getServiceHealthStatusColor = (status: Status): string => {
-  switch (status) {
-    case Status.HEALTHY:
-      return 'border-green-400 text-green-400';
-    case Status.WARNING:
-      return 'border-yellow-400 text-yellow-400';
-    case Status.CRITICAL:
-      return 'border-red-400 text-red-400';
-    case Status.UNKNOWN:
-      return 'border-gray-400 text-gray-400';
-    default:
-      return 'border-white text-white';
-  }
+  return `${getStatusBorderColor(status)} ${getStatusColor(status)}`;
 };
 
 /**
  * Gets the background color for service health status
  */
 export const getServiceHealthBackgroundColor = (status: Status): string => {
-  switch (status) {
-    case Status.HEALTHY:
-      return 'bg-green-500/10';
-    case Status.WARNING:
-      return 'bg-yellow-500/10';
-    case Status.CRITICAL:
-      return 'bg-red-500/10';
-    case Status.UNKNOWN:
-      return 'bg-gray-500/10';
-    default:
-      return 'bg-white/5';
-  }
+  return getStatusBgColor(status);
 };
 
 /**

@@ -11,7 +11,11 @@ export enum Status {
   UNKNOWN = 'unknown',
   SUSPENDED = 'suspended',
   MISSING = 'missing',
-  DOWN = 'down'
+  DOWN = 'down',
+  // Alert severity levels
+  HIGH = 'high',
+  MEDIUM = 'medium',
+  LOW = 'low'
 }
 
 export enum SyncStatus {
@@ -235,6 +239,26 @@ export enum ObservabilityTab {
   LOG_DATA = 'log_data',
   ANALYTICS = 'analytics',
   SYSTEM_CHANGES = 'system_changes'
+}
+
+// VIEW MODE ENUMS
+
+export enum ServiceViewMode {
+  CARDS = 'cards',
+  TABLE = 'table'
+}
+
+export enum LogsViewMode {
+  STATIC = 'static',
+  LIVE = 'live',
+  PODS = 'pods',
+  DEPLOYMENTS = 'deployments'
+}
+
+export enum FilterOption {
+  ALL = 'all',
+  ALL_NAMESPACES = 'all',
+  ALL_TYPES = 'all'
 }
 
 // NAMESPACE ENUMS

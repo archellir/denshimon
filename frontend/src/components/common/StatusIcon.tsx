@@ -1,6 +1,6 @@
 import type { FC } from 'react';
-import { CheckCircle, AlertCircle, XCircle, Clock, HelpCircle, Zap } from 'lucide-react';
 import { Status, SIZES } from '@constants';
+import { getStatusConfig } from '@utils/status';
 
 export type StatusType = Status;
 
@@ -17,60 +17,6 @@ const StatusIcon: FC<StatusIconProps> = ({
   showLabel = false,
   className = ""
 }) => {
-  const getStatusConfig = (status: StatusType) => {
-    switch (status) {
-      case Status.HEALTHY:
-        return {
-          icon: CheckCircle,
-          color: 'text-green-500',
-          label: 'HEALTHY',
-          bgColor: 'border-green-500'
-        };
-      case Status.WARNING:
-        return {
-          icon: AlertCircle,
-          color: 'text-yellow-500',
-          label: 'WARNING',
-          bgColor: 'border-yellow-500'
-        };
-      case Status.ERROR:
-        return {
-          icon: XCircle,
-          color: 'text-red-500',
-          label: 'ERROR',
-          bgColor: 'border-red-500'
-        };
-      case Status.CRITICAL:
-        return {
-          icon: Zap,
-          color: 'text-red-600',
-          label: 'CRITICAL',
-          bgColor: 'border-red-600'
-        };
-      case Status.PENDING:
-        return {
-          icon: Clock,
-          color: 'text-blue-500',
-          label: 'PENDING',
-          bgColor: 'border-blue-500'
-        };
-      case Status.UNKNOWN:
-        return {
-          icon: HelpCircle,
-          color: 'text-gray-500',
-          label: 'UNKNOWN',
-          bgColor: 'border-gray-500'
-        };
-      default:
-        return {
-          icon: HelpCircle,
-          color: 'text-gray-500',
-          label: 'UNKNOWN',
-          bgColor: 'border-gray-500'
-        };
-    }
-  };
-
   const config = getStatusConfig(status);
   const Icon = config.icon;
 
@@ -97,25 +43,8 @@ const StatusIcon: FC<StatusIconProps> = ({
 
 export default StatusIcon;
 
-// Utility function to get status color class for borders, text, etc.
-export const getStatusColor = (status: StatusType) => {
-  switch (status) {
-    case 'healthy':
-      return 'text-green-500 border-green-500';
-    case 'warning':
-      return 'text-yellow-500 border-yellow-500';
-    case 'error':
-      return 'text-red-500 border-red-500';
-    case 'critical':
-      return 'text-red-600 border-red-600';
-    case 'pending':
-      return 'text-blue-500 border-blue-500';
-    case 'unknown':
-      return 'text-gray-500 border-gray-500';
-    default:
-      return 'text-gray-500 border-gray-500';
-  }
-};
+// Re-export utilities from the centralized status module
+export { getStatusColor, getStatusBorderColor, getStatusBgColor } from '@utils/status';
 
 // Utility function to convert generic status strings to StatusType
 export const normalizeStatus = (status: string): StatusType => {

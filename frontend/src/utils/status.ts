@@ -1,118 +1,276 @@
-import { CheckCircle, XCircle, Clock, AlertTriangle, Loader } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+/**
+ * Centralized Status Styling and Configuration Utility
+ * 
+ * This module provides a unified interface for status-related styling,
+ * icons, and configurations across the entire application.
+ */
 
-export type DeploymentStatus = 'running' | 'pending' | 'failed' | 'updating' | 'terminating';
-export type RegistryStatus = 'connected' | 'error' | 'pending';
-export type GeneralStatus = 'success' | 'error' | 'warning' | 'info' | 'loading';
+import { Status, STATUS_COLORS } from '@constants';
+import { 
+  CheckCircle, 
+  AlertTriangle, 
+  XCircle, 
+  Clock, 
+  HelpCircle,
+  Info,
+  AlertCircle,
+  Activity,
+  Pause,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  type LucideIcon
+} from 'lucide-react';
+
+export interface StatusConfig {
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: LucideIcon;
+  label: string;
+  priority: number;
+}
 
 /**
- * Gets CSS color class for deployment status
+ * Get comprehensive status configuration including colors, icons, and labels
  */
-export const getDeploymentStatusColor = (status: DeploymentStatus): string => {
+export const getStatusConfig = (status: Status): StatusConfig => {
   switch (status) {
-    case 'running':
-      return 'text-green-400';
-    case 'pending':
-      return 'text-yellow-400';
-    case 'failed':
-      return 'text-red-400';
-    case 'updating':
-      return 'text-blue-400';
-    case 'terminating':
-      return 'text-orange-400';
+    case Status.HEALTHY:
+    case Status.SUCCESS:
+      return {
+        color: STATUS_COLORS.TEXT.HEALTHY || 'text-green-500',
+        bgColor: 'bg-green-500/10',
+        borderColor: 'border-green-500',
+        icon: CheckCircle,
+        label: 'HEALTHY',
+        priority: 1,
+      };
+    
+    case Status.WARNING:
+      return {
+        color: STATUS_COLORS.TEXT.WARNING || 'text-yellow-500',
+        bgColor: 'bg-yellow-500/10',
+        borderColor: 'border-yellow-500',
+        icon: AlertTriangle,
+        label: 'WARNING',
+        priority: 2,
+      };
+    
+    case Status.CRITICAL:
+      return {
+        color: STATUS_COLORS.TEXT.ERROR || 'text-red-600',
+        bgColor: 'bg-red-600/10',
+        borderColor: 'border-red-600',
+        icon: XCircle,
+        label: 'CRITICAL',
+        priority: 3,
+      };
+    
+    case Status.ERROR:
+      return {
+        color: STATUS_COLORS.TEXT.ERROR || 'text-red-500',
+        bgColor: 'bg-red-500/10',
+        borderColor: 'border-red-500',
+        icon: XCircle,
+        label: 'ERROR',
+        priority: 3,
+      };
+    
+    case Status.PENDING:
+      return {
+        color: STATUS_COLORS.TEXT.PENDING || 'text-yellow-400',
+        bgColor: 'bg-yellow-400/10',
+        borderColor: 'border-yellow-400',
+        icon: Clock,
+        label: 'PENDING',
+        priority: 4,
+      };
+    
+    case Status.PROGRESSING:
+      return {
+        color: 'text-blue-500',
+        bgColor: 'bg-blue-500/10',
+        borderColor: 'border-blue-500',
+        icon: Activity,
+        label: 'PROGRESSING',
+        priority: 4,
+      };
+    
+    case Status.INFO:
+      return {
+        color: STATUS_COLORS.TEXT.INFO || 'text-blue-400',
+        bgColor: 'bg-blue-400/10',
+        borderColor: 'border-blue-400',
+        icon: Info,
+        label: 'INFO',
+        priority: 5,
+      };
+    
+    case Status.DEGRADED:
+      return {
+        color: 'text-orange-500',
+        bgColor: 'bg-orange-500/10',
+        borderColor: 'border-orange-500',
+        icon: AlertCircle,
+        label: 'DEGRADED',
+        priority: 3,
+      };
+    
+    case Status.SUSPENDED:
+      return {
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-500/10',
+        borderColor: 'border-gray-500',
+        icon: Pause,
+        label: 'SUSPENDED',
+        priority: 6,
+      };
+    
+    case Status.DOWN:
+      return {
+        color: 'text-red-700',
+        bgColor: 'bg-red-700/10',
+        borderColor: 'border-red-700',
+        icon: XCircle,
+        label: 'DOWN',
+        priority: 1,
+      };
+    
+    case Status.HIGH:
+      return {
+        color: 'text-red-500',
+        bgColor: 'bg-red-500/10',
+        borderColor: 'border-red-500',
+        icon: AlertTriangle,
+        label: 'HIGH',
+        priority: 2,
+      };
+    
+    case Status.MEDIUM:
+      return {
+        color: 'text-yellow-500',
+        bgColor: 'bg-yellow-500/10',
+        borderColor: 'border-yellow-500',
+        icon: AlertCircle,
+        label: 'MEDIUM',
+        priority: 3,
+      };
+    
+    case Status.LOW:
+      return {
+        color: 'text-blue-500',
+        bgColor: 'bg-blue-500/10',
+        borderColor: 'border-blue-500',
+        icon: Info,
+        label: 'LOW',
+        priority: 4,
+      };
+    
+    case Status.MISSING:
+    case Status.UNKNOWN:
     default:
-      return 'text-gray-400';
+      return {
+        color: STATUS_COLORS.TEXT.UNKNOWN || 'text-gray-400',
+        bgColor: 'bg-gray-400/10',
+        borderColor: 'border-gray-400',
+        icon: HelpCircle,
+        label: 'UNKNOWN',
+        priority: 7,
+      };
   }
 };
 
 /**
- * Gets CSS color class for registry status
+ * Get status color class for text elements
  */
-export const getRegistryStatusColor = (status: RegistryStatus): string => {
-  switch (status) {
-    case 'connected':
-      return 'text-green-400';
-    case 'error':
-      return 'text-red-400';
-    case 'pending':
-      return 'text-yellow-400';
-    default:
-      return 'text-gray-400';
-  }
+export const getStatusColor = (status: Status): string => {
+  return getStatusConfig(status).color;
 };
 
 /**
- * Gets icon component for registry status
+ * Get status background color class
  */
-export const getRegistryStatusIcon = (status: RegistryStatus): LucideIcon => {
-  switch (status) {
-    case 'connected':
-      return CheckCircle;
-    case 'error':
-      return XCircle;
-    case 'pending':
-      return Clock;
-    default:
-      return Clock;
-  }
+export const getStatusBgColor = (status: Status): string => {
+  return getStatusConfig(status).bgColor;
 };
 
 /**
- * Gets CSS color class for general status
+ * Get status border color class
  */
-export const getGeneralStatusColor = (status: GeneralStatus): string => {
-  switch (status) {
-    case 'success':
-      return 'text-green-400';
-    case 'error':
-      return 'text-red-400';
-    case 'warning':
-      return 'text-yellow-400';
-    case 'info':
-      return 'text-blue-400';
-    case 'loading':
-      return 'text-gray-400';
-    default:
-      return 'text-gray-400';
-  }
+export const getStatusBorderColor = (status: Status): string => {
+  return getStatusConfig(status).borderColor;
 };
 
 /**
- * Gets icon component for general status
+ * Get status icon component
  */
-export const getGeneralStatusIcon = (status: GeneralStatus): LucideIcon => {
-  switch (status) {
-    case 'success':
-      return CheckCircle;
-    case 'error':
-      return XCircle;
-    case 'warning':
-      return AlertTriangle;
-    case 'info':
-      return Clock;
-    case 'loading':
-      return Loader;
-    default:
-      return Clock;
-  }
+export const getStatusIcon = (status: Status): LucideIcon => {
+  return getStatusConfig(status).icon;
 };
 
 /**
- * Gets background color class for status badges
+ * Get status label
  */
-export const getStatusBadgeColor = (status: GeneralStatus): string => {
-  switch (status) {
-    case 'success':
-      return 'bg-green-600';
-    case 'error':
-      return 'bg-red-600';
-    case 'warning':
-      return 'bg-yellow-600';
-    case 'info':
-      return 'bg-blue-600';
-    case 'loading':
-      return 'bg-gray-600';
+export const getStatusLabel = (status: Status): string => {
+  return getStatusConfig(status).label;
+};
+
+/**
+ * Get status priority (lower number = higher priority)
+ */
+export const getStatusPriority = (status: Status): number => {
+  return getStatusConfig(status).priority;
+};
+
+/**
+ * Sort statuses by priority (most critical first)
+ */
+export const sortByStatusPriority = (statuses: Status[]): Status[] => {
+  return [...statuses].sort((a, b) => getStatusPriority(a) - getStatusPriority(b));
+};
+
+/**
+ * Trend direction types and utilities
+ */
+export enum TrendDirection {
+  UP = 'up',
+  DOWN = 'down',
+  STABLE = 'stable'
+}
+
+export interface TrendConfig {
+  color: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+/**
+ * Get trend configuration for directional indicators
+ */
+export const getTrendConfig = (direction: TrendDirection): TrendConfig => {
+  switch (direction) {
+    case TrendDirection.UP:
+      return {
+        color: 'text-green-500',
+        icon: ArrowUp,
+        label: 'UP',
+      };
+    
+    case TrendDirection.DOWN:
+      return {
+        color: 'text-red-500',
+        icon: ArrowDown,
+        label: 'DOWN',
+      };
+    
+    case TrendDirection.STABLE:
     default:
-      return 'bg-gray-600';
+      return {
+        color: 'text-gray-500',
+        icon: Minus,
+        label: 'STABLE',
+      };
   }
 };
+

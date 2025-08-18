@@ -7,7 +7,8 @@ import { Pod } from '@stores/workloadsStore';
 import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
 import VirtualizedTable, { Column } from '@components/common/VirtualizedTable';
 import { useWebSocket, useLogsWebSocket } from '@hooks/useWebSocket';
-import { WebSocketEventType, PodStatus } from '@constants';
+import { WebSocketEventType, PodStatus, LogsViewMode } from '@constants';
+import { TrendDirection } from '@utils/status';
 
 const Logs: React.FC = () => {
   // Live terminal state
@@ -27,7 +28,7 @@ const Logs: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   
   // View selection
-  const [selectedView, setSelectedView] = useState<'static' | 'live' | 'pods' | 'deployments'>('static');
+  const [selectedView, setSelectedView] = useState<LogsViewMode>(LogsViewMode.STATIC);
 
   // Load static logs
   useEffect(() => {
@@ -56,9 +57,9 @@ const Logs: React.FC = () => {
             name: pod.name,
             namespace: pod.namespace,
             cpu: pod.cpu || Math.random() * 100,
-            cpuTrend: pod.cpuTrend || 'stable',
+            cpuTrend: pod.cpuTrend || TrendDirection.STABLE,
             memory: pod.memory || Math.random() * 4000,
-            memoryTrend: pod.memoryTrend || 'stable',
+            memoryTrend: pod.memoryTrend || TrendDirection.STABLE,
             status: pod.status || PodStatus.RUNNING,
             lastUpdate: pod.lastUpdate || new Date().toISOString(),
           })) : (prevData?.topPods || []),
@@ -111,7 +112,7 @@ const Logs: React.FC = () => {
 
   // Fallback to mock data when MOCK_ENABLED
   useEffect(() => {
-    if (MOCK_ENABLED && (selectedView === 'live' || selectedView === 'pods' || selectedView === 'deployments')) {
+    if (MOCK_ENABLED && (selectedView === LogsViewMode.LIVE || selectedView === LogsViewMode.PODS || selectedView === LogsViewMode.DEPLOYMENTS)) {
       const { startLiveTerminalUpdates, stopLiveTerminalUpdates } = require('@mocks/terminal/liveData');
       const unsubscribe = startLiveTerminalUpdates(setLiveData);
       
@@ -124,7 +125,7 @@ const Logs: React.FC = () => {
 
   // Auto-scroll for live logs
   useEffect(() => {
-    if (autoScroll && logsEndRef.current && selectedView === 'live') {
+    if (autoScroll && logsEndRef.current && selectedView === LogsViewMode.LIVE) {
       logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [liveData?.logs, autoScroll, selectedView]);
@@ -197,7 +198,7 @@ const Logs: React.FC = () => {
   const exportLogs = () => {
     let csvContent = '';
     
-    if (selectedView === 'static') {
+    if (selectedView === LogsViewMode.STATIC) {
       csvContent = [
         'Timestamp,Level,Source,User,Action,Message',
         ...filteredStaticLogs.map(log => 
@@ -330,7 +331,7 @@ const Logs: React.FC = () => {
         <h1 className="text-2xl font-mono">LIVE STREAMS</h1>
         <div className="flex items-center gap-4">
           {/* Live Stats (only show when in live/pods/deployments view) */}
-          {liveData && (selectedView === 'live' || selectedView === 'pods' || selectedView === 'deployments') && (
+          {liveData && (selectedView === LogsViewMode.LIVE || selectedView === LogsViewMode.PODS || selectedView === LogsViewMode.DEPLOYMENTS) && (
             <div className="flex gap-4">
               <div className="text-sm font-mono">
                 <span className="text-gray-500">LOGS/SEC:</span>
@@ -352,7 +353,7 @@ const Logs: React.FC = () => {
           )}
           
           {/* Actions for static view */}
-          {selectedView === 'static' && (
+          {selectedView === LogsViewMode.STATIC && (
             <>
               <button
                 onClick={() => setShowFilters(!showFilters)}
@@ -375,7 +376,7 @@ const Logs: React.FC = () => {
             </>
           )}
           
-          {(selectedView === 'static' || selectedView === 'live') && (
+          {(selectedView === LogsViewMode.STATIC || selectedView === LogsViewMode.LIVE) && (
             <button
               onClick={exportLogs}
               className="flex items-center space-x-2 px-3 py-1 border border-white text-white hover:bg-white hover:text-black transition-colors font-mono text-sm"
@@ -390,36 +391,36 @@ const Logs: React.FC = () => {
       {/* View Tabs */}
       <div className="flex gap-2 border-b border-white pb-2">
         <button
-          onClick={() => setSelectedView('static')}
+          onClick={() => setSelectedView(LogsViewMode.STATIC)}
           className={`px-4 py-2 font-mono text-sm transition-colors ${
-            selectedView === 'static' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            selectedView === LogsViewMode.STATIC ? 'bg-white text-black' : 'text-white hover:bg-white/10'
           }`}
         >
           <Table className="w-4 h-4 inline mr-2" />
           TABLE VIEW
         </button>
         <button
-          onClick={() => setSelectedView('live')}
+          onClick={() => setSelectedView(LogsViewMode.LIVE)}
           className={`px-4 py-2 font-mono text-sm transition-colors ${
-            selectedView === 'live' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            selectedView === LogsViewMode.LIVE ? 'bg-white text-black' : 'text-white hover:bg-white/10'
           }`}
         >
           <Terminal className="w-4 h-4 inline mr-2" />
           LIVE STREAM
         </button>
         <button
-          onClick={() => setSelectedView('pods')}
+          onClick={() => setSelectedView(LogsViewMode.PODS)}
           className={`px-4 py-2 font-mono text-sm transition-colors ${
-            selectedView === 'pods' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            selectedView === LogsViewMode.PODS ? 'bg-white text-black' : 'text-white hover:bg-white/10'
           }`}
         >
           <Activity className="w-4 h-4 inline mr-2" />
           TOP PODS
         </button>
         <button
-          onClick={() => setSelectedView('deployments')}
+          onClick={() => setSelectedView(LogsViewMode.DEPLOYMENTS)}
           className={`px-4 py-2 font-mono text-sm transition-colors ${
-            selectedView === 'deployments' ? 'bg-white text-black' : 'text-white hover:bg-white/10'
+            selectedView === LogsViewMode.DEPLOYMENTS ? 'bg-white text-black' : 'text-white hover:bg-white/10'
           }`}
         >
           <Package className="w-4 h-4 inline mr-2" />
@@ -428,7 +429,7 @@ const Logs: React.FC = () => {
       </div>
 
       {/* Static Logs View */}
-      {selectedView === 'static' && (
+      {selectedView === LogsViewMode.STATIC && (
         <div className="space-y-4">
           {/* Search and Filters */}
           <div className="space-y-4">
@@ -524,7 +525,7 @@ const Logs: React.FC = () => {
       )}
 
       {/* Live Stream View */}
-      {selectedView === 'live' && liveData && (
+      {selectedView === LogsViewMode.LIVE && liveData && (
         <div className="space-y-4">
           {/* Filters */}
           <div className="flex gap-2 items-center">
@@ -579,7 +580,7 @@ const Logs: React.FC = () => {
       )}
 
       {/* Top Pods View */}
-      {selectedView === 'pods' && liveData && (
+      {selectedView === LogsViewMode.PODS && liveData && (
         <VirtualizedTable
           data={liveData.topPods}
           columns={podColumns}
@@ -591,7 +592,7 @@ const Logs: React.FC = () => {
       )}
 
       {/* Deployments View */}
-      {selectedView === 'deployments' && liveData && (
+      {selectedView === LogsViewMode.DEPLOYMENTS && liveData && (
         <div className="space-y-4">
           {liveData.deployments.map((deployment) => (
             <div key={`${deployment.namespace}-${deployment.name}`} className="bg-black border border-white p-4">
