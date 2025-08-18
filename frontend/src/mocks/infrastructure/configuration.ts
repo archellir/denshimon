@@ -1,10 +1,11 @@
 import { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';
+import unifiedMockData from '../unifiedMockData';
 
 // Mock base infrastructure repository
 export const mockBaseInfrastructureRepo: BaseInfrastructureRepo = {
   id: 'base-infra-001',
   name: 'base-infrastructure',
-  url: 'https://git.example.com/infrastructure/base-k8s-configs.git',
+  url: 'https://git.company.com/infrastructure/base-k8s-configs.git',
   branch: 'main',
   status: 'active',
   last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
@@ -12,14 +13,17 @@ export const mockBaseInfrastructureRepo: BaseInfrastructureRepo = {
   health: 'healthy'
 };
 
-// Mock sync metrics
-export const mockSyncMetrics: SyncMetrics = {
-  last_sync_time: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  total_applications: 12,
-  synced_applications: 11,
-  out_of_sync_applications: 1,
-  recent_deployments: 7
-};
+// Generate dynamic sync metrics based on unified data
+export const mockSyncMetrics: SyncMetrics = (() => {
+  const metrics = unifiedMockData.getMetrics();
+  return {
+    last_sync_time: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    total_applications: metrics.totalDeployments,
+    synced_applications: metrics.runningDeployments,
+    out_of_sync_applications: metrics.pendingDeployments,
+    recent_deployments: Math.floor(metrics.totalDeployments * 0.6) // 60% are recent
+  };
+})();
 
 // Additional mock repositories for testing
 export const mockInfrastructureRepos: BaseInfrastructureRepo[] = [
