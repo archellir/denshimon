@@ -12,6 +12,7 @@ import {
   getDatabaseTypeIcon, 
   getDatabaseTypeLabel 
 } from '@utils/databaseGrid';
+import { ButtonColor, DialogIcon } from '@constants';
 
 interface DatabaseGridProps {
   onAddConnection: () => void;
@@ -136,7 +137,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
               label="ADD CONNECTION"
               icon={Plus}
               onClick={onAddConnection}
-              color="green"
+              color={ButtonColor.GREEN}
               className="mx-auto"
             />
           </div>
@@ -194,7 +195,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                         icon={isConnecting ? Activity : PowerOff}
                         onClick={() => openDisconnectDialog(connection.id, connection.name)}
                         disabled={isConnecting}
-                        color="red"
+                        color={ButtonColor.RED}
                         className="w-auto px-1 py-1"
                         title="Disconnect"
                       />
@@ -203,7 +204,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                         icon={isConnecting ? Activity : Power}
                         onClick={() => handleConnect(connection.id)}
                         disabled={isConnecting}
-                        color="green"
+                        color={ButtonColor.GREEN}
                         className="w-auto px-1 py-1"
                         title="Connect"
                       />
@@ -213,7 +214,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                       icon={Eye}
                       onClick={() => onUseConnection(connection.id)}
                       disabled={connection.status !== DatabaseStatus.CONNECTED}
-                      color="blue"
+                      color={ButtonColor.BLUE}
                       className="w-auto px-1 py-1"
                       title="Use Connection"
                     />
@@ -223,7 +224,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                     <CustomButton
                       icon={Settings}
                       onClick={() => openSettingsDialog(connection.id, connection.name)}
-                      color="white"
+                      color={ButtonColor.WHITE}
                       className="w-auto px-1 py-1"
                       title="Settings"
                     />
@@ -231,7 +232,7 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
                     <CustomButton
                       icon={Trash2}
                       onClick={() => openDeleteDialog(connection.id, connection.name)}
-                      color="red"
+                      color={ButtonColor.RED}
                       className="w-auto px-1 py-1"
                       title="Delete"
                     />
@@ -251,8 +252,8 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
         title="Delete Database Connection"
         message={`Are you sure you want to delete the database connection "${deleteDialog.connectionName}"? This action cannot be undone.`}
         confirmLabel="DELETE"
-        confirmColor="red"
-        icon="danger"
+        confirmColor={ButtonColor.RED}
+        icon={DialogIcon.DANGER}
       />
 
       <ConfirmDialog
@@ -262,8 +263,8 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
         title="Disconnect Database"
         message={`Are you sure you want to disconnect from "${disconnectDialog.connectionName}"? Any active queries will be terminated.`}
         confirmLabel="DISCONNECT"
-        confirmColor="red"
-        icon="warning"
+        confirmColor={ButtonColor.RED}
+        icon={DialogIcon.WARNING}
       />
 
       <ConfirmDialog
@@ -276,8 +277,8 @@ const DatabaseGrid: FC<DatabaseGridProps> = ({ onAddConnection, onUseConnection 
         title="Connection Settings"
         message={`Configure settings for database connection "${settingsDialog.connectionName}".`}
         confirmLabel="OPEN SETTINGS"
-        confirmColor="blue"
-        icon="warning"
+        confirmColor={ButtonColor.BLUE}
+        icon={DialogIcon.WARNING}
       />
     </div>
   );
