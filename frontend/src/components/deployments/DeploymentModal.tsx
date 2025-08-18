@@ -23,6 +23,9 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   // Deployment states
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
   const [deploying, setDeploying] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'configure' | 'preview' | 'committed'>('configure');
+  const [yamlPreview, setYamlPreview] = useState<string>('');
+  const [deploymentId, setDeploymentId] = useState<string>('');
 
   // Deployment form state
   const [deployForm, setDeployForm] = useState({
@@ -94,8 +97,9 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   }, [isOpen, preselectedImage, fetchImages]);
 
 
-  const handleDeploy = async () => {
-    if (!selectedImage || !deployForm.name || !onClose) return;
+  // Step 1: Generate and preview YAML manifest
+  const handleGeneratePreview = async () => {
+    if (!selectedImage || !deployForm.name) return;
 
     try {
       setDeploying(true);
@@ -124,9 +128,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
           resource_type: "Full",
           options: {
             service: true,
-            ingress: deployForm.ingress.enabled,
-            autoscaling: deployForm.autoscaling.enabled,
-            storage: deployForm.storage.enabled
+            ingress: deployForm.ingress?.enabled || false,
+            autoscaling: deployForm.autoscaling?.enabled || false,
+            storage: deployForm.storage?.enabled || false,
+            deployment_id: `dep-${Date.now().toString(36)}`, // Temporary ID for preview
+            service_type: 'backend' // Default service type
           }
         })
       });
@@ -136,95 +142,183 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
       }
 
       const manifestData = await manifestResponse.json();
+      setYamlPreview(manifestData.manifest);
+      setCurrentStep('preview');
+    } catch (error) {
+      console.error('Failed to generate preview:', error);
+      alert('Failed to generate YAML preview');
+    } finally {
+      setDeploying(false);
+    }
+  };
 
-      // Create and deploy application
-      const createResponse = await fetch(API_ENDPOINTS.GITOPS.APPLICATIONS, {
+  // Step 2: Commit to git (create deployment record)
+  const handleCommitToGit = async () => {
+    if (!selectedImage || !deployForm.name) return;
+
+    try {
+      setDeploying(true);
+      
+      // Create deployment using new API
+      const createResponse = await fetch(API_ENDPOINTS.DEPLOYMENTS.CREATE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: deployForm.name,
           namespace: deployForm.namespace,
           image: selectedImage.fullName,
+          registry_id: selectedImage.registry || 'dockerhub',
           replicas: deployForm.replicas,
-          resources: deployForm.resources,
-          manifest: manifestData.manifest,
-          config: deployForm
+          resources: {
+            limits: {
+              cpu: deployForm.resources.cpu_limit,
+              memory: deployForm.resources.memory_limit
+            },
+            requests: {
+              cpu: deployForm.resources.cpu_request,
+              memory: deployForm.resources.memory_request
+            }
+          },
+          environment: deployForm.environment || {},
+          service_type: 'backend' // Default service type
         })
       });
 
       if (createResponse.ok) {
-        onClose?.();
-        setSelectedImage(null);
-        // Reset form
-        setDeployForm({
-          name: '',
-          namespace: 'base-infra',
-          replicas: 1,
-          port: 8080,
-          resources: {
-            cpu_request: '10m',
-            cpu_limit: '50m',
-            memory_request: '32Mi',
-            memory_limit: '64Mi'
-          },
-          storage: {
-            enabled: false,
-            size: '20Gi',
-            accessMode: 'ReadWriteOnce',
-            mountPath: '/data'
-          },
-          healthCheck: {
-            enabled: false,
-            type: 'http',
-            path: '/health',
-            initialDelaySeconds: 30,
-            timeoutSeconds: 5,
-            periodSeconds: 10,
-            successThreshold: 1,
-            failureThreshold: 3
-          },
-          ingress: {
-            enabled: false,
-            host: '',
-            path: '/'
-          },
-          autoscaling: {
-            enabled: false,
-            minReplicas: 1,
-            maxReplicas: 10,
-            targetCPUUtilization: 80
-          },
-          service: {
-            type: 'ClusterIP',
-            port: 80,
-            targetPort: 8080
-          },
-          deployment: {
-            strategy: 'RollingUpdate',
-            maxSurge: '25%',
-            maxUnavailable: '25%'
-          },
-          security: {
-            runAsNonRoot: true,
-            runAsUser: 1000,
-            runAsGroup: 1000,
-            readOnlyRootFilesystem: false,
-            allowPrivilegeEscalation: false
-          },
-          labels: {} as Record<string, string>,
-          annotations: {} as Record<string, string>
-        });
+        const deployment = await createResponse.json();
+        setDeploymentId(deployment.id);
+        setCurrentStep('committed');
+      } else {
+        throw new Error('Failed to create deployment');
       }
     } catch (error) {
-      // console.error('Failed to deploy application:', error);
+      console.error('Failed to commit to git:', error);
+      alert('Failed to commit deployment to git');
     } finally {
       setDeploying(false);
     }
   };
 
+  // Step 3: Apply to Kubernetes cluster (manual step)
+  const handleApplyToCluster = async () => {
+    if (!deploymentId) return;
+
+    try {
+      setDeploying(true);
+      
+      const applyResponse = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${deploymentId}/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applied_by: 'user' // Could be enhanced to get actual user info
+        })
+      });
+
+      if (applyResponse.ok) {
+        // Success - close modal and reset
+        onClose?.();
+        resetModal();
+      } else {
+        throw new Error('Failed to apply deployment');
+      }
+    } catch (error) {
+      console.error('Failed to apply to cluster:', error);
+      alert('Failed to apply deployment to Kubernetes cluster');
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  // Reset modal to initial state
+  const resetModal = () => {
+    setCurrentStep('configure');
+    setYamlPreview('');
+    setDeploymentId('');
+    setSelectedImage(null);
+    setDeployForm({
+      name: '',
+      namespace: 'base-infra',
+      replicas: 1,
+      port: 8080,
+      resources: {
+        cpu_request: '10m',
+        cpu_limit: '50m',
+        memory_request: '32Mi',
+        memory_limit: '64Mi'
+      },
+      storage: {
+        enabled: false,
+        size: '20Gi',
+        accessMode: 'ReadWriteOnce',
+        mountPath: '/data'
+      },
+      healthCheck: {
+        enabled: false,
+        type: 'http',
+        path: '/health',
+        initialDelaySeconds: 30,
+        timeoutSeconds: 5,
+        periodSeconds: 10,
+        successThreshold: 1,
+        failureThreshold: 3
+      },
+      ingress: {
+        enabled: false,
+        host: '',
+        path: '/'
+      },
+      autoscaling: {
+        enabled: false,
+        minReplicas: 1,
+        maxReplicas: 10,
+        targetCPUUtilization: 80
+      },
+      service: {
+        type: 'ClusterIP',
+        port: 80,
+        targetPort: 8080
+      },
+      deployment: {
+        strategy: 'RollingUpdate',
+        maxSurge: '25%',
+        maxUnavailable: '25%'
+      },
+      security: {
+        runAsNonRoot: true,
+        runAsUser: 1000,
+        runAsGroup: 1000,
+        readOnlyRootFilesystem: false,
+        allowPrivilegeEscalation: false
+      },
+      labels: {} as Record<string, string>,
+      annotations: {} as Record<string, string>
+    });
+  };
+
+  // Unified deploy handler that delegates to appropriate step
+  const handleDeploy = () => {
+    switch (currentStep) {
+      case 'configure':
+        handleGeneratePreview();
+        break;
+      case 'preview':
+        handleCommitToGit();
+        break;
+      case 'committed':
+        handleApplyToCluster();
+        break;
+    }
+  };
+
+  // Handle modal close with reset
+  const handleClose = () => {
+    resetModal();
+    onClose?.();
+  };
+
   const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
     isOpen,
-    onClose: () => onClose?.(),
+    onClose: handleClose,
     onSubmit: handleDeploy,
     canSubmit: Boolean(selectedImage && deployForm.name && !deploying),
     modalId: 'deploy-modal'
@@ -233,13 +327,26 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={createClickOutsideHandler(() => onClose?.())}>
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={createClickOutsideHandler(handleClose)}>
       <div id="deploy-modal" className="bg-black border border-white max-w-7xl w-full mx-4 max-h-[95vh] flex flex-col" onClick={preventClickThrough}>
         {/* Fixed Header */}
         <div className="flex items-center justify-between p-8 pb-4 border-b border-white/30">
-          <h3 className="text-2xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
+          <div>
+            <h3 className="text-2xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
+            <div className="flex items-center space-x-4 mt-2">
+              <div className={`text-xs font-mono px-2 py-1 border ${currentStep === 'configure' ? 'border-blue-400 text-blue-400' : currentStep !== 'configure' ? 'border-green-400 text-green-400' : 'border-gray-600 text-gray-600'}`}>
+                1. CONFIGURE
+              </div>
+              <div className={`text-xs font-mono px-2 py-1 border ${currentStep === 'preview' ? 'border-blue-400 text-blue-400' : currentStep === 'committed' ? 'border-green-400 text-green-400' : 'border-gray-600 text-gray-600'}`}>
+                2. PREVIEW
+              </div>
+              <div className={`text-xs font-mono px-2 py-1 border ${currentStep === 'committed' ? 'border-blue-400 text-blue-400' : 'border-gray-600 text-gray-600'}`}>
+                3. APPLY
+              </div>
+            </div>
+          </div>
           <button
-            onClick={() => onClose?.()}
+            onClick={handleClose}
             className="p-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors"
           >
             <X size={20} />
@@ -249,39 +356,42 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-8 py-4">
 
-        {/* Container Image Selection at Top */}
-        <div className="mb-6 pb-6 border-b border-white/30">
-          <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
-          {preselectedImage ? (
-            <div className="p-4 border border-green-400/20 bg-green-400/5">
-              <div className="text-sm font-mono text-green-400">PRESELECTED IMAGE</div>
-              <div className="text-white font-mono text-lg">{preselectedImage.repository}:{preselectedImage.tag}</div>
-              <div className="text-xs text-gray-400">{preselectedImage.registry}</div>
+        {/* Step-based Content */}
+        {currentStep === 'configure' && (
+          <>
+            {/* Container Image Selection at Top */}
+            <div className="mb-6 pb-6 border-b border-white/30">
+              <label className="block text-lg font-bold text-white mb-3 font-mono tracking-wider">SELECT CONTAINER IMAGE</label>
+              {preselectedImage ? (
+                <div className="p-4 border border-green-400/20 bg-green-400/5">
+                  <div className="text-sm font-mono text-green-400">PRESELECTED IMAGE</div>
+                  <div className="text-white font-mono text-lg">{preselectedImage.repository}:{preselectedImage.tag}</div>
+                  <div className="text-xs text-gray-400">{preselectedImage.registry}</div>
+                </div>
+              ) : (
+                <CustomSelector
+                  value={selectedImage?.fullName || ''}
+                  options={images.map(image => ({
+                    value: image.fullName,
+                    label: `${image.repository.toUpperCase()} : ${image.tag}`,
+                    description: image.size ? `${(image.size / 1024 / 1024).toFixed(1)} MB` : 'Container Image'
+                  }))}
+                  onChange={(value) => {
+                    const image = images.find(img => img.fullName === value);
+                    setSelectedImage(image || null);
+                  }}
+                  placeholder="-- SELECT AN IMAGE --"
+                  icon={Container}
+                  size="lg"
+                  variant="detailed"
+                  maxHeight="max-h-64"
+                />
+              )}
             </div>
-          ) : (
-            <CustomSelector
-              value={selectedImage?.fullName || ''}
-              options={images.map(image => ({
-                value: image.fullName,
-                label: `${image.repository.toUpperCase()} : ${image.tag}`,
-                description: image.size ? `${(image.size / 1024 / 1024).toFixed(1)} MB` : 'Container Image'
-              }))}
-              onChange={(value) => {
-                const image = images.find(img => img.fullName === value);
-                setSelectedImage(image || null);
-              }}
-              placeholder="-- SELECT AN IMAGE --"
-              icon={Container}
-              size="lg"
-              variant="detailed"
-              maxHeight="max-h-64"
-            />
-          )}
-        </div>
 
-        {/* Configuration Form in 2 Columns */}
-        <div className="space-y-6">
-          <h4 className="text-lg font-bold text-white font-mono tracking-wider">CONFIGURATION</h4>
+            {/* Configuration Form in 2 Columns */}
+            <div className="space-y-6">
+              <h4 className="text-lg font-bold text-white font-mono tracking-wider">CONFIGURATION</h4>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
@@ -891,24 +1001,83 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
               </div>
             </div>
           </div>
-        </div>
+            </div>
+          </>
+        )}
+
+        {/* YAML Preview Step */}
+        {currentStep === 'preview' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-lg font-bold text-white font-mono tracking-wider">YAML PREVIEW</h4>
+              <button
+                onClick={() => setCurrentStep('configure')}
+                className="px-3 py-1 border border-gray-400 text-gray-400 hover:bg-gray-400 hover:text-black transition-colors font-mono text-xs"
+              >
+                ← BACK TO CONFIG
+              </button>
+            </div>
+            <div className="bg-gray-900 border border-white p-4 font-mono text-sm text-white overflow-auto max-h-96">
+              <pre className="whitespace-pre-wrap">{yamlPreview}</pre>
+            </div>
+            <div className="text-sm text-gray-400 font-mono">
+              Review the generated Kubernetes manifest. Click "COMMIT TO GIT" to save this deployment configuration.
+            </div>
+          </div>
+        )}
+
+        {/* Committed Step */}
+        {currentStep === 'committed' && (
+          <div className="space-y-6">
+            <div className="text-center p-8">
+              <div className="text-green-400 text-6xl mb-4">✓</div>
+              <h4 className="text-lg font-bold text-white font-mono tracking-wider mb-2">DEPLOYMENT COMMITTED TO GIT</h4>
+              <p className="text-gray-300 font-mono text-sm mb-4">
+                Deployment ID: <span className="text-blue-400">{deploymentId}</span>
+              </p>
+              <p className="text-gray-400 font-mono text-xs max-w-lg mx-auto leading-relaxed">
+                The deployment configuration has been committed to your GitOps repository. 
+                To complete the deployment, click "APPLY TO CLUSTER" to deploy the application to Kubernetes.
+              </p>
+            </div>
+            <div className="bg-yellow-400/10 border border-yellow-400/30 p-4">
+              <div className="text-yellow-400 font-mono text-sm font-bold mb-1">MANUAL APPLY REQUIRED</div>
+              <div className="text-yellow-300 font-mono text-xs">
+                This deployment uses the manual-only workflow. The manifests are committed to git but will only be applied to Kubernetes when you manually trigger the deployment.
+              </div>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* Fixed Footer */}
         <div className="flex justify-end space-x-3 p-8 pt-4 border-t border-white/30">
           <button
-            onClick={() => onClose?.()}
+            onClick={handleClose}
             className="px-4 py-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-sm tracking-wider"
           >
-            CANCEL
+            {currentStep === 'committed' ? 'CLOSE' : 'CANCEL'}
           </button>
           <button
             onClick={handleDeploy}
-            disabled={!selectedImage || !deployForm.name || deploying}
+            disabled={(!selectedImage || !deployForm.name || deploying) && currentStep !== 'committed'}
             className="px-6 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2 tracking-wider"
           >
             {deploying && <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />}
-            <span>{deploying ? 'DEPLOYING...' : 'DEPLOY APPLICATION'}</span>
+            <span>
+              {deploying
+                ? currentStep === 'configure'
+                  ? 'GENERATING...'
+                  : currentStep === 'preview'
+                  ? 'COMMITTING...'
+                  : 'APPLYING...'
+                : currentStep === 'configure'
+                ? 'GENERATE PREVIEW'
+                : currentStep === 'preview'
+                ? 'COMMIT TO GIT'
+                : 'APPLY TO CLUSTER'
+              }
+            </span>
           </button>
         </div>
       </div>
