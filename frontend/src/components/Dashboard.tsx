@@ -12,7 +12,7 @@ import useWebSocketMetricsStore from '@stores/webSocketMetricsStore';
 import useDeploymentStore from '@stores/deploymentStore';
 import useDatabaseStore from '@stores/databaseStore';
 import { SearchResult } from '@stores/globalSearchStore';
-import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS, ServiceViewMode, SortDirection, CommonNamespace, FilterOption, KubernetesServiceType } from '@constants';
+import { PrimaryTab, InfrastructureTab, WorkloadsTab, MeshTab, DeploymentsTab, DatabaseTab, ObservabilityTab, UI_LABELS, UI_MESSAGES, TimeRange, DASHBOARD_SECTIONS, ServiceViewMode, SortDirection, CommonNamespace, FilterOption, KubernetesServiceType, ButtonColor } from '@constants';
 import { TrendDirection } from '@utils/status';
 import useSettingsStore from '@stores/settingsStore';
 import NotificationContainer from '@components/common/NotificationContainer';
@@ -470,17 +470,17 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 />
                 <div className="flex border border-white">
                   <button
-                    onClick={() => setServiceViewMode('cards')}
+                    onClick={() => setServiceViewMode(ServiceViewMode.CARDS)}
                     className={`px-2 py-1 font-mono text-xs transition-colors ${
-                      serviceViewMode === 'cards' ? 'bg-white text-black' : 'hover:bg-white/10'
+                      serviceViewMode === ServiceViewMode.CARDS ? 'bg-white text-black' : 'hover:bg-white/10'
                     }`}
                   >
                     <Grid size={12} />
                   </button>
                   <button
-                    onClick={() => setServiceViewMode('table')}
+                    onClick={() => setServiceViewMode(ServiceViewMode.TABLE)}
                     className={`px-2 py-1 border-l border-white font-mono text-xs transition-colors ${
-                      serviceViewMode === 'table' ? 'bg-white text-black' : 'hover:bg-white/10'
+                      serviceViewMode === ServiceViewMode.TABLE ? 'bg-white text-black' : 'hover:bg-white/10'
                     }`}
                   >
                     <List size={12} />
@@ -503,10 +503,10 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                   className="min-w-32"
                 />
                 <button
-                  onClick={() => setServiceSortOrder(serviceSortOrder === 'asc' ? 'desc' : 'asc')}
+                  onClick={() => setServiceSortOrder(serviceSortOrder === SortDirection.ASC ? SortDirection.DESC : SortDirection.ASC)}
                   className="px-2 py-1 border border-white font-mono text-xs hover:bg-white hover:text-black transition-colors"
                 >
-                  {serviceSortOrder === 'asc' ? '↑' : '↓'}
+                  {serviceSortOrder === SortDirection.ASC ? '↑' : '↓'}
                 </button>
               </>
             );
@@ -595,7 +595,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
                 <CustomButton
                   label="EXPORT"
                   icon={Download}
-                  color="blue"
+                  color={ButtonColor.BLUE}
                   onClick={() => {
                     // Export logs functionality
                     const timestamp = new Date().toISOString().split('T')[0];
