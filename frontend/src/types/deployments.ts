@@ -73,7 +73,7 @@ export interface Deployment {
     nodeSpread: boolean;
     zoneSpread: boolean;
   };
-  status: DeploymentStatus;
+  status: DeploymentStatus | 'pending_apply' | 'applying' | 'apply_failed';
   pods: PodInfo[];
   nodeDistribution: Record<string, number>;
   resources?: {
@@ -81,6 +81,14 @@ export interface Deployment {
     requests?: { cpu?: string; memory?: string; };
   };
   environment?: Record<string, string>;
+  // GitOps fields
+  source?: string;
+  author?: string;
+  git_commit_sha?: string;
+  manifest_path?: string;
+  applied_by?: string;
+  applied_at?: string;
+  service_type?: string;
   createdAt: string;
   updatedAt: string;
 }

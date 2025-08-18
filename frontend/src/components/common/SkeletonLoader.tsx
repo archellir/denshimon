@@ -420,7 +420,7 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/20">
-                      {['RANK', 'POD NAME', 'NAMESPACE', 'INGRESS', 'EGRESS', 'TOTAL', 'CONNECTIONS'].map((header, i) => (
+                      {['RANK', 'POD NAME', 'NAMESPACE', 'INGRESS', 'EGRESS', 'TOTAL', 'CONNECTIONS'].map((_header, i) => (
                         <th key={i} className="text-left p-2">
                           <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
                         </th>
@@ -497,7 +497,7 @@ const SkeletonLoader: FC<SkeletonLoaderProps> = ({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/20">
-                      {['NAME', 'TYPE', 'CAPACITY', 'USED', 'IOPS', 'THROUGHPUT', 'LATENCY', 'STATUS'].map((header, i) => (
+                      {['NAME', 'TYPE', 'CAPACITY', 'USED', 'IOPS', 'THROUGHPUT', 'LATENCY', 'STATUS'].map((_header, i) => (
                         <th key={i} className="text-left p-3">
                           <div className="h-3 bg-white/10 animate-pulse rounded w-16" />
                         </th>

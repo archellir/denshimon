@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit, Webhook, Monitor, Bell, Settings, Play, PlayCircle, Clock, Package } from 'lucide-react';
+import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit, Monitor, Settings, Play, PlayCircle, Clock, Package } from 'lucide-react';
 import { API_ENDPOINTS } from '@constants';
 import { MOCK_ENABLED, mockBaseInfrastructureRepo, mockSyncMetrics } from '@/mocks';
 import type { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';

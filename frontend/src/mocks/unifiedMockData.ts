@@ -12,7 +12,6 @@ import {
   MASTER_SERVICES, 
   MASTER_NAMESPACES,
   MASTER_NODES,
-  MASTER_DEPLOYMENTS,
   MASTER_REGISTRIES,
   MASTER_IMAGES,
   MASTER_DEPLOYMENT_HISTORY,
@@ -20,7 +19,7 @@ import {
 } from './masterData';
 
 import type { Deployment, DeploymentHistory } from '@/types/deployments';
-import { DeploymentStatus, DeploymentStrategy } from '@constants';
+import { DeploymentStatus, DeploymentStrategy, DeploymentAction } from '@constants';
 
 // Generate consistent, interconnected mock data
 class UnifiedMockDataService {
@@ -147,13 +146,13 @@ class UnifiedMockDataService {
     this.deploymentHistory = MASTER_DEPLOYMENT_HISTORY.map(hist => ({
       id: hist.id,
       deploymentId: hist.deploymentId,
-      action: hist.action,
-      oldImage: hist.oldImage || '',
-      newImage: hist.newImage || hist.image || '',
-      oldReplicas: hist.oldReplicas || 0,
-      newReplicas: hist.newReplicas || hist.replicas || 0,
+      action: hist.action as DeploymentAction,
+      oldImage: 'oldImage' in hist ? hist.oldImage : '',
+      newImage: 'newImage' in hist ? hist.newImage : 'image' in hist ? hist.image : '',
+      oldReplicas: 'oldReplicas' in hist ? hist.oldReplicas : 0,
+      newReplicas: 'newReplicas' in hist ? hist.newReplicas : 'replicas' in hist ? hist.replicas : 0,
       success: hist.success,
-      error: hist.error || '',
+      error: 'error' in hist ? hist.error : '',
       user: hist.user,
       timestamp: hist.timestamp,
       metadata: {}
@@ -212,7 +211,7 @@ class UnifiedMockDataService {
     return 'backend'; // default
   }
 
-  private getPodPhase(pod: any, deploymentStatus: DeploymentStatus): string {
+  private getPodPhase(_pod: any, deploymentStatus: DeploymentStatus): string {
     // Align pod phase with deployment status
     if (deploymentStatus === DeploymentStatus.FAILED) {
       return Math.random() > 0.7 ? 'Failed' : 'Pending';

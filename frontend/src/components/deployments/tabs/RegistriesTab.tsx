@@ -37,7 +37,7 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
 
 
   const handleTestRegistry = async (registry: Registry) => {
-    const success = await testRegistry(registry.id);
+    await testRegistry(registry.id);
     // Registry test completed
   };
 

@@ -44,7 +44,7 @@ const convertServicesToApiFormat = () => {
 };
 
 // Get unified mock data
-const getMockDeployments = () => unifiedMockData.getDeployments();
+// const getMockDeployments = () => unifiedMockData.getDeployments();
 const getMockPendingDeployments = () => unifiedMockData.getPendingDeployments();
 
 /**

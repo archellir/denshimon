@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { FC } from 'react';
-import { UI_MESSAGES, TimeRange } from '@constants';
+import { UI_MESSAGES, TimeRange, Status } from '@constants';
+import { Activity } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -120,32 +121,32 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
         <StatCard
           label="CURRENT INGRESS"
           value={networkData ? formatBandwidth(networkData.totalBandwidth.ingress) : '--'}
-          icon={() => null}
-          status="neutral"
+          icon={Activity}
+          status={Status.INFO}
           variant="network"
         />
         
         <StatCard
           label="CURRENT EGRESS"
           value={networkData ? formatBandwidth(networkData.totalBandwidth.egress) : '--'}
-          icon={() => null}
-          status="neutral"
+          icon={Activity}
+          status={Status.INFO}
           variant="network"
         />
         
         <StatCard
           label="PEAK BANDWIDTH"
           value={networkData ? formatBandwidth(networkData.totalBandwidth.peak) : '--'}
-          icon={() => null}
-          status="neutral"
+          icon={Activity}
+          status={Status.INFO}
           variant="network"
         />
         
         <StatCard
           label="ACTIVE CONNECTIONS"
           value={networkData ? networkData.connectionCount.active?.toString() || '--' : '--'}
-          icon={() => null}
-          status="neutral"
+          icon={Activity}
+          status={Status.INFO}
           variant="network"
         />
       </div>

@@ -245,11 +245,11 @@ export default ResourceActions;
 // Action handler utility
 export const handleResourceAction = async (
   action: string,
-  resourceKind: string,
-  resourceName: string,
-  namespace?: string
+  _resourceKind: string,
+  _resourceName: string,
+  _namespace?: string
 ) => {
-  const resourceId = namespace ? `${namespace}/${resourceName}` : resourceName;
+  // const resourceId = _namespace ? `${_namespace}/${_resourceName}` : _resourceName;
   
   // Executing action on resource
   

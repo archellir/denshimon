@@ -271,11 +271,11 @@ const DatabaseBrowser: FC = () => {
                       const table = tables.find(t => t.name === selectedTable);
                       if (table) {
                         // console.log('Analyzing table:', {
-                          name: table.name,
-                          rowCount: table.rowCount,
-                          size: table.size,
-                          columns: columns.length
-                        });
+                        //   name: table.name,
+                        //   rowCount: table.rowCount,
+                        //   size: table.size,
+                        //   columns: columns.length
+                        // });
                         // Could show analysis modal or navigate to metrics
                       }
                     }}

@@ -18,7 +18,7 @@ interface ResourceChartsProps {
 }
 
 const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' }) => {
-  const { clusterMetrics, metricsHistory, nodeMetrics } = useWebSocketMetricsStore();
+  const { clusterMetrics, metricsHistory } = useWebSocketMetricsStore();
 
   // Historical data for line charts
   const historicalData = useMemo(() => {
@@ -34,18 +34,18 @@ const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange: _timeRange = '1h' 
     }));
   }, [metricsHistory]);
 
-  // Node resource distribution
-  const nodeResourceData = useMemo(() => {
-    if (!nodeMetrics || nodeMetrics.length === 0) return [];
-
-    return nodeMetrics.map((node) => ({
-      name: node.name, // Keep full name for display
-      fullName: node.name,
-      cpu: node.cpu_usage.usage_percent,
-      memory: node.memory_usage.usage_percent,
-      pods: node.pod_count,
-    }));
-  }, [nodeMetrics]);
+  // Node resource distribution (for future use)
+  // const nodeResourceData = useMemo(() => {
+  //   if (!nodeMetrics || nodeMetrics.length === 0) return [];
+  //
+  //   return nodeMetrics.map((node) => ({
+  //     name: node.name, // Keep full name for display
+  //     fullName: node.name,
+  //     cpu: node.cpu_usage.usage_percent,
+  //     memory: node.memory_usage.usage_percent,
+  //     pods: node.pod_count,
+  //   }));
+  // }, [nodeMetrics]);
 
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
+import { Status } from '@constants';
 import { 
   Shield,
   AlertTriangle,
@@ -137,7 +138,7 @@ const CertificateHealthDashboard: FC = () => {
             label="VALID"
             value={stats.valid.toString()}
             icon={CheckCircle}
-            status="success"
+            status={Status.SUCCESS}
             variant="analytics"
             description="Certificates OK"
           />
@@ -146,7 +147,7 @@ const CertificateHealthDashboard: FC = () => {
             label="EXPIRING SOON"
             value={stats.expiringSoon.toString()}
             icon={Clock}
-            status="warning"
+            status={Status.WARNING}
             variant="analytics"
             description="< 30 days"
           />
@@ -155,7 +156,7 @@ const CertificateHealthDashboard: FC = () => {
             label="CRITICAL"
             value={(stats.expiringCritical + stats.expired).toString()}
             icon={AlertTriangle}
-            status="error"
+            status={Status.ERROR}
             variant="analytics"
             description="< 7 days / Expired"
           />
@@ -164,7 +165,7 @@ const CertificateHealthDashboard: FC = () => {
             label="TOTAL"
             value={stats.total.toString()}
             icon={Shield}
-            status="neutral"
+            status={Status.INFO}
             variant="analytics"
             description="All certificates"
           />

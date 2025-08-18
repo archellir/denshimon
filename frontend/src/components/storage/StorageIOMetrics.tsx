@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TimeRange } from '@constants';
+import { TimeRange, Status } from '@constants';
 import { getDataPointsForTimeRange } from '@utils/time';
 import { HardDrive, Database, Activity, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
@@ -215,7 +215,7 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
           label="STORAGE"
           value={`${totalUsed}GB`}
           icon={HardDrive}
-          status="neutral"
+          status={Status.INFO}
           variant="analytics"
           description={`of ${totalCapacity}GB used`}
         />
@@ -224,7 +224,7 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
           label="TOTAL IOPS"
           value={totalIOPS.toFixed(0)}
           icon={Activity}
-          status="neutral"
+          status={Status.INFO}
           variant="analytics"
           description="operations/sec"
         />
@@ -233,7 +233,7 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
           label="AVG LATENCY"
           value={`${avgLatency.toFixed(1)}ms`}
           icon={Zap}
-          status="neutral"
+          status={Status.INFO}
           variant="analytics"
           description="read/write avg"
         />
@@ -242,7 +242,7 @@ const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRan
           label="VOLUMES"
           value={volumes.length.toString()}
           icon={Database}
-          status="neutral"
+          status={Status.INFO}
           variant="analytics"
           description="active volumes"
         />

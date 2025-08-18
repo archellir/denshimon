@@ -33,7 +33,7 @@ const WorkloadsOverview: FC<WorkloadsOverviewProps> = ({ timeRange = TimeRange.O
 
   // Fetch workload metrics
   useEffect(() => {
-    fetchAllMetrics().catch(error => {
+    fetchAllMetrics().catch(_error => {
       // Error fetching workload metrics
     });
   }, [fetchAllMetrics]);

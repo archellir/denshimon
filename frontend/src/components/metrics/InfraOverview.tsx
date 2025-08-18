@@ -26,7 +26,7 @@ const InfraOverview: FC<InfraOverviewProps> = ({ timeRange = TimeRange.ONE_HOUR 
 
   // Fetch initial cluster metrics only (history is fetched by Dashboard)
   useEffect(() => {
-    fetchClusterMetrics().catch(error => {
+    fetchClusterMetrics().catch(_error => {
       // Error fetching cluster metrics - handle silently
     });
   }, [fetchClusterMetrics]);

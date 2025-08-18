@@ -120,7 +120,7 @@ export const useTerminal = (): UseTerminalReturn => {
         }
       };
 
-      ws.onerror = (event) => {
+      ws.onerror = (_event) => {
         // console.error('WebSocket error:', event);
         setError('WebSocket connection error');
         setIsConnecting(false);

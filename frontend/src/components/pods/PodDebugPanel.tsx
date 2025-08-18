@@ -321,11 +321,11 @@ const PodDebugPanel: FC<PodDebugPanelProps> = ({ pod, isOpen, onClose }) => {
                     <FileExplorer
                       pod={pod}
                       selectedContainer={selectedContainer}
-                      onFileDownload={(file) => {
+                      onFileDownload={(_file) => {
                         // console.log('Download file:', file);
                         // TODO: Implement actual file download via API
                       }}
-                      onFileUpload={(path, file) => {
+                      onFileUpload={(_path, _file) => {
                         // console.log('Upload file to:', path, file);
                         // TODO: Implement actual file upload via API
                       }}

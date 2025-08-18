@@ -336,7 +336,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
           <div>
             <h3 className="text-2xl font-bold text-white font-mono tracking-wider">DEPLOY NEW APPLICATION</h3>
             <div className="flex items-center space-x-4 mt-2">
-              <div className={`text-xs font-mono px-2 py-1 border ${currentStep === 'configure' ? 'border-blue-400 text-blue-400' : currentStep !== 'configure' ? 'border-green-400 text-green-400' : 'border-gray-600 text-gray-600'}`}>
+              <div className={`text-xs font-mono px-2 py-1 border ${currentStep === 'configure' ? 'border-blue-400 text-blue-400' : 'border-green-400 text-green-400'}`}>
                 1. CONFIGURE
               </div>
               <div className={`text-xs font-mono px-2 py-1 border ${currentStep === 'preview' ? 'border-blue-400 text-blue-400' : currentStep === 'committed' ? 'border-green-400 text-green-400' : 'border-gray-600 text-gray-600'}`}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
+import { Status } from '@constants';
 import {
   HardDrive,
   Clock,
@@ -215,7 +216,7 @@ const BackupRecoveryDashboard: FC = () => {
             label="TOTAL BACKUPS"
             value={statistics.totalBackups.toString()}
             icon={Archive}
-            status="neutral"
+            status={Status.INFO}
             variant="analytics"
             description={formatBytes(statistics.totalSize)}
           />
@@ -224,7 +225,7 @@ const BackupRecoveryDashboard: FC = () => {
             label="SUCCESS RATE"
             value={`${statistics.successRate.toFixed(1)}%`}
             icon={CheckCircle}
-            status="success"
+            status={Status.SUCCESS}
             variant="analytics"
             description="Last 30 days"
           />
@@ -233,7 +234,7 @@ const BackupRecoveryDashboard: FC = () => {
             label="AVG DURATION"
             value={formatDuration(statistics.averageDuration)}
             icon={Clock}
-            status="info"
+            status={Status.INFO}
             variant="analytics"
             description="Per backup"
           />
@@ -242,7 +243,7 @@ const BackupRecoveryDashboard: FC = () => {
             label="RUNNING"
             value={jobs.filter(j => j.status === BackupStatus.RUNNING).length.toString()}
             icon={RefreshCw}
-            status="warning"
+            status={Status.WARNING}
             variant="analytics"
             description="Active jobs"
           />
@@ -251,7 +252,7 @@ const BackupRecoveryDashboard: FC = () => {
             label="ALERTS"
             value={alerts.filter(a => !a.acknowledged).length.toString()}
             icon={AlertTriangle}
-            status="error"
+            status={Status.ERROR}
             variant="analytics"
             description="Unacknowledged"
           />
