@@ -220,10 +220,12 @@ export interface StorageTrend {
 }
 
 // Alerts and Notifications
+export type AlertSeverity = Status.CRITICAL | Status.WARNING | Status.INFO;
+
 export interface BackupAlert {
   id: string;
   type: BackupAlertType;
-  severity: Status.CRITICAL | Status.WARNING | Status.INFO;
+  severity: AlertSeverity;
   message: string;
   timestamp: string;
   jobId?: string;
