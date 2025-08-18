@@ -824,7 +824,7 @@ func (s *Service) commitToGitOps(ctx context.Context, deployment *Deployment) er
 		"autoscaling":   false, // Can be enhanced later
 	}
 	
-	manifest, err := s.gitopsService.GenerateFullManifest(app, options)
+	_, err := s.gitopsService.GenerateFullManifest(app, options)
 	if err != nil {
 		return fmt.Errorf("failed to generate manifest: %w", err)
 	}
