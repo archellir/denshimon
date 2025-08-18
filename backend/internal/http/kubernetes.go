@@ -11,6 +11,7 @@ import (
 
 	"github.com/archellir/denshimon/internal/auth"
 	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/pkg/response"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -95,7 +96,7 @@ func NewKubernetesHandlers(k8sClient *k8s.Client) *KubernetesHandlers {
 // GET /api/k8s/pods
 func (h *KubernetesHandlers) ListPods(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 	namespace := r.URL.Query().Get("namespace")
@@ -105,7 +106,7 @@ func (h *KubernetesHandlers) ListPods(w http.ResponseWriter, r *http.Request) {
 
 	pods, err := h.k8sClient.Clientset().CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list pods: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list pods: %v", err))
 		return
 	}
 
@@ -140,7 +141,7 @@ func (h *KubernetesHandlers) GetPod(w http.ResponseWriter, r *http.Request) {
 
 	pod, err := h.k8sClient.Clientset().CoreV1().Pods(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
-		SendError(w, http.StatusNotFound, fmt.Sprintf("Failed to get pod: %v", err))
+		response.SendError(w, http.StatusNotFound, fmt.Sprintf("Failed to get pod: %v", err))
 		return
 	}
 
@@ -179,7 +180,7 @@ func (h *KubernetesHandlers) RestartPod(w http.ResponseWriter, r *http.Request) 
 	// Delete pod to trigger restart (if controlled by deployment/replicaset)
 	err := h.k8sClient.Clientset().CoreV1().Pods(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to restart pod: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to restart pod: %v", err))
 		return
 	}
 
@@ -204,7 +205,7 @@ func (h *KubernetesHandlers) DeletePod(w http.ResponseWriter, r *http.Request) {
 
 	err := h.k8sClient.Clientset().CoreV1().Pods(namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to delete pod: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to delete pod: %v", err))
 		return
 	}
 
@@ -239,7 +240,7 @@ func (h *KubernetesHandlers) GetPodLogs(w http.ResponseWriter, r *http.Request) 
 	req := h.k8sClient.Clientset().CoreV1().Pods(namespace).GetLogs(name, opts)
 	podLogs, err := req.Stream(context.Background())
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get pod logs: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get pod logs: %v", err))
 		return
 	}
 	defer podLogs.Close()
@@ -268,13 +269,13 @@ func (h *KubernetesHandlers) GetPodLogs(w http.ResponseWriter, r *http.Request) 
 // GET /api/k8s/nodes
 func (h *KubernetesHandlers) ListNodes(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
 	nodes, err := h.k8sClient.Clientset().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list nodes: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list nodes: %v", err))
 		return
 	}
 
@@ -301,7 +302,7 @@ func (h *KubernetesHandlers) ListNodes(w http.ResponseWriter, r *http.Request) {
 // GET /api/k8s/deployments
 func (h *KubernetesHandlers) ListDeployments(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
@@ -312,7 +313,7 @@ func (h *KubernetesHandlers) ListDeployments(w http.ResponseWriter, r *http.Requ
 
 	deployments, err := h.k8sClient.Clientset().AppsV1().Deployments(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list deployments: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list deployments: %v", err))
 		return
 	}
 
@@ -360,7 +361,7 @@ func (h *KubernetesHandlers) ScaleDeployment(w http.ResponseWriter, r *http.Requ
 	// Get current deployment
 	deployment, err := h.k8sClient.Clientset().AppsV1().Deployments(namespace).Get(context.Background(), name, metav1.GetOptions{})
 	if err != nil {
-		SendError(w, http.StatusNotFound, fmt.Sprintf("Failed to get deployment: %v", err))
+		response.SendError(w, http.StatusNotFound, fmt.Sprintf("Failed to get deployment: %v", err))
 		return
 	}
 
@@ -368,7 +369,7 @@ func (h *KubernetesHandlers) ScaleDeployment(w http.ResponseWriter, r *http.Requ
 	deployment.Spec.Replicas = &req.Replicas
 	_, err = h.k8sClient.Clientset().AppsV1().Deployments(namespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to scale deployment: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to scale deployment: %v", err))
 		return
 	}
 
@@ -474,7 +475,7 @@ func (h *KubernetesHandlers) HandleFileDownload(w http.ResponseWriter, r *http.R
 // GET /api/k8s/services
 func (h *KubernetesHandlers) ListServices(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
@@ -485,7 +486,7 @@ func (h *KubernetesHandlers) ListServices(w http.ResponseWriter, r *http.Request
 
 	services, err := h.k8sClient.Clientset().CoreV1().Services(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list services: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list services: %v", err))
 		return
 	}
 
@@ -525,7 +526,7 @@ func (h *KubernetesHandlers) ListServices(w http.ResponseWriter, r *http.Request
 // GET /api/k8s/events
 func (h *KubernetesHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
@@ -536,7 +537,7 @@ func (h *KubernetesHandlers) ListEvents(w http.ResponseWriter, r *http.Request) 
 
 	events, err := h.k8sClient.Clientset().CoreV1().Events(namespace).List(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list events: %v", err))
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list events: %v", err))
 		return
 	}
 
@@ -559,6 +560,49 @@ func (h *KubernetesHandlers) ListEvents(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(eventInfos)
+}
+
+// GET /api/k8s/namespaces
+func (h *KubernetesHandlers) ListNamespaces(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
+		return
+	}
+
+	namespaces, err := h.k8sClient.ListNamespaces(context.Background())
+	if err != nil {
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to list namespaces: %v", err))
+		return
+	}
+
+	var namespaceInfos []map[string]interface{}
+	for _, namespace := range namespaces.Items {
+		namespaceInfos = append(namespaceInfos, map[string]interface{}{
+			"name":   namespace.Name,
+			"status": string(namespace.Status.Phase),
+			"age":    formatAge(namespace.CreationTimestamp.Time),
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(namespaceInfos)
+}
+
+// GET /api/k8s/storage
+func (h *KubernetesHandlers) GetStorageInfo(w http.ResponseWriter, r *http.Request) {
+	if h.k8sClient == nil {
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
+		return
+	}
+
+	storageInfo, err := h.k8sClient.GetStorageInfo(context.Background())
+	if err != nil {
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get storage info: %v", err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(storageInfo)
 }
 
 // Helper functions

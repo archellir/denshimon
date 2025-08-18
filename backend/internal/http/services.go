@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"time"
@@ -254,7 +253,7 @@ func (h *ServicesHandlers) GetServiceMesh(w http.ResponseWriter, r *http.Request
 	// Get real Kubernetes services
 	servicesList, err := h.k8sClient.ListServices(ctx, "")
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to list Kubernetes services", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to list Kubernetes services")
 		return
 	}
 	
@@ -526,7 +525,7 @@ func (h *ServicesHandlers) GetServiceTopology(w http.ResponseWriter, r *http.Req
 	// Get real Kubernetes services
 	servicesList, err := h.k8sClient.ListServices(ctx, "")
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to list Kubernetes services", err)
+		response.SendError(w, http.StatusInternalServerError, "Failed to list Kubernetes services")
 		return
 	}
 	

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/archellir/denshimon/internal/k8s"
+	"github.com/archellir/denshimon/pkg/response"
 )
 
 type ObservabilityHandlers struct {
@@ -62,7 +63,7 @@ type EventImpact struct {
 // GetLogs returns paginated log entries from Kubernetes pods
 func (h *ObservabilityHandlers) GetLogs(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
@@ -81,29 +82,30 @@ func (h *ObservabilityHandlers) GetLogs(w http.ResponseWriter, r *http.Request) 
 
 	// If specific pod is requested, get its logs
 	if podName != "" && namespace != "" {
-		logs, err := h.k8sClient.GetPodLogs(context.Background(), namespace, podName, container, "", limit)
+		logs, err := h.k8sClient.GetPodLogs(context.Background(), namespace, podName, int(limit))
 		if err != nil {
-			SendError(w, fmt.Sprintf("Failed to get pod logs: %v", err), http.StatusInternalServerError)
+			response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get pod logs: %v", err))
 			return
 		}
 
 		// Convert to LogEntry format
-		logEntries := []LogEntry{
-			{
+		var logEntries []LogEntry
+		for _, logLine := range logs {
+			logEntries = append(logEntries, LogEntry{
 				ID:        fmt.Sprintf("%d", time.Now().UnixNano()),
 				Timestamp: time.Now().UTC().Format(time.RFC3339),
 				Level:     "info",
 				Source:    podName,
-				Message:   logs,
+				Message:   logLine,
 				Metadata: map[string]interface{}{
 					"namespace": namespace,
 					"pod":       podName,
 					"container": container,
 				},
-			},
+			})
 		}
 
-		SendSuccess(w, map[string]interface{}{
+		response.SendSuccess(w, map[string]interface{}{
 			"logs":  logEntries,
 			"total": len(logEntries),
 			"metadata": map[string]interface{}{
@@ -116,7 +118,7 @@ func (h *ObservabilityHandlers) GetLogs(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Return empty logs if no specific pod requested
-	SendSuccess(w, map[string]interface{}{
+	response.SendSuccess(w, map[string]interface{}{
 		"logs":  []LogEntry{},
 		"total": 0,
 		"metadata": map[string]interface{}{
@@ -129,7 +131,7 @@ func (h *ObservabilityHandlers) GetLogs(w http.ResponseWriter, r *http.Request) 
 // GetEvents returns Kubernetes events
 func (h *ObservabilityHandlers) GetEvents(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
@@ -147,7 +149,7 @@ func (h *ObservabilityHandlers) GetEvents(w http.ResponseWriter, r *http.Request
 	// Get Kubernetes events
 	k8sEvents, err := h.k8sClient.ListEvents(context.Background(), namespace)
 	if err != nil {
-		SendError(w, fmt.Sprintf("Failed to get events: %v", err), http.StatusInternalServerError)
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get events: %v", err))
 		return
 	}
 
@@ -193,7 +195,7 @@ func (h *ObservabilityHandlers) GetEvents(w http.ResponseWriter, r *http.Request
 		})
 	}
 
-	SendSuccess(w, map[string]interface{}{
+	response.SendSuccess(w, map[string]interface{}{
 		"events": events,
 		"total":  len(events),
 		"metadata": map[string]interface{}{
@@ -206,14 +208,14 @@ func (h *ObservabilityHandlers) GetEvents(w http.ResponseWriter, r *http.Request
 // GetLogStreams returns available log streams from pods
 func (h *ObservabilityHandlers) GetLogStreams(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
 	// Get all pods to determine available log streams
 	pods, err := h.k8sClient.ListPods(context.Background(), "")
 	if err != nil {
-		SendError(w, fmt.Sprintf("Failed to get pods: %v", err), http.StatusInternalServerError)
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get pods: %v", err))
 		return
 	}
 
@@ -233,7 +235,7 @@ func (h *ObservabilityHandlers) GetLogStreams(w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	SendSuccess(w, map[string]interface{}{
+	response.SendSuccess(w, map[string]interface{}{
 		"streams": streams,
 		"summary": map[string]interface{}{
 			"totalStreams": len(streams),
@@ -245,7 +247,7 @@ func (h *ObservabilityHandlers) GetLogStreams(w http.ResponseWriter, r *http.Req
 // GetLogAnalytics returns log analytics based on actual pod logs
 func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.Request) {
 	if h.k8sClient == nil {
-		SendError(w, "Kubernetes client not available", http.StatusServiceUnavailable)
+		response.SendError(w, http.StatusServiceUnavailable, "Kubernetes client not available")
 		return
 	}
 
@@ -257,14 +259,14 @@ func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.R
 	// Get pod count for basic analytics
 	pods, err := h.k8sClient.ListPods(context.Background(), "")
 	if err != nil {
-		SendError(w, fmt.Sprintf("Failed to get pods: %v", err), http.StatusInternalServerError)
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get pods: %v", err))
 		return
 	}
 
 	// Get events for analytics
 	events, err := h.k8sClient.ListEvents(context.Background(), "")
 	if err != nil {
-		SendError(w, fmt.Sprintf("Failed to get events: %v", err), http.StatusInternalServerError)
+		response.SendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to get events: %v", err))
 		return
 	}
 
@@ -313,5 +315,5 @@ func (h *ObservabilityHandlers) GetLogAnalytics(w http.ResponseWriter, r *http.R
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 
-	SendSuccess(w, analytics)
+	response.SendSuccess(w, analytics)
 }

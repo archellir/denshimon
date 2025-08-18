@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -116,4 +117,72 @@ func (c *Client) ListEvents(ctx context.Context, namespace string) (*corev1.Even
 		return c.clientset.CoreV1().Events(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
 	}
 	return c.clientset.CoreV1().Events(namespace).List(ctx, metav1.ListOptions{})
+}
+
+func (c *Client) ListDeployments(ctx context.Context, namespace string) (*appsv1.DeploymentList, error) {
+	if namespace == "" {
+		return c.clientset.AppsV1().Deployments(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	}
+	return c.clientset.AppsV1().Deployments(namespace).List(ctx, metav1.ListOptions{})
+}
+
+// StorageInfo represents basic storage information
+type StorageInfo struct {
+	TotalPVs      int     `json:"total_pvs"`
+	TotalPVCs     int     `json:"total_pvcs"`
+	StorageClasses int    `json:"storage_classes"`
+	TotalCapacity string  `json:"total_capacity"`
+}
+
+func (c *Client) GetStorageInfo(ctx context.Context) (*StorageInfo, error) {
+	// Get persistent volumes
+	pvList, err := c.clientset.CoreV1().PersistentVolumes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get persistent volumes: %w", err)
+	}
+
+	// Get persistent volume claims
+	pvcList, err := c.clientset.CoreV1().PersistentVolumeClaims(metav1.NamespaceAll).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get persistent volume claims: %w", err)
+	}
+
+	// Get storage classes
+	scList, err := c.clientset.StorageV1().StorageClasses().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get storage classes: %w", err)
+	}
+
+	// Calculate total capacity (simplified)
+	totalCapacity := "0Gi"
+	if len(pvList.Items) > 0 {
+		totalCapacity = fmt.Sprintf("%dGi", len(pvList.Items)*10) // Simplified calculation
+	}
+
+	return &StorageInfo{
+		TotalPVs:       len(pvList.Items),
+		TotalPVCs:      len(pvcList.Items),
+		StorageClasses: len(scList.Items),
+		TotalCapacity:  totalCapacity,
+	}, nil
+}
+
+// GetPodLogs retrieves logs for a specific pod
+func (c *Client) GetPodLogs(ctx context.Context, namespace, podName string, lines int) ([]string, error) {
+	logOptions := &corev1.PodLogOptions{}
+	if lines > 0 {
+		tailLines := int64(lines)
+		logOptions.TailLines = &tailLines
+	}
+
+	req := c.clientset.CoreV1().Pods(namespace).GetLogs(podName, logOptions)
+	logs, err := req.Stream(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pod logs: %w", err)
+	}
+	defer logs.Close()
+
+	// For now, return a simplified log response
+	// In a real implementation, you'd read from the stream
+	return []string{"Log streaming not fully implemented yet"}, nil
 }

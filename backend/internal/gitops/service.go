@@ -781,10 +781,10 @@ func (s *Service) MonitorHealth(ctx context.Context) error {
 
 	for _, repo := range repos {
 		// Check if repository is reachable
-		if err := s.gitClient.IsReachable(); err != nil {
+		if !s.gitClient.IsReachable() {
 			s.CreateAlert(ctx, "repository_unreachable", "critical", "Repository Unreachable",
 				fmt.Sprintf("Repository %s is unreachable", repo.Name),
-				map[string]string{"repository": repo.Name, "error": err.Error()})
+				map[string]string{"repository": repo.Name, "url": repo.URL})
 		}
 
 		// Check if repository hasn't synced recently (last 6 hours)

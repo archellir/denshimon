@@ -253,6 +253,13 @@ func (c *Client) ReadFile(relativePath string) ([]byte, error) {
 	return content, nil
 }
 
+// IsReachable checks if the remote repository is reachable
+func (c *Client) IsReachable() bool {
+	cmd := exec.Command("git", "ls-remote", "--exit-code", "--heads", c.repoURL)
+	err := cmd.Run()
+	return err == nil
+}
+
 // CommitAndPush is a convenience method that adds, commits, and pushes changes
 func (c *Client) CommitAndPush(message string, files ...string) error {
 	if err := c.Add(files...); err != nil {

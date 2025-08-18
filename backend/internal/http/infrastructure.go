@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
@@ -87,7 +86,7 @@ func (h *InfrastructureHandlers) initMockAlerts() {
 // GetAlerts returns all infrastructure alerts
 func (h *InfrastructureHandlers) GetAlerts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		response.Error(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		response.SendError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -106,7 +105,7 @@ func (h *InfrastructureHandlers) GetAlerts(w http.ResponseWriter, r *http.Reques
 // AcknowledgeAlert marks an infrastructure alert as acknowledged
 func (h *InfrastructureHandlers) AcknowledgeAlert(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		response.Error(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		response.SendError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -126,7 +125,7 @@ func (h *InfrastructureHandlers) AcknowledgeAlert(w http.ResponseWriter, r *http
 	}
 
 	if alertID == "" {
-		response.Error(w, http.StatusBadRequest, "Alert ID is required", nil)
+		response.SendError(w, http.StatusBadRequest, "Alert ID is required")
 		return
 	}
 
@@ -135,7 +134,7 @@ func (h *InfrastructureHandlers) AcknowledgeAlert(w http.ResponseWriter, r *http
 
 	alert, exists := h.alerts[alertID]
 	if !exists {
-		response.Error(w, http.StatusNotFound, "Alert not found", nil)
+		response.SendError(w, http.StatusNotFound, "Alert not found")
 		return
 	}
 
@@ -152,7 +151,7 @@ func (h *InfrastructureHandlers) AcknowledgeAlert(w http.ResponseWriter, r *http
 // GetServices returns mock service health data (placeholder for now)
 func (h *InfrastructureHandlers) GetServices(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		response.Error(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		response.SendError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -163,7 +162,7 @@ func (h *InfrastructureHandlers) GetServices(w http.ResponseWriter, r *http.Requ
 // GetStatus returns infrastructure status (placeholder for now)
 func (h *InfrastructureHandlers) GetStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		response.Error(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		response.SendError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -174,7 +173,7 @@ func (h *InfrastructureHandlers) GetStatus(w http.ResponseWriter, r *http.Reques
 // RefreshServices triggers a refresh of infrastructure services
 func (h *InfrastructureHandlers) RefreshServices(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		response.Error(w, http.StatusMethodNotAllowed, "Method not allowed", nil)
+		response.SendError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
