@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pod } from '@stores/workloadsStore';
-import { Status, PodStatus, SortDirection } from '@constants';
+import { Status, PodStatus } from '@constants';
 import { getStatusIcon, getStatusColor, getStatusBgColor } from './status';
 
 /**
@@ -89,7 +89,7 @@ export const filterPods = (
 export const sortPods = (
   pods: Pod[],
   sortBy: string,
-  sortOrder: SortDirection
+  sortOrder: 'asc' | 'desc'
 ): Pod[] => {
   if (!pods || !Array.isArray(pods)) {
     return [];
@@ -126,19 +126,19 @@ export const sortPods = (
     }
 
     if (sortBy === 'age') {
-      return sortOrder === SortDirection.ASC 
+      return sortOrder === 'asc' 
         ? (valueA as Date).getTime() - (valueB as Date).getTime()
         : (valueB as Date).getTime() - (valueA as Date).getTime();
     }
 
     if (sortBy === 'restarts') {
-      return sortOrder === SortDirection.ASC 
+      return sortOrder === 'asc' 
         ? (valueA as number) - (valueB as number)
         : (valueB as number) - (valueA as number);
     }
     
     const comparison = valueA.toString().localeCompare(valueB.toString());
-    return sortOrder === SortDirection.ASC ? comparison : -comparison;
+    return sortOrder === 'asc' ? comparison : -comparison;
   });
 };
 

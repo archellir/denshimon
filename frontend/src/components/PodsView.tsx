@@ -11,7 +11,6 @@ import {
   filterPods, 
   sortPods
 } from '@utils/podStatus'
-import { SortDirection } from '@constants'
 
 // Using Pod interface from store
 type Pod = StorePod;
@@ -54,7 +53,7 @@ const PodsView: FC<PodsViewProps> = ({ selectedNamespace }) => {
     return sortPods(filtered, sortBy, sortOrder);
   }, [pods, selectedNamespace, sortBy, sortOrder, searchQuery])
 
-  const handleSort = (key: string, order: SortDirection) => {
+  const handleSort = (key: string, order: 'asc' | 'desc') => {
     setSortBy(key)
     setSortOrder(order)
   }

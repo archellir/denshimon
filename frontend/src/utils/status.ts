@@ -39,7 +39,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     case Status.HEALTHY:
     case Status.SUCCESS:
       return {
-        color: STATUS_COLORS.TEXT.HEALTHY || 'text-green-500',
+        color: STATUS_COLORS.TEXT[Status.HEALTHY] || 'text-green-500',
         bgColor: 'bg-green-500/10',
         borderColor: 'border-green-500',
         icon: CheckCircle,
@@ -49,7 +49,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     
     case Status.WARNING:
       return {
-        color: STATUS_COLORS.TEXT.WARNING || 'text-yellow-500',
+        color: STATUS_COLORS.TEXT[Status.WARNING] || 'text-yellow-500',
         bgColor: 'bg-yellow-500/10',
         borderColor: 'border-yellow-500',
         icon: AlertTriangle,
@@ -59,7 +59,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     
     case Status.CRITICAL:
       return {
-        color: STATUS_COLORS.TEXT.ERROR || 'text-red-600',
+        color: STATUS_COLORS.TEXT[Status.ERROR] || 'text-red-600',
         bgColor: 'bg-red-600/10',
         borderColor: 'border-red-600',
         icon: XCircle,
@@ -69,7 +69,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     
     case Status.ERROR:
       return {
-        color: STATUS_COLORS.TEXT.ERROR || 'text-red-500',
+        color: STATUS_COLORS.TEXT[Status.ERROR] || 'text-red-500',
         bgColor: 'bg-red-500/10',
         borderColor: 'border-red-500',
         icon: XCircle,
@@ -79,7 +79,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     
     case Status.PENDING:
       return {
-        color: STATUS_COLORS.TEXT.PENDING || 'text-yellow-400',
+        color: STATUS_COLORS.TEXT[Status.PENDING] || 'text-yellow-400',
         bgColor: 'bg-yellow-400/10',
         borderColor: 'border-yellow-400',
         icon: Clock,
@@ -99,7 +99,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     
     case Status.INFO:
       return {
-        color: STATUS_COLORS.TEXT.INFO || 'text-blue-400',
+        color: STATUS_COLORS.TEXT[Status.INFO] || 'text-blue-400',
         bgColor: 'bg-blue-400/10',
         borderColor: 'border-blue-400',
         icon: Info,
@@ -171,7 +171,7 @@ export const getStatusConfig = (status: Status): StatusConfig => {
     case Status.UNKNOWN:
     default:
       return {
-        color: STATUS_COLORS.TEXT.UNKNOWN || 'text-gray-400',
+        color: STATUS_COLORS.TEXT[Status.UNKNOWN] || 'text-gray-400',
         bgColor: 'bg-gray-400/10',
         borderColor: 'border-gray-400',
         icon: HelpCircle,
