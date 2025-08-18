@@ -20,7 +20,7 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
+    proxy: process.env.VITE_MOCK_DATA === 'true' ? {} : {
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
