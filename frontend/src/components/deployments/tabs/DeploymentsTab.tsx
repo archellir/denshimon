@@ -6,6 +6,7 @@ import { getDeploymentStatusColor } from '@utils/status';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
+import { ButtonColor } from '@constants';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 
 interface DeploymentsTabProps {
@@ -132,7 +133,7 @@ const DeploymentsTab = ({
             label="DEPLOY APPLICATION"
             icon={Rocket}
             onClick={() => setShowDeployModal?.(true)}
-            color="green"
+            color={ButtonColor.GREEN}
             className="w-auto px-6"
           />
         </div>
@@ -155,21 +156,21 @@ const DeploymentsTab = ({
                   <CustomButton
                     label="SCALE"
                     onClick={() => handleScale(deployment)}
-                    color="blue"
+                    color={ButtonColor.BLUE}
                     className="w-auto px-3 py-1"
                   />
                   <CustomButton
                     label=""
                     icon={RotateCcw}
                     onClick={() => handleRestart(deployment)}
-                    color="yellow"
+                    color={ButtonColor.YELLOW}
                     className="w-auto px-3 py-1"
                   />
                   <CustomButton
                     label=""
                     icon={Trash2}
                     onClick={() => handleDelete(deployment)}
-                    color="red"
+                    color={ButtonColor.RED}
                     className="w-auto px-3 py-1"
                   />
                 </div>

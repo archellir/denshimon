@@ -6,6 +6,7 @@ import { getRegistryStatusColor, getRegistryStatusIcon } from '@utils/status';
 import CustomDialog from '@components/common/CustomDialog';
 import CustomButton from '@components/common/CustomButton';
 import SkeletonLoader from '@components/common/SkeletonLoader';
+import { ButtonColor } from '@constants';
 import type { Registry } from '@/types/deployments';
 
 interface RegistriesTabProps {
@@ -85,7 +86,7 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
           <CustomButton
             label="ADD FIRST REGISTRY"
             onClick={() => setShowForm(true)}
-            color="green"
+            color={ButtonColor.GREEN}
             className="w-auto px-6"
           />
         </div>
@@ -131,14 +132,14 @@ const RegistriesTab: FC<RegistriesTabProps> = ({
                     label="TEST"
                     icon={TestTube}
                     onClick={() => handleTestRegistry(registry)}
-                    color="blue"
+                    color={ButtonColor.BLUE}
                     className="w-auto"
                   />
                   <CustomButton
                     label=""
                     icon={Trash2}
                     onClick={() => handleDeleteRegistry(registry)}
-                    color="red"
+                    color={ButtonColor.RED}
                     className="w-auto px-2 py-1"
                   />
                 </div>

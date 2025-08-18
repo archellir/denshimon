@@ -5,6 +5,7 @@ import { ContainerImage } from '@/types';
 import { formatBytes } from '@utils/format';
 import CustomButton from '@components/common/CustomButton';
 import DeploymentModal from '@components/deployments/DeploymentModal';
+import { ButtonColor } from '@constants';
 import SkeletonLoader from '@components/common/SkeletonLoader';
 
 const ImagesTab: FC = () => {
@@ -48,7 +49,7 @@ const ImagesTab: FC = () => {
                   label="DEPLOY"
                   icon={Play}
                   onClick={() => handleDeploy(image)}
-                  color="green"
+                  color={ButtonColor.GREEN}
                   className="w-auto px-3 py-1"
                 />
               </div>
