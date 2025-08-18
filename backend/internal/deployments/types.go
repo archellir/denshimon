@@ -21,8 +21,16 @@ type Deployment struct {
 	NodeDistribution  map[string]int       `json:"node_distribution"`
 	Resources         ResourceRequirements `json:"resources,omitempty"`
 	Environment       map[string]string    `json:"environment,omitempty"`
-	CreatedAt         time.Time            `json:"created_at"`
-	UpdatedAt         time.Time            `json:"updated_at"`
+	// GitOps tracking fields
+	Source           string    `json:"source"`            // "internal" or "external"
+	Author           string    `json:"author,omitempty"`  // Who created (for external)
+	GitCommitSHA     string    `json:"git_commit_sha,omitempty"`
+	ManifestPath     string    `json:"manifest_path,omitempty"`
+	AppliedBy        string    `json:"applied_by,omitempty"`
+	AppliedAt        *time.Time `json:"applied_at,omitempty"`
+	ServiceType      string    `json:"service_type,omitempty"` // For infra/service-type label
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 // DeploymentStrategy defines how deployments are rolled out
@@ -38,11 +46,15 @@ type DeploymentStrategy struct {
 type DeploymentStatus string
 
 const (
-	DeploymentStatusPending     DeploymentStatus = "pending"
-	DeploymentStatusRunning     DeploymentStatus = "running"
-	DeploymentStatusFailed      DeploymentStatus = "failed"
-	DeploymentStatusUpdating    DeploymentStatus = "updating"
-	DeploymentStatusTerminating DeploymentStatus = "terminating"
+	DeploymentStatusPending      DeploymentStatus = "pending"
+	DeploymentStatusCommitted    DeploymentStatus = "committed"     // NEW - committed to git
+	DeploymentStatusPendingApply DeploymentStatus = "pending_apply" // NEW - ready to apply
+	DeploymentStatusApplying     DeploymentStatus = "applying"      // NEW - currently applying
+	DeploymentStatusRunning      DeploymentStatus = "running"
+	DeploymentStatusFailed       DeploymentStatus = "failed"
+	DeploymentStatusApplyFailed  DeploymentStatus = "apply_failed"  // NEW - apply failed
+	DeploymentStatusUpdating     DeploymentStatus = "updating"
+	DeploymentStatusTerminating  DeploymentStatus = "terminating"
 )
 
 // PodInfo contains information about a pod in the deployment
@@ -80,6 +92,7 @@ type CreateDeploymentRequest struct {
 	Strategy     DeploymentStrategy   `json:"strategy"`
 	Resources    ResourceRequirements `json:"resources,omitempty"`
 	Environment  map[string]string    `json:"environment,omitempty"`
+	ServiceType  string               `json:"service_type,omitempty"` // For infra/service-type label
 }
 
 // ScaleDeploymentRequest represents a request to scale a deployment
