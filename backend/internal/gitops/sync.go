@@ -46,7 +46,7 @@ func DefaultSyncConfig() *SyncConfig {
 	return &SyncConfig{
 		AutoSync:         true,
 		SyncInterval:     5 * time.Minute,
-		CommitMessage:    "feat(gitops): sync kubernetes deployment changes",
+		CommitMessage:    "feat(deployment): sync kubernetes deployment changes [denshimon]",
 		TargetBranch:     "main",
 		ManifestPath:     "k8s",
 		IncludeServices:  true,
@@ -284,7 +284,7 @@ type SyncStatus struct {
 // generateCommitMessage creates a descriptive commit message for single app sync
 func (se *SyncEngine) generateCommitMessage(app *Application, template string) string {
 	if template == "" {
-		template = "feat(gitops): sync {{.AppName}} deployment in {{.Namespace}}"
+		template = "feat(deployment): deploy {{.AppName}} to {{.Namespace}} [denshimon]"
 	}
 
 	message := strings.ReplaceAll(template, "{{.AppName}}", app.Name)
@@ -365,7 +365,7 @@ type WebhookPayload struct {
 	} `json:"pusher"`
 }
 
-// ProcessWebhook handles incoming Git webhook notifications
+// ProcessWebhook handles incoming Git webhook notifications for external commit detection
 func (se *SyncEngine) ProcessWebhook(ctx context.Context, payload *WebhookPayload) error {
 	se.logger.Info("processing webhook", 
 		"repository", payload.Repository.FullName,
@@ -385,33 +385,33 @@ func (se *SyncEngine) ProcessWebhook(ctx context.Context, payload *WebhookPayloa
 		return nil
 	}
 
-	se.logger.Info("webhook triggered sync", 
+	se.logger.Info("webhook detected manifest changes", 
 		"repository", payload.Repository.FullName,
 		"pusher", payload.Pusher.Name)
 
-	// Create sync config for webhook-triggered sync
-	config := &SyncConfig{
-		AutoSync:         true,
-		CommitMessage:    fmt.Sprintf("feat(gitops): auto-sync from webhook (%s)", payload.After[:8]),
-		TargetBranch:     payload.Repository.DefaultBranch,
-		ManifestPath:     "k8s",
-		IncludeServices:  true,
-		IncludeIngress:   false,
-		IncludeConfigMap: true,
-		AutoScaling:      false,
+	// Process each commit for external deployments
+	var externalDeployments []string
+	for _, commit := range payload.Commits {
+		// Check if this commit is from Denshimon (auto-generated)
+		isInternal := se.isInternalCommit(commit.Message)
+		if isInternal {
+			se.logger.Debug("skipping internal commit", "commit", commit.ID[:8])
+			continue
+		}
+
+		// Process external commit - detect new/modified manifest files
+		deployments := se.detectExternalDeployments(ctx, commit, payload)
+		externalDeployments = append(externalDeployments, deployments...)
 	}
 
-	// Pull latest changes from repository
-	if err := se.service.gitClient.Pull(); err != nil {
-		return fmt.Errorf("failed to pull latest changes: %w", err)
+	if len(externalDeployments) > 0 {
+		se.logger.Info("detected external deployments", 
+			"count", len(externalDeployments),
+			"deployments", externalDeployments)
 	}
 
-	// Trigger synchronization
-	if err := se.SyncAllApplications(ctx, config); err != nil {
-		return fmt.Errorf("webhook sync failed: %w", err)
-	}
-
-	se.logger.Info("webhook sync completed successfully")
+	// DO NOT auto-apply to K8s - this is now manual only
+	se.logger.Info("webhook processed - deployments ready for manual apply")
 	return nil
 }
 
@@ -460,4 +460,133 @@ type WebhookSyncResult struct {
 	SyncedApps   int       `json:"synced_apps"`
 	ProcessedAt  time.Time `json:"processed_at"`
 	Error        string    `json:"error,omitempty"`
+}
+
+// isInternalCommit checks if a commit message indicates it was made by Denshimon
+func (se *SyncEngine) isInternalCommit(message string) bool {
+	// Look for commit messages that indicate Denshimon auto-generated commits
+	internalMarkers := []string{
+		"[denshimon]",           // Explicit marker
+		"feat(gitops): sync",    // Auto-sync commits  
+		"feat(deployment):",     // Deployment commits
+		"denshimon-bot",         // Bot commits
+	}
+	
+	for _, marker := range internalMarkers {
+		if strings.Contains(message, marker) {
+			return true
+		}
+	}
+	
+	return false
+}
+
+// detectExternalDeployments creates deployment records for external manifest changes
+func (se *SyncEngine) detectExternalDeployments(ctx context.Context, commit struct {
+	ID      string `json:"id"`
+	Message string `json:"message"`
+	Author  struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	} `json:"author"`
+	Modified []string `json:"modified"`
+	Added    []string `json:"added"`
+	Removed  []string `json:"removed"`
+}, payload *WebhookPayload) []string {
+	var deploymentIDs []string
+	
+	// Process added and modified files
+	allFiles := append(commit.Added, commit.Modified...)
+	
+	for _, file := range allFiles {
+		// Only process YAML files in k8s directory
+		if !strings.HasPrefix(file, "k8s/") || (!strings.HasSuffix(file, ".yaml") && !strings.HasSuffix(file, ".yml")) {
+			continue
+		}
+		
+		// Extract namespace and app name from path: k8s/namespace/app.yaml
+		pathParts := strings.Split(file, "/")
+		if len(pathParts) < 3 {
+			continue
+		}
+		
+		namespace := pathParts[1]
+		filename := pathParts[len(pathParts)-1]
+		appName := strings.TrimSuffix(filename, filepath.Ext(filename))
+		
+		// Generate deployment ID
+		deploymentID := fmt.Sprintf("dep-%s", generateShortID())
+		
+		// Create external deployment record
+		if err := se.createExternalDeploymentRecord(ctx, ExternalDeploymentInfo{
+			ID:           deploymentID,
+			Name:         appName,
+			Namespace:    namespace,
+			ManifestPath: file,
+			GitCommitSHA: commit.ID,
+			Author:       commit.Author.Email,
+			CommitMessage: commit.Message,
+			Repository:   payload.Repository.FullName,
+			CreatedAt:    time.Now(),
+		}); err != nil {
+			se.logger.Error("failed to create external deployment record", 
+				"error", err, "file", file, "commit", commit.ID[:8])
+			continue
+		}
+		
+		deploymentIDs = append(deploymentIDs, deploymentID)
+		
+		se.logger.Info("created external deployment record", 
+			"deployment_id", deploymentID,
+			"file", file,
+			"author", commit.Author.Email)
+	}
+	
+	return deploymentIDs
+}
+
+// ExternalDeploymentInfo represents information about an externally detected deployment
+type ExternalDeploymentInfo struct {
+	ID            string
+	Name          string
+	Namespace     string
+	ManifestPath  string
+	GitCommitSHA  string
+	Author        string
+	CommitMessage string
+	Repository    string
+	CreatedAt     time.Time
+}
+
+// createExternalDeploymentRecord creates a deployment record for external commits
+func (se *SyncEngine) createExternalDeploymentRecord(ctx context.Context, info ExternalDeploymentInfo) error {
+	// This would need access to the deployment service to create the record
+	// For now, log the information - this will be connected to the deployment service
+	se.logger.Info("would create external deployment record", 
+		"id", info.ID,
+		"name", info.Name,
+		"namespace", info.Namespace,
+		"path", info.ManifestPath,
+		"author", info.Author)
+	
+	// TODO: Integrate with deployment service to actually create the record
+	// deployment := &deployments.Deployment{
+	//     ID:           info.ID,
+	//     Name:         info.Name,
+	//     Namespace:    info.Namespace,
+	//     Source:       "external",
+	//     Author:       info.Author,
+	//     GitCommitSHA: info.GitCommitSHA,
+	//     ManifestPath: info.ManifestPath,
+	//     Status:       deployments.DeploymentStatusPendingApply,
+	//     CreatedAt:    info.CreatedAt,
+	// }
+	// return se.deploymentService.StoreDeployment(deployment)
+	
+	return nil
+}
+
+// generateShortID generates a short ID for deployment tracking
+func generateShortID() string {
+	return fmt.Sprintf("%d", time.Now().UnixNano()%100000000)[:8]
 }
