@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import CustomButton from './CustomButton';
 import useModalKeyboard from '@hooks/useModalKeyboard';
+import { ButtonColor, DialogIcon } from '@constants';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -10,9 +11,9 @@ interface ConfirmDialogProps {
   title: string;
   message: string;
   confirmLabel?: string;
-  confirmColor?: 'blue' | 'green' | 'red' | 'yellow' | 'gray' | 'white';
+  confirmColor?: ButtonColor;
   cancelLabel?: string;
-  icon?: 'warning' | 'danger';
+  icon?: DialogIcon;
 }
 
 const ConfirmDialog: FC<ConfirmDialogProps> = ({
@@ -22,9 +23,9 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
   title,
   message,
   confirmLabel = 'CONFIRM',
-  confirmColor = 'red',
+  confirmColor = ButtonColor.RED,
   cancelLabel = 'CANCEL',
-  icon = 'warning'
+  icon = DialogIcon.WARNING
 }) => {
   const { createClickOutsideHandler, preventClickThrough } = useModalKeyboard({
     isOpen,
@@ -49,8 +50,8 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            {icon === 'warning' && <AlertTriangle size={20} className="text-yellow-400" />}
-            {icon === 'danger' && <AlertTriangle size={20} className="text-red-400" />}
+            {icon === DialogIcon.WARNING && <AlertTriangle size={20} className="text-yellow-400" />}
+            {icon === DialogIcon.DANGER && <AlertTriangle size={20} className="text-red-400" />}
             <h3 className="font-mono text-lg font-semibold">{title}</h3>
           </div>
           <button
@@ -73,7 +74,7 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
           <CustomButton
             label={cancelLabel}
             onClick={onClose}
-            color="gray"
+            color={ButtonColor.GRAY}
             className="w-auto px-4 py-2"
           />
           <CustomButton
