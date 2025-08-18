@@ -129,7 +129,8 @@ type ServiceMeshMetrics struct {
 
 // Service classification constants
 const (
-	InfraServiceTypeLabel = "infra/service-type"
+	InfraServiceTypeLabel    = "infra/service-type"
+	InfraDeploymentIDLabel   = "infra/deployment-id"
 )
 
 // Service type mappings for common patterns
