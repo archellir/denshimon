@@ -84,7 +84,8 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
       allowPrivilegeEscalation: false
     },
     labels: {} as Record<string, string>,
-    annotations: {} as Record<string, string>
+    annotations: {} as Record<string, string>,
+    environment: {} as Record<string, string>
   });
 
   useEffect(() => {
@@ -291,7 +292,8 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         allowPrivilegeEscalation: false
       },
       labels: {} as Record<string, string>,
-      annotations: {} as Record<string, string>
+      annotations: {} as Record<string, string>,
+      environment: {} as Record<string, string>
     });
   };
 
