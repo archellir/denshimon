@@ -27,6 +27,7 @@ import useDatabaseStore from '@stores/databaseStore';
 import CustomSelector from '@components/common/CustomSelector';
 import CustomButton from '@components/common/CustomButton';
 import CustomCheckbox from '@components/common/CustomCheckbox';
+import { ButtonColor, DialogIcon } from '@constants';
 import QueryResultsTable from './QueryResultsTable';
 import ConfirmDialog from '@components/common/ConfirmDialog';
 import { mockQueryHistory } from '@mocks/database/queries';
@@ -330,7 +331,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
           <CustomButton
             icon={isFullscreen ? Minimize2 : Maximize2}
             onClick={() => setIsFullscreen(!isFullscreen)}
-            color="white"
+            color={ButtonColor.WHITE}
             className="w-auto px-2 py-1"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           />
@@ -389,7 +390,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
                   setActiveTab('data');
                 }
               }}
-              color="blue"
+              color={ButtonColor.BLUE}
               className="w-auto"
             />
             <CustomButton
@@ -401,7 +402,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
                   setActiveTab('query');
                 }
               }}
-              color="green"
+              color={ButtonColor.GREEN}
               className="w-auto"
             />
           </div>
@@ -521,7 +522,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
               label="EXPORT CSV"
               icon={Download}
               onClick={handleExportToCSV}
-              color="white"
+              color={ButtonColor.WHITE}
               className="w-auto"
             />
           </div>
@@ -568,7 +569,7 @@ const DatabaseExplorer: FC<DatabaseExplorerProps> = ({ preselectedConnectionId }
               icon={Save}
               onClick={handleSaveQuery}
               disabled={!queryName.trim() || !sqlQuery.trim()}
-              color="green"
+              color={ButtonColor.GREEN}
               className="w-auto px-2 py-1 text-xs"
             />
           </div>
@@ -593,7 +594,7 @@ SELECT * FROM users LIMIT 10;"
               icon={isLoading ? Activity : Play}
               onClick={handleExecuteQuery}
               disabled={!selectedConnection || !sqlQuery.trim() || isLoading}
-              color="green"
+              color={ButtonColor.GREEN}
               className="w-auto px-4 py-2"
             />
             <CustomButton
@@ -602,14 +603,14 @@ SELECT * FROM users LIMIT 10;"
                 setSqlQuery('');
                 clearQueryResults();
               }}
-              color="white"
+              color={ButtonColor.WHITE}
               className="w-auto px-4 py-2"
             />
             <CustomButton
               label="COPY"
               icon={Copy}
               onClick={() => handleCopyToClipboard(sqlQuery)}
-              color="white"
+              color={ButtonColor.WHITE}
               className="w-auto px-3 py-2"
             />
           </div>
@@ -703,7 +704,7 @@ SELECT * FROM users LIMIT 10;"
                   <CustomButton
                     icon={Copy}
                     onClick={() => handleCopyToClipboard(query.sql)}
-                    color="white"
+                    color={ButtonColor.WHITE}
                     className="w-auto px-2 py-1 text-xs"
                     title="Copy SQL"
                   />
@@ -713,14 +714,14 @@ SELECT * FROM users LIMIT 10;"
                       setSqlQuery(query.sql);
                       setActiveTab('query');
                     }}
-                    color="green"
+                    color={ButtonColor.GREEN}
                     className="w-auto px-2 py-1 text-xs"
                     title="Load Query"
                   />
                   <CustomButton
                     icon={Trash2}
                     onClick={() => setDeleteConfirmDialog({ open: true, queryId: query.id })}
-                    color="red"
+                    color={ButtonColor.RED}
                     className="w-auto px-2 py-1 text-xs"
                     title="Delete Query"
                   />
@@ -743,7 +744,7 @@ SELECT * FROM users LIMIT 10;"
           <CustomButton
             label="RETRY"
             onClick={() => fetchConnections()}
-            color="red"
+            color={ButtonColor.RED}
             className="mx-auto"
           />
         </div>
@@ -780,9 +781,9 @@ SELECT * FROM users LIMIT 10;"
         title="Delete Saved Query"
         message="Are you sure you want to permanently delete this saved query? This action cannot be undone."
         confirmLabel="DELETE"
-        confirmColor="red"
+        confirmColor={ButtonColor.RED}
         cancelLabel="CANCEL"
-        icon="danger"
+        icon={DialogIcon.DANGER}
       />
       
     </div>

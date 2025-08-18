@@ -20,6 +20,7 @@ import { DatabaseStatus } from '@/types/database';
 import { mockQueryHistory } from '@mocks/database';
 import CustomSelector from '@components/common/CustomSelector';
 import CustomButton from '@components/common/CustomButton';
+import { ButtonColor } from '@constants';
 
 const SQLQueryInterface: FC = () => {
   const {
@@ -142,7 +143,7 @@ const SQLQueryInterface: FC = () => {
             label="FULLSCREEN"
             icon={Maximize2}
             onClick={() => setIsFullscreen(!isFullscreen)}
-            color="white"
+            color={ButtonColor.WHITE}
             className="w-auto"
           />
         </div>
@@ -179,7 +180,7 @@ const SQLQueryInterface: FC = () => {
                   icon={Save}
                   onClick={handleSaveQuery}
                   disabled={!queryName.trim() || !sqlQuery.trim()}
-                  color="green"
+                  color={ButtonColor.GREEN}
                   className="w-auto px-2 py-1 text-xs"
                 />
               </div>
@@ -202,7 +203,7 @@ SELECT * FROM users LIMIT 10;"
                   icon={isLoading ? Activity : Play}
                   onClick={handleExecuteQuery}
                   disabled={!selectedConnection || !sqlQuery.trim() || isLoading}
-                  color="green"
+                  color={ButtonColor.GREEN}
                   className="w-auto px-4 py-2"
                 />
                 <CustomButton
@@ -211,14 +212,14 @@ SELECT * FROM users LIMIT 10;"
                     setSqlQuery('');
                     clearQueryResults();
                   }}
-                  color="white"
+                  color={ButtonColor.WHITE}
                   className="w-auto px-4 py-2"
                 />
                 <CustomButton
                   label="COPY"
                   icon={Copy}
                   onClick={() => copyToClipboard(sqlQuery)}
-                  color="white"
+                  color={ButtonColor.WHITE}
                   className="w-auto px-3 py-2"
                 />
               </div>
