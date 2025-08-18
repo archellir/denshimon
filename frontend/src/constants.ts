@@ -795,6 +795,10 @@ export const API_ENDPOINTS = {
     ALERTS: `${API_BASE_PATHS.GITOPS}/alerts`,
     ALERT_ACKNOWLEDGE: `${API_BASE_PATHS.GITOPS}/alerts/acknowledge`,
     ALERT_RESOLVE: `${API_BASE_PATHS.GITOPS}/alerts/resolve`,
+    // Sync Operations
+    SYNC_STATUS: `${API_BASE_PATHS.GITOPS}/sync/status`,
+    SYNC_START: `${API_BASE_PATHS.GITOPS}/sync/start`,
+    SYNC_FORCE: `${API_BASE_PATHS.GITOPS}/sync/force`,
   },
   BACKUP: {
     BASE: API_BASE_PATHS.BACKUP,
