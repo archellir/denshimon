@@ -5,7 +5,7 @@
  * icons, and configurations across the entire application.
  */
 
-import { Status, STATUS_COLORS } from '@constants';
+import { Status, STATUS_COLORS, DeploymentStatus, RegistryStatus } from '@constants';
 import { 
   CheckCircle, 
   AlertTriangle, 
@@ -271,6 +271,53 @@ export const getTrendConfig = (direction: TrendDirection): TrendConfig => {
         icon: Minus,
         label: 'STABLE',
       };
+  }
+};
+
+/**
+ * Deployment-specific status utilities
+ */
+
+export const getDeploymentStatusColor = (status: DeploymentStatus): string => {
+  switch (status) {
+    case DeploymentStatus.RUNNING:
+      return 'text-green-500';
+    case DeploymentStatus.PENDING:
+      return 'text-yellow-500';
+    case DeploymentStatus.UPDATING:
+      return 'text-blue-500';
+    case DeploymentStatus.FAILED:
+      return 'text-red-500';
+    case DeploymentStatus.TERMINATING:
+      return 'text-orange-500';
+    default:
+      return 'text-gray-500';
+  }
+};
+
+export const getRegistryStatusColor = (status: RegistryStatus): string => {
+  switch (status) {
+    case RegistryStatus.CONNECTED:
+      return 'text-green-500';
+    case RegistryStatus.PENDING:
+      return 'text-yellow-500';
+    case RegistryStatus.ERROR:
+      return 'text-red-500';
+    default:
+      return 'text-gray-500';
+  }
+};
+
+export const getRegistryStatusIcon = (status: RegistryStatus): LucideIcon => {
+  switch (status) {
+    case RegistryStatus.CONNECTED:
+      return CheckCircle;
+    case RegistryStatus.PENDING:
+      return Clock;
+    case RegistryStatus.ERROR:
+      return XCircle;
+    default:
+      return HelpCircle;
   }
 };
 
