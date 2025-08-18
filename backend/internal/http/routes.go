@@ -201,11 +201,19 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/deployments", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.ListDeployments)))
 	mux.HandleFunc("POST /api/deployments", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.CreateDeployment)))
 	mux.HandleFunc("GET /api/deployments/nodes", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.GetAvailableNodes)))
+	
+	// Manual apply endpoints
+	mux.HandleFunc("GET /api/deployments/pending", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.GetPendingDeployments)))
+	mux.HandleFunc("POST /api/deployments/batch-apply", corsMiddleware(authService.AuthMiddleware(deploymentHandlers.BatchApplyDeployments)))
 
 	// Deployment operations
 	mux.Handle("/api/deployments/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		switch {
+		case strings.HasSuffix(path, "/apply") && r.Method == "POST":
+			deploymentHandlers.ApplyDeployment(w, r)
+		case strings.HasSuffix(path, "/manifest") && r.Method == "GET":
+			deploymentHandlers.GetDeploymentManifest(w, r)
 		case strings.HasSuffix(path, "/scale") && r.Method == "PATCH":
 			deploymentHandlers.ScaleDeployment(w, r)
 		case strings.HasSuffix(path, "/restart") && r.Method == "POST":
