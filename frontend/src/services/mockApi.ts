@@ -4,6 +4,7 @@
 
 import { mockPods } from '@mocks/k8s/pods';
 import { MASTER_SERVICES, MASTER_NAMESPACES } from '@mocks/masterData';
+import unifiedMockData from '@mocks/unifiedMockData';
 import { API_ENDPOINTS } from '@constants';
 
 // Convert mockPods to the expected API format
@@ -42,12 +43,16 @@ const convertServicesToApiFormat = () => {
   }));
 };
 
+// Get unified mock data
+const getMockDeployments = () => unifiedMockData.getDeployments();
+const getMockPendingDeployments = () => unifiedMockData.getPendingDeployments();
+
 /**
  * Setup mock API interceptor
  */
 export const setupMockApi = () => {
-  // Only setup mocks in development when backend is not available
-  if (import.meta.env.PROD) return;
+  // Only setup mocks when MOCK_DATA is enabled
+  if (import.meta.env.VITE_MOCK_DATA !== 'true') return;
 
   // Store original fetch
   const originalFetch = window.fetch;
@@ -125,6 +130,82 @@ export const setupMockApi = () => {
         username: 'admin',
         role: 'admin'
       }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Handle deployment history endpoints
+    if (url.includes('/history')) {
+      const deploymentId = url.split('/')[3]; // Extract deployment ID from URL
+      const history = unifiedMockData.getDeploymentHistory(deploymentId);
+      return new Response(JSON.stringify(history), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Handle individual deployment apply endpoints
+    if (url.includes('/apply') && init?.method === 'POST') {
+      const pathParts = url.split('/');
+      const deploymentId = pathParts[pathParts.length - 2]; // Get ID before /apply
+      
+      const result = unifiedMockData.applyPendingDeployment(deploymentId);
+      
+      return new Response(JSON.stringify({
+        status: result.success ? 'applied' : 'failed',
+        message: result.success ? 'Deployment applied successfully' : result.error
+      }), {
+        status: result.success ? 200 : 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Handle deployment endpoints
+    if (url.includes(API_ENDPOINTS.DEPLOYMENTS.PENDING)) {
+      const pendingDeployments = getMockPendingDeployments();
+      return new Response(JSON.stringify(pendingDeployments), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (url.includes(API_ENDPOINTS.DEPLOYMENTS.BATCH_APPLY)) {
+      const requestBody = await (init?.body ? JSON.parse(init.body.toString()) : {});
+      const deploymentIds = requestBody.deployment_ids || [];
+      
+      // Simulate batch apply with unified mock data
+      const results: Record<string, any> = {};
+      let successes = 0;
+      let failures = 0;
+      
+      deploymentIds.forEach((id: string) => {
+        const result = unifiedMockData.applyPendingDeployment(id);
+        results[id] = result.success ? null : new Error(result.error);
+        if (result.success) successes++;
+        else failures++;
+      });
+
+      return new Response(JSON.stringify({
+        status: 'completed',
+        successes,
+        failures,
+        results
+      }), {
+        status: failures > 0 ? 206 : 200, // Partial content if any failures
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (url.includes(API_ENDPOINTS.DEPLOYMENTS.BASE) && 
+        !url.includes(API_ENDPOINTS.DEPLOYMENTS.PENDING) && 
+        !url.includes(API_ENDPOINTS.DEPLOYMENTS.BATCH_APPLY)) {
+      const urlObj = new URL(url, window.location.origin);
+      const namespace = urlObj.searchParams.get('namespace');
+      
+      const deployments = unifiedMockData.getDeploymentsByNamespace(namespace || 'all');
+
+      return new Response(JSON.stringify(deployments), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
