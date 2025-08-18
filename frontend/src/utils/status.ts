@@ -284,10 +284,18 @@ export const getDeploymentStatusColor = (status: DeploymentStatus): string => {
       return 'text-green-500';
     case DeploymentStatus.PENDING:
       return 'text-yellow-500';
+    case DeploymentStatus.COMMITTED:
+      return 'text-cyan-500';      // GitOps: committed to git
+    case DeploymentStatus.PENDING_APPLY:
+      return 'text-blue-400';      // GitOps: ready to apply
+    case DeploymentStatus.APPLYING:
+      return 'text-blue-500';      // GitOps: currently applying
     case DeploymentStatus.UPDATING:
       return 'text-blue-500';
     case DeploymentStatus.FAILED:
       return 'text-red-500';
+    case DeploymentStatus.APPLY_FAILED:
+      return 'text-red-600';       // GitOps: apply failed
     case DeploymentStatus.TERMINATING:
       return 'text-orange-500';
     default:

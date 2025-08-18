@@ -1121,8 +1121,12 @@ export enum RegistryStatus {
 
 export enum DeploymentStatus {
   PENDING = Status.PENDING,
+  COMMITTED = 'committed',           // GitOps: committed to git
+  PENDING_APPLY = 'pending_apply',   // GitOps: ready to apply
+  APPLYING = 'applying',             // GitOps: currently applying
   RUNNING = 'running',
   FAILED = 'failed',
+  APPLY_FAILED = 'apply_failed',     // GitOps: apply failed
   UPDATING = 'updating',
   TERMINATING = 'terminating'
 }
