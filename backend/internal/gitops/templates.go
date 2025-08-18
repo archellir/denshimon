@@ -16,10 +16,12 @@ type ManifestTemplate struct {
 
 // TemplateData contains data for manifest generation
 type TemplateData struct {
-	App         *Application
-	Namespace   string
-	Labels      map[string]string
-	Annotations map[string]string
+	App          *Application
+	Namespace    string
+	Labels       map[string]string
+	Annotations  map[string]string
+	DeploymentID string
+	ServiceType  string
 }
 
 // deploymentTemplate generates a Kubernetes Deployment manifest
@@ -32,7 +34,10 @@ metadata:
   namespace: {{.App.Namespace}}
   labels:
     app: {{.App.Name}}
-    managed-by: denshimon
+    infra/deployment-id: {{.DeploymentID}}
+    {{- if .ServiceType}}
+    infra/service-type: {{.ServiceType}}
+    {{- end}}
     {{- range $key, $value := .Labels}}
     {{$key}}: {{$value}}
     {{- end}}
@@ -45,10 +50,15 @@ spec:
   selector:
     matchLabels:
       app: {{.App.Name}}
+      infra/deployment-id: {{.DeploymentID}}
   template:
     metadata:
       labels:
         app: {{.App.Name}}
+        infra/deployment-id: {{.DeploymentID}}
+        {{- if .ServiceType}}
+        infra/service-type: {{.ServiceType}}
+        {{- end}}
         {{- range $key, $value := .Labels}}
         {{$key}}: {{$value}}
         {{- end}}
@@ -107,13 +117,17 @@ metadata:
   namespace: {{.App.Namespace}}
   labels:
     app: {{.App.Name}}
-    managed-by: denshimon
+    infra/deployment-id: {{.DeploymentID}}
+    {{- if .ServiceType}}
+    infra/service-type: {{.ServiceType}}
+    {{- end}}
     {{- range $key, $value := .Labels}}
     {{$key}}: {{$value}}
     {{- end}}
 spec:
   selector:
     app: {{.App.Name}}
+    infra/deployment-id: {{.DeploymentID}}
   ports:
   - port: 80
     targetPort: 8080
@@ -133,7 +147,10 @@ metadata:
   namespace: {{.App.Namespace}}
   labels:
     app: {{.App.Name}}
-    managed-by: denshimon
+    infra/deployment-id: {{.DeploymentID}}
+    {{- if .ServiceType}}
+    infra/service-type: {{.ServiceType}}
+    {{- end}}
     {{- range $key, $value := .Labels}}
     {{$key}}: {{$value}}
     {{- end}}
@@ -167,7 +184,10 @@ metadata:
   namespace: {{.App.Namespace}}
   labels:
     app: {{.App.Name}}
-    managed-by: denshimon
+    infra/deployment-id: {{.DeploymentID}}
+    {{- if .ServiceType}}
+    infra/service-type: {{.ServiceType}}
+    {{- end}}
     {{- range $key, $value := .Labels}}
     {{$key}}: {{$value}}
     {{- end}}
@@ -188,7 +208,10 @@ metadata:
   namespace: {{.App.Namespace}}
   labels:
     app: {{.App.Name}}
-    managed-by: denshimon
+    infra/deployment-id: {{.DeploymentID}}
+    {{- if .ServiceType}}
+    infra/service-type: {{.ServiceType}}
+    {{- end}}
     {{- range $key, $value := .Labels}}
     {{$key}}: {{$value}}
     {{- end}}
@@ -217,9 +240,15 @@ spec:
 
 // GenerateManifest generates a Kubernetes manifest for the given application and resource type
 func (s *Service) GenerateManifest(app *Application, resourceType string, options map[string]interface{}) (string, error) {
+	// Extract deployment ID and service type from options
+	deploymentID, _ := options["deployment_id"].(string)
+	serviceType, _ := options["service_type"].(string)
+	
 	data := &TemplateData{
-		App:       app,
-		Namespace: app.Namespace,
+		App:          app,
+		Namespace:    app.Namespace,
+		DeploymentID: deploymentID,
+		ServiceType:  serviceType,
 		Labels: map[string]string{
 			"version": "v1.0.0",
 			"tier":    "application",
