@@ -61,7 +61,7 @@ const ConfigurationTab = () => {
 
   const fetchPendingDeployments = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BASE + '/pending');
+      const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.PENDING);
       if (response.ok) {
         const data = await response.json();
         setPendingDeployments(data);
@@ -144,7 +144,7 @@ const ConfigurationTab = () => {
     try {
       setApplying(prev => [...prev, ...selectedDeployments]);
       
-      const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BASE + '/batch-apply', {
+      const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BATCH_APPLY, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
