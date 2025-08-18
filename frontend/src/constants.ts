@@ -261,6 +261,22 @@ export enum FilterOption {
   ALL_TYPES = 'all'
 }
 
+// UI COMPONENT ENUMS
+
+export enum ButtonColor {
+  BLUE = 'blue',
+  GREEN = 'green',
+  RED = 'red',
+  YELLOW = 'yellow',
+  GRAY = 'gray',
+  WHITE = 'white'
+}
+
+export enum DialogIcon {
+  WARNING = 'warning',
+  DANGER = 'danger'
+}
+
 // NAMESPACE ENUMS
 
 export enum CommonNamespace {
@@ -295,7 +311,10 @@ export const STATUS_COLORS = {
     [Status.PROGRESSING]: 'text-blue-500',
     [Status.SUSPENDED]: 'text-gray-500',
     [Status.MISSING]: 'text-gray-500',
-    [Status.DOWN]: 'text-red-600'
+    [Status.DOWN]: 'text-red-600',
+    [Status.HIGH]: 'text-red-500',
+    [Status.MEDIUM]: 'text-yellow-500',
+    [Status.LOW]: 'text-blue-500'
   },
   BORDER: {
     [Status.CRITICAL]: 'border-red-500 text-red-500',
@@ -310,8 +329,20 @@ export const STATUS_COLORS = {
     [Status.PROGRESSING]: 'border-blue-500 text-blue-500',
     [Status.SUSPENDED]: 'border-gray-500 text-gray-500',
     [Status.MISSING]: 'border-gray-500 text-gray-500',
-    [Status.DOWN]: 'border-red-600 text-red-600'
+    [Status.DOWN]: 'border-red-600 text-red-600',
+    [Status.HIGH]: 'border-red-500 text-red-500',
+    [Status.MEDIUM]: 'border-yellow-500 text-yellow-500',
+    [Status.LOW]: 'border-blue-500 text-blue-500'
   }
+} as const;
+
+export const BUTTON_COLORS = {
+  [ButtonColor.BLUE]: 'border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-black',
+  [ButtonColor.GREEN]: 'border-green-500 text-green-500 hover:bg-green-500 hover:text-black',
+  [ButtonColor.RED]: 'border-red-500 text-red-500 hover:bg-red-500 hover:text-black',
+  [ButtonColor.YELLOW]: 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black',
+  [ButtonColor.GRAY]: 'border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-black',
+  [ButtonColor.WHITE]: 'border-white text-white hover:bg-white hover:text-black'
 } as const;
 
 export const PROTOCOL_COLORS = {
