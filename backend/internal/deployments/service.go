@@ -67,6 +67,13 @@ func (s *Service) initDB() error {
 			resources TEXT,
 			environment TEXT,
 			status TEXT DEFAULT 'pending',
+			source TEXT DEFAULT 'internal',
+			author TEXT,
+			git_commit_sha TEXT,
+			manifest_path TEXT,
+			applied_by TEXT,
+			applied_at TIMESTAMP,
+			service_type TEXT,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)`,
@@ -96,6 +103,16 @@ func (s *Service) initDB() error {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (deployment_id) REFERENCES deployments(id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS deployment_resources (
+			id TEXT PRIMARY KEY,
+			deployment_id TEXT NOT NULL,
+			resource_type TEXT NOT NULL,
+			resource_name TEXT NOT NULL,
+			namespace TEXT NOT NULL,
+			k8s_uid TEXT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (deployment_id) REFERENCES deployments(id)
+		)`,
 	}
 
 	for _, query := range queries {
@@ -107,10 +124,13 @@ func (s *Service) initDB() error {
 	return nil
 }
 
-// CreateDeployment creates a new deployment
+// CreateDeployment creates a new deployment record and commits to git (manual apply workflow)
 func (s *Service) CreateDeployment(ctx context.Context, req CreateDeploymentRequest) (*Deployment, error) {
+	// Generate deployment ID in the infra/deployment-id format
+	deploymentID := fmt.Sprintf("dep-%s", uuid.New().String()[:8])
+	
 	deployment := &Deployment{
-		ID:           uuid.New().String(),
+		ID:           deploymentID,
 		Name:         req.Name,
 		Namespace:    req.Namespace,
 		Image:        req.Image,
@@ -121,32 +141,30 @@ func (s *Service) CreateDeployment(ctx context.Context, req CreateDeploymentRequ
 		Status:       DeploymentStatusPending,
 		Resources:    req.Resources,
 		Environment:  req.Environment,
+		Source:       "internal", // Created through Denshimon UI
+		ServiceType:  req.ServiceType,  // Will be added to CreateDeploymentRequest
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
 
-	// Deploy to Kubernetes
-	k8sDeployment, err := s.deployer.Deploy(ctx, *deployment)
+	// Generate and commit manifest to git (but don't deploy to K8s yet)
+	err := s.commitToGitOps(ctx, deployment)
 	if err != nil {
 		deployment.Status = DeploymentStatusFailed
 		s.recordHistory(deployment.ID, "create", "", deployment.Image, 0, deployment.Replicas, false, err.Error(), "")
-		return nil, fmt.Errorf("failed to deploy to kubernetes: %w", err)
+		return nil, fmt.Errorf("failed to commit to git: %w", err)
 	}
 
-	deployment.Status = DeploymentStatusRunning
+	// Update status to committed
+	deployment.Status = DeploymentStatusPendingApply
 
 	// Store in database
 	if err := s.storeDeployment(deployment); err != nil {
-		// Cleanup Kubernetes deployment on DB error
-		s.deployer.Delete(ctx, deployment.Namespace, deployment.Name)
 		return nil, fmt.Errorf("failed to store deployment: %w", err)
 	}
 
-	// Record successful creation
-	s.recordHistory(deployment.ID, "create", "", deployment.Image, 0, deployment.Replicas, true, "", "")
-
-	// Update with live status from Kubernetes
-	s.updateDeploymentStatus(deployment, k8sDeployment)
+	// Record successful creation (committed to git, not deployed yet)
+	s.recordHistory(deployment.ID, "create", "", deployment.Image, 0, deployment.Replicas, true, "Committed to git", "")
 
 	return deployment, nil
 }
@@ -396,15 +414,18 @@ func (s *Service) storeDeployment(deployment *Deployment) error {
 		INSERT INTO deployments (
 			id, name, namespace, image, registry_id, replicas,
 			node_selector, strategy, resources, environment, status,
-			created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			source, author, git_commit_sha, manifest_path, applied_by,
+			applied_at, service_type, created_at, updated_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := s.db.Exec(query,
 		deployment.ID, deployment.Name, deployment.Namespace, deployment.Image,
 		deployment.RegistryID, deployment.Replicas, string(nodeSelector),
 		string(strategy), string(resources), string(environment),
-		deployment.Status, deployment.CreatedAt, deployment.UpdatedAt,
+		deployment.Status, deployment.Source, deployment.Author,
+		deployment.GitCommitSHA, deployment.ManifestPath, deployment.AppliedBy,
+		deployment.AppliedAt, deployment.ServiceType, deployment.CreatedAt, deployment.UpdatedAt,
 	)
 
 	return err
@@ -420,7 +441,8 @@ func (s *Service) updateDeploymentInDB(deployment *Deployment) error {
 		UPDATE deployments SET
 			name = ?, namespace = ?, image = ?, registry_id = ?, replicas = ?,
 			node_selector = ?, strategy = ?, resources = ?, environment = ?,
-			status = ?, updated_at = ?
+			status = ?, source = ?, author = ?, git_commit_sha = ?, manifest_path = ?,
+			applied_by = ?, applied_at = ?, service_type = ?, updated_at = ?
 		WHERE id = ?
 	`
 
@@ -428,7 +450,10 @@ func (s *Service) updateDeploymentInDB(deployment *Deployment) error {
 		deployment.Name, deployment.Namespace, deployment.Image,
 		deployment.RegistryID, deployment.Replicas, string(nodeSelector),
 		string(strategy), string(resources), string(environment),
-		deployment.Status, deployment.UpdatedAt, deployment.ID,
+		deployment.Status, deployment.Source, deployment.Author, 
+		deployment.GitCommitSHA, deployment.ManifestPath, deployment.AppliedBy,
+		deployment.AppliedAt, deployment.ServiceType, deployment.UpdatedAt, 
+		deployment.ID,
 	)
 
 	return err
@@ -438,7 +463,8 @@ func (s *Service) getDeploymentFromDB(id string) (*Deployment, error) {
 	query := `
 		SELECT id, name, namespace, image, registry_id, replicas,
 		       node_selector, strategy, resources, environment, status,
-		       created_at, updated_at
+		       source, author, git_commit_sha, manifest_path, applied_by,
+		       applied_at, service_type, created_at, updated_at
 		FROM deployments
 		WHERE id = ?
 	`
@@ -447,12 +473,15 @@ func (s *Service) getDeploymentFromDB(id string) (*Deployment, error) {
 
 	var deployment Deployment
 	var nodeSelector, strategy, resources, environment sql.NullString
+	var appliedAt sql.NullTime
 
 	err := row.Scan(
 		&deployment.ID, &deployment.Name, &deployment.Namespace,
 		&deployment.Image, &deployment.RegistryID, &deployment.Replicas,
 		&nodeSelector, &strategy, &resources, &environment,
-		&deployment.Status, &deployment.CreatedAt, &deployment.UpdatedAt,
+		&deployment.Status, &deployment.Source, &deployment.Author,
+		&deployment.GitCommitSHA, &deployment.ManifestPath, &deployment.AppliedBy,
+		&appliedAt, &deployment.ServiceType, &deployment.CreatedAt, &deployment.UpdatedAt,
 	)
 
 	if err != nil {
@@ -471,6 +500,9 @@ func (s *Service) getDeploymentFromDB(id string) (*Deployment, error) {
 	}
 	if environment.Valid {
 		json.Unmarshal([]byte(environment.String), &deployment.Environment)
+	}
+	if appliedAt.Valid {
+		deployment.AppliedAt = &appliedAt.Time
 	}
 
 	return &deployment, nil
@@ -772,4 +804,220 @@ func (s *Service) DeleteRegistry(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// commitToGitOps generates manifests and commits them to the GitOps repository
+func (s *Service) commitToGitOps(ctx context.Context, deployment *Deployment) error {
+	if s.gitopsService == nil {
+		return fmt.Errorf("gitops service not configured")
+	}
+
+	// Convert deployment to GitOps application
+	app := s.deploymentToGitOpsApp(deployment)
+	
+	// Generate manifest with deployment ID and service type
+	options := map[string]interface{}{
+		"deployment_id": deployment.ID,
+		"service_type":  deployment.ServiceType,
+		"service":       true,  // Always create service
+		"ingress":       false, // Can be enhanced later
+		"autoscaling":   false, // Can be enhanced later
+	}
+	
+	manifest, err := s.gitopsService.GenerateFullManifest(app, options)
+	if err != nil {
+		return fmt.Errorf("failed to generate manifest: %w", err)
+	}
+	
+	// Create GitOps application
+	gitopsApp, err := s.gitopsService.CreateApplication(ctx, 
+		deployment.Name, 
+		deployment.Namespace,
+		"",  // repository ID - will use default
+		fmt.Sprintf("k8s/%s/%s.yaml", deployment.Namespace, deployment.Name), // manifest path
+		deployment.Image,
+		int(deployment.Replicas),
+		s.resourcesMapFromRequirements(deployment.Resources),
+		deployment.Environment,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create gitops application: %w", err)
+	}
+	
+	// Sync to git repository (this commits the manifest)
+	err = s.syncEngine.SyncApplicationToGit(ctx, gitopsApp.ID, nil)
+	if err != nil {
+		return fmt.Errorf("failed to sync to git: %w", err)
+	}
+	
+	// Update deployment with git info
+	deployment.ManifestPath = fmt.Sprintf("k8s/%s/%s.yaml", deployment.Namespace, deployment.Name)
+	// deployment.GitCommitSHA will be updated by sync engine
+	
+	return nil
+}
+
+// ApplyDeployment manually applies a committed deployment to Kubernetes
+func (s *Service) ApplyDeployment(ctx context.Context, deploymentID, appliedBy string) error {
+	// Get deployment from database
+	deployment, err := s.getDeploymentFromDB(deploymentID)
+	if err != nil {
+		return fmt.Errorf("failed to get deployment: %w", err)
+	}
+	
+	if deployment.Status != DeploymentStatusPendingApply {
+		return fmt.Errorf("deployment is not in pending_apply status: %s", deployment.Status)
+	}
+	
+	// Update status to applying
+	deployment.Status = DeploymentStatusApplying
+	deployment.UpdatedAt = time.Now()
+	if err := s.updateDeploymentInDB(deployment); err != nil {
+		return fmt.Errorf("failed to update status: %w", err)
+	}
+	
+	// Deploy to Kubernetes using the deployer
+	k8sDeployment, err := s.deployer.Deploy(ctx, *deployment)
+	if err != nil {
+		// Mark as apply failed
+		deployment.Status = DeploymentStatusApplyFailed
+		deployment.UpdatedAt = time.Now()
+		s.updateDeploymentInDB(deployment)
+		s.recordHistory(deployment.ID, "apply", "", deployment.Image, 0, deployment.Replicas, false, err.Error(), appliedBy)
+		return fmt.Errorf("failed to apply to kubernetes: %w", err)
+	}
+	
+	// Success - update status
+	now := time.Now()
+	deployment.Status = DeploymentStatusRunning
+	deployment.AppliedBy = appliedBy
+	deployment.AppliedAt = &now
+	deployment.UpdatedAt = now
+	
+	// Update with live status from Kubernetes
+	s.updateDeploymentStatus(deployment, k8sDeployment)
+	
+	// Record successful apply
+	s.recordHistory(deployment.ID, "apply", "", deployment.Image, 0, deployment.Replicas, true, "Applied to cluster", appliedBy)
+	
+	return nil
+}
+
+// GetPendingDeployments returns all deployments with pending_apply status
+func (s *Service) GetPendingDeployments(ctx context.Context) ([]Deployment, error) {
+	query := `
+		SELECT id, name, namespace, image, registry_id, replicas, node_selector, strategy, 
+			   resources, environment, status, source, author, git_commit_sha, manifest_path,
+			   applied_by, applied_at, service_type, created_at, updated_at
+		FROM deployments 
+		WHERE status = ? OR status = ?
+		ORDER BY created_at DESC
+	`
+	
+	rows, err := s.db.QueryContext(ctx, query, DeploymentStatusPendingApply, DeploymentStatusCommitted)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query pending deployments: %w", err)
+	}
+	defer rows.Close()
+	
+	var deployments []Deployment
+	for rows.Next() {
+		var deployment Deployment
+		var nodeSelectorJSON, strategyJSON, resourcesJSON, environmentJSON string
+		var appliedAt sql.NullTime
+		
+		err := rows.Scan(
+			&deployment.ID,
+			&deployment.Name,
+			&deployment.Namespace,
+			&deployment.Image,
+			&deployment.RegistryID,
+			&deployment.Replicas,
+			&nodeSelectorJSON,
+			&strategyJSON,
+			&resourcesJSON,
+			&environmentJSON,
+			&deployment.Status,
+			&deployment.Source,
+			&deployment.Author,
+			&deployment.GitCommitSHA,
+			&deployment.ManifestPath,
+			&deployment.AppliedBy,
+			&appliedAt,
+			&deployment.ServiceType,
+			&deployment.CreatedAt,
+			&deployment.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan deployment: %w", err)
+		}
+		
+		// Parse JSON fields
+		if nodeSelectorJSON != "" {
+			json.Unmarshal([]byte(nodeSelectorJSON), &deployment.NodeSelector)
+		}
+		if strategyJSON != "" {
+			json.Unmarshal([]byte(strategyJSON), &deployment.Strategy)
+		}
+		if resourcesJSON != "" {
+			json.Unmarshal([]byte(resourcesJSON), &deployment.Resources)
+		}
+		if environmentJSON != "" {
+			json.Unmarshal([]byte(environmentJSON), &deployment.Environment)
+		}
+		if appliedAt.Valid {
+			deployment.AppliedAt = &appliedAt.Time
+		}
+		
+		deployments = append(deployments, deployment)
+	}
+	
+	return deployments, nil
+}
+
+// BatchApplyDeployments applies multiple deployments at once
+func (s *Service) BatchApplyDeployments(ctx context.Context, deploymentIDs []string, appliedBy string) map[string]error {
+	results := make(map[string]error)
+	
+	for _, id := range deploymentIDs {
+		err := s.ApplyDeployment(ctx, id, appliedBy)
+		results[id] = err
+	}
+	
+	return results
+}
+
+// Helper methods
+
+// deploymentToGitOpsApp converts a Deployment to GitOps Application
+func (s *Service) deploymentToGitOpsApp(deployment *Deployment) *gitops.Application {
+	return &gitops.Application{
+		ID:           deployment.ID,
+		Name:         deployment.Name,
+		Namespace:    deployment.Namespace,
+		Image:        deployment.Image,
+		Replicas:     int(deployment.Replicas),
+		Resources:    s.resourcesMapFromRequirements(deployment.Resources),
+		Environment:  deployment.Environment,
+		Status:       "Healthy", // Default status
+		CreatedAt:    deployment.CreatedAt,
+	}
+}
+
+// resourcesMapFromRequirements converts ResourceRequirements to map[string]string
+func (s *Service) resourcesMapFromRequirements(req ResourceRequirements) map[string]string {
+	resources := make(map[string]string)
+	if req.Limits.CPU != "" {
+		resources["cpu"] = req.Limits.CPU
+	}
+	if req.Limits.Memory != "" {
+		resources["memory"] = req.Limits.Memory
+	}
+	if req.Requests.CPU != "" {
+		resources["cpu_request"] = req.Requests.CPU
+	}
+	if req.Requests.Memory != "" {
+		resources["memory_request"] = req.Requests.Memory
+	}
+	return resources
 }
