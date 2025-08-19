@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { beforeAll, beforeEach, afterEach, vi } from 'vitest'
+import { beforeAll, afterEach, vi } from 'vitest'
 
 // Mock console methods to reduce noise in tests
 beforeAll(() => {
@@ -11,14 +11,23 @@ beforeAll(() => {
   }
 })
 
-// Mock WebSocket globally
-global.WebSocket = vi.fn().mockImplementation(() => ({
+// Mock WebSocket constructor
+const MockWebSocketConstructor = vi.fn().mockImplementation(() => ({
   close: vi.fn(),
   send: vi.fn(),
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),
-  readyState: WebSocket.CONNECTING,
-}))
+  readyState: 0, // CONNECTING
+})) as any
+
+// Add static constants to the constructor
+MockWebSocketConstructor.CONNECTING = 0
+MockWebSocketConstructor.OPEN = 1
+MockWebSocketConstructor.CLOSING = 2
+MockWebSocketConstructor.CLOSED = 3
+
+// Set as global WebSocket
+global.WebSocket = MockWebSocketConstructor
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
