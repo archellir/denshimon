@@ -366,6 +366,14 @@ describe('Status Utilities', () => {
       errorStatuses.forEach(status => {
         expect(getStatusPriority(status)).toBeLessThanOrEqual(3)
       })
+
+      infoStatuses.forEach(status => {
+        expect(getStatusPriority(status)).toBeGreaterThanOrEqual(1)
+      })
+
+      otherStatuses.forEach(status => {
+        expect(getStatusPriority(status)).toBeGreaterThanOrEqual(1)
+      })
     })
 
     it('should use appropriate icons for status types', () => {

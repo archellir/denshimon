@@ -71,7 +71,7 @@ describe('useWebSocket', () => {
 
   describe('message handling', () => {
     it('should handle incoming data messages', () => {
-      mockSubscribe.mockImplementation((type, onMessage) => {
+      mockSubscribe.mockImplementation((_type, onMessage) => {
         // Simulate receiving a message
         setTimeout(() => {
           onMessage({ cpu: 50, memory: 70 })
@@ -93,7 +93,7 @@ describe('useWebSocket', () => {
     })
 
     it('should handle connection state messages', () => {
-      mockSubscribe.mockImplementation((type, onMessage) => {
+      mockSubscribe.mockImplementation((_type, onMessage) => {
         // Simulate receiving a connection state update
         setTimeout(() => {
           onMessage({
@@ -119,7 +119,7 @@ describe('useWebSocket', () => {
     })
 
     it('should handle error messages', () => {
-      mockSubscribe.mockImplementation((type, onMessage, onError) => {
+      mockSubscribe.mockImplementation((_type, _onMessage, onError) => {
         // Simulate receiving an error
         setTimeout(() => {
           onError(new Error('Connection failed'))
@@ -140,7 +140,7 @@ describe('useWebSocket', () => {
     })
 
     it('should handle non-Error objects as errors', () => {
-      mockSubscribe.mockImplementation((type, onMessage, onError) => {
+      mockSubscribe.mockImplementation((_type, _onMessage, onError) => {
         // Simulate receiving a non-Error object as error
         setTimeout(() => {
           onError('String error message')
@@ -177,7 +177,7 @@ describe('useWebSocket', () => {
     it('should resubscribe when messageType changes', () => {
       mockSubscribe.mockReturnValue('subscription-id')
 
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ messageType }) => useWebSocket(messageType),
         { initialProps: { messageType: WebSocketEventType.METRICS } }
       )
@@ -265,7 +265,7 @@ describe('useWebSocket', () => {
         timestamp: string
       }
 
-      mockSubscribe.mockImplementation((type, onMessage) => {
+      mockSubscribe.mockImplementation((_type, onMessage) => {
         setTimeout(() => {
           onMessage({
             cpu: 75,
@@ -293,11 +293,11 @@ describe('useWebSocket', () => {
 
   describe('multiple subscriptions', () => {
     it('should handle multiple hook instances independently', () => {
-      const { result: result1 } = renderHook(() => 
+      renderHook(() => 
         useWebSocket(WebSocketEventType.METRICS)
       )
 
-      const { result: result2 } = renderHook(() => 
+      renderHook(() => 
         useWebSocket(WebSocketEventType.PODS)
       )
 
@@ -354,8 +354,8 @@ describe('useWebSocket', () => {
       ]
 
       states.forEach(state => {
-        mockSubscribe.mockImplementation((type, onMessage) => {
-          if (type === 'connection') {
+        mockSubscribe.mockImplementation((_type, onMessage) => {
+          if (_type === 'connection') {
             setTimeout(() => {
               onMessage({ state, reconnectAttempts: 0 })
             }, 0)
@@ -376,7 +376,7 @@ describe('useWebSocket', () => {
 
   describe('edge cases', () => {
     it('should handle rapid message updates', () => {
-      mockSubscribe.mockImplementation((type, onMessage) => {
+      mockSubscribe.mockImplementation((_type, onMessage) => {
         // Simulate rapid messages
         setTimeout(() => onMessage({ value: 1 }), 0)
         setTimeout(() => onMessage({ value: 2 }), 5)
@@ -397,10 +397,10 @@ describe('useWebSocket', () => {
     })
 
     it('should clear error on successful message', () => {
-      mockSubscribe.mockImplementation((type, onMessage, onError) => {
+      mockSubscribe.mockImplementation((_type, _onMessage, onError) => {
         // First send error, then success
         setTimeout(() => onError(new Error('Test error')), 0)
-        setTimeout(() => onMessage({ success: true }), 5)
+        setTimeout(() => _onMessage({ success: true }), 5)
         return 'subscription-id'
       })
 
