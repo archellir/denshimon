@@ -253,6 +253,12 @@ func RegisterRoutes(
 	mux.HandleFunc("GET /api/databases/connections/{id}/stats", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetStats)))
 	mux.HandleFunc("GET /api/databases/types", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetSupportedTypes)))
 
+	// Saved queries endpoints (require authentication)
+	mux.HandleFunc("GET /api/databases/saved-queries", corsMiddleware(authService.AuthMiddleware(databaseHandlers.GetSavedQueries)))
+	mux.HandleFunc("POST /api/databases/saved-queries", corsMiddleware(authService.AuthMiddleware(databaseHandlers.CreateSavedQuery)))
+	mux.HandleFunc("PUT /api/databases/saved-queries/{id}", corsMiddleware(authService.AuthMiddleware(databaseHandlers.UpdateSavedQuery)))
+	mux.HandleFunc("DELETE /api/databases/saved-queries/{id}", corsMiddleware(authService.AuthMiddleware(databaseHandlers.DeleteSavedQuery)))
+
 	// Certificate management endpoints (require authentication)
 	mux.HandleFunc("GET /api/certificates", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetCertificates)))
 	mux.HandleFunc("GET /api/certificates/stats", corsMiddleware(authService.AuthMiddleware(certificateHandlers.GetCertificateStats)))

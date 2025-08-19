@@ -183,7 +183,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
   testConnection: async (config) => {
     set({ isLoading: true, error: null, testResult: null });
     try {
-      const response = await apiService.post<TestConnectionResult>(API_ENDPOINTS.DATABASES.CONNECTION_TEST, config, false);
+      const response = await apiService.post<TestConnectionResult>(API_ENDPOINTS.DATABASES.CONNECTION_TEST, config);
       set({ testResult: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to test connection';
@@ -202,7 +202,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.get<DatabaseInfo[]>(API_ENDPOINTS.DATABASES.DATABASES(connectionId), false);
+      const response = await apiService.get<DatabaseInfo[]>(API_ENDPOINTS.DATABASES.DATABASES(connectionId));
       set({ databases: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch databases';
@@ -222,7 +222,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.get<TableInfo[]>(API_ENDPOINTS.DATABASES.TABLES(connectionId, database), false);
+      const response = await apiService.get<TableInfo[]>(API_ENDPOINTS.DATABASES.TABLES(connectionId, database));
       set({ tables: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch tables';
@@ -242,7 +242,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.get<ColumnInfo[]>(API_ENDPOINTS.DATABASES.COLUMNS(connectionId, database, table), false);
+      const response = await apiService.get<ColumnInfo[]>(API_ENDPOINTS.DATABASES.COLUMNS(connectionId, database, table));
       set({ columns: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch columns';
@@ -262,7 +262,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.post<QueryResult>(API_ENDPOINTS.DATABASES.QUERY(connectionId), { sql, limit, offset }, false);
+      const response = await apiService.post<QueryResult>(API_ENDPOINTS.DATABASES.QUERY(connectionId), { sql, limit, offset });
       set({ queryResults: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to execute query';
@@ -281,7 +281,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.get<DatabaseStats>(API_ENDPOINTS.DATABASES.STATS(connectionId), false);
+      const response = await apiService.get<DatabaseStats>(API_ENDPOINTS.DATABASES.STATS(connectionId));
       set({ stats: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch stats';
@@ -299,7 +299,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.get<DatabaseType[]>(API_ENDPOINTS.DATABASES.TYPES, false);
+      const response = await apiService.get<DatabaseType[]>(API_ENDPOINTS.DATABASES.TYPES);
       set({ supportedTypes: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch supported types';
@@ -329,7 +329,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.get<SavedQuery[]>(API_ENDPOINTS.DATABASES.SAVED_QUERIES, false);
+      const response = await apiService.get<SavedQuery[]>(API_ENDPOINTS.DATABASES.SAVED_QUERIES);
       set({ savedQueries: response.data, isLoading: false });
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch saved queries';
@@ -355,7 +355,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.post<SavedQuery>(API_ENDPOINTS.DATABASES.SAVED_QUERIES, query, false);
+      const response = await apiService.post<SavedQuery>(API_ENDPOINTS.DATABASES.SAVED_QUERIES, query);
       const currentQueries = get().savedQueries;
       set({ savedQueries: [...currentQueries, response.data], isLoading: false });
     } catch (error) {
@@ -377,7 +377,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      const response = await apiService.put<SavedQuery>(API_ENDPOINTS.DATABASES.SAVED_QUERY(id), query, false);
+      const response = await apiService.put<SavedQuery>(API_ENDPOINTS.DATABASES.SAVED_QUERY(id), query);
       const currentQueries = get().savedQueries;
       set({ 
         savedQueries: currentQueries.map(q => q.id === id ? response.data : q), 
@@ -402,7 +402,7 @@ const useDatabaseStore = create<DatabaseStore>((set, get) => ({
         return;
       }
 
-      await apiService.delete(API_ENDPOINTS.DATABASES.SAVED_QUERY(id), false);
+      await apiService.delete(API_ENDPOINTS.DATABASES.SAVED_QUERY(id));
       const currentQueries = get().savedQueries;
       set({ 
         savedQueries: currentQueries.filter(q => q.id !== id), 
