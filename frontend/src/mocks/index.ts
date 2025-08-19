@@ -1,4 +1,26 @@
 // Central mock data exports
+// Type-safe master data
+export {
+  MASTER_NAMESPACES,
+  MASTER_NODES,
+  MASTER_APPLICATIONS,
+  MASTER_PODS,
+  MASTER_SERVICES,
+  MASTER_REGISTRIES,
+  MASTER_IMAGES,
+  MASTER_DEPLOYMENTS,
+  getTypedPodsByNamespace,
+  getTypedPodsByNode,
+  getTypedServicesByNamespace,
+  getTypedPodsByApp
+} from './generateTypedMockData';
+
+// Mock data validation
+export {
+  validateAllMockData,
+  checkMockDataInDev,
+  isValidMockData
+} from './validateMockData';
 export { mockNodes } from './k8s/nodes';
 export { mockPods } from './k8s/pods';
 export { mockNamespaces } from './k8s/namespaces';
