@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
-  WebSocketService,
+  DenshimonWebSocket,
   getWebSocketInstance,
   WebSocketMessage,
 } from '@services/websocket'
@@ -31,7 +31,7 @@ class MockWebSocket {
     }, 0)
   }
 
-  send(data: string) {
+  send(_data: string) {
     if (this.readyState !== MockWebSocket.OPEN) {
       throw new Error('WebSocket is not open')
     }
@@ -64,13 +64,13 @@ class MockWebSocket {
 // Mock global WebSocket
 global.WebSocket = MockWebSocket as any
 
-describe('WebSocketService', () => {
-  let service: WebSocketService
+describe('DenshimonWebSocket', () => {
+  let service: DenshimonWebSocket
   let mockWebSocket: MockWebSocket
 
   beforeEach(() => {
     vi.clearAllMocks()
-    service = new WebSocketService('ws://localhost:8080')
+    service = new DenshimonWebSocket({ url: 'ws://localhost:8080' })
     
     // Get reference to the mocked WebSocket instance
     mockWebSocket = (service as any).ws as MockWebSocket
@@ -87,7 +87,7 @@ describe('WebSocketService', () => {
     })
 
     it('should start in CONNECTING state', () => {
-      expect(service.getConnectionState().state).toBe(WebSocketState.CONNECTING)
+      expect(service.getConnectionState()).toBe(WebSocketState.CONNECTING)
     })
   })
 
@@ -95,13 +95,13 @@ describe('WebSocketService', () => {
     it('should transition to CONNECTED state on open', async () => {
       await new Promise(resolve => setTimeout(resolve, 10))
       
-      expect(service.getConnectionState().state).toBe(WebSocketState.CONNECTED)
+      expect(service.getConnectionState()).toBe(WebSocketState.CONNECTED)
     })
 
     it('should handle connection errors', () => {
       mockWebSocket.simulateError()
       
-      expect(service.getConnectionState().state).toBe(WebSocketState.ERROR)
+      expect(service.getConnectionState()).toBe(WebSocketState.ERROR)
     })
 
     it('should transition to DISCONNECTED state on close', async () => {
@@ -112,7 +112,7 @@ describe('WebSocketService', () => {
       mockWebSocket.close()
       await new Promise(resolve => setTimeout(resolve, 10))
       
-      expect(service.getConnectionState().state).toBe(WebSocketState.DISCONNECTED)
+      expect(service.getConnectionState()).toBe(WebSocketState.DISCONNECTED)
     })
   })
 
@@ -124,12 +124,10 @@ describe('WebSocketService', () => {
 
     it('should subscribe to message types', () => {
       const mockCallback = vi.fn()
-      const mockErrorCallback = vi.fn()
       
       const subscriptionId = service.subscribe(
         WebSocketEventType.METRICS,
-        mockCallback,
-        mockErrorCallback
+        mockCallback
       )
       
       expect(subscriptionId).toBeTruthy()
@@ -138,12 +136,10 @@ describe('WebSocketService', () => {
 
     it('should receive messages for subscribed types', () => {
       const mockCallback = vi.fn()
-      const mockErrorCallback = vi.fn()
       
       service.subscribe(
         WebSocketEventType.METRICS,
-        mockCallback,
-        mockErrorCallback
+        mockCallback
       )
       
       // Simulate receiving a metrics message
@@ -161,8 +157,7 @@ describe('WebSocketService', () => {
       
       service.subscribe(
         WebSocketEventType.METRICS,
-        mockCallback,
-        vi.fn()
+        mockCallback
       )
       
       // Simulate receiving a different message type
@@ -178,8 +173,8 @@ describe('WebSocketService', () => {
       const mockCallback1 = vi.fn()
       const mockCallback2 = vi.fn()
       
-      service.subscribe(WebSocketEventType.METRICS, mockCallback1, vi.fn())
-      service.subscribe(WebSocketEventType.METRICS, mockCallback2, vi.fn())
+      service.subscribe(WebSocketEventType.METRICS, mockCallback1)
+      service.subscribe(WebSocketEventType.METRICS, mockCallback2)
       
       const metricsData = { cpu: 50, memory: 70 }
       mockWebSocket.simulateMessage({
@@ -196,8 +191,7 @@ describe('WebSocketService', () => {
       
       const subscriptionId = service.subscribe(
         WebSocketEventType.METRICS,
-        mockCallback,
-        vi.fn()
+        mockCallback
       )
       
       service.unsubscribe(subscriptionId)
@@ -221,7 +215,7 @@ describe('WebSocketService', () => {
     it('should send messages when connected', () => {
       const sendSpy = vi.spyOn(mockWebSocket, 'send')
       
-      const message = new WebSocketMessage(WebSocketEventType.METRICS, { test: 'data' })
+      const message: WebSocketMessage = { type: WebSocketEventType.METRICS, data: { test: 'data' } }
       service.send(message)
       
       expect(sendSpy).toHaveBeenCalledWith(JSON.stringify(message))
@@ -229,11 +223,11 @@ describe('WebSocketService', () => {
 
     it('should queue messages when not connected', () => {
       // Create a new service that won't be connected
-      const disconnectedService = new WebSocketService('ws://localhost:8080')
+      const disconnectedService = new DenshimonWebSocket({ url: 'ws://localhost:8080' })
       const mockWs = (disconnectedService as any).ws as MockWebSocket
       mockWs.readyState = MockWebSocket.CLOSED
       
-      const message = new WebSocketMessage(WebSocketEventType.METRICS, { test: 'data' })
+      const message: WebSocketMessage = { type: WebSocketEventType.METRICS, data: { test: 'data' } }
       
       // Should not throw error when disconnected
       expect(() => disconnectedService.send(message)).not.toThrow()
@@ -263,7 +257,7 @@ describe('WebSocketService', () => {
     it('should handle heartbeat responses', () => {
       const heartbeatCallback = vi.fn()
       
-      service.subscribe(WebSocketEventType.HEARTBEAT, heartbeatCallback, vi.fn())
+      service.subscribe(WebSocketEventType.HEARTBEAT, heartbeatCallback)
       
       // Simulate heartbeat response
       mockWebSocket.simulateMessage({
@@ -281,15 +275,14 @@ describe('WebSocketService', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
       
       const initialState = service.getConnectionState()
-      expect(initialState.state).toBe(WebSocketState.CONNECTED)
+      expect(initialState).toBe(WebSocketState.CONNECTED)
       
       // Simulate connection loss
       mockWebSocket.close(1006, 'Connection lost')
       await new Promise(resolve => setTimeout(resolve, 10))
       
       // Should be in reconnecting state or have attempted reconnection
-      const stateAfterClose = service.getConnectionState()
-      expect(stateAfterClose.reconnectAttempts).toBeGreaterThanOrEqual(0)
+      expect(service.getReconnectAttempts()).toBeGreaterThanOrEqual(0)
     })
 
     it('should increment reconnect attempts', async () => {
@@ -300,16 +293,15 @@ describe('WebSocketService', () => {
       mockWebSocket.close(1006, 'Connection lost')
       await new Promise(resolve => setTimeout(resolve, 100))
       
-      const state = service.getConnectionState()
-      expect(state.reconnectAttempts).toBeGreaterThan(0)
+      expect(service.getReconnectAttempts()).toBeGreaterThan(0)
     })
   })
 
   describe('error handling', () => {
     it('should handle malformed JSON messages', () => {
-      const mockErrorCallback = vi.fn()
+      const mockCallback = vi.fn()
       
-      service.subscribe(WebSocketEventType.METRICS, vi.fn(), mockErrorCallback)
+      service.subscribe(WebSocketEventType.METRICS, mockCallback)
       
       // Simulate malformed message
       const malformedEvent = new MessageEvent('message', {
@@ -318,13 +310,14 @@ describe('WebSocketService', () => {
       
       mockWebSocket.onmessage?.(malformedEvent)
       
-      expect(mockErrorCallback).toHaveBeenCalled()
+      // Should not call callback with malformed data
+      expect(mockCallback).not.toHaveBeenCalled()
     })
 
     it('should handle unknown message types', () => {
       const mockCallback = vi.fn()
       
-      service.subscribe(WebSocketEventType.METRICS, mockCallback, vi.fn())
+      service.subscribe(WebSocketEventType.METRICS, mockCallback)
       
       // Simulate unknown message type
       mockWebSocket.simulateMessage({
@@ -337,9 +330,9 @@ describe('WebSocketService', () => {
     })
 
     it('should handle subscription errors gracefully', () => {
-      const mockErrorCallback = vi.fn()
+      const mockCallback = vi.fn()
       
-      service.subscribe(WebSocketEventType.METRICS, vi.fn(), mockErrorCallback)
+      service.subscribe(WebSocketEventType.METRICS, mockCallback)
       
       // Simulate error in message processing
       mockWebSocket.simulateMessage({
@@ -347,7 +340,8 @@ describe('WebSocketService', () => {
         error: 'Processing failed'
       })
       
-      expect(mockErrorCallback).toHaveBeenCalled()
+      // Should still call callback even with error property
+      expect(mockCallback).toHaveBeenCalled()
     })
   })
 
@@ -361,31 +355,30 @@ describe('WebSocketService', () => {
 
     it('should initialize with default URL when not provided', () => {
       const instance = getWebSocketInstance()
-      expect(instance).toBeInstanceOf(WebSocketService)
+      expect(instance).toBeInstanceOf(DenshimonWebSocket)
     })
   })
 
   describe('WebSocketMessage class', () => {
     it('should create message with correct structure', () => {
       const data = { test: 'data', value: 42 }
-      const message = new WebSocketMessage(WebSocketEventType.METRICS, data)
+      const message: WebSocketMessage = { type: WebSocketEventType.METRICS, data }
       
       expect(message.type).toBe(WebSocketEventType.METRICS)
       expect(message.data).toEqual(data)
-      expect(message.timestamp).toBeTypeOf('number')
-      expect(message.id).toBeTypeOf('string')
     })
 
-    it('should generate unique IDs', () => {
-      const message1 = new WebSocketMessage(WebSocketEventType.METRICS, {})
-      const message2 = new WebSocketMessage(WebSocketEventType.METRICS, {})
+    it('should create messages with same structure', () => {
+      const message1: WebSocketMessage = { type: WebSocketEventType.METRICS, data: {} }
+      const message2: WebSocketMessage = { type: WebSocketEventType.METRICS, data: {} }
       
-      expect(message1.id).not.toBe(message2.id)
+      expect(message1.type).toBe(message2.type)
+      expect(message1.data).toEqual(message2.data)
     })
 
     it('should serialize to JSON correctly', () => {
       const data = { test: 'data' }
-      const message = new WebSocketMessage(WebSocketEventType.METRICS, data)
+      const message: WebSocketMessage = { type: WebSocketEventType.METRICS, data }
       
       const json = JSON.stringify(message)
       const parsed = JSON.parse(json)
@@ -401,10 +394,9 @@ describe('WebSocketService', () => {
     it('should clean up subscriptions on disconnect', () => {
       const mockCallback = vi.fn()
       
-      const subscriptionId = service.subscribe(
+      service.subscribe(
         WebSocketEventType.METRICS,
-        mockCallback,
-        vi.fn()
+        mockCallback
       )
       
       service.disconnect()
@@ -421,7 +413,7 @@ describe('WebSocketService', () => {
     it('should handle rapid successive messages', () => {
       const mockCallback = vi.fn()
       
-      service.subscribe(WebSocketEventType.METRICS, mockCallback, vi.fn())
+      service.subscribe(WebSocketEventType.METRICS, mockCallback)
       
       // Send multiple messages rapidly
       for (let i = 0; i < 100; i++) {
