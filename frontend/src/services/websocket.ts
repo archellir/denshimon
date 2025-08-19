@@ -197,6 +197,10 @@ export class DenshimonWebSocket {
     return this.connectionState;
   }
 
+  public getReconnectAttempts(): number {
+    return this.reconnectAttempts;
+  }
+
   public disconnect(): void {
     this.stopHeartbeat();
     if (this.ws) {
