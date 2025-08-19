@@ -8,12 +8,14 @@ export const mockRegistries: Registry[] = MASTER_REGISTRIES.map(registry => ({
   type: registry.type,
   status: registry.status,
   config: {
-    url: registry.url,
-    namespace: registry.namespace,
+    url: (registry as any).url,
+    username: (registry as any).username,
+    password: (registry as any).password,
+    token: (registry as any).token,
   },
-  error: 'error' in registry ? registry.error : undefined,
-  createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 30 days
-  updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 7 days
+  error: (registry as any).description?.includes('authentication') ? (registry as any).description : undefined,
+  createdAt: (registry as any).created,
+  updatedAt: (registry as any).lastTested,
 }));
 
 export const generateMockRegistryTest = (registryId: string) => {
