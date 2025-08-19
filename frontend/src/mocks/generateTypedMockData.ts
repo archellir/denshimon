@@ -7,9 +7,7 @@ import {
   RegistryType, 
   RegistryStatus, 
   DeploymentStatus, 
-  PodStatus, 
-  Status,
-  LogLevel 
+  Status
 } from '@constants';
 import type { 
   Application,
@@ -18,15 +16,9 @@ import type {
   Registry,
   ContainerImage,
   Deployment,
-  DatabaseConnection,
-  LogEntry,
-  ServiceHealth,
-  Certificate,
-  BackupJob,
-  DeploymentHistory,
   MasterNamespace,
   MasterNode
-} from '@types/mockData';
+} from '@/types/mockData';
 
 // ==================== CORE INFRASTRUCTURE ====================
 
@@ -127,82 +119,9 @@ export const TYPED_PODS: readonly Pod[] = [
 ] as const;
 
 // ==================== SERVICES ====================
-
-export const TYPED_SERVICES: readonly Service[] = [
-  {
-    name: 'kubernetes',
-    namespace: 'default',
-    type: 'ClusterIP',
-    ports: [{ port: 443, targetPort: 6443, protocol: 'TCP' }],
-    selector: { component: 'apiserver', provider: 'kubernetes' },
-    clusterIP: '10.43.0.1'
-  },
-  {
-    name: 'kube-dns',
-    namespace: 'kube-system',
-    type: 'ClusterIP',
-    ports: [
-      { port: 53, targetPort: 53, protocol: 'UDP' },
-      { port: 53, targetPort: 53, protocol: 'TCP' }
-    ],
-    selector: { 'k8s-app': 'kube-dns' },
-    clusterIP: '10.43.0.10'
-  },
-  {
-    name: 'nginx-service',
-    namespace: 'default',
-    type: 'LoadBalancer',
-    ports: [{ port: 80, targetPort: 80, protocol: 'TCP' }],
-    selector: { app: 'nginx' }
-  },
-  {
-    name: 'api-gateway',
-    namespace: 'production',
-    type: 'ClusterIP',
-    ports: [{ port: 8080, targetPort: 8080, protocol: 'TCP' }],
-    selector: { app: 'api-server' },
-    clusterIP: '10.43.1.5'
-  },
-  {
-    name: 'redis-service',
-    namespace: 'production',
-    type: 'ClusterIP',
-    ports: [{ port: 6379, targetPort: 6379, protocol: 'TCP' }],
-    selector: { app: 'redis' },
-    clusterIP: '10.43.1.10'
-  },
-  {
-    name: 'postgres-service',
-    namespace: 'production',
-    type: 'ClusterIP',
-    ports: [{ port: 5432, targetPort: 5432, protocol: 'TCP' }],
-    selector: { app: 'postgres' },
-    clusterIP: '10.43.1.15'
-  },
-  {
-    name: 'frontend-service',
-    namespace: 'default',
-    type: 'NodePort',
-    ports: [{ port: 80, targetPort: 3000, protocol: 'TCP' }],
-    selector: { app: 'frontend' }
-  },
-  {
-    name: 'grafana-service',
-    namespace: 'monitoring',
-    type: 'ClusterIP',
-    ports: [{ port: 3000, targetPort: 3000, protocol: 'TCP' }],
-    selector: { app: 'grafana' },
-    clusterIP: '10.43.2.5'
-  },
-  {
-    name: 'prometheus-service',
-    namespace: 'monitoring',
-    type: 'ClusterIP',
-    ports: [{ port: 9090, targetPort: 9090, protocol: 'TCP' }],
-    selector: { app: 'prometheus' },
-    clusterIP: '10.43.2.10'
-  },
-] as const;
+// Re-export the services from masterData (they already have serviceType)
+import { MASTER_SERVICES as TYPED_SERVICES } from './masterData';
+export { TYPED_SERVICES };
 
 // ==================== REGISTRIES ====================
 

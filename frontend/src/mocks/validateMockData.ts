@@ -3,10 +3,8 @@
  * This ensures all mock data conforms to the defined TypeScript types and Zod schemas
  */
 
-import { validateMockData } from '@types/mockData';
+import { validateMockData } from '@/types/mockData';
 import { 
-  MASTER_NAMESPACES, 
-  MASTER_NODES, 
   MASTER_APPLICATIONS, 
   MASTER_PODS, 
   MASTER_SERVICES,
