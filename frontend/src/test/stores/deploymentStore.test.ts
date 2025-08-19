@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
-import { useDeploymentStore } from '@stores/deploymentStore'
-import { RegistryStatus } from '@constants'
-import type { Registry, ContainerImage, Deployment, DeploymentRequest } from '@types/deployments'
+import useDeploymentStore from '@stores/deploymentStore'
+import { RegistryStatus, RegistryType, DeploymentStatus } from '@constants'
+import type { Registry, ContainerImage, Deployment, DeploymentRequest } from '@/types/deployments'
 
 // Mock the API service
 vi.mock('@services/api', () => ({
@@ -89,16 +89,17 @@ describe('DeploymentStore', () => {
         {
           id: '1',
           name: 'DockerHub',
-          type: 'dockerhub',
-          url: 'https://registry-1.docker.io',
-          namespace: '',
+          type: RegistryType.DOCKERHUB,
+          config: {
+            url: 'https://registry-1.docker.io',
+          },
           status: RegistryStatus.CONNECTED,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       ]
 
-      vi.mocked(apiService.get).mockResolvedValue({ data: mockRegistries })
+      vi.mocked(apiService.get).mockResolvedValue({ success: true, data: mockRegistries })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -129,22 +130,27 @@ describe('DeploymentStore', () => {
     it('should add registry successfully', async () => {
       const newRegistry = {
         name: 'New Registry',
-        type: 'generic' as const,
-        url: 'https://new-registry.com',
-        namespace: '',
-        username: 'user',
-        password: 'pass',
+        type: RegistryType.GENERIC,
+        config: {
+          url: 'https://new-registry.com',
+          namespace: '',
+          username: 'user',
+          password: 'pass',
+        },
+        status: RegistryStatus.PENDING,
       }
 
       const createdRegistry: Registry = {
         id: '2',
-        ...newRegistry,
-        status: RegistryStatus.PENDING,
+        name: newRegistry.name,
+        type: newRegistry.type,
+        config: newRegistry.config,
+        status: newRegistry.status,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
-      vi.mocked(apiService.post).mockResolvedValue({ data: createdRegistry })
+      vi.mocked(apiService.post).mockResolvedValue({ success: true, data: createdRegistry })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -161,15 +167,16 @@ describe('DeploymentStore', () => {
       const registry: Registry = {
         id: '1',
         name: 'Test Registry',
-        type: 'dockerhub',
-        url: 'https://registry.com',
-        namespace: '',
+        type: RegistryType.DOCKERHUB,
+        config: {
+          url: 'https://registry.com',
+        },
         status: RegistryStatus.CONNECTED,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
-      vi.mocked(apiService.delete).mockResolvedValue({})
+      vi.mocked(apiService.delete).mockResolvedValue({ success: true, data: {} })
 
       const { result } = renderHook(() => useDeploymentStore())
       
@@ -187,7 +194,7 @@ describe('DeploymentStore', () => {
     })
 
     it('should test registry connection', async () => {
-      vi.mocked(apiService.post).mockResolvedValue({ data: { connected: true } })
+      vi.mocked(apiService.post).mockResolvedValue({ success: true, data: { connected: true } })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -204,18 +211,18 @@ describe('DeploymentStore', () => {
     it('should fetch images successfully', async () => {
       const mockImages: ContainerImage[] = [
         {
-          id: '1',
-          name: 'nginx',
-          tag: 'latest',
           registry: 'dockerhub',
-          size: '100MB',
-          created: new Date().toISOString(),
+          repository: 'library/nginx',
+          tag: 'latest',
           digest: 'sha256:abc123',
+          size: 104857600, // 100MB in bytes
+          created: new Date().toISOString(),
           platform: 'linux/amd64',
+          fullName: 'docker.io/library/nginx:latest',
         },
       ]
 
-      vi.mocked(apiService.get).mockResolvedValue({ data: mockImages })
+      vi.mocked(apiService.get).mockResolvedValue({ success: true, data: mockImages })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -234,18 +241,18 @@ describe('DeploymentStore', () => {
     it('should search images with filter', async () => {
       const mockImages: ContainerImage[] = [
         {
-          id: '1',
-          name: 'nginx',
-          tag: 'latest',
           registry: 'dockerhub',
-          size: '100MB',
-          created: new Date().toISOString(),
+          repository: 'library/nginx',
+          tag: 'latest',
           digest: 'sha256:abc123',
+          size: 104857600, // 100MB in bytes
+          created: new Date().toISOString(),
           platform: 'linux/amd64',
+          fullName: 'docker.io/library/nginx:latest',
         },
       ]
 
-      vi.mocked(apiService.get).mockResolvedValue({ data: mockImages })
+      vi.mocked(apiService.get).mockResolvedValue({ success: true, data: mockImages })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -266,14 +273,25 @@ describe('DeploymentStore', () => {
           name: 'test-app',
           namespace: 'default',
           image: 'nginx:latest',
+          registryId: 'registry-1',
           replicas: 3,
-          status: 'running',
+          availableReplicas: 3,
+          readyReplicas: 3,
+          updatedReplicas: 3,
+          strategy: {
+            type: 'RollingUpdate' as any,
+            nodeSpread: false,
+            zoneSpread: false,
+          },
+          status: DeploymentStatus.RUNNING,
+          pods: [],
+          nodeDistribution: {},
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       ]
 
-      vi.mocked(apiService.get).mockResolvedValue({ data: mockDeployments })
+      vi.mocked(apiService.get).mockResolvedValue({ success: true, data: mockDeployments })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -300,13 +318,28 @@ describe('DeploymentStore', () => {
 
       const createdDeployment: Deployment = {
         id: '2',
-        ...deploymentRequest,
-        status: 'pending',
+        name: deploymentRequest.name,
+        namespace: deploymentRequest.namespace,
+        image: deploymentRequest.image,
+        registryId: deploymentRequest.registryId || 'default-registry',
+        replicas: deploymentRequest.replicas,
+        availableReplicas: 0,
+        readyReplicas: 0,
+        updatedReplicas: 0,
+        strategy: deploymentRequest.strategy || {
+          type: 'RollingUpdate' as any,
+          nodeSpread: false,
+          zoneSpread: false,
+        },
+        resources: deploymentRequest.resources,
+        status: DeploymentStatus.PENDING,
+        pods: [],
+        nodeDistribution: {},
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
-      vi.mocked(apiService.post).mockResolvedValue({ data: createdDeployment })
+      vi.mocked(apiService.post).mockResolvedValue({ success: true, data: createdDeployment })
 
       const { result } = renderHook(() => useDeploymentStore())
 
@@ -325,15 +358,26 @@ describe('DeploymentStore', () => {
         name: 'test-app',
         namespace: 'default',
         image: 'nginx:latest',
+        registryId: 'registry-1',
         replicas: 3,
-        status: 'running',
+        availableReplicas: 3,
+        readyReplicas: 3,
+        updatedReplicas: 3,
+        strategy: {
+          type: 'RollingUpdate' as any,
+          nodeSpread: false,
+          zoneSpread: false,
+        },
+        status: DeploymentStatus.RUNNING,
+        pods: [],
+        nodeDistribution: {},
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
       const updatedDeployment = { ...deployment, replicas: 5 }
 
-      vi.mocked(apiService.put).mockResolvedValue({ data: updatedDeployment })
+      vi.mocked(apiService.put).mockResolvedValue({ success: true, data: updatedDeployment })
 
       const { result } = renderHook(() => useDeploymentStore())
       
@@ -356,13 +400,24 @@ describe('DeploymentStore', () => {
         name: 'test-app',
         namespace: 'default',
         image: 'nginx:latest',
+        registryId: 'registry-1',
         replicas: 3,
-        status: 'running',
+        availableReplicas: 3,
+        readyReplicas: 3,
+        updatedReplicas: 3,
+        strategy: {
+          type: 'RollingUpdate' as any,
+          nodeSpread: false,
+          zoneSpread: false,
+        },
+        status: DeploymentStatus.RUNNING,
+        pods: [],
+        nodeDistribution: {},
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
 
-      vi.mocked(apiService.delete).mockResolvedValue({})
+      vi.mocked(apiService.delete).mockResolvedValue({ success: true, data: {} })
 
       const { result } = renderHook(() => useDeploymentStore())
       
@@ -420,8 +475,19 @@ describe('DeploymentStore', () => {
           name: 'app-1',
           namespace: 'default',
           image: 'nginx:latest',
+          registryId: 'registry-1',
           replicas: 3,
-          status: 'running',
+          availableReplicas: 3,
+          readyReplicas: 3,
+          updatedReplicas: 3,
+          strategy: {
+            type: 'RollingUpdate' as any,
+            nodeSpread: false,
+            zoneSpread: false,
+          },
+          status: DeploymentStatus.RUNNING,
+          pods: [],
+          nodeDistribution: {},
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -430,8 +496,19 @@ describe('DeploymentStore', () => {
           name: 'app-2',
           namespace: 'production',
           image: 'nginx:latest',
+          registryId: 'registry-1',
           replicas: 3,
-          status: 'running',
+          availableReplicas: 3,
+          readyReplicas: 3,
+          updatedReplicas: 3,
+          strategy: {
+            type: 'RollingUpdate' as any,
+            nodeSpread: false,
+            zoneSpread: false,
+          },
+          status: DeploymentStatus.RUNNING,
+          pods: [],
+          nodeDistribution: {},
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -455,24 +532,24 @@ describe('DeploymentStore', () => {
     it('should filter images by search term', () => {
       const images: ContainerImage[] = [
         {
-          id: '1',
-          name: 'nginx',
-          tag: 'latest',
           registry: 'dockerhub',
-          size: '100MB',
-          created: new Date().toISOString(),
+          repository: 'library/nginx',
+          tag: 'latest',
           digest: 'sha256:abc123',
+          size: 104857600, // 100MB in bytes
+          created: new Date().toISOString(),
           platform: 'linux/amd64',
+          fullName: 'docker.io/library/nginx:latest',
         },
         {
-          id: '2',
-          name: 'apache',
-          tag: 'latest',
           registry: 'dockerhub',
-          size: '200MB',
-          created: new Date().toISOString(),
+          repository: 'library/apache',
+          tag: 'latest',
           digest: 'sha256:def456',
+          size: 209715200, // 200MB in bytes
+          created: new Date().toISOString(),
           platform: 'linux/amd64',
+          fullName: 'docker.io/library/apache:latest',
         },
       ]
 
@@ -484,11 +561,11 @@ describe('DeploymentStore', () => {
       })
 
       const filteredImages = result.current.images.filter(
-        img => img.name.toLowerCase().includes(result.current.imageFilter.toLowerCase())
+        img => img.repository.toLowerCase().includes(result.current.imageFilter.toLowerCase())
       )
 
       expect(filteredImages).toHaveLength(1)
-      expect(filteredImages[0].name).toBe('nginx')
+      expect(filteredImages[0].repository).toBe('library/nginx')
     })
   })
 
@@ -516,7 +593,7 @@ describe('DeploymentStore', () => {
       })
 
       // Mock successful response
-      vi.mocked(apiService.get).mockResolvedValue({ data: [] })
+      vi.mocked(apiService.get).mockResolvedValue({ success: true, data: [] })
 
       await act(async () => {
         await result.current.fetchRegistries()
@@ -530,7 +607,7 @@ describe('DeploymentStore', () => {
     it('should set loading state during async operations', async () => {
       // Mock a delayed response
       vi.mocked(apiService.get).mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve({ data: [] }), 100))
+        new Promise(resolve => setTimeout(() => resolve({ success: true, data: [] }), 100))
       )
 
       const { result } = renderHook(() => useDeploymentStore())
