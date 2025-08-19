@@ -7,7 +7,14 @@ export * from './database';
 export * from './deployments';
 export * from './serviceMesh';
 export * from './common';
-export * from './mockData';
+// Export specific types from mockData to avoid conflicts
+export type { 
+  MasterNamespace, 
+  MasterNode, 
+  Application, 
+  Pod, 
+  Service 
+} from './mockData';
 
 // Re-export enums from constants
 export { 
