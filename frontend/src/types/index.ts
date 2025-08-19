@@ -7,6 +7,7 @@ export * from './database';
 export * from './deployments';
 export * from './serviceMesh';
 export * from './common';
+export * from './mockData';
 
 // Re-export enums from constants
 export { 
