@@ -130,7 +130,7 @@ async function searchAllResources(query: string): Promise<SearchResult[]> {
     namespaces: MASTER_NAMESPACES.map(name => ({ name })),
     deployments: MASTER_DEPLOYMENTS.map(deployment => ({ name: deployment.name, namespace: deployment.namespace })),
     endpoints: MASTER_ENDPOINTS.map(endpoint => ({ name: endpoint.name, service: endpoint.service })),
-    registries: MASTER_REGISTRIES.map(registry => ({ name: registry.name, type: registry.type, url: registry.url })),
+    registries: MASTER_REGISTRIES.map(registry => ({ name: registry.name, type: registry.type, url: registry.config.url })),
     images: MASTER_IMAGES.map(image => ({ repository: image.repository, tag: image.tag, registry: image.registry })),
   };
 

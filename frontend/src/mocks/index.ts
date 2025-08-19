@@ -8,7 +8,11 @@ export {
   MASTER_SERVICES,
   MASTER_REGISTRIES,
   MASTER_IMAGES,
-  MASTER_DEPLOYMENTS,
+  MASTER_DEPLOYMENTS
+} from './masterData';
+
+// Helper functions
+export {
   getTypedPodsByNamespace,
   getTypedPodsByNode,
   getTypedServicesByNamespace,
