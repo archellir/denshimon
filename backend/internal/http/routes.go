@@ -359,7 +359,6 @@ func RegisterRoutes(
 		}
 	}))))
 
-
 	// WebSocket endpoint for real-time updates
 	wsHandler := websocket.NewHandler(wsHub)
 	mux.HandleFunc("GET /ws", wsHandler.HandleWebSocket)

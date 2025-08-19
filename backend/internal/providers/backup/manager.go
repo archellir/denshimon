@@ -273,33 +273,11 @@ func (m *Manager) GetHistory(jobID string) ([]*History, error) {
 	return history, nil
 }
 
-// GetStorage returns storage backend information
+// GetStorage returns storage backend information from real storage providers
 func (m *Manager) GetStorage() ([]*Storage, error) {
-	// For now, return mock data as this would typically integrate with actual storage backends
-	return []*Storage{
-		{
-			ID:          "storage-local",
-			Name:        "Local Storage",
-			Type:        StorageTypeLocal,
-			Location:    "/var/backups",
-			Available:   107374182400, // 100GB
-			Used:        64424509440,  // 60GB
-			Total:       171798691840, // 160GB
-			BackupCount: 42,
-			Status:      StorageStatusAvailable,
-		},
-		{
-			ID:          "storage-s3",
-			Name:        "S3 Backup Bucket",
-			Type:        StorageTypeS3,
-			Location:    "s3://backups",
-			Available:   5497558138880, // 5TB
-			Used:        1099511627776, // 1TB
-			Total:       6597069766656, // 6TB
-			BackupCount: 128,
-			Status:      StorageStatusAvailable,
-		},
-	}, nil
+	// TODO: Integrate with actual storage backends (local filesystem, S3, etc.)
+	// For now, return empty slice - frontend will handle mock data when needed
+	return []*Storage{}, nil
 }
 
 // GetStatistics returns backup system statistics
@@ -363,26 +341,8 @@ func (m *Manager) GetStatistics() (*Statistics, error) {
 		}
 	}
 
-	// Generate mock trend data for the last 7 days
-	stats.DailyBackupTrend = []BackupTrend{
-		{Date: "2024-01-14", Successful: 12, Failed: 1, TotalSize: 107374182400},
-		{Date: "2024-01-15", Successful: 11, Failed: 0, TotalSize: 96636764160},
-		{Date: "2024-01-16", Successful: 12, Failed: 0, TotalSize: 112742891520},
-		{Date: "2024-01-17", Successful: 10, Failed: 2, TotalSize: 85899345920},
-		{Date: "2024-01-18", Successful: 12, Failed: 0, TotalSize: 118111600640},
-		{Date: "2024-01-19", Successful: 11, Failed: 1, TotalSize: 102005473280},
-		{Date: "2024-01-20", Successful: 9, Failed: 1, TotalSize: 91268055040},
-	}
-
-	stats.StorageUsageTrend = []StorageTrend{
-		{Date: "2024-01-14", Used: 1900000000000, Available: 4600000000000},
-		{Date: "2024-01-15", Used: 1920000000000, Available: 4580000000000},
-		{Date: "2024-01-16", Used: 1950000000000, Available: 4550000000000},
-		{Date: "2024-01-17", Used: 1980000000000, Available: 4520000000000},
-		{Date: "2024-01-18", Used: 2000000000000, Available: 4500000000000},
-		{Date: "2024-01-19", Used: 2020000000000, Available: 4480000000000},
-		{Date: "2024-01-20", Used: 2044723306097, Available: 4455276693903},
-	}
+	// Trend data would come from real backup history analysis
+	// Frontend will generate mock trends when needed for development
 
 	return stats, nil
 }

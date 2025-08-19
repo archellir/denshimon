@@ -234,8 +234,8 @@ func (s *Service) VerifyPassword(hashedPassword, password string) error {
 // User authentication using database
 func (s *Service) AuthenticateUser(username, password string) (*User, error) {
 	if s.db == nil {
-		// Fallback to demo users if no database
-		return s.authenticateDemoUser(username, password)
+		// No database available - authentication not possible
+		return nil, errors.New("database connection unavailable - authentication disabled")
 	}
 
 	// Get user from database
@@ -260,42 +260,7 @@ func (s *Service) AuthenticateUser(username, password string) (*User, error) {
 	}, nil
 }
 
-// Demo authentication fallback for development
-func (s *Service) authenticateDemoUser(username, password string) (*User, error) {
-	// Demo users for testing
-	users := map[string]*User{
-		"admin": {
-			ID:       "1",
-			Username: "admin",
-			Role:     "admin",
-			Scopes:   []string{"pods:*", "deployments:*", "gitops:*", "logs:*", "metrics:*"},
-		},
-		"operator": {
-			ID:       "2",
-			Username: "operator",
-			Role:     "operator",
-			Scopes:   []string{"pods:read", "pods:update", "deployments:read", "deployments:update", "gitops:read", "gitops:sync", "logs:read", "metrics:read"},
-		},
-		"viewer": {
-			ID:       "3",
-			Username: "viewer",
-			Role:     "viewer",
-			Scopes:   []string{"pods:read", "deployments:read", "gitops:read", "logs:read", "metrics:read"},
-		},
-	}
-
-	// Demo password check (all demo users use "password")
-	if password != "password" {
-		return nil, ErrUnauthorized
-	}
-
-	user, exists := users[username]
-	if !exists {
-		return nil, ErrUnauthorized
-	}
-
-	return user, nil
-}
+// Demo authentication removed - all authentication now requires proper database
 
 // User management methods
 func (s *Service) CreateUser(username, password, role string) (*User, error) {

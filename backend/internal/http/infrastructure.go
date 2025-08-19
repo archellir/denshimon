@@ -31,57 +31,14 @@ func NewInfrastructureHandlers() *InfrastructureHandlers {
 		alerts: make(map[string]*InfrastructureAlert),
 	}
 	
-	// Initialize with mock alerts
-	h.initMockAlerts()
+	// Note: Alerts should be populated from real infrastructure monitoring
+	// Mock alerts removed - frontend will handle mock data when needed
 	
 	return h
 }
 
-// initMockAlerts initializes the handler with mock infrastructure alerts
-func (h *InfrastructureHandlers) initMockAlerts() {
-	mockAlerts := []*InfrastructureAlert{
-		{
-			ID:           "fb-storage-alert",
-			Type:         "service",
-			Severity:     "warning",
-			Message:      "Filebrowser storage usage approaching 80% capacity",
-			Timestamp:    time.Now().Add(-2 * time.Hour),
-			Acknowledged: false,
-			Source:       "filebrowser-service",
-		},
-		{
-			ID:           "memos-sync-alert",
-			Type:         "service",
-			Severity:     "warning",
-			Message:      "Memos note synchronization running slower than usual",
-			Timestamp:    time.Now().Add(-20 * time.Minute),
-			Acknowledged: false,
-			Source:       "memos-service",
-		},
-		{
-			ID:           "uptime-monitor-alert",
-			Type:         "service",
-			Severity:     "critical",
-			Message:      "Uptime Kuma reports external service monitor down",
-			Timestamp:    time.Now().Add(-45 * time.Minute),
-			Acknowledged: false,
-			Source:       "uptime-kuma-service",
-		},
-		{
-			ID:           "ssl-expiring-alert",
-			Type:         "domain",
-			Severity:     "critical",
-			Message:      "SSL certificate for server.arcbjorn.com expires in 5 days",
-			Timestamp:    time.Now().Add(-90 * time.Minute),
-			Acknowledged: false,
-			Source:       "server.arcbjorn.com",
-		},
-	}
-
-	for _, alert := range mockAlerts {
-		h.alerts[alert.ID] = alert
-	}
-}
+// Mock alert initialization removed - alerts should come from real monitoring systems
+// Frontend will handle mock data display when backend returns empty results
 
 // GetAlerts returns all infrastructure alerts
 func (h *InfrastructureHandlers) GetAlerts(w http.ResponseWriter, r *http.Request) {

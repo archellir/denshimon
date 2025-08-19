@@ -160,29 +160,16 @@ func (p *Publisher) publishPods() {
 				continue
 			}
 
-			// Convert pods to a format suitable for WebSocket with metrics
+			// Convert pods to a format suitable for WebSocket (real data only)
 			var podData []map[string]interface{}
 			for _, pod := range pods.Items {
-				// Generate realistic metrics for demo purposes
-				cpuUsage := 10 + float64(time.Now().Unix()%80)
-				memoryUsage := 100 + float64(time.Now().Unix()%3900) // In MB
-				
-				// Generate trends based on pod name hash for consistency
-				nameHash := time.Now().Unix() + int64(len(pod.Name))
-				cpuTrend := getTrendFromHash(nameHash)
-				memoryTrend := getTrendFromHash(nameHash + 1)
-				
 				podData = append(podData, map[string]interface{}{
-					"name":        pod.Name,
-					"namespace":   pod.Namespace,
-					"status":      string(pod.Status.Phase),
-					"nodeName":    pod.Spec.NodeName,
-					"ip":          pod.Status.PodIP,
-					"startTime":   pod.Status.StartTime,
-					"cpu":         cpuUsage,
-					"cpuTrend":    cpuTrend,
-					"memory":      memoryUsage,
-					"memoryTrend": memoryTrend,
+					"name":       pod.Name,
+					"namespace":  pod.Namespace,
+					"status":     string(pod.Status.Phase),
+					"nodeName":   pod.Spec.NodeName,
+					"ip":         pod.Status.PodIP,
+					"startTime":  pod.Status.StartTime,
 					"lastUpdate": time.Now().UTC().Format(time.RFC3339),
 				})
 			}
@@ -300,10 +287,6 @@ func (p *Publisher) publishDatabaseMetrics() {
 		case <-ticker.C:
 			ctx := context.Background()
 			
-			// Get database connections and stats
-			// This would typically come from database manager or PostgreSQL queries
-			// For now, we'll publish basic connection info with real data when available
-			
 			// Get all pods that might be database-related
 			pods, err := p.k8sClient.ListPods(ctx, "")
 			if err != nil {
@@ -327,30 +310,14 @@ func (p *Publisher) publishDatabaseMetrics() {
 				}
 			}
 
-			// Publish database pod information
-			p.hub.Broadcast(MessageTypeDatabase, map[string]interface{}{
-				"databases": databasePods,
-				"timestamp": time.Now().UTC().Format(time.RFC3339),
-				"source":    "k8s_pods",
-			})
-
-			// Publish database statistics (mock for now, would be real DB queries)
-			stats := map[string]interface{}{
-				"total_connections":    len(databasePods),
-				"active_databases":     countActiveDatabases(databasePods),
-				"total_queries":        generateQueryStats(),
-				"cache_hit_ratio":      generateCacheStats(),
-				"disk_usage":          generateDiskStats(),
-				"replication_lag":     generateReplicationStats(),
-				"slow_queries":        generateSlowQueryStats(),
-				"last_backup":         generateBackupStats(),
+			// Only publish real database pod data - frontend will handle statistics
+			if len(databasePods) > 0 {
+				p.hub.Broadcast(MessageTypeDatabase, map[string]interface{}{
+					"databases": databasePods,
+					"timestamp": time.Now().UTC().Format(time.RFC3339),
+					"source":    "k8s_pods",
+				})
 			}
-
-			p.hub.Broadcast(MessageTypeDatabaseStats, map[string]interface{}{
-				"stats":     stats,
-				"timestamp": time.Now().UTC().Format(time.RFC3339),
-				"source":    "database_monitoring",
-			})
 		}
 	}
 }
@@ -384,72 +351,6 @@ func getDatabaseType(podName string) string {
 	return "Unknown"
 }
 
-// Helper functions to generate mock database statistics
-func countActiveDatabases(pods []map[string]interface{}) int {
-	count := 0
-	for _, pod := range pods {
-		if pod["status"] == "Running" {
-			count++
-		}
-	}
-	return count
-}
-
-func generateQueryStats() map[string]interface{} {
-	return map[string]interface{}{
-		"per_second": 150 + int(time.Now().Unix()%50),
-		"total":      1000000 + int(time.Now().Unix()*10),
-		"failed":     5 + int(time.Now().Unix()%3),
-	}
-}
-
-func generateCacheStats() map[string]interface{} {
-	return map[string]interface{}{
-		"hit_ratio":   0.85 + (float64(time.Now().Unix()%100) / 1000),
-		"memory_used": 512 + int(time.Now().Unix()%256),
-		"cache_size":  1024,
-	}
-}
-
-func generateDiskStats() map[string]interface{} {
-	return map[string]interface{}{
-		"used_gb":      45.6 + (float64(time.Now().Unix()%100) / 10),
-		"total_gb":     100.0,
-		"growth_rate":  0.5,
-	}
-}
-
-func generateReplicationStats() map[string]interface{} {
-	return map[string]interface{}{
-		"lag_ms":     int(time.Now().Unix() % 50),
-		"replicas":   2,
-		"sync_state": "streaming",
-	}
-}
-
-func generateSlowQueryStats() []map[string]interface{} {
-	return []map[string]interface{}{
-		{
-			"query":     "SELECT * FROM large_table WHERE complex_condition",
-			"duration":  2.5,
-			"timestamp": time.Now().Add(-time.Minute * 5).Format(time.RFC3339),
-		},
-		{
-			"query":     "UPDATE users SET last_login = NOW() WHERE id IN (...)",
-			"duration":  1.8,
-			"timestamp": time.Now().Add(-time.Minute * 10).Format(time.RFC3339),
-		},
-	}
-}
-
-func generateBackupStats() map[string]interface{} {
-	return map[string]interface{}{
-		"last_backup":    time.Now().Add(-time.Hour * 6).Format(time.RFC3339),
-		"backup_size":    "2.3 GB",
-		"backup_status":  "completed",
-		"next_scheduled": time.Now().Add(time.Hour * 18).Format(time.RFC3339),
-	}
-}
 
 // publishServiceHealthMetrics publishes service health metrics every 30 seconds
 func (p *Publisher) publishServiceHealthMetrics() {
@@ -474,7 +375,7 @@ func (p *Publisher) publishServiceHealthMetrics() {
 			var alerts []map[string]interface{}
 			var infrastructureStatus map[string]interface{}
 			
-			// Analyze pods for service health
+			// Analyze pods for service health (only real Kubernetes data)
 			for _, pod := range pods.Items {
 				if isServiceHealthTarget(pod.Name) {
 					service := map[string]interface{}{
@@ -483,37 +384,44 @@ func (p *Publisher) publishServiceHealthMetrics() {
 						"type":        getServiceType(pod.Name),
 						"status":      getServiceStatus(string(pod.Status.Phase)),
 						"uptime":      calculateUptime(pod.Status.StartTime),
-						"responseTime": generateResponseTime(),
 						"lastChecked": time.Now().UTC().Format(time.RFC3339),
 						"url":         getServiceURL(pod.Name),
-						"metrics":     generateServiceMetrics(pod.Name),
-						"alerts":      generateServiceAlerts(pod.Name),
+						"namespace":   pod.Namespace,
+						"nodeName":    pod.Spec.NodeName,
+						"podIP":       pod.Status.PodIP,
+						"startTime":   pod.Status.StartTime,
 					}
 					services = append(services, service)
 				}
 			}
 
-			// Generate infrastructure status
-			infrastructureStatus = generateInfrastructureStatus()
-			
-			// Generate system-wide alerts
-			alerts = generateSystemAlerts()
+			// Basic infrastructure status from Kubernetes services
+			services_k8s, err := p.k8sClient.ListServices(ctx, "")
+			if err == nil {
+				var serviceInfo []map[string]interface{}
+				for _, svc := range services_k8s.Items {
+					serviceInfo = append(serviceInfo, map[string]interface{}{
+						"name":      svc.Name,
+						"namespace": svc.Namespace,
+						"type":      string(svc.Spec.Type),
+						"clusterIP": svc.Spec.ClusterIP,
+						"ports":     svc.Spec.Ports,
+					})
+				}
+				infrastructureStatus = map[string]interface{}{
+					"services": serviceInfo,
+				}
+			}
 
-			// Publish service health data
-			p.hub.Broadcast(MessageTypeServiceHealth, map[string]interface{}{
-				"services":    services,
-				"alerts":      alerts,
-				"infrastructure": infrastructureStatus,
-				"timestamp":   time.Now().UTC().Format(time.RFC3339),
-				"source":      "k8s_pods",
-			})
-
-			// Publish service health statistics
-			stats := generateServiceHealthStats(services)
-			p.hub.Broadcast(MessageTypeServiceHealthStats, map[string]interface{}{
-				"stats":     stats,
-				"timestamp": time.Now().UTC().Format(time.RFC3339),
-			})
+			// Only publish if we have real data
+			if len(services) > 0 || infrastructureStatus != nil {
+				p.hub.Broadcast(MessageTypeServiceHealth, map[string]interface{}{
+					"services":       services,
+					"infrastructure": infrastructureStatus,
+					"timestamp":      time.Now().UTC().Format(time.RFC3339),
+					"source":         "k8s_pods",
+				})
+			}
 		}
 	}
 }
@@ -608,11 +516,6 @@ func calculateUptime(startTime *metav1.Time) float64 {
 	return baseUptime + (float64(time.Now().Unix()%5) * 0.02)
 }
 
-func generateResponseTime() int {
-	// Generate realistic response times between 50-500ms
-	return 50 + int(time.Now().Unix()%450)
-}
-
 func getServiceURL(podName string) string {
 	if containsIgnoreCase(podName, "gitea") {
 		return "https://git.example.com"
@@ -629,148 +532,11 @@ func getServiceURL(podName string) string {
 	return ""
 }
 
-func generateServiceMetrics(podName string) map[string]interface{} {
-	baseMetrics := map[string]interface{}{
-		"cpuUsage":    float64(10 + int(time.Now().Unix()%80)),
-		"memoryUsage": float64(20 + int(time.Now().Unix()%60)),
-		"diskUsage":   float64(30 + int(time.Now().Unix()%40)),
-	}
-
-	// Add service-specific metrics
-	if containsIgnoreCase(podName, "gitea") {
-		baseMetrics["activeRunners"] = int(time.Now().Unix() % 5)
-		baseMetrics["queuedJobs"] = int(time.Now().Unix() % 10)
-		baseMetrics["totalRepositories"] = 42
-		baseMetrics["registrySize"] = int64(2147483648) // 2GB
-	} else if containsIgnoreCase(podName, "postgresql") {
-		baseMetrics["totalConnections"] = int(time.Now().Unix() % 100)
-		baseMetrics["maxConnections"] = 200
-		baseMetrics["activeQueries"] = int(time.Now().Unix() % 20)
-		baseMetrics["cacheHitRatio"] = 95.5
-		baseMetrics["databaseSize"] = int64(5368709120) // 5GB
-	}
-
-	return baseMetrics
-}
-
-func generateServiceAlerts(podName string) []map[string]interface{} {
-	// Generate occasional alerts
-	if time.Now().Unix()%10 < 2 {
-		return []map[string]interface{}{
-			{
-				"id":        podName + "-alert-" + time.Now().Format("20060102150405"),
-				"message":   "High memory usage detected",
-				"severity":  "warning",
-				"timestamp": time.Now().UTC().Format(time.RFC3339),
-			},
-		}
-	}
-	return []map[string]interface{}{}
-}
-
-func generateInfrastructureStatus() map[string]interface{} {
-	return map[string]interface{}{
-		"domainAccessibility": []map[string]interface{}{
-			{
-				"domain":       "git.example.com",
-				"accessible":   true,
-				"responseTime": 120,
-				"httpStatus":   200,
-				"sslValid":     true,
-			},
-			{
-				"domain":       "files.example.com", 
-				"accessible":   true,
-				"responseTime": 95,
-				"httpStatus":   200,
-				"sslValid":     true,
-			},
-		},
-		"ingressRules": []map[string]interface{}{
-			{
-				"name":      "gitea-ingress",
-				"namespace": "default",
-				"host":      "git.example.com",
-				"path":      "/",
-				"backend":   "gitea:3000",
-				"status":    "active",
-			},
-		},
-		"networkPolicies": []map[string]interface{}{
-			{
-				"name":         "default-deny-all",
-				"namespace":    "default",
-				"policyTypes":  []string{"Ingress", "Egress"},
-				"rulesApplied": 5,
-				"status":       "active",
-			},
-		},
-	}
-}
-
-func generateSystemAlerts() []map[string]interface{} {
-	// Generate system-wide alerts occasionally
-	alerts := []map[string]interface{}{}
-	
-	if time.Now().Unix()%20 < 3 {
-		alerts = append(alerts, map[string]interface{}{
-			"id":           "sys-alert-" + time.Now().Format("20060102150405"),
-			"message":      "High cluster CPU utilization",
-			"severity":     "warning", 
-			"timestamp":    time.Now().UTC().Format(time.RFC3339),
-			"source":       "cluster-monitor",
-			"acknowledged": false,
-		})
-	}
-	
-	return alerts
-}
-
-func generateServiceHealthStats(services []map[string]interface{}) map[string]interface{} {
-	healthy := 0
-	warning := 0
-	critical := 0
-	down := 0
-	
-	for _, service := range services {
-		status := service["status"].(string)
-		switch status {
-		case "healthy":
-			healthy++
-		case "warning":
-			warning++
-		case "critical":
-			critical++
-		case "down":
-			down++
-		}
-	}
-	
-	return map[string]interface{}{
-		"total":    len(services),
-		"healthy":  healthy,
-		"warning":  warning,
-		"critical": critical,
-		"down":     down,
-	}
-}
-
 // containsIgnoreCase checks if str contains substr (case insensitive)
 func containsIgnoreCase(str, substr string) bool {
 	return strings.Contains(strings.ToLower(str), strings.ToLower(substr))
 }
 
-// getTrendFromHash generates consistent trend based on hash value
-func getTrendFromHash(hash int64) string {
-	switch hash % 3 {
-	case 0:
-		return "up"
-	case 1:
-		return "down"
-	default:
-		return "stable"
-	}
-}
 
 // publishDeploymentMetrics publishes deployment metrics every 15 seconds
 func (p *Publisher) publishDeploymentMetrics() {
