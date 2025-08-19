@@ -3,10 +3,24 @@
  * This ensures all components use the same resource names for search functionality
  */
 
-import { RegistryType, RegistryStatus } from '@constants';
+import { RegistryType, RegistryStatus, DeploymentStatus, PodStatus, Status } from '@constants';
+import type { 
+  Application, 
+  Pod, 
+  Service, 
+  Registry, 
+  ContainerImage, 
+  Deployment,
+  MasterNamespace,
+  MasterNode,
+  DatabaseConnection,
+  Certificate,
+  BackupJob,
+  ServiceHealth
+} from '@types/mockData';
 
 // Core infrastructure data
-export const MASTER_NAMESPACES = [
+export const MASTER_NAMESPACES: readonly MasterNamespace[] = [
   'default',
   'kube-system', 
   'monitoring',
@@ -15,12 +29,12 @@ export const MASTER_NAMESPACES = [
   'denshimon'
 ] as const;
 
-export const MASTER_NODES = [
+export const MASTER_NODES: readonly MasterNode[] = [
   'cluster-main' // Single node running K3s/MicroK8s
 ] as const;
 
 // Application definitions
-export const MASTER_APPLICATIONS = [
+export const MASTER_APPLICATIONS: readonly Application[] = [
   {
     name: 'nginx-deployment',
     namespace: 'default',
@@ -66,7 +80,7 @@ export const MASTER_APPLICATIONS = [
 ] as const;
 
 // All pods in the system
-export const MASTER_PODS = [
+export const MASTER_PODS: readonly Pod[] = [
   // System pods (K3s/MicroK8s single node)
   { name: 'k3s-server', namespace: 'kube-system', node: 'cluster-main', app: 'k3s-server' },
   { name: 'traefik-7d9f8c6b5a', namespace: 'kube-system', node: 'cluster-main', app: 'traefik' },
@@ -101,16 +115,80 @@ export const MASTER_PODS = [
 ] as const;
 
 // Services
-export const MASTER_SERVICES = [
-  { name: 'kubernetes', namespace: 'default', type: 'ClusterIP', serviceType: 'gateway' },
-  { name: 'kube-dns', namespace: 'kube-system', type: 'ClusterIP', serviceType: 'backend' },
-  { name: 'nginx-service', namespace: 'default', type: 'LoadBalancer', serviceType: 'frontend' },
-  { name: 'api-gateway', namespace: 'production', type: 'ClusterIP', serviceType: 'gateway' },
-  { name: 'redis-service', namespace: 'production', type: 'ClusterIP', serviceType: 'cache' },
-  { name: 'postgres-service', namespace: 'production', type: 'ClusterIP', serviceType: 'database' },
-  { name: 'frontend-service', namespace: 'default', type: 'NodePort', serviceType: 'frontend' },
-  { name: 'grafana-service', namespace: 'monitoring', type: 'ClusterIP', serviceType: 'frontend' },
-  { name: 'prometheus-service', namespace: 'monitoring', type: 'ClusterIP', serviceType: 'backend' },
+export const MASTER_SERVICES: readonly Service[] = [
+  { 
+    name: 'kubernetes', 
+    namespace: 'default', 
+    type: 'ClusterIP', 
+    ports: [{ port: 443, targetPort: 6443, protocol: 'TCP' }],
+    selector: { component: 'apiserver', provider: 'kubernetes' },
+    clusterIP: '10.43.0.1'
+  },
+  { 
+    name: 'kube-dns', 
+    namespace: 'kube-system', 
+    type: 'ClusterIP', 
+    ports: [
+      { port: 53, targetPort: 53, protocol: 'UDP' },
+      { port: 53, targetPort: 53, protocol: 'TCP' }
+    ],
+    selector: { 'k8s-app': 'kube-dns' },
+    clusterIP: '10.43.0.10'
+  },
+  { 
+    name: 'nginx-service', 
+    namespace: 'default', 
+    type: 'LoadBalancer', 
+    ports: [{ port: 80, targetPort: 80, protocol: 'TCP' }],
+    selector: { app: 'nginx' }
+  },
+  { 
+    name: 'api-gateway', 
+    namespace: 'production', 
+    type: 'ClusterIP', 
+    ports: [{ port: 8080, targetPort: 8080, protocol: 'TCP' }],
+    selector: { app: 'api-server' },
+    clusterIP: '10.43.1.5'
+  },
+  { 
+    name: 'redis-service', 
+    namespace: 'production', 
+    type: 'ClusterIP', 
+    ports: [{ port: 6379, targetPort: 6379, protocol: 'TCP' }],
+    selector: { app: 'redis' },
+    clusterIP: '10.43.1.10'
+  },
+  { 
+    name: 'postgres-service', 
+    namespace: 'production', 
+    type: 'ClusterIP', 
+    ports: [{ port: 5432, targetPort: 5432, protocol: 'TCP' }],
+    selector: { app: 'postgres' },
+    clusterIP: '10.43.1.15'
+  },
+  { 
+    name: 'frontend-service', 
+    namespace: 'default', 
+    type: 'NodePort', 
+    ports: [{ port: 80, targetPort: 3000, protocol: 'TCP' }],
+    selector: { app: 'frontend' }
+  },
+  { 
+    name: 'grafana-service', 
+    namespace: 'monitoring', 
+    type: 'ClusterIP', 
+    ports: [{ port: 3000, targetPort: 3000, protocol: 'TCP' }],
+    selector: { app: 'grafana' },
+    clusterIP: '10.43.2.5'
+  },
+  { 
+    name: 'prometheus-service', 
+    namespace: 'monitoring', 
+    type: 'ClusterIP', 
+    ports: [{ port: 9090, targetPort: 9090, protocol: 'TCP' }],
+    selector: { app: 'prometheus' },
+    clusterIP: '10.43.2.10'
+  },
 ] as const;
 
 // Deployments
@@ -135,36 +213,48 @@ export const MASTER_ENDPOINTS = [
 ] as const;
 
 // Container Registries
-export const MASTER_REGISTRIES = [
+export const MASTER_REGISTRIES: readonly Registry[] = [
   {
-    id: 'dockerhub-registry',
+    id: '550e8400-e29b-41d4-a716-446655440001',
     name: 'Docker Hub',
     type: RegistryType.DOCKERHUB,
     status: RegistryStatus.CONNECTED,
     url: 'https://index.docker.io/v1/',
-    namespace: undefined
+    lastTested: '2024-01-15T10:30:00Z',
+    created: '2024-01-01T00:00:00Z',
+    description: 'Official Docker Hub registry',
+    isDefault: true
   },
   {
-    id: 'gitea-registry',
+    id: '550e8400-e29b-41d4-a716-446655440002',
     name: 'Company Gitea',
     type: RegistryType.GITEA, 
     status: RegistryStatus.CONNECTED,
     url: 'https://git.company.com',
-    namespace: 'denshimon'
+    username: 'admin',
+    token: 'gitea_token_123',
+    lastTested: '2024-01-15T10:25:00Z',
+    created: '2024-01-02T08:00:00Z',
+    description: 'Internal Gitea container registry',
+    isDefault: false
   },
   {
-    id: 'private-registry',
+    id: '550e8400-e29b-41d4-a716-446655440003',
     name: 'Private Registry',
     type: RegistryType.GENERIC,
     status: RegistryStatus.ERROR,
     url: 'https://registry.company.com',
-    namespace: undefined,
-    error: 'Authentication failed'
+    username: 'registry_user',
+    password: 'registry_pass',
+    lastTested: '2024-01-15T09:45:00Z',
+    created: '2024-01-03T12:00:00Z',
+    description: 'Private company registry - authentication issues',
+    isDefault: false
   }
 ] as const;
 
 // Container Images
-export const MASTER_IMAGES = [
+export const MASTER_IMAGES: readonly ContainerImage[] = [
   {
     registry: 'dockerhub-registry',
     repository: 'nginx',
