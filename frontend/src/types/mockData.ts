@@ -50,6 +50,7 @@ export const ServiceSchema = z.object({
   name: z.string(),
   namespace: MasterNamespaceSchema,
   type: z.enum(['ClusterIP', 'NodePort', 'LoadBalancer', 'ExternalName']),
+  serviceType: z.enum(['frontend', 'backend', 'database', 'cache', 'gateway', 'sidecar']),
   ports: z.array(z.object({
     port: z.number().int().min(1).max(65535),
     targetPort: z.number().int().min(1).max(65535),
@@ -371,28 +372,4 @@ export const BackupJobsArraySchema = z.array(BackupJobSchema);
 export const CertificatesArraySchema = z.array(CertificateSchema);
 
 // ==================== EXPORT ALL TYPES ====================
-
-export type {
-  Application,
-  Pod,
-  Service,
-  Metrics,
-  PodMetrics,
-  Registry,
-  ContainerImage,
-  ImageTag,
-  Deployment,
-  DeploymentHistory,
-  DatabaseConnection,
-  DatabaseTable,
-  DatabaseColumn,
-  QueryResult,
-  LogEntry,
-  ServiceHealth,
-  WebSocketEvent,
-  BackupJob,
-  Certificate,
-  TrendDirection,
-  MasterNamespace,
-  MasterNode,
-};
+// Types are already exported inline above
