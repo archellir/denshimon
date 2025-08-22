@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { FC } from 'react';
-import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, RefreshCw, type LucideIcon } from 'lucide-react';
+import { Activity, Server, Database, HardDrive, Cpu, Network, Clock, Zap, Package, Eye, FileText, TreePine, TrendingUp, Plus, Download, Grid, List, Rocket, History, Shield, GitBranch, RefreshCw, Key, type LucideIcon } from 'lucide-react';
 import StatusIcon, { getStatusColor } from '@components/common/StatusIcon';
 import StatCard from '@components/common/StatCard';
 import GlobalSearch from '@components/common/GlobalSearch';
@@ -51,6 +51,7 @@ import DatabaseMonitoring from '@components/database/DatabaseMonitoring';
 import CertificateHealthDashboard from '@components/infrastructure/CertificateHealthDashboard';
 import ServiceHealthDashboard from '@components/infrastructure/ServiceHealthDashboard';
 import BackupRecoveryDashboard from '@components/infrastructure/BackupRecoveryDashboard';
+import SecretsTab from '@components/infrastructure/SecretsTab';
 
 interface DashboardProps {
   activePrimaryTab?: string;
@@ -108,6 +109,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
     [PrimaryTab.INFRASTRUCTURE]: [
       { id: InfrastructureTab.OVERVIEW, label: UI_LABELS.OVERVIEW, icon: Activity },
       { id: InfrastructureTab.CONFIGURATION, label: UI_LABELS.CONFIGURATION, icon: GitBranch },
+      { id: InfrastructureTab.SECRETS, label: UI_LABELS.SECRETS, icon: Key },
       { id: InfrastructureTab.BACKUP, label: UI_LABELS.BACKUP, icon: HardDrive },
       { id: InfrastructureTab.CERTIFICATES, label: UI_LABELS.CERTIFICATES, icon: Shield },
       { id: InfrastructureTab.NETWORK, label: UI_LABELS.NETWORK, icon: Network },
@@ -251,6 +253,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
       [PrimaryTab.INFRASTRUCTURE]: {
         [InfrastructureTab.OVERVIEW]: "View cluster health metrics, node status, and overall infrastructure performance.",
         [InfrastructureTab.CONFIGURATION]: "Manage the base infrastructure repository containing all Kubernetes configurations and GitOps synchronization.",
+        [InfrastructureTab.SECRETS]: "Manage Kubernetes secrets securely without storing them in git repositories.",
         [InfrastructureTab.NODES]: "Monitor individual cluster nodes, their resources, and operational status.",
         [InfrastructureTab.RESOURCES]: "Track CPU, memory, and storage utilization across the cluster.",
         [InfrastructureTab.STORAGE]: "Monitor storage I/O metrics, volumes, and persistent storage usage.",
@@ -859,6 +862,7 @@ const Dashboard: FC<DashboardProps> = ({ activePrimaryTab = PrimaryTab.INFRASTRU
           </div>
         )}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.CONFIGURATION && <ConfigurationTab />}
+        {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.SECRETS && <SecretsTab />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.NODES && <NodeList />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.RESOURCES && <ResourceCharts timeRange={timeRange} />}
         {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.STORAGE && <StorageIOMetrics timeRange={timeRange} />}

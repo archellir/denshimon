@@ -196,6 +196,7 @@ export enum PrimaryTab {
 export enum InfrastructureTab {
   OVERVIEW = 'overview',
   CONFIGURATION = 'configuration',
+  SECRETS = 'secrets',
   BACKUP = 'backup',
   CERTIFICATES = 'certificates',
   NETWORK = 'network',
@@ -490,6 +491,7 @@ export const UI_LABELS = {
   HIERARCHY: 'Hierarchy',
   NETWORK: 'Network',
   CERTIFICATES: 'Certificates',
+  SECRETS: 'Secrets',
   BACKUP: 'Backup & Recovery',
   PODS: 'Pods',
   SERVICES: 'Services',
@@ -703,6 +705,7 @@ export const API_BASE_PATHS = {
   BACKUP: '/api/backup',
   INFRASTRUCTURE: '/api/infrastructure',
   CERTIFICATES: '/api/certificates',
+  SECRETS: '/api/secrets',
   WEBSOCKET: '/ws'
 } as const;
 
@@ -890,6 +893,14 @@ export const API_ENDPOINTS = {
     REFRESH: `${API_BASE_PATHS.CERTIFICATES}/refresh`,
     RENEW: (id: string) => `${API_BASE_PATHS.CERTIFICATES}/${id}/renew`,
     VERIFY: (id: string) => `${API_BASE_PATHS.CERTIFICATES}/${id}/verify`
+  },
+  SECRETS: {
+    BASE: API_BASE_PATHS.SECRETS,
+    LIST: API_BASE_PATHS.SECRETS,
+    TEMPLATE: `${API_BASE_PATHS.SECRETS}/template`,
+    APPLY: `${API_BASE_PATHS.SECRETS}/apply`,
+    STATUS: `${API_BASE_PATHS.SECRETS}/status`,
+    UPDATE: (key: string) => `${API_BASE_PATHS.SECRETS}/${key}`
   },
   WEBSOCKET: {
     BASE: API_BASE_PATHS.WEBSOCKET,

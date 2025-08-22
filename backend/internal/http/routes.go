@@ -17,6 +17,7 @@ import (
 	"github.com/archellir/denshimon/internal/providers/backup"
 	"github.com/archellir/denshimon/internal/providers/certificates"
 	"github.com/archellir/denshimon/internal/providers/databases"
+	"github.com/archellir/denshimon/internal/secrets"
 	"github.com/archellir/denshimon/internal/websocket"
 	"github.com/archellir/denshimon/pkg/logger"
 	"log/slog"
@@ -61,6 +62,10 @@ func RegisterRoutes(
 		localRepoPath = "/tmp/base_infrastructure" // default value
 	}
 	gitopsHandlers := NewGitOpsHandler(db.DB, baseInfraRepoURL, localRepoPath, gitopsLogger)
+
+	// Initialize secrets management
+	secretsService := secrets.NewSecretsService(localRepoPath, k8sClient.Clientset())
+	secretsHandlers := NewSecretsHandlers(secretsService)
 
 	// CORS middleware for development
 	corsMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
@@ -329,6 +334,20 @@ func RegisterRoutes(
 	mux.HandleFunc("POST /api/gitops/sync/force", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ForceSync)))
 	mux.HandleFunc("POST /api/gitops/webhook", corsMiddleware(gitopsHandlers.ProcessWebhook)) // No auth required for webhooks
 	mux.HandleFunc("GET /api/gitops/webhook/config", corsMiddleware(authService.AuthMiddleware(gitopsHandlers.ConfigureWebhook)))
+
+	// Secrets endpoints (require authentication)
+	mux.HandleFunc("GET /api/secrets", corsMiddleware(authService.AuthMiddleware(secretsHandlers.GetSecrets)))
+	mux.HandleFunc("PUT /api/secrets", corsMiddleware(authService.AuthMiddleware(secretsHandlers.SetAllSecrets)))
+	mux.HandleFunc("GET /api/secrets/template", corsMiddleware(authService.AuthMiddleware(secretsHandlers.GetTemplate)))
+	mux.HandleFunc("POST /api/secrets/apply", corsMiddleware(authService.AuthMiddleware(secretsHandlers.ApplySecrets)))
+	mux.HandleFunc("GET /api/secrets/status", corsMiddleware(authService.AuthMiddleware(secretsHandlers.GetSecretStatus)))
+	mux.Handle("/api/secrets/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "PUT" {
+			secretsHandlers.UpdateSecret(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	}))))
 
 	// GitOps operations with path parameters
 	mux.Handle("/api/gitops/repositories/", corsMiddleware(authService.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

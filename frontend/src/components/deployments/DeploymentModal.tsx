@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback, type FC } from 'react';
+import { useState, useEffect, useCallback, type FC } from 'react';
 import { X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
 import { ContainerImage } from '@/types';
 import { API_ENDPOINTS } from '@constants';
 import useModalKeyboard from '@hooks/useModalKeyboard';
 import useDeploymentStore from '@stores/deploymentStore';
 import CustomSelector from '@components/common/CustomSelector';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 
 interface DeploymentModalProps {
@@ -733,7 +735,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                     <div className="space-y-3 pl-7 border-l-2 border-red-400/30">
                       <div className="grid grid-cols-2 gap-3">
                         <CustomSelector
-                          defaultValue={deployForm.healthCheck.type}
+                          value={deployForm.healthCheck.type}
                           options={[
                             { value: 'http', label: 'HTTP' },
                             { value: 'exec', label: 'EXEC' },
@@ -956,7 +958,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                   <div>
                     <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Strategy</label>
                     <CustomSelector
-                      defaultValue={deployForm.deployment.strategy}
+                      value={deployForm.deployment.strategy}
                       options={[
                         { value: 'RollingUpdate', label: 'Rolling' },
                         { value: 'Recreate', label: 'Recreate' }
@@ -1088,8 +1090,22 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                 ← BACK TO CONFIG
               </button>
             </div>
-            <div className="bg-gray-900 border border-white p-4 font-mono text-sm text-white overflow-auto max-h-96">
-              <pre className="whitespace-pre-wrap">{yamlPreview}</pre>
+            <div className="bg-gray-900 border border-white rounded-sm overflow-hidden">
+              <SyntaxHighlighter
+                language="yaml"
+                style={vscDarkPlus}
+                customStyle={{
+                  margin: 0,
+                  padding: '16px',
+                  background: '#1a1a1a',
+                  fontSize: '12px',
+                  maxHeight: '384px',
+                  overflow: 'auto'
+                }}
+                wrapLongLines={true}
+              >
+                {yamlPreview || '# YAML manifest will be generated here...'}
+              </SyntaxHighlighter>
             </div>
             <div className="text-sm text-gray-400 font-mono">
               Review the generated Kubernetes manifest. Click "COMMIT TO GIT" to save this deployment configuration.

@@ -372,7 +372,6 @@ func (p *Publisher) publishServiceHealthMetrics() {
 			}
 
 			var services []map[string]interface{}
-			var alerts []map[string]interface{}
 			var infrastructureStatus map[string]interface{}
 			
 			// Analyze pods for service health (only real Kubernetes data)
