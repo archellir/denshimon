@@ -449,25 +449,28 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
             </div>
 
             {/* Configuration Form in 2 Columns */}
-            <div className="space-y-6">
+            <div className="space-y-8">
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column */}
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Basic Configuration */}
-              <div>
-                <div className="space-y-3">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-blue-600/20 border-l-4 border-blue-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-blue-400 font-bold tracking-wider">BASIC CONFIGURATION</h3>
+                </div>
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">APPLICATION NAME</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Application Name</label>
                     <input
                       type="text"
                       placeholder="my-app"
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-mono text-gray-400 mb-1">NAMESPACE</label>
+                      <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Namespace</label>
                       <CustomSelector
                         value={deployForm.namespace}
                         options={[
@@ -481,99 +484,121 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-mono text-white mb-1 font-bold">REPLICAS</label>
+                      <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Replicas</label>
                       <input
                         type="number"
                         min="1"
+                        max="100"
                         placeholder="1"
-                        className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          target.value = target.value.replace(/[^0-9]/g, '');
+                        }}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">CONTAINER PORT</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Container Port</label>
                     <input
                       type="number"
                       min="1"
                       max="65535"
                       placeholder="8080"
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        const value = target.value.replace(/[^0-9]/g, '');
+                        if (value && (parseInt(value) < 1 || parseInt(value) > 65535)) {
+                          target.setCustomValidity('Port must be between 1 and 65535');
+                        } else {
+                          target.setCustomValidity('');
+                        }
+                        target.value = value;
+                      }}
                     />
                   </div>
                 </div>
               </div>
               {/* Resource Limits */}
-              <div>
-                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">RESOURCES</label>
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-green-600/20 border-l-4 border-green-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-green-400 font-bold tracking-wider">RESOURCE LIMITS</h3>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">CPU REQUEST</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">CPU Request</label>
                     <input
                       type="text"
                       placeholder="10m"
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      className="w-full bg-black border border-gray-600 focus:border-green-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">CPU LIMIT</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">CPU Limit</label>
                     <input
                       type="text"
                       placeholder="50m"
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      className="w-full bg-black border border-gray-600 focus:border-green-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">MEMORY REQUEST</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Memory Request</label>
                     <input
                       type="text"
                       placeholder="32Mi"
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      className="w-full bg-black border border-gray-600 focus:border-green-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">MEMORY LIMIT</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Memory Limit</label>
                     <input
                       type="text"
                       placeholder="64Mi"
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                      className="w-full bg-black border border-gray-600 focus:border-green-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                     />
                   </div>
+                </div>
+                <div className="mt-3 text-xs text-gray-400 font-mono">
+                  CPU: m=millicores (1000m=1 core) | Memory: Mi/Gi (Mi=MiB, Gi=GiB)
                 </div>
               </div>
 
               {/* Persistent Storage */}
-              <div>
-                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">STORAGE</label>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-purple-600/20 border-l-4 border-purple-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-purple-400 font-bold tracking-wider">PERSISTENT STORAGE</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
                     <input
                       type="checkbox"
                       id="storage"
                       checked={deployForm.storage.enabled}
                       onChange={(e) => updateStorageField('enabled', e.target.checked)}
-                      className="bg-black border border-white w-4 h-4"
+                      className="w-4 h-4 text-purple-400 bg-black border-gray-600 rounded focus:ring-purple-400"
                     />
-                    <label htmlFor="storage" className="text-sm font-mono text-gray-300">ENABLE PERSISTENT VOLUME</label>
+                    <label htmlFor="storage" className="text-sm font-mono text-gray-300">Enable Persistent Volume</label>
                   </div>
                   {deployForm.storage.enabled && (
-                    <div className="space-y-3">
+                    <div className="space-y-3 pl-7 border-l-2 border-purple-400/30">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-mono text-white mb-1 font-bold">SIZE</label>
+                          <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Size</label>
                           <input
                             type="text"
                             placeholder="20Gi"
-                            className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                            className="w-full bg-black border border-gray-600 focus:border-purple-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-mono text-gray-400 mb-1">ACCESS MODE</label>
+                          <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Access Mode</label>
                           <CustomSelector
                             value={deployForm.storage.accessMode}
                             options={[
-                              { value: 'ReadWriteOnce', label: 'READ WRITE ONCE' },
-                              { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
-                              { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
+                              { value: 'ReadWriteOnce', label: 'RWO' },
+                              { value: 'ReadOnlyMany', label: 'ROX' },
+                              { value: 'ReadWriteMany', label: 'RWX' }
                             ]}
                             onChange={(value) => updateStorageField('accessMode', value)}
                             icon={Shield}
@@ -582,11 +607,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-mono text-white mb-1 font-bold">MOUNT PATH</label>
+                        <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Mount Path</label>
                         <input
                           type="text"
                           placeholder="/data"
-                          className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                          className="w-full bg-black border border-gray-600 focus:border-purple-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                         />
                       </div>
                     </div>
@@ -596,320 +621,452 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
-              {/* Service & Networking */}
-              <div>
-                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">ENVIRONMENT VARIABLES</label>
-                <div className="space-y-3">
+            <div className="space-y-8">
+              {/* Environment Variables */}
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-cyan-600/20 border-l-4 border-cyan-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-cyan-400 font-bold tracking-wider">ENVIRONMENT VARIABLES</h3>
+                </div>
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-2">FROM SECRETS (secretKeyRef)</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-2 uppercase tracking-wider">From Secrets</label>
                     <div className="grid grid-cols-3 gap-2">
                       <input
                         type="text"
-                        placeholder="ENV VAR NAME"
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        placeholder="VAR_NAME"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
                       />
                       <input
                         type="text"
-                        placeholder="SECRET NAME (e.g., app-secrets)"
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        placeholder="secret-name"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
                       />
                       <input
                         type="text"
-                        placeholder="SECRET KEY"
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        placeholder="key"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
                       />
                     </div>
-                    <button className="mt-2 px-3 py-1 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-xs tracking-wider">
-                      ADD SECRET REF
+                    <button className="mt-2 px-2 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs">
+                      + Secret
                     </button>
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-2">DIRECT VALUES</label>
+                    <label className="block text-xs font-mono text-gray-300 mb-2 uppercase tracking-wider">Direct Values</label>
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="text"
-                        placeholder="ENV VAR NAME"
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        placeholder="VAR_NAME"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
                       />
                       <input
                         type="text"
-                        placeholder="VALUE"
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
+                        placeholder="value"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
                       />
                     </div>
-                    <button className="mt-2 px-3 py-1 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-xs tracking-wider">
-                      ADD ENV VAR
+                    <button className="mt-2 px-2 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs">
+                      + Variable
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* Health Check Configuration */}
-              <div>
-                <div className="flex items-center space-x-2 mb-3">
-                  <input
-                    type="checkbox"
-                    id="healthcheck"
-                    checked={deployForm.healthCheck.enabled}
-                    onChange={(e) => updateHealthCheckField('enabled', e.target.checked)}
-                    className="bg-black border border-white w-4 h-4"
-                  />
-                  <label htmlFor="healthcheck" className="text-sm font-mono text-gray-300 tracking-wider">ENABLE HEALTH CHECKS</label>
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-red-600/20 border-l-4 border-red-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-red-400 font-bold tracking-wider">HEALTH CHECKS</h3>
                 </div>
-                {deployForm.healthCheck.enabled && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <CustomSelector
-                        defaultValue={deployForm.healthCheck.type}
-                        options={[
-                          { value: 'http', label: 'HTTP GET' },
-                          { value: 'exec', label: 'EXEC COMMAND' },
-                          { value: 'tcp', label: 'TCP SOCKET' }
-                        ]}
-                        onChange={(value) => updateHealthCheckField('type', value)}
-                        icon={Activity}
-                        size="sm"
-                      />
-                      <input
-                        type="text"
-                        placeholder="/health"
-                        className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                      />
-                    </div>
-                    <div className="grid grid-cols-5 gap-2">
-                      <input
-                        type="number"
-                        placeholder="30"
-                        className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="number"
-                        placeholder="5"
-                        className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="number"
-                        placeholder="10"
-                        className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="number"
-                        placeholder="1"
-                        className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
-                      />
-                      <input
-                        type="number"
-                        placeholder="3"
-                        className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
-                      />
-                    </div>
-                    <div className="text-xs text-gray-400 font-mono">
-                      Based on patterns from gitea (/api/healthz), postgresql (pg_isready), and timing configurations
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="healthcheck"
+                      checked={deployForm.healthCheck.enabled}
+                      onChange={(e) => updateHealthCheckField('enabled', e.target.checked)}
+                      className="w-4 h-4 text-red-400 bg-black border-gray-600 rounded focus:ring-red-400"
+                    />
+                    <label htmlFor="healthcheck" className="text-sm font-mono text-gray-300">Enable Health Checks</label>
                   </div>
-                )}
+                  {deployForm.healthCheck.enabled && (
+                    <div className="space-y-3 pl-7 border-l-2 border-red-400/30">
+                      <div className="grid grid-cols-2 gap-3">
+                        <CustomSelector
+                          defaultValue={deployForm.healthCheck.type}
+                          options={[
+                            { value: 'http', label: 'HTTP' },
+                            { value: 'exec', label: 'EXEC' },
+                            { value: 'tcp', label: 'TCP' }
+                          ]}
+                          onChange={(value) => updateHealthCheckField('type', value)}
+                          icon={Activity}
+                          size="sm"
+                        />
+                        <input
+                          type="text"
+                          placeholder="/health"
+                          className="bg-black border border-gray-600 focus:border-red-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                        />
+                      </div>
+                      <div className="grid grid-cols-5 gap-1">
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Delay</label>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="30"
+                            className="w-full bg-black border border-gray-600 focus:border-red-400 text-white px-1 py-1 font-mono text-xs transition-colors"
+                            onInput={(e) => {
+                              const target = e.target as HTMLInputElement;
+                              target.value = target.value.replace(/[^0-9]/g, '');
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Timeout</label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="5"
+                            className="w-full bg-black border border-gray-600 focus:border-red-400 text-white px-1 py-1 font-mono text-xs transition-colors"
+                            onInput={(e) => {
+                              const target = e.target as HTMLInputElement;
+                              target.value = target.value.replace(/[^0-9]/g, '');
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Period</label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="10"
+                            className="w-full bg-black border border-gray-600 focus:border-red-400 text-white px-1 py-1 font-mono text-xs transition-colors"
+                            onInput={(e) => {
+                              const target = e.target as HTMLInputElement;
+                              target.value = target.value.replace(/[^0-9]/g, '');
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Success</label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="1"
+                            className="w-full bg-black border border-gray-600 focus:border-red-400 text-white px-1 py-1 font-mono text-xs transition-colors"
+                            onInput={(e) => {
+                              const target = e.target as HTMLInputElement;
+                              target.value = target.value.replace(/[^0-9]/g, '');
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1">Failure</label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="3"
+                            className="w-full bg-black border border-gray-600 focus:border-red-400 text-white px-1 py-1 font-mono text-xs transition-colors"
+                            onInput={(e) => {
+                              const target = e.target as HTMLInputElement;
+                              target.value = target.value.replace(/[^0-9]/g, '');
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400 font-mono">
+                        All values in seconds. HTTP path example: /api/health
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Volume Mounts */}
-              <div>
-                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">VOLUME MOUNTS</label>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <input
-                      type="text"
-                      placeholder="VOLUME NAME (e.g., timezone)"
-                      className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="MOUNT PATH (e.g., /etc/timezone)"
-                      className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="SUB PATH (optional)"
-                      className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                    />
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-orange-600/20 border-l-4 border-orange-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-orange-400 font-bold tracking-wider">VOLUME MOUNTS</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Name</label>
+                      <input
+                        type="text"
+                        placeholder="config"
+                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Path</label>
+                      <input
+                        type="text"
+                        placeholder="/app/config"
+                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">SubPath</label>
+                      <input
+                        type="text"
+                        placeholder="(optional)"
+                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
                   </div>
-                  <button className="px-3 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs tracking-wider">
-                    ADD VOLUME MOUNT
+                  <button className="px-2 py-1 border border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black transition-colors font-mono text-xs">
+                    + Mount
                   </button>
                   <div className="text-xs text-gray-400 font-mono">
-                    Common patterns: timezone (/etc/timezone), localtime (/etc/localtime), config files, static content
+                    Common: /etc/timezone, /app/config, /data
                   </div>
                 </div>
               </div>
 
               {/* Ingress Configuration */}
-              <div>
-                <div className="flex items-center space-x-2 mb-3">
-                  <input
-                    type="checkbox"
-                    id="ingress"
-                    checked={deployForm.ingress.enabled}
-                    onChange={(e) => updateIngressField('enabled', e.target.checked)}
-                    className="bg-black border border-white"
-                  />
-                  <label htmlFor="ingress" className="text-xs font-mono text-gray-300 tracking-wider">ENABLE INGRESS</label>
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-indigo-600/20 border-l-4 border-indigo-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-indigo-400 font-bold tracking-wider">INGRESS</h3>
                 </div>
-                {deployForm.ingress.enabled && (
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
                     <input
-                      type="text"
-                      placeholder="app.example.com"
-                      className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                      type="checkbox"
+                      id="ingress"
+                      checked={deployForm.ingress.enabled}
+                      onChange={(e) => updateIngressField('enabled', e.target.checked)}
+                      className="w-4 h-4 text-indigo-400 bg-black border-gray-600 rounded focus:ring-indigo-400"
                     />
-                    <input
-                      type="text"
-                      placeholder="/"
-                      className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                    />
+                    <label htmlFor="ingress" className="text-sm font-mono text-gray-300">Enable External Access</label>
                   </div>
-                )}
+                  {deployForm.ingress.enabled && (
+                    <div className="grid grid-cols-2 gap-3 pl-7 border-l-2 border-indigo-400/30">
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Host</label>
+                        <input
+                          type="text"
+                          placeholder="app.domain.com"
+                          className="w-full bg-black border border-gray-600 focus:border-indigo-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Path</label>
+                        <input
+                          type="text"
+                          placeholder="/"
+                          className="w-full bg-black border border-gray-600 focus:border-indigo-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Autoscaling Configuration */}
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <input
-                    type="checkbox"
-                    id="autoscaling"
-                    checked={deployForm.autoscaling.enabled}
-                    onChange={(e) => updateAutoscalingField('enabled', e.target.checked)}
-                    className="bg-black border border-white"
-                  />
-                  <label htmlFor="autoscaling" className="text-xs font-mono text-gray-300 tracking-wider">ENABLE AUTOSCALING</label>
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-yellow-600/20 border-l-4 border-yellow-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-yellow-400 font-bold tracking-wider">AUTOSCALING</h3>
                 </div>
-                {deployForm.autoscaling.enabled && (
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
                     <input
-                      type="number"
-                      placeholder="1"
-                      min="1"
-                      className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
+                      type="checkbox"
+                      id="autoscaling"
+                      checked={deployForm.autoscaling.enabled}
+                      onChange={(e) => updateAutoscalingField('enabled', e.target.checked)}
+                      className="w-4 h-4 text-yellow-400 bg-black border-gray-600 rounded focus:ring-yellow-400"
                     />
-                    <input
-                      type="number"
-                      placeholder="10"
-                      min="1"
-                      className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                    />
-                    <input
-                      type="number"
-                      placeholder="80"
-                      min="1"
-                      max="100"
-                      className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                    />
+                    <label htmlFor="autoscaling" className="text-sm font-mono text-gray-300">Enable Auto Scaling</label>
                   </div>
-                )}
+                  {deployForm.autoscaling.enabled && (
+                    <div className="grid grid-cols-3 gap-2 pl-7 border-l-2 border-yellow-400/30">
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Min</label>
+                        <input
+                          type="number"
+                          placeholder="1"
+                          min="1"
+                          className="w-full bg-black border border-gray-600 focus:border-yellow-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                          onInput={(e) => {
+                            const target = e.target as HTMLInputElement;
+                            target.value = target.value.replace(/[^0-9]/g, '');
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">Max</label>
+                        <input
+                          type="number"
+                          placeholder="10"
+                          min="1"
+                          className="w-full bg-black border border-gray-600 focus:border-yellow-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                          onInput={(e) => {
+                            const target = e.target as HTMLInputElement;
+                            target.value = target.value.replace(/[^0-9]/g, '');
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1">CPU %</label>
+                        <input
+                          type="number"
+                          placeholder="80"
+                          min="1"
+                          max="100"
+                          className="w-full bg-black border border-gray-600 focus:border-yellow-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                          onInput={(e) => {
+                            const target = e.target as HTMLInputElement;
+                            const value = target.value.replace(/[^0-9]/g, '');
+                            if (value && (parseInt(value) < 1 || parseInt(value) > 100)) {
+                              target.setCustomValidity('CPU target must be between 1 and 100');
+                            } else {
+                              target.setCustomValidity('');
+                            }
+                            target.value = value;
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Service Configuration & Deployment Strategy */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-mono text-white mb-2 font-bold">SERVICE TYPE</label>
-                  <CustomSelector
-                    value={deployForm.service.type}
-                    options={[
-                      { value: 'ClusterIP', label: 'CLUSTER IP' },
-                      { value: 'NodePort', label: 'NODE PORT' },
-                      { value: 'LoadBalancer', label: 'LOAD BALANCER' }
-                    ]}
-                    onChange={(value) => updateServiceField('type', value)}
-                    icon={Globe}
-                    size="xs"
-                  />
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-teal-600/20 border-l-4 border-teal-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-teal-400 font-bold tracking-wider">SERVICE & DEPLOYMENT</h3>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Service Type</label>
+                    <CustomSelector
+                      value={deployForm.service.type}
+                      options={[
+                        { value: 'ClusterIP', label: 'ClusterIP' },
+                        { value: 'NodePort', label: 'NodePort' },
+                        { value: 'LoadBalancer', label: 'LoadBalancer' }
+                      ]}
+                      onChange={(value) => updateServiceField('type', value)}
+                      icon={Globe}
+                      size="xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-mono text-white mb-2 font-bold">DEPLOYMENT STRATEGY</label>
-                  <CustomSelector
-                    defaultValue={deployForm.deployment.strategy}
-                    options={[
-                      { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
-                      { value: 'Recreate', label: 'RECREATE' }
-                    ]}
-                    onChange={(value) => updateDeploymentField('strategy', value)}
-                    icon={Server}
-                    size="xs"
-                  />
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Strategy</label>
+                    <CustomSelector
+                      defaultValue={deployForm.deployment.strategy}
+                      options={[
+                        { value: 'RollingUpdate', label: 'Rolling' },
+                        { value: 'Recreate', label: 'Recreate' }
+                      ]}
+                      onChange={(value) => updateDeploymentField('strategy', value)}
+                      icon={Server}
+                      size="xs"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Rolling Update Parameters */}
               {deployForm.deployment.strategy === 'RollingUpdate' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">MAX SURGE</label>
-                    <input
-                      type="text"
-                      placeholder="25%"
-                      className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                    />
+                <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                  <div className="bg-pink-600/20 border-l-4 border-pink-400 px-3 py-2 mb-4">
+                    <h3 className="text-sm font-mono text-pink-400 font-bold tracking-wider">ROLLING UPDATE</h3>
                   </div>
-                  <div>
-                    <label className="block text-xs font-mono text-white mb-1 font-bold">MAX UNAVAILABLE</label>
-                    <input
-                      type="text"
-                      placeholder="25%"
-                      className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Max Surge</label>
+                      <input
+                        type="text"
+                        placeholder="25%"
+                        className="w-full bg-black border border-gray-600 focus:border-pink-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Max Unavailable</label>
+                      <input
+                        type="text"
+                        placeholder="25%"
+                        className="w-full bg-black border border-gray-600 focus:border-pink-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs text-gray-400 font-mono">
+                    Values can be absolute (e.g. 2) or percentage (e.g. 25%)
                   </div>
                 </div>
               )}
 
               {/* Security Context */}
-              <div>
-                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">SECURITY CONTEXT</label>
-                <div className="space-y-3">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-emerald-600/20 border-l-4 border-emerald-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-emerald-400 font-bold tracking-wider">SECURITY CONTEXT</h3>
+                </div>
+                <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="number"
-                      placeholder="1000"
-                      className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="1000"
-                      className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
-                    />
+                    <div>
+                      <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">User ID</label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="1000"
+                        className="w-full bg-black border border-gray-600 focus:border-emerald-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          target.value = target.value.replace(/[^0-9]/g, '');
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono text-gray-300 mb-1 uppercase tracking-wider">Group ID</label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="1000"
+                        className="w-full bg-black border border-gray-600 focus:border-emerald-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          target.value = target.value.replace(/[^0-9]/g, '');
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
                         id="runAsNonRoot"
                         checked={deployForm.security.runAsNonRoot}
                         onChange={(e) => updateSecurityField('runAsNonRoot', e.target.checked)}
-                        className="bg-black border border-white w-4 h-4"
+                        className="w-4 h-4 text-emerald-400 bg-black border-gray-600 rounded focus:ring-emerald-400"
                       />
-                      <label htmlFor="runAsNonRoot" className="text-sm font-mono text-gray-300">RUN AS NON-ROOT</label>
+                      <label htmlFor="runAsNonRoot" className="text-sm font-mono text-gray-300">Run as Non-Root</label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
                         id="readOnlyRoot"
                         checked={deployForm.security.readOnlyRootFilesystem}
                         onChange={(e) => updateSecurityField('readOnlyRootFilesystem', e.target.checked)}
-                        className="bg-black border border-white w-4 h-4"
+                        className="w-4 h-4 text-emerald-400 bg-black border-gray-600 rounded focus:ring-emerald-400"
                       />
-                      <label htmlFor="readOnlyRoot" className="text-sm font-mono text-gray-300">READ-ONLY ROOT FILESYSTEM</label>
+                      <label htmlFor="readOnlyRoot" className="text-sm font-mono text-gray-300">Read-Only Root Filesystem</label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
                         id="allowPrivEsc"
                         checked={!deployForm.security.allowPrivilegeEscalation}
                         onChange={(e) => updateSecurityField('allowPrivilegeEscalation', !e.target.checked)}
-                        className="bg-black border border-white w-4 h-4"
+                        className="w-4 h-4 text-emerald-400 bg-black border-gray-600 rounded focus:ring-emerald-400"
                       />
-                      <label htmlFor="allowPrivEsc" className="text-sm font-mono text-gray-300">PREVENT PRIVILEGE ESCALATION</label>
+                      <label htmlFor="allowPrivEsc" className="text-sm font-mono text-gray-300">Prevent Privilege Escalation</label>
                     </div>
                   </div>
                   <div className="text-xs text-gray-400 font-mono">
-                    Based on gitea configuration: USER_UID=1000, USER_GID=1000
+                    Standard non-root: UID/GID 1000
                   </div>
                 </div>
               </div>
