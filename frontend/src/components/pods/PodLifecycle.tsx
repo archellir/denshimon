@@ -20,7 +20,7 @@ import {
   generatePodLifecycleMetrics, 
   generatePodLifecycleEvents,
   generateLifecycleTimelineEvents 
-} from '@mocks/pods/lifecycle';
+} from '@mocks/unifiedMockData';
 import type { 
   PodLifecycleMetrics, 
   PodLifecycleEvent, 
