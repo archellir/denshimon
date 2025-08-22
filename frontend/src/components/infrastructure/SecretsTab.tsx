@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Save, Download, AlertCircle, CheckCircle, Lock, Key, Shield, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, Save, Download, AlertCircle, CheckCircle, Lock, Key, Shield, AlertTriangle, Database, X } from 'lucide-react';
 import { apiService } from '@services/api';
+import CustomButton from '@components/common/CustomButton';
+import CustomSelector from '@components/common/CustomSelector';
+import { ButtonColor } from '@constants';
 
 interface Secret {
   key: string;
@@ -163,24 +166,27 @@ const SecretsTab: React.FC = () => {
   }
 
   return (
-    <div className="p-8 space-y-8">
-      {/* Header */}
+    <div className="space-y-8">
+      {/* Namespace Selector */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white font-mono tracking-wider">SECRETS MANAGEMENT</h1>
-          <p className="text-gray-400 font-mono mt-2">Manage Kubernetes secrets securely (never committed to git)</p>
+        <div className="text-gray-400 font-mono text-sm">
+          Manage Kubernetes secrets securely • Never committed to git • Uses secrets.yaml template
         </div>
         <div className="flex items-center space-x-3">
-          <select
+          <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">Namespace:</span>
+          <CustomSelector
             value={namespace}
-            onChange={(e) => setNamespace(e.target.value)}
-            className="bg-black border border-gray-600 text-white px-3 py-2 font-mono text-sm"
-          >
-            <option value="default">default</option>
-            <option value="kube-system">kube-system</option>
-            <option value="production">production</option>
-            <option value="staging">staging</option>
-          </select>
+            options={[
+              { value: 'default', label: 'DEFAULT' },
+              { value: 'base-infra', label: 'BASE-INFRA' },
+              { value: 'kube-system', label: 'KUBE-SYSTEM' },
+              { value: 'production', label: 'PRODUCTION' },
+              { value: 'staging', label: 'STAGING' }
+            ]}
+            onChange={(value) => setNamespace(value)}
+            icon={Database}
+            size="sm"
+          />
         </div>
       </div>
 
@@ -224,40 +230,35 @@ const SecretsTab: React.FC = () => {
       {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <button
+          <CustomButton
             onClick={loadTemplate}
             disabled={loading}
-            className="px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm flex items-center space-x-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>LOAD TEMPLATE</span>
-          </button>
-          <button
+            color={ButtonColor.BLUE}
+            icon={Download}
+            label="LOAD TEMPLATE"
+          />
+          <CustomButton
             onClick={addSecret}
-            className="px-4 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black transition-colors font-mono text-sm flex items-center space-x-2"
-          >
-            <Key className="h-4 w-4" />
-            <span>ADD SECRET</span>
-          </button>
+            color={ButtonColor.GREEN}
+            icon={Key}
+            label="ADD SECRET"
+          />
         </div>
         <div className="flex items-center space-x-3">
-          <button
+          <CustomButton
             onClick={saveSecrets}
             disabled={!isDirty || loading}
-            className="px-4 py-2 border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2"
-          >
-            <Save className="h-4 w-4" />
-            <span>{isDirty ? 'SAVE CHANGES' : 'SAVED'}</span>
-          </button>
-          <button
+            color={ButtonColor.YELLOW}
+            icon={Save}
+            label={isDirty ? 'SAVE CHANGES' : 'SAVED'}
+          />
+          <CustomButton
             onClick={applyToKubernetes}
             disabled={applying || !status?.local.secrets_file_exists}
-            className="px-4 py-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2"
-          >
-            {applying && <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />}
-            <Shield className="h-4 w-4" />
-            <span>{applying ? 'APPLYING...' : 'APPLY TO K8S'}</span>
-          </button>
+            color={ButtonColor.RED}
+            icon={Shield}
+            label={applying ? 'APPLYING...' : 'APPLY TO K8S'}
+          />
         </div>
       </div>
 
@@ -266,10 +267,10 @@ const SecretsTab: React.FC = () => {
         <div className="flex items-start space-x-3">
           <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5 flex-shrink-0" />
           <div>
-            <h4 className="font-mono text-yellow-400 text-sm font-bold mb-1">SECURITY NOTICE</h4>
+            <h4 className="font-mono text-yellow-400 text-sm font-bold mb-1">SECRETS WORKFLOW</h4>
             <p className="font-mono text-yellow-300 text-xs leading-relaxed">
-              Secrets are stored locally and applied directly to Kubernetes. They are never committed to git repositories.
-              Use this interface to manage sensitive configuration like database passwords, API keys, and certificates.
+              • secrets.yaml is created/updated in base_infra/k8s/namespace/ • secrets.example.yaml shows template structure
+              • Secrets never committed to git • Applied directly to Kubernetes cluster • Use LOAD TEMPLATE to start
             </p>
           </div>
         </div>
@@ -283,12 +284,12 @@ const SecretsTab: React.FC = () => {
             <div className="text-center py-12">
               <Lock className="h-12 w-12 text-gray-600 mx-auto mb-4" />
               <p className="font-mono text-gray-400 mb-4">No secrets configured</p>
-              <button
+              <CustomButton
                 onClick={loadTemplate}
-                className="px-4 py-2 border border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black transition-colors font-mono text-sm"
-              >
-                LOAD TEMPLATE
-              </button>
+                color={ButtonColor.BLUE}
+                icon={Download}
+                label="LOAD TEMPLATE"
+              />
             </div>
           ) : (
             <div className="space-y-4">
@@ -331,12 +332,12 @@ const SecretsTab: React.FC = () => {
                     </div>
                   </div>
                   <div className="mt-3 flex justify-end">
-                    <button
+                    <CustomButton
                       onClick={() => removeSecret(secret.key)}
-                      className="px-2 py-1 border border-red-400 text-red-400 hover:bg-red-400 hover:text-black transition-colors font-mono text-xs"
-                    >
-                      REMOVE
-                    </button>
+                      color={ButtonColor.RED}
+                      icon={X}
+                      label="REMOVE"
+                    />
                   </div>
                 </div>
               ))}
