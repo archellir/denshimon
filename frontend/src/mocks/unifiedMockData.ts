@@ -19,7 +19,9 @@ import {
 } from './masterData';
 
 import type { Deployment, DeploymentHistory } from '@/types/deployments';
-import { DeploymentStatus, DeploymentStrategy, DeploymentAction } from '@constants';
+import { DeploymentStatus, DeploymentStrategy, DeploymentAction, Status, EventCategory } from '@constants';
+import type { SystemChangesTimelineData, SystemChange, SystemChangeGroup } from '@/types/systemChangesTimeline';
+import type { PodLifecycleMetrics, PodLifecycleEvent, LifecycleTimelineEvent } from '@/types/podLifecycle';
 
 // Generate consistent, interconnected mock data
 class UnifiedMockDataService {
@@ -303,6 +305,468 @@ class UnifiedMockDataService {
       return { success: false, error: 'ImagePullBackOff: registry authentication failed' };
     }
   }
+
+  // Generate system changes timeline data based on unified data
+  public generateSystemChangesTimelineData(hours: number = 24): SystemChangesTimelineData {
+    const events: SystemChange[] = [];
+    const now = Date.now();
+    const timeSpan = hours * 60 * 60 * 1000;
+
+    // Generate events based on actual deployment data
+    this.deployments.forEach(deployment => {
+      const eventCount = Math.floor(Math.random() * 3) + 1; // 1-3 events per deployment
+      
+      for (let i = 0; i < eventCount; i++) {
+        const timestamp = new Date(now - Math.random() * timeSpan).toISOString();
+        const categories = [EventCategory.POD, EventCategory.SERVICE, EventCategory.CONFIG, EventCategory.NETWORK];
+        const severities = [Status.INFO, Status.SUCCESS, Status.WARNING, Status.CRITICAL];
+        
+        // More likely to have info/success events than critical
+        const severityWeights = [0.4, 0.3, 0.2, 0.1];
+        const randomSev = Math.random();
+        let severity = Status.INFO;
+        let cumulative = 0;
+        for (let j = 0; j < severityWeights.length; j++) {
+          cumulative += severityWeights[j];
+          if (randomSev <= cumulative) {
+            severity = severities[j];
+            break;
+          }
+        }
+
+        const category = categories[Math.floor(Math.random() * categories.length)];
+        
+        // Generate realistic events based on deployment state
+        const eventTemplates = this.getEventTemplates(deployment, category, severity);
+        const template = eventTemplates[Math.floor(Math.random() * eventTemplates.length)];
+        
+        events.push({
+          id: `event-${deployment.name}-${i}-${Math.random().toString(36).substring(2, 8)}`,
+          timestamp,
+          category,
+          severity,
+          title: template.title,
+          description: template.description,
+          source: {
+            type: 'deployment',
+            name: deployment.name,
+            namespace: deployment.namespace
+          },
+          impact: template.impact,
+          duration: template.duration,
+          resolved: template.resolved,
+          metadata: {
+            deploymentId: deployment.id,
+            image: deployment.image,
+            replicas: deployment.replicas
+          }
+        });
+      }
+    });
+
+    // Add some system-level events
+    const systemEventCount = Math.floor(hours / 6); // One system event every 6 hours on average
+    for (let i = 0; i < systemEventCount; i++) {
+      const timestamp = new Date(now - Math.random() * timeSpan).toISOString();
+      const systemTemplates = this.getSystemEventTemplates();
+      const template = systemTemplates[Math.floor(Math.random() * systemTemplates.length)];
+      
+      events.push({
+        id: `system-event-${i}-${Math.random().toString(36).substring(2, 8)}`,
+        timestamp,
+        category: template.category,
+        severity: template.severity,
+        title: template.title,
+        description: template.description,
+        source: template.source,
+        impact: template.impact,
+        duration: template.duration,
+        resolved: template.resolved
+      });
+    }
+
+    // Sort events by timestamp (newest first)
+    events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    // Group events by hour
+    const groups = this.groupEventsByHour(events);
+
+    // Calculate statistics
+    const statistics = this.calculateEventStatistics(events);
+
+    return {
+      events,
+      groups,
+      statistics,
+      filters: {
+        categories: Object.values(EventCategory),
+        severities: Object.values(Status),
+        timeRange: `${hours}h`
+      }
+    };
+  }
+
+  private getEventTemplates(deployment: Deployment, category: EventCategory, severity: Status) {
+    const templates = [];
+    const deploymentName = deployment.name;
+    const namespace = deployment.namespace;
+    
+    switch (category) {
+      case EventCategory.POD:
+        if (severity === Status.CRITICAL) {
+          templates.push({
+            title: `Pod crash detected`,
+            description: `Pod ${deploymentName}-${Math.random().toString(36).substring(2, 8)} crashed with exit code 1`,
+            impact: { affected: 1, total: deployment.replicas, unit: 'pods' },
+            duration: Math.random() * 1800000, // 0-30 minutes
+            resolved: Math.random() > 0.3
+          });
+        } else if (severity === Status.WARNING) {
+          templates.push({
+            title: `Pod restart threshold exceeded`,
+            description: `Pod ${deploymentName}-${Math.random().toString(36).substring(2, 8)} has restarted ${Math.floor(Math.random() * 5) + 3} times`,
+            impact: { affected: 1, total: deployment.replicas, unit: 'pods' },
+            duration: Math.random() * 600000, // 0-10 minutes
+            resolved: Math.random() > 0.2
+          });
+        } else {
+          templates.push({
+            title: `Pod scheduled successfully`,
+            description: `New pod ${deploymentName}-${Math.random().toString(36).substring(2, 8)} scheduled on cluster-main`,
+            duration: Math.random() * 120000, // 0-2 minutes
+            resolved: true
+          });
+        }
+        break;
+        
+      case EventCategory.SERVICE:
+        if (severity === Status.CRITICAL) {
+          templates.push({
+            title: `Service endpoint unavailable`,
+            description: `Service ${deploymentName} has no available endpoints`,
+            impact: { affected: 0, total: deployment.replicas, unit: 'endpoints' },
+            duration: Math.random() * 3600000, // 0-60 minutes
+            resolved: Math.random() > 0.4
+          });
+        } else {
+          templates.push({
+            title: `Service endpoint updated`,
+            description: `Service ${deploymentName} endpoints updated to ${deployment.readyReplicas} replicas`,
+            resolved: true
+          });
+        }
+        break;
+        
+      case EventCategory.CONFIG:
+        templates.push({
+          title: `ConfigMap updated`,
+          description: `Configuration updated for ${deploymentName}`,
+          resolved: true
+        });
+        break;
+        
+      case EventCategory.NETWORK:
+        if (severity === Status.WARNING) {
+          templates.push({
+            title: `Network policy violation`,
+            description: `Blocked connection attempt to ${deploymentName} from external source`,
+            resolved: true
+          });
+        } else {
+          templates.push({
+            title: `Network route established`,
+            description: `Traffic routing established for ${deploymentName}`,
+            resolved: true
+          });
+        }
+        break;
+        
+      default:
+        templates.push({
+          title: `${category} event`,
+          description: `${severity} level event for ${deploymentName} in ${namespace}`,
+          resolved: Math.random() > 0.3
+        });
+    }
+    
+    return templates;
+  }
+
+  private getSystemEventTemplates() {
+    return [
+      {
+        category: EventCategory.NODE,
+        severity: Status.INFO,
+        title: `Node health check passed`,
+        description: `Cluster node cluster-main passed all health checks`,
+        source: { type: 'node', name: 'cluster-main' },
+        impact: undefined,
+        duration: undefined,
+        resolved: true
+      },
+      {
+        category: EventCategory.SECURITY,
+        severity: Status.WARNING,
+        title: `Certificate expiring soon`,
+        description: `TLS certificate for cluster-main expires in 30 days`,
+        source: { type: 'certificate', name: 'cluster-tls' },
+        impact: undefined,
+        duration: Math.random() * 86400000, // 0-24 hours
+        resolved: false
+      },
+      {
+        category: EventCategory.STORAGE,
+        severity: Status.INFO,
+        title: `Persistent volume provisioned`,
+        description: `New PV pv-${Math.random().toString(36).substring(2, 8)} provisioned (10Gi)`,
+        source: { type: 'storage', name: 'local-path-provisioner' },
+        impact: undefined,
+        duration: undefined,
+        resolved: true
+      }
+    ];
+  }
+
+  private groupEventsByHour(events: SystemChange[]): SystemChangeGroup[] {
+    const groups: Record<string, SystemChange[]> = {};
+    
+    events.forEach(event => {
+      const hour = new Date(event.timestamp);
+      hour.setMinutes(0, 0, 0);
+      const hourKey = hour.toISOString();
+      
+      if (!groups[hourKey]) {
+        groups[hourKey] = [];
+      }
+      groups[hourKey].push(event);
+    });
+    
+    return Object.entries(groups)
+      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+      .map(([hour, events]) => ({
+        hour,
+        events,
+        summary: {
+          critical: events.filter(e => e.severity === Status.CRITICAL).length,
+          warning: events.filter(e => e.severity === Status.WARNING).length,
+          info: events.filter(e => e.severity === Status.INFO).length,
+          success: events.filter(e => e.severity === Status.SUCCESS).length,
+        }
+      }));
+  }
+
+  private calculateEventStatistics(events: SystemChange[]) {
+    const bySeverity: Partial<Record<Status, number>> = {};
+    const byCategory: Record<EventCategory, number> = {} as Record<EventCategory, number>;
+    
+    // Initialize counters
+    Object.values(Status).forEach(status => {
+      bySeverity[status] = 0;
+    });
+    Object.values(EventCategory).forEach(category => {
+      byCategory[category] = 0;
+    });
+    
+    // Count events
+    events.forEach(event => {
+      bySeverity[event.severity] = (bySeverity[event.severity] || 0) + 1;
+      byCategory[event.category] = (byCategory[event.category] || 0) + 1;
+    });
+    
+    const resolvedEvents = events.filter(e => e.resolved && e.duration).length;
+    const avgResolutionTime = resolvedEvents > 0 
+      ? events.filter(e => e.resolved && e.duration)
+          .reduce((sum, e) => sum + (e.duration || 0), 0) / resolvedEvents / 60000 // minutes
+      : 5;
+    
+    const unresolvedCritical = events.filter(e => e.severity === Status.CRITICAL && !e.resolved).length;
+    
+    return {
+      total: events.length,
+      bySeverity,
+      byCategory,
+      recentTrend: 'stable' as const,
+      averageResolutionTime: Math.round(avgResolutionTime),
+      unresolvedCritical
+    };
+  }
+
+  // Generate pod lifecycle metrics based on unified data
+  public generatePodLifecycleMetrics(timeRange: string = '1h'): PodLifecycleMetrics {
+    const hours = this.parseTimeRangeToHours(timeRange);
+    const now = Date.now();
+    const timeSpan = hours * 60 * 60 * 1000;
+    
+    // Generate churn data points
+    const churnData = [];
+    for (let i = 0; i < Math.min(hours, 24); i++) {
+      const timestamp = new Date(now - i * 60 * 60 * 1000).toISOString();
+      churnData.push({
+        timestamp,
+        created: Math.floor(Math.random() * 5) + 1,
+        terminated: Math.floor(Math.random() * 3),
+        failed: Math.floor(Math.random() * 2),
+        netChange: Math.floor(Math.random() * 6) - 2
+      });
+    }
+    
+    // Generate restart patterns based on actual deployments
+    const restartPatterns = this.deployments.flatMap(deployment => 
+      deployment.pods?.slice(0, 3).map(pod => ({
+        podName: pod.name,
+        namespace: deployment.namespace,
+        containerName: deployment.name.split('-')[0],
+        restartCount: pod.restarts || Math.floor(Math.random() * 5),
+        lastRestartTime: new Date(now - Math.random() * timeSpan).toISOString(),
+        restartReasons: [
+          {
+            reason: 'Error',
+            count: Math.floor(Math.random() * 3),
+            lastOccurrence: new Date(now - Math.random() * timeSpan).toISOString()
+          }
+        ],
+        crashLoopBackOff: Math.random() > 0.8,
+        averageUptime: Math.random() * 86400 // 0-24 hours
+      })) || []
+    );
+
+    // Generate scheduling metrics
+    const schedulingMetrics = [];
+    for (let i = 0; i < Math.min(hours, 12); i++) {
+      const timestamp = new Date(now - i * 2 * 60 * 60 * 1000).toISOString();
+      schedulingMetrics.push({
+        timestamp,
+        pendingPods: Math.floor(Math.random() * 3),
+        schedulingDelay: Math.random() * 30, // 0-30 seconds
+        schedulingFailures: Math.floor(Math.random() * 2),
+        nodeResourceConstraints: Math.floor(Math.random() * 2),
+        imagePackFailures: Math.floor(Math.random() * 1)
+      });
+    }
+
+    // Generate failure analysis based on deployments
+    const failureReasons = [
+      { reason: 'ImagePullBackOff', color: '#FF4444', trend: 'stable' },
+      { reason: 'CrashLoopBackOff', color: '#FF8800', trend: 'decreasing' },
+      { reason: 'OutOfMemory', color: '#FFAA00', trend: 'increasing' },
+      { reason: 'NodeResourcesUnavailable', color: '#AA44FF', trend: 'stable' }
+    ];
+
+    const failureAnalysis = failureReasons.map(reason => ({
+      reason: reason.reason,
+      count: Math.floor(Math.random() * 10) + 1,
+      percentage: Math.random() * 25 + 5, // 5-30%
+      recentOccurrences: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => 
+        new Date(now - Math.random() * timeSpan).toISOString()
+      ),
+      trend: reason.trend as 'increasing' | 'decreasing' | 'stable',
+      color: reason.color,
+      affectedNamespaces: [...new Set(this.deployments.map(d => d.namespace))].slice(0, Math.floor(Math.random() * 3) + 1)
+    }));
+
+    // Generate image pull metrics
+    const imagePullMetrics = MASTER_IMAGES.map(image => ({
+      imageName: image.fullName,
+      registry: image.registry,
+      pullCount: Math.floor(Math.random() * 50) + 10,
+      averagePullTime: Math.random() * 120 + 30, // 30-150 seconds
+      failureRate: Math.random() * 15, // 0-15%
+      size: image.size,
+      lastPullTime: new Date(now - Math.random() * timeSpan).toISOString()
+    }));
+
+    return {
+      churnData,
+      restartPatterns,
+      schedulingMetrics,
+      failureAnalysis,
+      imagePullMetrics,
+      totalEvents: churnData.reduce((sum, d) => sum + d.created + d.terminated + d.failed, 0),
+      averagePodLifespan: Math.random() * 86400 * 7, // 0-7 days in seconds
+      crashLoopPods: restartPatterns.filter(p => p.crashLoopBackOff).length,
+      pendingPods: Math.floor(Math.random() * 3),
+      evictedPods: Math.floor(Math.random() * 2),
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
+  // Generate pod lifecycle events
+  public generatePodLifecycleEvents(timeRange: string = '1h'): PodLifecycleEvent[] {
+    const hours = this.parseTimeRangeToHours(timeRange);
+    const now = Date.now();
+    const timeSpan = hours * 60 * 60 * 1000;
+    const events: PodLifecycleEvent[] = [];
+
+    // Generate events based on deployments
+    this.deployments.forEach(deployment => {
+      const eventCount = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < eventCount; i++) {
+        const pod = deployment.pods?.[Math.floor(Math.random() * (deployment.pods?.length || 1))];
+        if (!pod) continue;
+
+        events.push({
+          timestamp: new Date(now - Math.random() * timeSpan).toISOString(),
+          podName: pod.name,
+          namespace: deployment.namespace,
+          eventType: ['created', 'started', 'pulled', 'killed'][Math.floor(Math.random() * 4)] as any,
+          reason: 'Normal',
+          message: `Successfully ${['created', 'started', 'pulled image for', 'terminated'][Math.floor(Math.random() * 4)]} ${pod.name}`,
+          node: pod.nodeName,
+          phase: pod.phase as any
+        });
+      }
+    });
+
+    return events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }
+
+  // Generate lifecycle timeline events
+  public generateLifecycleTimelineEvents(timeRange: string = '1h'): LifecycleTimelineEvent[] {
+    const hours = this.parseTimeRangeToHours(timeRange);
+    const now = Date.now();
+    const timeSpan = hours * 60 * 60 * 1000;
+    const events: LifecycleTimelineEvent[] = [];
+
+    // Generate timeline events based on deployments
+    const eventTypes = [
+      'pod_scheduled', 'container_created', 'image_pulled', 
+      'container_started', 'readiness_probe_succeeded', 'pod_terminated'
+    ];
+    
+    const severityLevels = ['low', 'medium', 'high', 'critical'];
+
+    for (let i = 0; i < Math.min(hours * 2, 20); i++) { // 2 events per hour, max 20
+      const timestamp = new Date(now - Math.random() * timeSpan).toISOString();
+      const deployment = this.deployments[Math.floor(Math.random() * this.deployments.length)];
+      
+      events.push({
+        timestamp,
+        eventType: eventTypes[Math.floor(Math.random() * eventTypes.length)] as any,
+        description: `${eventTypes[Math.floor(Math.random() * eventTypes.length)].replace('_', ' ')} for ${deployment.name}`,
+        severity: severityLevels[Math.floor(Math.random() * severityLevels.length)] as any,
+        affectedPods: Math.floor(Math.random() * deployment.replicas) + 1,
+        duration: Math.random() > 0.3 ? Math.random() * 300 : undefined // 0-5 minutes or undefined
+      });
+    }
+
+    return events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }
+
+  private parseTimeRangeToHours(timeRange: string): number {
+    const match = timeRange.match(/(\d+)([mhd])/);
+    if (!match) return 1;
+    
+    const [, value, unit] = match;
+    const numValue = parseInt(value);
+    
+    switch (unit) {
+      case 'm': return numValue / 60;
+      case 'h': return numValue;
+      case 'd': return numValue * 24;
+      default: return 1;
+    }
+  }
 }
 
 // Create singleton instance
@@ -316,6 +780,10 @@ export const getUnifiedDeployments = () => unifiedMockData.getDeployments();
 export const getUnifiedPendingDeployments = () => unifiedMockData.getPendingDeployments();
 export const getUnifiedDeploymentHistory = (deploymentId?: string) => unifiedMockData.getDeploymentHistory(deploymentId);
 export const getUnifiedMetrics = () => unifiedMockData.getMetrics();
+export const generateSystemChangesTimelineData = (hours?: number) => unifiedMockData.generateSystemChangesTimelineData(hours);
+export const generatePodLifecycleMetrics = (timeRange?: string) => unifiedMockData.generatePodLifecycleMetrics(timeRange);
+export const generatePodLifecycleEvents = (timeRange?: string) => unifiedMockData.generatePodLifecycleEvents(timeRange);
+export const generateLifecycleTimelineEvents = (timeRange?: string) => unifiedMockData.generateLifecycleTimelineEvents(timeRange);
 
 // Export namespaces and other master data for consistency
 export { 
