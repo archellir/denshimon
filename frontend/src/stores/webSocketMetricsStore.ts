@@ -2,15 +2,11 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory, WebSocketMetricsData } from '@/types/metrics';
 import { API_ENDPOINTS, WebSocketEventType } from '@constants';
-import { 
-  mockClusterMetrics, 
-  mockNodes, 
-  mockPods, 
-  mockNamespaces, 
-  generateMockMetricsHistory,
-  mockApiResponse,
-  MOCK_ENABLED 
-} from '@mocks/index';
+import { mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { mockClusterMetrics, generateMockMetricsHistory } from '@mocks/metrics/cluster';
+import { mockNodes } from '@mocks/k8s/nodes';
+import { mockPods } from '@mocks/k8s/pods';
+import { mockNamespaces } from '@mocks/k8s/namespaces';
 import { getWebSocketInstance } from '@services/websocket';
 import { apiService } from '@services/api';
 

@@ -1,15 +1,11 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { MetricsStore, ClusterMetrics, NodeMetrics, PodMetrics, NamespaceMetrics, MetricsHistory } from '@/types/metrics';
-import { 
-  mockClusterMetrics, 
-  mockNodes, 
-  mockPods, 
-  mockNamespaces, 
-  generateMockMetricsHistory,
-  mockApiResponse,
-  MOCK_ENABLED 
-} from '@mocks/index';
+import { mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { mockClusterMetrics, generateMockMetricsHistory } from '@mocks/metrics/cluster';
+import { mockNodes } from '@mocks/k8s/nodes';
+import { mockPods } from '@mocks/k8s/pods';
+import { mockNamespaces } from '@mocks/k8s/namespaces';
 import { API_ENDPOINTS } from '@constants';
 import { apiService, ApiError } from '@services/api';
 
