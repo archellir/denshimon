@@ -9,8 +9,8 @@ import {
   filterSystemChanges
 } from '@utils/systemChanges';
 import { SystemChangesTimelineData } from '@/types/systemChangesTimeline';
-import { generateSystemChangesTimelineData } from '@mocks/system_changes/timeline';
 import { MOCK_ENABLED } from '@mocks/index';
+import { generateSystemChangesTimelineData } from '@mocks/unifiedMockData';
 import { 
   TimeRange, 
   Status,
