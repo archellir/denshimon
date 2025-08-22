@@ -25,6 +25,7 @@ export {
   checkMockDataInDev,
   isValidMockData
 } from './validateMockData';
+// Legacy K8s mock exports - consider migrating to unified system
 export { mockNodes } from './k8s/nodes';
 export { mockPods } from './k8s/pods';
 export { mockNamespaces } from './k8s/namespaces';
@@ -82,8 +83,6 @@ export {
   mockBaseInfrastructureRepo,
   mockSyncMetrics,
   mockInfrastructureRepos,
-  mockMonitoringData,
-  mockWebhookData,
   mockRecentActivity,
   simulateSync,
   generateMockSyncHistory
