@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, GitBranch, CheckCircle, AlertTriangle, Activity, Eye, GitCommit, Monitor, Settings, Play, PlayCircle, Clock, Package } from 'lucide-react';
 import { API_ENDPOINTS } from '@constants';
-import { MOCK_ENABLED, mockBaseInfrastructureRepo, mockSyncMetrics } from '@/mocks';
+import { MOCK_ENABLED } from '@/mocks';
+import { mockBaseInfrastructureRepo, mockSyncMetrics } from '@mocks/infrastructure/configuration';
 import type { BaseInfrastructureRepo, SyncMetrics } from '@/types/infrastructure';
 import type { Deployment } from '@/types/deployments';
 import SkeletonLoader from '@components/common/SkeletonLoader';
