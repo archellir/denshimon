@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Package, AlertCircle, Info, AlertTriangle, Bug, Layers, FileText, Globe } from 'lucide-react';
-import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { generateMockLogs } from '@mocks/logs/system';
 import type { LogEntry } from '@/types/logs';
 import { useLogsWebSocket } from '@hooks/useWebSocket';
 import { 

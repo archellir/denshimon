@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Terminal, Activity, Package, TrendingUp, TrendingDown, Minus, Download, RefreshCw, Table, Filter, Search } from 'lucide-react';
 import { LiveTerminalData, TerminalFilter, PodResourceUsage, DeploymentProgress } from '@/types/liveTerminal';
-import { generateMockLogs, mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { mockApiResponse, MOCK_ENABLED } from '@mocks/index';
+import { generateMockLogs } from '@mocks/logs/system';
 import type { LogEntry } from '@/types/logs';
 import { Pod } from '@stores/workloadsStore';
 import VirtualizedLogViewer from '@components/common/VirtualizedLogViewer';
