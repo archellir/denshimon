@@ -50,25 +50,8 @@ export const mockInfrastructureRepos: BaseInfrastructureRepo[] = [
   }
 ];
 
-// Mock monitoring data
-export const mockMonitoringData = {
-  healthChecks: 'ENABLED',
-  driftDetection: 'ACTIVE',
-  autoSyncInterval: '5MIN',
-  activeAlerts: 3,
-  lastHealthCheck: new Date(Date.now() - 60 * 1000).toISOString(),
-  lastDriftCheck: new Date(Date.now() - 3 * 60 * 1000).toISOString()
-};
-
-// Mock webhook data
-export const mockWebhookData = {
-  gitPushEvents: 'CONFIGURED',
-  autoDeploy: 'ENABLED',
-  notifications: ['SLACK', 'EMAIL'],
-  lastTrigger: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-  totalTriggers24h: 42,
-  failedTriggers24h: 1
-};
+// Mock monitoring and webhook data removed as part of GitOps cleanup
+// These were fake features that have been removed from the UI
 
 // Mock recent activity
 export const mockRecentActivity = [
