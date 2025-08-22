@@ -251,7 +251,7 @@ const SecretsTab: React.FC = () => {
             disabled={applying || !status?.local.secrets_file_exists}
             color={ButtonColor.RED}
             icon={Shield}
-            label={applying ? 'APPLYING...' : 'APPLY K8S'}
+            label={applying ? 'WORKING...' : 'APPLY'}
           />
         </div>
       </div>
