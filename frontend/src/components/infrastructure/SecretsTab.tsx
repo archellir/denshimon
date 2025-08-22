@@ -167,28 +167,6 @@ const SecretsTab: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Namespace Selector */}
-      <div className="flex items-center justify-between">
-        <div className="text-gray-400 font-mono text-sm">
-          Manage Kubernetes secrets securely • Never committed to git • Uses secrets.yaml template
-        </div>
-        <div className="flex items-center space-x-3">
-          <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">Namespace:</span>
-          <CustomSelector
-            value={namespace}
-            options={[
-              { value: 'default', label: 'DEFAULT' },
-              { value: 'base-infra', label: 'BASE-INFRA' },
-              { value: 'kube-system', label: 'KUBE-SYSTEM' },
-              { value: 'production', label: 'PRODUCTION' },
-              { value: 'staging', label: 'STAGING' }
-            ]}
-            onChange={(value) => setNamespace(value)}
-            icon={Database}
-            size="sm"
-          />
-        </div>
-      </div>
 
       {/* Message */}
       {message && (
@@ -230,18 +208,34 @@ const SecretsTab: React.FC = () => {
       {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 mr-4">
+            <span className="text-xs font-mono text-gray-400 uppercase tracking-wider">NS:</span>
+            <CustomSelector
+              value={namespace}
+              options={[
+                { value: 'default', label: 'DEFAULT' },
+                { value: 'base-infra', label: 'BASE-INFRA' },
+                { value: 'kube-system', label: 'KUBE-SYSTEM' },
+                { value: 'production', label: 'PRODUCTION' },
+                { value: 'staging', label: 'STAGING' }
+              ]}
+              onChange={(value) => setNamespace(value)}
+              icon={Database}
+              size="sm"
+            />
+          </div>
           <CustomButton
             onClick={loadTemplate}
             disabled={loading}
             color={ButtonColor.BLUE}
             icon={Download}
-            label="LOAD TEMPLATE"
+            label="TEMPLATE"
           />
           <CustomButton
             onClick={addSecret}
             color={ButtonColor.GREEN}
             icon={Key}
-            label="ADD SECRET"
+            label="ADD"
           />
         </div>
         <div className="flex items-center space-x-3">
@@ -250,14 +244,14 @@ const SecretsTab: React.FC = () => {
             disabled={!isDirty || loading}
             color={ButtonColor.YELLOW}
             icon={Save}
-            label={isDirty ? 'SAVE CHANGES' : 'SAVED'}
+            label={isDirty ? 'SAVE' : 'SAVED'}
           />
           <CustomButton
             onClick={applyToKubernetes}
             disabled={applying || !status?.local.secrets_file_exists}
             color={ButtonColor.RED}
             icon={Shield}
-            label={applying ? 'APPLYING...' : 'APPLY TO K8S'}
+            label={applying ? 'APPLYING...' : 'APPLY K8S'}
           />
         </div>
       </div>
@@ -288,7 +282,7 @@ const SecretsTab: React.FC = () => {
                 onClick={loadTemplate}
                 color={ButtonColor.BLUE}
                 icon={Download}
-                label="LOAD TEMPLATE"
+                label="TEMPLATE"
               />
             </div>
           ) : (
