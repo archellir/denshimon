@@ -83,40 +83,9 @@ export const TYPED_APPLICATIONS: readonly Application[] = [
 ] as const;
 
 // ==================== PODS ====================
-
-export const TYPED_PODS: readonly Pod[] = [
-  // System pods
-  { name: 'k3s-server', namespace: 'kube-system', node: 'cluster-main', app: 'k3s-server' },
-  { name: 'traefik-7d9f8c6b5a', namespace: 'kube-system', node: 'cluster-main', app: 'traefik' },
-  { name: 'local-path-provisioner-5f8b9c7d6f', namespace: 'kube-system', node: 'cluster-main', app: 'local-path-provisioner' },
-  { name: 'metrics-server-84c9d4cf6b', namespace: 'kube-system', node: 'cluster-main', app: 'metrics-server' },
-  { name: 'coredns-5d78c9869d-xm2n4', namespace: 'kube-system', node: 'cluster-main', app: 'coredns' },
-
-  // Monitoring stack
-  { name: 'prometheus-server-5f8b9c7d6f-xm2n4', namespace: 'monitoring', node: 'cluster-main', app: 'prometheus' },
-  { name: 'grafana-84c9d4cf6b-k8s9x', namespace: 'monitoring', node: 'cluster-main', app: 'grafana' },
-
-  // Application pods - nginx
-  { name: 'nginx-deployment-7d9f8c6b5a-abc12', namespace: 'default', node: 'cluster-main', app: 'nginx' },
-  { name: 'nginx-deployment-7d9f8c6b5a-def34', namespace: 'default', node: 'cluster-main', app: 'nginx' },
-  { name: 'nginx-deployment-7d9f8c6b5a-ghi56', namespace: 'default', node: 'cluster-main', app: 'nginx' },
-
-  // Application pods - API server
-  { name: 'api-server-deployment-5f7b8c9d-def456', namespace: 'production', node: 'cluster-main', app: 'api-server' },
-  { name: 'api-server-deployment-5f7b8c9d-xyz789', namespace: 'production', node: 'cluster-main', app: 'api-server' },
-
-  // Database pods
-  { name: 'redis-cache-6a8b9c0d-ghi789', namespace: 'production', node: 'cluster-main', app: 'redis' },
-  { name: 'postgres-database-1a2b3c4d-jkl012', namespace: 'production', node: 'cluster-main', app: 'postgres' },
-
-  // Frontend pods
-  { name: 'frontend-app-8e9f0a1b-mno345', namespace: 'default', node: 'cluster-main', app: 'frontend' },
-  { name: 'frontend-app-8e9f0a1b-pqr678', namespace: 'default', node: 'cluster-main', app: 'frontend' },
-
-  // Problem pods
-  { name: 'failing-app-deployment-7d9f8c6b5a-k8s9x', namespace: 'production', node: 'cluster-main', app: 'failing-app' },
-  { name: 'pending-pod-xyz789', namespace: 'staging', node: 'cluster-main', app: 'pending-app' },
-] as const;
+// Import the updated pods with all required properties from masterData
+import { MASTER_PODS } from './masterData';
+export const TYPED_PODS: readonly Pod[] = MASTER_PODS;
 
 // ==================== SERVICES ====================
 // Re-export the services from masterData (they already have serviceType)
