@@ -278,12 +278,7 @@ const SecretsTab: React.FC = () => {
             <div className="text-center py-12">
               <Lock className="h-12 w-12 text-gray-600 mx-auto mb-4" />
               <p className="font-mono text-gray-400 mb-4">No secrets configured</p>
-              <CustomButton
-                onClick={loadTemplate}
-                color={ButtonColor.BLUE}
-                icon={Download}
-                label="TEMPLATE"
-              />
+              <p className="font-mono text-gray-500 text-xs">Use TEMPLATE button above to get started</p>
             </div>
           ) : (
             <div className="space-y-4">
