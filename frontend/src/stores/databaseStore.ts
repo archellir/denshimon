@@ -12,6 +12,7 @@ import type {
 } from '@/types/database';
 import { DatabaseStatus } from '@/types/database';
 import { API_ENDPOINTS } from '@constants';
+import { mockApiResponse, MOCK_ENABLED } from '@mocks';
 import { 
   mockDatabaseConnections,
   mockSupportedTypes,
@@ -20,10 +21,8 @@ import {
   mockColumns,
   mockQueryResults,
   mockDatabaseStats,
-  mockSavedQueries,
-  mockApiResponse,
-  MOCK_ENABLED
-} from '@mocks';
+  mockSavedQueries
+} from '@mocks/database';
 import { apiService, ApiError } from '@services/api';
 
 interface DatabaseStore {
