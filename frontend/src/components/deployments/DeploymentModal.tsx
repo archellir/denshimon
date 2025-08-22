@@ -564,6 +564,100 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                 </div>
               </div>
 
+              {/* Environment Variables */}
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-cyan-600/20 border-l-4 border-cyan-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-cyan-400 font-bold tracking-wider">ENVIRONMENT VARIABLES</h3>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-2 uppercase tracking-wider">From Secrets</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        placeholder="VAR_NAME"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                      <input
+                        type="text"
+                        placeholder="secret-name"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                      <input
+                        type="text"
+                        placeholder="key"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <button className="mt-2 px-2 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs">
+                      + Secret
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-gray-300 mb-2 uppercase tracking-wider">Direct Values</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="VAR_NAME"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                      <input
+                        type="text"
+                        placeholder="value"
+                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <button className="mt-2 px-2 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs">
+                      + Variable
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Volume Mounts */}
+              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
+                <div className="bg-orange-600/20 border-l-4 border-orange-400 px-3 py-2 mb-4">
+                  <h3 className="text-sm font-mono text-orange-400 font-bold tracking-wider">VOLUME MOUNTS</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Name</label>
+                      <input
+                        type="text"
+                        placeholder="config"
+                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Path</label>
+                      <input
+                        type="text"
+                        placeholder="/app/config"
+                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">SubPath</label>
+                      <input
+                        type="text"
+                        placeholder="(optional)"
+                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <button className="px-2 py-1 border border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black transition-colors font-mono text-xs">
+                    + Mount
+                  </button>
+                  <div className="text-xs text-gray-400 font-mono">
+                    Common: /etc/timezone, /app/config, /data
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-8">
               {/* Persistent Storage */}
               <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
                 <div className="bg-purple-600/20 border-l-4 border-purple-400 px-3 py-2 mb-4">
@@ -616,59 +710,6 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-8">
-              {/* Environment Variables */}
-              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
-                <div className="bg-cyan-600/20 border-l-4 border-cyan-400 px-3 py-2 mb-4">
-                  <h3 className="text-sm font-mono text-cyan-400 font-bold tracking-wider">ENVIRONMENT VARIABLES</h3>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-mono text-gray-300 mb-2 uppercase tracking-wider">From Secrets</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <input
-                        type="text"
-                        placeholder="VAR_NAME"
-                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                      <input
-                        type="text"
-                        placeholder="secret-name"
-                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                      <input
-                        type="text"
-                        placeholder="key"
-                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                    </div>
-                    <button className="mt-2 px-2 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs">
-                      + Secret
-                    </button>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-mono text-gray-300 mb-2 uppercase tracking-wider">Direct Values</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        placeholder="VAR_NAME"
-                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                      <input
-                        type="text"
-                        placeholder="value"
-                        className="bg-black border border-gray-600 focus:border-cyan-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                    </div>
-                    <button className="mt-2 px-2 py-1 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors font-mono text-xs">
-                      + Variable
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -780,47 +821,6 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Volume Mounts */}
-              <div className="bg-gray-900/50 border border-gray-700 rounded-sm p-4">
-                <div className="bg-orange-600/20 border-l-4 border-orange-400 px-3 py-2 mb-4">
-                  <h3 className="text-sm font-mono text-orange-400 font-bold tracking-wider">VOLUME MOUNTS</h3>
-                </div>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-1">Name</label>
-                      <input
-                        type="text"
-                        placeholder="config"
-                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-1">Path</label>
-                      <input
-                        type="text"
-                        placeholder="/app/config"
-                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-1">SubPath</label>
-                      <input
-                        type="text"
-                        placeholder="(optional)"
-                        className="w-full bg-black border border-gray-600 focus:border-orange-400 text-white px-2 py-1 font-mono text-xs transition-colors"
-                      />
-                    </div>
-                  </div>
-                  <button className="px-2 py-1 border border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-black transition-colors font-mono text-xs">
-                    + Mount
-                  </button>
-                  <div className="text-xs text-gray-400 font-mono">
-                    Common: /etc/timezone, /app/config, /data
-                  </div>
                 </div>
               </div>
 
