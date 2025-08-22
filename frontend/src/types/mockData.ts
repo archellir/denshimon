@@ -43,6 +43,10 @@ export const PodSchema = z.object({
   namespace: MasterNamespaceSchema,
   node: MasterNodeSchema,
   app: z.string(),
+  phase: z.enum(['Pending', 'Running', 'Succeeded', 'Failed', 'Unknown']),
+  age: z.string(),
+  podIP: z.string(),
+  restartCount: z.number().int().min(0),
 });
 export type Pod = z.infer<typeof PodSchema>;
 
