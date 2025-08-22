@@ -77,36 +77,36 @@ export const MASTER_APPLICATIONS: readonly Application[] = [
 // All pods in the system
 export const MASTER_PODS: readonly Pod[] = [
   // System pods (K3s/MicroK8s single node)
-  { name: 'k3s-server', namespace: 'kube-system', node: 'cluster-main', app: 'k3s-server' },
-  { name: 'traefik-7d9f8c6b5a', namespace: 'kube-system', node: 'cluster-main', app: 'traefik' },
-  { name: 'local-path-provisioner-5f8b9c7d6f', namespace: 'kube-system', node: 'cluster-main', app: 'local-path-provisioner' },
-  { name: 'metrics-server-84c9d4cf6b', namespace: 'kube-system', node: 'cluster-main', app: 'metrics-server' },
-  { name: 'coredns-5d78c9869d-xm2n4', namespace: 'kube-system', node: 'cluster-main', app: 'coredns' },
+  { name: 'k3s-server', namespace: 'kube-system', node: 'cluster-main', app: 'k3s-server', phase: 'Running', age: '7d', podIP: '10.244.0.2', restartCount: 0 },
+  { name: 'traefik-7d9f8c6b5a', namespace: 'kube-system', node: 'cluster-main', app: 'traefik', phase: 'Running', age: '7d', podIP: '10.244.0.3', restartCount: 0 },
+  { name: 'local-path-provisioner-5f8b9c7d6f', namespace: 'kube-system', node: 'cluster-main', app: 'local-path-provisioner', phase: 'Running', age: '7d', podIP: '10.244.0.4', restartCount: 0 },
+  { name: 'metrics-server-84c9d4cf6b', namespace: 'kube-system', node: 'cluster-main', app: 'metrics-server', phase: 'Running', age: '7d', podIP: '10.244.0.5', restartCount: 0 },
+  { name: 'coredns-5d78c9869d-xm2n4', namespace: 'kube-system', node: 'cluster-main', app: 'coredns', phase: 'Running', age: '7d', podIP: '10.244.0.6', restartCount: 0 },
 
   // Monitoring stack
-  { name: 'prometheus-server-5f8b9c7d6f-xm2n4', namespace: 'monitoring', node: 'cluster-main', app: 'prometheus' },
-  { name: 'grafana-84c9d4cf6b-k8s9x', namespace: 'monitoring', node: 'cluster-main', app: 'grafana' },
+  { name: 'prometheus-server-5f8b9c7d6f-xm2n4', namespace: 'monitoring', node: 'cluster-main', app: 'prometheus', phase: 'Running', age: '3d', podIP: '10.244.1.2', restartCount: 1 },
+  { name: 'grafana-84c9d4cf6b-k8s9x', namespace: 'monitoring', node: 'cluster-main', app: 'grafana', phase: 'Running', age: '3d', podIP: '10.244.1.3', restartCount: 0 },
 
   // Application pods - nginx
-  { name: 'nginx-deployment-7d9f8c6b5a-abc12', namespace: 'default', node: 'cluster-main', app: 'nginx' },
-  { name: 'nginx-deployment-7d9f8c6b5a-def34', namespace: 'default', node: 'cluster-main', app: 'nginx' },
-  { name: 'nginx-deployment-7d9f8c6b5a-ghi56', namespace: 'default', node: 'cluster-main', app: 'nginx' },
+  { name: 'nginx-deployment-7d9f8c6b5a-abc12', namespace: 'default', node: 'cluster-main', app: 'nginx', phase: 'Running', age: '5d', podIP: '10.244.2.2', restartCount: 0 },
+  { name: 'nginx-deployment-7d9f8c6b5a-def34', namespace: 'default', node: 'cluster-main', app: 'nginx', phase: 'Running', age: '5d', podIP: '10.244.2.3', restartCount: 0 },
+  { name: 'nginx-deployment-7d9f8c6b5a-ghi56', namespace: 'default', node: 'cluster-main', app: 'nginx', phase: 'Running', age: '5d', podIP: '10.244.2.4', restartCount: 0 },
 
   // Application pods - API server
-  { name: 'api-server-deployment-5f7b8c9d-def456', namespace: 'production', node: 'cluster-main', app: 'api-server' },
-  { name: 'api-server-deployment-5f7b8c9d-xyz789', namespace: 'production', node: 'cluster-main', app: 'api-server' },
+  { name: 'api-server-deployment-5f7b8c9d-def456', namespace: 'production', node: 'cluster-main', app: 'api-server', phase: 'Running', age: '2d', podIP: '10.244.3.2', restartCount: 1 },
+  { name: 'api-server-deployment-5f7b8c9d-xyz789', namespace: 'production', node: 'cluster-main', app: 'api-server', phase: 'Running', age: '2d', podIP: '10.244.3.3', restartCount: 0 },
 
   // Database pods
-  { name: 'redis-cache-6a8b9c0d-ghi789', namespace: 'production', node: 'cluster-main', app: 'redis' },
-  { name: 'postgres-database-1a2b3c4d-jkl012', namespace: 'production', node: 'cluster-main', app: 'postgres' },
+  { name: 'redis-cache-6a8b9c0d-ghi789', namespace: 'production', node: 'cluster-main', app: 'redis', phase: 'Running', age: '4d', podIP: '10.244.3.4', restartCount: 2 },
+  { name: 'postgres-database-1a2b3c4d-jkl012', namespace: 'production', node: 'cluster-main', app: 'postgres', phase: 'Running', age: '6d', podIP: '10.244.3.5', restartCount: 0 },
 
   // Frontend pods
-  { name: 'frontend-app-8e9f0a1b-mno345', namespace: 'default', node: 'cluster-main', app: 'frontend' },
-  { name: 'frontend-app-8e9f0a1b-pqr678', namespace: 'default', node: 'cluster-main', app: 'frontend' },
+  { name: 'frontend-app-8e9f0a1b-mno345', namespace: 'default', node: 'cluster-main', app: 'frontend', phase: 'Running', age: '1d', podIP: '10.244.2.5', restartCount: 1 },
+  { name: 'frontend-app-8e9f0a1b-pqr678', namespace: 'default', node: 'cluster-main', app: 'frontend', phase: 'Running', age: '1d', podIP: '10.244.2.6', restartCount: 0 },
 
   // Problem pods
-  { name: 'failing-app-deployment-7d9f8c6b5a-k8s9x', namespace: 'production', node: 'cluster-main', app: 'failing-app' },
-  { name: 'pending-pod-xyz789', namespace: 'staging', node: 'cluster-main', app: 'pending-app' },
+  { name: 'failing-app-deployment-7d9f8c6b5a-k8s9x', namespace: 'production', node: 'cluster-main', app: 'failing-app', phase: 'Failed', age: '1h', podIP: '10.244.3.6', restartCount: 5 },
+  { name: 'pending-pod-xyz789', namespace: 'staging', node: 'cluster-main', app: 'pending-app', phase: 'Pending', age: '30m', podIP: '', restartCount: 0 },
 ] as const;
 
 // Services
