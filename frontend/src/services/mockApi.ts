@@ -2,26 +2,25 @@
  * Mock API service to provide consistent data when backend is not available
  */
 
-import { mockPods } from '@mocks/k8s/pods';
-import { MASTER_SERVICES, MASTER_NAMESPACES } from '@mocks/masterData';
+import { MASTER_PODS, MASTER_SERVICES, MASTER_NAMESPACES } from '@mocks/masterData';
 import unifiedMockData from '@mocks/unifiedMockData';
 import { API_ENDPOINTS } from '@constants';
 
-// Convert mockPods to the expected API format
-const convertPodMetricsToApiFormat = (pods: typeof mockPods) => {
+// Convert MASTER_PODS to the expected API format
+const convertPodMetricsToApiFormat = (pods: typeof MASTER_PODS) => {
   return pods.map(pod => ({
     name: pod.name,
     namespace: pod.namespace,
-    status: pod.status,
+    status: pod.phase, // Use phase instead of status
     node: pod.node,
-    ready: pod.status === 'Running' ? '1/1' : '0/1',
-    restarts: pod.restart_count,
+    ready: pod.phase === 'Running' ? '1/1' : '0/1',
+    restarts: pod.restartCount || 0,
     age: pod.age,
-    ip: `10.244.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-    cpu: `${pod.cpu_usage.used}m`,
-    memory: `${Math.round(pod.memory_usage.used / 1048576)}Mi`,
+    ip: pod.podIP || `10.244.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+    cpu: `${Math.floor(Math.random() * 100)}m`, // Generate realistic CPU usage
+    memory: `${Math.floor(Math.random() * 512)}Mi`, // Generate realistic memory usage
     labels: {
-      app: pod.name.split('-')[0],
+      app: pod.app || pod.name.split('-')[0],
       version: 'v1.0.0'
     }
   }));
@@ -66,7 +65,7 @@ export const setupMockApi = () => {
       const urlObj = new URL(url, window.location.origin);
       const namespace = urlObj.searchParams.get('namespace');
       
-      let pods = convertPodMetricsToApiFormat(mockPods);
+      let pods = convertPodMetricsToApiFormat(MASTER_PODS);
       
       // Filter by namespace if specified
       if (namespace && namespace !== 'all') {
