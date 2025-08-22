@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import React, { useState, useEffect, useCallback, type FC } from 'react';
 import { X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
 import { ContainerImage } from '@/types';
 import { API_ENDPOINTS } from '@constants';
@@ -22,6 +22,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   
   // Deployment states
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
+  
   const [deploying, setDeploying] = useState(false);
   const [currentStep, setCurrentStep] = useState<'configure' | 'preview' | 'committed'>('configure');
   const [yamlPreview, setYamlPreview] = useState<string>('');
@@ -95,7 +96,63 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         setSelectedImage(preselectedImage);
       }
     }
-  }, [isOpen, preselectedImage, fetchImages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, preselectedImage]);
+
+  // Form field updaters for controlled inputs (selectors and checkboxes only)
+  const updateFormField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const updateStorageField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      storage: { ...prev.storage, [field]: value }
+    }));
+  }, []);
+
+  const updateHealthCheckField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      healthCheck: { ...prev.healthCheck, [field]: value }
+    }));
+  }, []);
+
+  const updateIngressField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      ingress: { ...prev.ingress, [field]: value }
+    }));
+  }, []);
+
+  const updateAutoscalingField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      autoscaling: { ...prev.autoscaling, [field]: value }
+    }));
+  }, []);
+
+  const updateServiceField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      service: { ...prev.service, [field]: value }
+    }));
+  }, []);
+
+  const updateDeploymentField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      deployment: { ...prev.deployment, [field]: value }
+    }));
+  }, []);
+
+  const updateSecurityField = useCallback((field: string, value: any) => {
+    setDeployForm(prev => ({
+      ...prev,
+      security: { ...prev.security, [field]: value }
+    }));
+  }, []);
+
 
 
   // Step 1: Generate and preview YAML manifest
@@ -359,7 +416,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         <div className="flex-1 overflow-y-auto px-8 py-4">
 
         {/* Step-based Content */}
-        {currentStep === 'configure' && (
+        <div className={currentStep === 'configure' ? 'block' : 'hidden'}>
           <>
             {/* Container Image Selection at Top */}
             <div className="mb-6 pb-6 border-b border-white/30">
@@ -393,23 +450,19 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 
             {/* Configuration Form in 2 Columns */}
             <div className="space-y-6">
-              <h4 className="text-lg font-bold text-white font-mono tracking-wider">CONFIGURATION</h4>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-6">
               {/* Basic Configuration */}
               <div>
-                <h5 className="text-sm font-bold text-gray-300 mb-3 font-mono tracking-wider border-b border-white/20 pb-2">BASIC</h5>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">APPLICATION NAME</label>
+                    <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">APPLICATION NAME</label>
                     <input
                       type="text"
-                      value={deployForm.name}
-                      onChange={(e) => setDeployForm(prev => ({...prev, name: e.target.value}))}
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       placeholder="my-app"
+                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -422,89 +475,66 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                           { value: 'default', label: 'DEFAULT' },
                           { value: 'kube-system', label: 'KUBE-SYSTEM' }
                         ]}
-                        onChange={(value) => setDeployForm(prev => ({...prev, namespace: value}))}
+                        onChange={(value) => updateFormField('namespace', value)}
                         icon={Database}
                         size="sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-mono text-gray-400 mb-1">REPLICAS</label>
+                      <label className="block text-xs font-mono text-white mb-1 font-bold">REPLICAS</label>
                       <input
                         type="number"
                         min="1"
-                        value={deployForm.replicas}
-                        onChange={(e) => setDeployForm(prev => ({...prev, replicas: parseInt(e.target.value)}))}
+                        placeholder="1"
                         className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">CONTAINER PORT</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">CONTAINER PORT</label>
                     <input
                       type="number"
                       min="1"
                       max="65535"
-                      value={deployForm.port}
-                      onChange={(e) => setDeployForm(prev => ({...prev, port: parseInt(e.target.value)}))}
-                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       placeholder="8080"
+                      className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
                 </div>
               </div>
               {/* Resource Limits */}
               <div>
-                <h5 className="text-sm font-bold text-gray-300 mb-3 font-mono tracking-wider border-b border-white/20 pb-2">RESOURCES</h5>
+                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">RESOURCES</label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">CPU REQUEST</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">CPU REQUEST</label>
                     <input
                       type="text"
-                      placeholder="e.g., 10m"
-                      value={deployForm.resources.cpu_request}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        resources: {...prev.resources, cpu_request: e.target.value}
-                      }))}
+                      placeholder="10m"
                       className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">CPU LIMIT</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">CPU LIMIT</label>
                     <input
                       type="text"
-                      placeholder="e.g., 50m"
-                      value={deployForm.resources.cpu_limit}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        resources: {...prev.resources, cpu_limit: e.target.value}
-                      }))}
+                      placeholder="50m"
                       className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">MEMORY REQUEST</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">MEMORY REQUEST</label>
                     <input
                       type="text"
-                      placeholder="e.g., 32Mi"
-                      value={deployForm.resources.memory_request}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        resources: {...prev.resources, memory_request: e.target.value}
-                      }))}
+                      placeholder="32Mi"
                       className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">MEMORY LIMIT</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">MEMORY LIMIT</label>
                     <input
                       type="text"
-                      placeholder="e.g., 64Mi"
-                      value={deployForm.resources.memory_limit}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        resources: {...prev.resources, memory_limit: e.target.value}
-                      }))}
+                      placeholder="64Mi"
                       className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
@@ -513,17 +543,14 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 
               {/* Persistent Storage */}
               <div>
-                <h5 className="text-sm font-bold text-gray-300 mb-3 font-mono tracking-wider border-b border-white/20 pb-2">STORAGE</h5>
+                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">STORAGE</label>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
                       id="storage"
                       checked={deployForm.storage.enabled}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        storage: {...prev.storage, enabled: e.target.checked}
-                      }))}
+                      onChange={(e) => updateStorageField('enabled', e.target.checked)}
                       className="bg-black border border-white w-4 h-4"
                     />
                     <label htmlFor="storage" className="text-sm font-mono text-gray-300">ENABLE PERSISTENT VOLUME</label>
@@ -532,15 +559,10 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-mono text-gray-400 mb-1">SIZE</label>
+                          <label className="block text-xs font-mono text-white mb-1 font-bold">SIZE</label>
                           <input
                             type="text"
-                            placeholder="e.g., 512Mi, 20Gi"
-                            value={deployForm.storage.size}
-                            onChange={(e) => setDeployForm(prev => ({
-                              ...prev,
-                              storage: {...prev.storage, size: e.target.value}
-                            }))}
+                            placeholder="20Gi"
                             className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                           />
                         </div>
@@ -553,25 +575,17 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                               { value: 'ReadOnlyMany', label: 'READ ONLY MANY' },
                               { value: 'ReadWriteMany', label: 'READ WRITE MANY' }
                             ]}
-                            onChange={(value) => setDeployForm(prev => ({
-                              ...prev,
-                              storage: {...prev.storage, accessMode: value}
-                            }))}
+                            onChange={(value) => updateStorageField('accessMode', value)}
                             icon={Shield}
                             size="sm"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-mono text-gray-400 mb-1">MOUNT PATH</label>
+                        <label className="block text-xs font-mono text-white mb-1 font-bold">MOUNT PATH</label>
                         <input
                           type="text"
-                          placeholder="e.g., /data"
-                          value={deployForm.storage.mountPath}
-                          onChange={(e) => setDeployForm(prev => ({
-                            ...prev,
-                            storage: {...prev.storage, mountPath: e.target.value}
-                          }))}
+                          placeholder="/data"
                           className="w-full bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                         />
                       </div>
@@ -585,7 +599,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
             <div className="space-y-6">
               {/* Service & Networking */}
               <div>
-                <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">ENVIRONMENT VARIABLES</label>
+                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">ENVIRONMENT VARIABLES</label>
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-mono text-gray-400 mb-2">FROM SECRETS (secretKeyRef)</label>
@@ -638,10 +652,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                     type="checkbox"
                     id="healthcheck"
                     checked={deployForm.healthCheck.enabled}
-                    onChange={(e) => setDeployForm(prev => ({
-                      ...prev,
-                      healthCheck: {...prev.healthCheck, enabled: e.target.checked}
-                    }))}
+                    onChange={(e) => updateHealthCheckField('enabled', e.target.checked)}
                     className="bg-black border border-white w-4 h-4"
                   />
                   <label htmlFor="healthcheck" className="text-sm font-mono text-gray-300 tracking-wider">ENABLE HEALTH CHECKS</label>
@@ -650,79 +661,46 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <CustomSelector
-                        value={deployForm.healthCheck.type}
+                        defaultValue={deployForm.healthCheck.type}
                         options={[
                           { value: 'http', label: 'HTTP GET' },
                           { value: 'exec', label: 'EXEC COMMAND' },
                           { value: 'tcp', label: 'TCP SOCKET' }
                         ]}
-                        onChange={(value) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, type: value}
-                        }))}
+                        onChange={(value) => updateHealthCheckField('type', value)}
                         icon={Activity}
                         size="sm"
                       />
                       <input
                         type="text"
-                        placeholder={deployForm.healthCheck.type === 'http' ? 'PATH (e.g., /api/healthz)' : deployForm.healthCheck.type === 'exec' ? 'COMMAND' : 'PORT'}
-                        value={deployForm.healthCheck.path}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, path: e.target.value}
-                        }))}
+                        placeholder="/health"
                         className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                       />
                     </div>
                     <div className="grid grid-cols-5 gap-2">
                       <input
                         type="number"
-                        placeholder="INITIAL DELAY"
-                        value={deployForm.healthCheck.initialDelaySeconds}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, initialDelaySeconds: parseInt(e.target.value)}
-                        }))}
+                        placeholder="30"
                         className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
                       />
                       <input
                         type="number"
-                        placeholder="TIMEOUT"
-                        value={deployForm.healthCheck.timeoutSeconds}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, timeoutSeconds: parseInt(e.target.value)}
-                        }))}
+                        placeholder="5"
                         className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
                       />
                       <input
                         type="number"
-                        placeholder="PERIOD"
-                        value={deployForm.healthCheck.periodSeconds}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, periodSeconds: parseInt(e.target.value)}
-                        }))}
+                        placeholder="10"
                         className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
                       />
                       <input
                         type="number"
-                        placeholder="SUCCESS"
-                        value={deployForm.healthCheck.successThreshold}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, successThreshold: parseInt(e.target.value)}
-                        }))}
+                        placeholder="1"
                         className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
                       />
                       <input
                         type="number"
-                        placeholder="FAILURE"
-                        value={deployForm.healthCheck.failureThreshold}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          healthCheck: {...prev.healthCheck, failureThreshold: parseInt(e.target.value)}
-                        }))}
+                        placeholder="3"
                         className="bg-black border border-white text-white px-2 py-2 font-mono text-sm"
                       />
                     </div>
@@ -735,7 +713,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 
               {/* Volume Mounts */}
               <div>
-                <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">VOLUME MOUNTS</label>
+                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">VOLUME MOUNTS</label>
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-3">
                     <input
@@ -770,10 +748,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                     type="checkbox"
                     id="ingress"
                     checked={deployForm.ingress.enabled}
-                    onChange={(e) => setDeployForm(prev => ({
-                      ...prev,
-                      ingress: {...prev.ingress, enabled: e.target.checked}
-                    }))}
+                    onChange={(e) => updateIngressField('enabled', e.target.checked)}
                     className="bg-black border border-white"
                   />
                   <label htmlFor="ingress" className="text-xs font-mono text-gray-300 tracking-wider">ENABLE INGRESS</label>
@@ -782,22 +757,12 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="text"
-                      placeholder="HOST (e.g., app.example.com)"
-                      value={deployForm.ingress.host}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        ingress: {...prev.ingress, host: e.target.value}
-                      }))}
+                      placeholder="app.example.com"
                       className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                     <input
                       type="text"
-                      placeholder="PATH"
-                      value={deployForm.ingress.path}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        ingress: {...prev.ingress, path: e.target.value}
-                      }))}
+                      placeholder="/"
                       className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                   </div>
@@ -811,10 +776,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                     type="checkbox"
                     id="autoscaling"
                     checked={deployForm.autoscaling.enabled}
-                    onChange={(e) => setDeployForm(prev => ({
-                      ...prev,
-                      autoscaling: {...prev.autoscaling, enabled: e.target.checked}
-                    }))}
+                    onChange={(e) => updateAutoscalingField('enabled', e.target.checked)}
                     className="bg-black border border-white"
                   />
                   <label htmlFor="autoscaling" className="text-xs font-mono text-gray-300 tracking-wider">ENABLE AUTOSCALING</label>
@@ -823,36 +785,21 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                   <div className="grid grid-cols-3 gap-2">
                     <input
                       type="number"
-                      placeholder="MIN REPLICAS"
+                      placeholder="1"
                       min="1"
-                      value={deployForm.autoscaling.minReplicas}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        autoscaling: {...prev.autoscaling, minReplicas: parseInt(e.target.value)}
-                      }))}
                       className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                     <input
                       type="number"
-                      placeholder="MAX REPLICAS"
+                      placeholder="10"
                       min="1"
-                      value={deployForm.autoscaling.maxReplicas}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        autoscaling: {...prev.autoscaling, maxReplicas: parseInt(e.target.value)}
-                      }))}
                       className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                     <input
                       type="number"
-                      placeholder="CPU TARGET %"
+                      placeholder="80"
                       min="1"
                       max="100"
-                      value={deployForm.autoscaling.targetCPUUtilization}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        autoscaling: {...prev.autoscaling, targetCPUUtilization: parseInt(e.target.value)}
-                      }))}
                       className="bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                   </div>
@@ -862,7 +809,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
               {/* Service Configuration & Deployment Strategy */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-gray-300 mb-2">SERVICE TYPE</label>
+                  <label className="block text-xs font-mono text-white mb-2 font-bold">SERVICE TYPE</label>
                   <CustomSelector
                     value={deployForm.service.type}
                     options={[
@@ -870,27 +817,21 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       { value: 'NodePort', label: 'NODE PORT' },
                       { value: 'LoadBalancer', label: 'LOAD BALANCER' }
                     ]}
-                    onChange={(value) => setDeployForm(prev => ({
-                      ...prev,
-                      service: {...prev.service, type: value}
-                    }))}
+                    onChange={(value) => updateServiceField('type', value)}
                     icon={Globe}
                     size="xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-gray-300 mb-2">DEPLOYMENT STRATEGY</label>
+                  <label className="block text-xs font-mono text-white mb-2 font-bold">DEPLOYMENT STRATEGY</label>
                   <CustomSelector
-                    value={deployForm.deployment.strategy}
+                    defaultValue={deployForm.deployment.strategy}
                     options={[
                       { value: 'RollingUpdate', label: 'ROLLING UPDATE' },
                       { value: 'Recreate', label: 'RECREATE' }
                     ]}
-                    onChange={(value) => setDeployForm(prev => ({
-                      ...prev,
-                      deployment: {...prev.deployment, strategy: value}
-                    }))}
+                    onChange={(value) => updateDeploymentField('strategy', value)}
                     icon={Server}
                     size="xs"
                   />
@@ -901,28 +842,18 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
               {deployForm.deployment.strategy === 'RollingUpdate' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">MAX SURGE</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">MAX SURGE</label>
                     <input
                       type="text"
                       placeholder="25%"
-                      value={deployForm.deployment.maxSurge}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        deployment: {...prev.deployment, maxSurge: e.target.value}
-                      }))}
                       className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-gray-400 mb-1">MAX UNAVAILABLE</label>
+                    <label className="block text-xs font-mono text-white mb-1 font-bold">MAX UNAVAILABLE</label>
                     <input
                       type="text"
                       placeholder="25%"
-                      value={deployForm.deployment.maxUnavailable}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        deployment: {...prev.deployment, maxUnavailable: e.target.value}
-                      }))}
                       className="w-full bg-black border border-white text-white px-2 py-1 font-mono text-xs"
                     />
                   </div>
@@ -931,27 +862,17 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 
               {/* Security Context */}
               <div>
-                <label className="block text-sm font-mono text-gray-300 mb-3 tracking-wider">SECURITY CONTEXT</label>
+                <label className="block text-sm font-mono text-white mb-3 tracking-wider font-bold">SECURITY CONTEXT</label>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <input
                       type="number"
-                      placeholder="USER ID (e.g., 1000)"
-                      value={deployForm.security.runAsUser}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        security: {...prev.security, runAsUser: parseInt(e.target.value)}
-                      }))}
+                      placeholder="1000"
                       className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                     <input
                       type="number"
-                      placeholder="GROUP ID (e.g., 1000)"
-                      value={deployForm.security.runAsGroup}
-                      onChange={(e) => setDeployForm(prev => ({
-                        ...prev,
-                        security: {...prev.security, runAsGroup: parseInt(e.target.value)}
-                      }))}
+                      placeholder="1000"
                       className="bg-black border border-white text-white px-3 py-2 font-mono text-sm"
                     />
                   </div>
@@ -961,10 +882,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                         type="checkbox"
                         id="runAsNonRoot"
                         checked={deployForm.security.runAsNonRoot}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          security: {...prev.security, runAsNonRoot: e.target.checked}
-                        }))}
+                        onChange={(e) => updateSecurityField('runAsNonRoot', e.target.checked)}
                         className="bg-black border border-white w-4 h-4"
                       />
                       <label htmlFor="runAsNonRoot" className="text-sm font-mono text-gray-300">RUN AS NON-ROOT</label>
@@ -974,10 +892,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                         type="checkbox"
                         id="readOnlyRoot"
                         checked={deployForm.security.readOnlyRootFilesystem}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          security: {...prev.security, readOnlyRootFilesystem: e.target.checked}
-                        }))}
+                        onChange={(e) => updateSecurityField('readOnlyRootFilesystem', e.target.checked)}
                         className="bg-black border border-white w-4 h-4"
                       />
                       <label htmlFor="readOnlyRoot" className="text-sm font-mono text-gray-300">READ-ONLY ROOT FILESYSTEM</label>
@@ -987,10 +902,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                         type="checkbox"
                         id="allowPrivEsc"
                         checked={!deployForm.security.allowPrivilegeEscalation}
-                        onChange={(e) => setDeployForm(prev => ({
-                          ...prev,
-                          security: {...prev.security, allowPrivilegeEscalation: !e.target.checked}
-                        }))}
+                        onChange={(e) => updateSecurityField('allowPrivilegeEscalation', !e.target.checked)}
                         className="bg-black border border-white w-4 h-4"
                       />
                       <label htmlFor="allowPrivEsc" className="text-sm font-mono text-gray-300">PREVENT PRIVILEGE ESCALATION</label>
@@ -1005,10 +917,10 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
           </div>
             </div>
           </>
-        )}
+        </div>
 
         {/* YAML Preview Step */}
-        {currentStep === 'preview' && (
+        <div className={currentStep === 'preview' ? 'block' : 'hidden'}>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-lg font-bold text-white font-mono tracking-wider">YAML PREVIEW</h4>
@@ -1026,10 +938,10 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
               Review the generated Kubernetes manifest. Click "COMMIT TO GIT" to save this deployment configuration.
             </div>
           </div>
-        )}
+        </div>
 
         {/* Committed Step */}
-        {currentStep === 'committed' && (
+        <div className={currentStep === 'committed' ? 'block' : 'hidden'}>
           <div className="space-y-6">
             <div className="text-center p-8">
               <div className="text-green-400 text-6xl mb-4">✓</div>
@@ -1049,7 +961,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
               </div>
             </div>
           </div>
-        )}
+        </div>
         </div>
 
         {/* Fixed Footer */}
