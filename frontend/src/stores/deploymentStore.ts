@@ -10,7 +10,8 @@ import type {
 } from '@/types/deployments';
 
 // Import mock utilities  
-import { mockApiResponse, mockRegistries, MOCK_ENABLED } from '@mocks';
+import { mockApiResponse, MOCK_ENABLED } from '@mocks';
+import { MASTER_REGISTRIES } from '@mocks/masterData';
 import { apiService, ApiError } from '@services/api';
 
 interface DeploymentStore {
@@ -108,7 +109,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const registries = await mockApiResponse(mockRegistries, 300);
+        const registries = await mockApiResponse(MASTER_REGISTRIES, 300);
         set({ registries, loading: { ...get().loading, registries: false } });
       } else {
         const response = await apiService.get<Registry[]>(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`);
