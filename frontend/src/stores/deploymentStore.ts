@@ -109,7 +109,7 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     
     try {
       if (MOCK_ENABLED) {
-        const registries = await mockApiResponse(MASTER_REGISTRIES, 300);
+        const registries = await mockApiResponse([...MASTER_REGISTRIES], 300);
         set({ registries, loading: { ...get().loading, registries: false } });
       } else {
         const response = await apiService.get<Registry[]>(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/registries`);
