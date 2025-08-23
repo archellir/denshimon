@@ -28,6 +28,8 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   const [deploying, setDeploying] = useState(false);
   const [currentStep, setCurrentStep] = useState<'configure' | 'preview' | 'committed'>('configure');
   const [yamlPreview, setYamlPreview] = useState<string>('');
+  const [editedYaml, setEditedYaml] = useState<string>('');
+  const [isEditingYaml, setIsEditingYaml] = useState<boolean>(false);
   const [deploymentId, setDeploymentId] = useState<string>('');
 
   // Deployment form state
@@ -240,7 +242,9 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
             }
           },
           environment: deployForm.environment || {},
-          service_type: 'backend' // Default service type
+          service_type: 'backend', // Default service type
+          // Include edited YAML if user has modified it
+          ...(editedYaml && editedYaml !== yamlPreview ? { custom_yaml: editedYaml } : {})
         })
       });
 
@@ -293,6 +297,8 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   const resetModal = () => {
     setCurrentStep('configure');
     setYamlPreview('');
+    setEditedYaml('');
+    setIsEditingYaml(false);
     setDeploymentId('');
     setSelectedImage(null);
     setDeployForm({
@@ -1083,32 +1089,57 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-lg font-bold text-white font-mono tracking-wider">YAML PREVIEW</h4>
-              <button
-                onClick={() => setCurrentStep('configure')}
-                className="px-3 py-1 border border-gray-400 text-gray-400 hover:bg-gray-400 hover:text-black transition-colors font-mono text-xs"
-              >
-                ← BACK TO CONFIG
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    if (!isEditingYaml) {
+                      setEditedYaml(yamlPreview);
+                    }
+                    setIsEditingYaml(!isEditingYaml);
+                  }}
+                  className="px-3 py-1 border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black transition-colors font-mono text-xs"
+                >
+                  {isEditingYaml ? 'VIEW MODE' : 'EDIT YAML'}
+                </button>
+                <button
+                  onClick={() => setCurrentStep('configure')}
+                  className="px-3 py-1 border border-gray-400 text-gray-400 hover:bg-gray-400 hover:text-black transition-colors font-mono text-xs"
+                >
+                  ← BACK TO CONFIG
+                </button>
+              </div>
             </div>
             <div className="bg-gray-900 border border-white rounded-sm overflow-hidden">
-              <SyntaxHighlighter
-                language="yaml"
-                style={vscDarkPlus}
-                customStyle={{
-                  margin: 0,
-                  padding: '16px',
-                  background: '#1a1a1a',
-                  fontSize: '12px',
-                  maxHeight: '384px',
-                  overflow: 'auto'
-                }}
-                wrapLongLines={true}
-              >
-                {yamlPreview || '# YAML manifest will be generated here...'}
-              </SyntaxHighlighter>
+              {isEditingYaml ? (
+                <textarea
+                  value={editedYaml}
+                  onChange={(e) => setEditedYaml(e.target.value)}
+                  className="w-full h-96 p-4 bg-gray-900 text-gray-100 font-mono text-xs resize-none focus:outline-none focus:ring-1 focus:ring-yellow-400 border-none"
+                  placeholder="# Edit YAML manifest here..."
+                  spellCheck={false}
+                />
+              ) : (
+                <SyntaxHighlighter
+                  language="yaml"
+                  style={vscDarkPlus}
+                  customStyle={{
+                    margin: 0,
+                    padding: '16px',
+                    background: '#1a1a1a',
+                    fontSize: '12px',
+                    maxHeight: '384px',
+                    overflow: 'auto'
+                  }}
+                  wrapLongLines={true}
+                >
+                  {(isEditingYaml ? editedYaml : yamlPreview) || '# YAML manifest will be generated here...'}
+                </SyntaxHighlighter>
+              )}
             </div>
             <div className="text-sm text-gray-400 font-mono">
-              Review the generated Kubernetes manifest. Click "COMMIT TO GIT" to save this deployment configuration.
+              {isEditingYaml 
+                ? "Edit the YAML manifest as needed. Switch to VIEW MODE to see syntax highlighting." 
+                : "Review the generated Kubernetes manifest. Click EDIT YAML to modify before deployment."}
             </div>
           </div>
         </div>
