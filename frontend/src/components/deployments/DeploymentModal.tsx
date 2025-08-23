@@ -1,13 +1,133 @@
 import { useState, useEffect, useCallback, useRef, type FC } from 'react';
 import { X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 import { ContainerImage } from '@/types';
 import { API_ENDPOINTS } from '@constants';
 import useModalKeyboard from '@hooks/useModalKeyboard';
 import useDeploymentStore from '@stores/deploymentStore';
 import CustomSelector from '@components/common/CustomSelector';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
+// Types
+type DeploymentStep = 'configure' | 'preview' | 'committed';
+
+interface DeploymentFormData {
+  name: string;
+  namespace: string;
+  replicas: number;
+  port: number;
+  resources: {
+    cpu_request: string;
+    cpu_limit: string;
+    memory_request: string;
+    memory_limit: string;
+  };
+  storage: {
+    enabled: boolean;
+    size: string;
+    accessMode: string;
+    mountPath: string;
+  };
+  healthCheck: {
+    enabled: boolean;
+    type: string;
+    path: string;
+    initialDelaySeconds: number;
+    timeoutSeconds: number;
+    periodSeconds: number;
+    successThreshold: number;
+    failureThreshold: number;
+  };
+  ingress: {
+    enabled: boolean;
+    host: string;
+    path: string;
+  };
+  autoscaling: {
+    enabled: boolean;
+    minReplicas: number;
+    maxReplicas: number;
+    targetCPUUtilization: number;
+  };
+  service: {
+    type: string;
+    port: number;
+    targetPort: number;
+  };
+  deployment: {
+    strategy: string;
+    maxSurge: string;
+    maxUnavailable: string;
+  };
+  security: {
+    runAsNonRoot: boolean;
+    readOnlyRootFilesystem: boolean;
+    allowPrivilegeEscalation: boolean;
+  };
+  environment: Record<string, string>;
+  labels: Record<string, string>;
+  annotations: Record<string, string>;
+}
+
+// Default form values
+const DEFAULT_FORM_DATA: DeploymentFormData = {
+  name: '',
+  namespace: 'base-infra',
+  replicas: 1,
+  port: 8080,
+  resources: {
+    cpu_request: '10m',
+    cpu_limit: '50m',
+    memory_request: '32Mi',
+    memory_limit: '64Mi'
+  },
+  storage: {
+    enabled: false,
+    size: '20Gi',
+    accessMode: 'ReadWriteOnce',
+    mountPath: '/data'
+  },
+  healthCheck: {
+    enabled: false,
+    type: 'http',
+    path: '/health',
+    initialDelaySeconds: 30,
+    timeoutSeconds: 5,
+    periodSeconds: 10,
+    successThreshold: 1,
+    failureThreshold: 3
+  },
+  ingress: {
+    enabled: false,
+    host: '',
+    path: '/'
+  },
+  autoscaling: {
+    enabled: false,
+    minReplicas: 1,
+    maxReplicas: 10,
+    targetCPUUtilization: 80
+  },
+  service: {
+    type: 'ClusterIP',
+    port: 80,
+    targetPort: 8080
+  },
+  deployment: {
+    strategy: 'RollingUpdate',
+    maxSurge: '25%',
+    maxUnavailable: '25%'
+  },
+  security: {
+    runAsNonRoot: true,
+    readOnlyRootFilesystem: false,
+    allowPrivilegeEscalation: false
+  },
+  environment: {},
+  labels: {},
+  annotations: {}
+};
 
 interface DeploymentModalProps {
   isOpen?: boolean;
@@ -22,81 +142,28 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 }) => {
   const { images, fetchImages } = useDeploymentStore();
   
-  // Deployment states
+  // === CORE STATE ===
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
+  const [deployForm, setDeployForm] = useState<DeploymentFormData>(DEFAULT_FORM_DATA);
   
+  // === UI STATE ===
+  const [currentStep, setCurrentStep] = useState<DeploymentStep>('configure');
   const [deploying, setDeploying] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'configure' | 'preview' | 'committed'>('configure');
+  const [buttonEnabled, setButtonEnabled] = useState(false);
+  
+  // === YAML STATE ===
   const [yamlPreview, setYamlPreview] = useState<string>('');
   const [editedYaml, setEditedYaml] = useState<string>('');
   const [isEditingYaml, setIsEditingYaml] = useState<boolean>(false);
+  
+  // === DEPLOYMENT TRACKING ===
   const [deploymentId, setDeploymentId] = useState<string>('');
 
-  // Refs for uncontrolled inputs (to avoid focus loss)
+  // === REFS (for uncontrolled inputs to avoid focus loss) ===
   const nameRef = useRef<HTMLInputElement>(null);
   const replicasRef = useRef<HTMLInputElement>(null);
   const portRef = useRef<HTMLInputElement>(null);
 
-  // Deployment form state
-  const [deployForm, setDeployForm] = useState({
-    name: '',
-    namespace: 'base-infra',
-    replicas: 1,
-    port: 8080,
-    resources: {
-      cpu_request: '10m',
-      cpu_limit: '50m',
-      memory_request: '32Mi',
-      memory_limit: '64Mi'
-    },
-    storage: {
-      enabled: false,
-      size: '20Gi',
-      accessMode: 'ReadWriteOnce',
-      mountPath: '/data'
-    },
-    healthCheck: {
-      enabled: false,
-      type: 'http',
-      path: '/health',
-      initialDelaySeconds: 30,
-      timeoutSeconds: 5,
-      periodSeconds: 10,
-      successThreshold: 1,
-      failureThreshold: 3
-    },
-    ingress: {
-      enabled: false,
-      host: '',
-      path: '/'
-    },
-    autoscaling: {
-      enabled: false,
-      minReplicas: 1,
-      maxReplicas: 10,
-      targetCPUUtilization: 80
-    },
-    service: {
-      type: 'ClusterIP',
-      port: 80,
-      targetPort: 8080
-    },
-    deployment: {
-      strategy: 'RollingUpdate',
-      maxSurge: '25%',
-      maxUnavailable: '25%'
-    },
-    security: {
-      runAsNonRoot: true,
-      runAsUser: 1000,
-      runAsGroup: 1000,
-      readOnlyRootFilesystem: false,
-      allowPrivilegeEscalation: false
-    },
-    labels: {} as Record<string, string>,
-    annotations: {} as Record<string, string>,
-    environment: {} as Record<string, string>
-  });
 
   useEffect(() => {
     if (isOpen) {
@@ -108,61 +175,40 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, preselectedImage]);
 
-  // Form field updaters for controlled inputs (selectors and checkboxes only)
+  // === FORM FIELD UPDATERS (for controlled inputs only) ===
   const updateFormField = useCallback((field: string, value: any) => {
     setDeployForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const updateStorageField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      storage: { ...prev.storage, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, storage: { ...prev.storage, [field]: value } }));
   }, []);
 
   const updateHealthCheckField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      healthCheck: { ...prev.healthCheck, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, healthCheck: { ...prev.healthCheck, [field]: value } }));
   }, []);
 
   const updateIngressField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      ingress: { ...prev.ingress, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, ingress: { ...prev.ingress, [field]: value } }));
   }, []);
 
   const updateAutoscalingField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      autoscaling: { ...prev.autoscaling, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, autoscaling: { ...prev.autoscaling, [field]: value } }));
   }, []);
 
   const updateServiceField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      service: { ...prev.service, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, service: { ...prev.service, [field]: value } }));
   }, []);
 
   const updateDeploymentField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      deployment: { ...prev.deployment, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, deployment: { ...prev.deployment, [field]: value } }));
   }, []);
 
   const updateSecurityField = useCallback((field: string, value: any) => {
-    setDeployForm(prev => ({
-      ...prev,
-      security: { ...prev.security, [field]: value }
-    }));
+    setDeployForm(prev => ({ ...prev, security: { ...prev.security, [field]: value } }));
   }, []);
 
-  // Get current form values from refs (for uncontrolled inputs)
+  // === FORM VALIDATION ===
   const getCurrentFormValues = useCallback(() => {
     const name = nameRef.current?.value || '';
     const replicas = parseInt(replicasRef.current?.value || '1');
@@ -176,23 +222,17 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     };
   }, [deployForm]);
 
-  // Button enabled when image is selected AND name field has content (check on render only)
-  const [buttonEnabled, setButtonEnabled] = useState(false);
-  
-  // Check if form is complete (called strategically to avoid focus loss)
   const checkIfFormComplete = useCallback(() => {
     const name = nameRef.current?.value?.trim() || '';
     const isComplete = Boolean(selectedImage && name);
     setButtonEnabled(isComplete);
   }, [selectedImage]);
 
-  // Check form completion when selectedImage changes
   useEffect(() => {
     checkIfFormComplete();
   }, [selectedImage, checkIfFormComplete]);
 
-
-
+  // === API HANDLERS ===
   // Step 1: Generate and preview YAML manifest
   const handleGeneratePreview = async () => {
     const currentValues = getCurrentFormValues();
@@ -335,7 +375,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     }
   };
 
-  // Reset modal to initial state
+  // === UTILITY FUNCTIONS ===
   const resetModal = () => {
     setCurrentStep('configure');
     setYamlPreview('');
@@ -343,65 +383,13 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     setIsEditingYaml(false);
     setDeploymentId('');
     setSelectedImage(null);
-    setDeployForm({
-      name: '',
-      namespace: 'base-infra',
-      replicas: 1,
-      port: 8080,
-      resources: {
-        cpu_request: '10m',
-        cpu_limit: '50m',
-        memory_request: '32Mi',
-        memory_limit: '64Mi'
-      },
-      storage: {
-        enabled: false,
-        size: '20Gi',
-        accessMode: 'ReadWriteOnce',
-        mountPath: '/data'
-      },
-      healthCheck: {
-        enabled: false,
-        type: 'http',
-        path: '/health',
-        initialDelaySeconds: 30,
-        timeoutSeconds: 5,
-        periodSeconds: 10,
-        successThreshold: 1,
-        failureThreshold: 3
-      },
-      ingress: {
-        enabled: false,
-        host: '',
-        path: '/'
-      },
-      autoscaling: {
-        enabled: false,
-        minReplicas: 1,
-        maxReplicas: 10,
-        targetCPUUtilization: 80
-      },
-      service: {
-        type: 'ClusterIP',
-        port: 80,
-        targetPort: 8080
-      },
-      deployment: {
-        strategy: 'RollingUpdate',
-        maxSurge: '25%',
-        maxUnavailable: '25%'
-      },
-      security: {
-        runAsNonRoot: true,
-        runAsUser: 1000,
-        runAsGroup: 1000,
-        readOnlyRootFilesystem: false,
-        allowPrivilegeEscalation: false
-      },
-      labels: {} as Record<string, string>,
-      annotations: {} as Record<string, string>,
-      environment: {} as Record<string, string>
-    });
+    setDeployForm(DEFAULT_FORM_DATA);
+    setButtonEnabled(false);
+    
+    // Clear uncontrolled inputs
+    if (nameRef.current) nameRef.current.value = '';
+    if (replicasRef.current) replicasRef.current.value = '';
+    if (portRef.current) portRef.current.value = '';
   };
 
   // Unified deploy handler that delegates to appropriate step
