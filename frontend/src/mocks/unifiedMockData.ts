@@ -273,6 +273,48 @@ class UnifiedMockDataService {
     };
   }
 
+  // Track a new deployment from UI (for GitOps integration)
+  public trackNewDeployment(deploymentData: any): string {
+    const gitCommitSha = `ui-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+    const deploymentId = `dep-${deploymentData.name.toLowerCase().replace(/[^a-z0-9]/g, '')}-${Math.random().toString(36).substring(2, 8)}`;
+    
+    // Add to pending deployments with GitOps tracking
+    const newDeployment: Deployment = {
+      id: deploymentId,
+      name: deploymentData.name,
+      namespace: deploymentData.namespace,
+      image: deploymentData.image,
+      registryId: deploymentData.registry_id || 'dockerhub',
+      replicas: deploymentData.replicas || 1,
+      availableReplicas: 0,
+      readyReplicas: 0,
+      updatedReplicas: 0,
+      status: 'pending_apply' as any,
+      strategy: {
+        type: DeploymentStrategy.ROLLING_UPDATE,
+        maxSurge: 1,
+        maxUnavailable: 0,
+        nodeSpread: true,
+        zoneSpread: false,
+      },
+      nodeDistribution: {},
+      // GitOps fields - track the commit
+      source: 'denshimon-ui',
+      author: 'admin',
+      git_commit_sha: gitCommitSha,
+      manifest_path: `k8s/${deploymentData.namespace}/${deploymentData.name}.yaml`,
+      service_type: deploymentData.service_type || 'backend',
+      applied_by: undefined, // Will be set when applied
+      applied_at: undefined, // Will be set when applied
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      pods: [],
+    };
+
+    this.pendingDeployments.push(newDeployment);
+    return gitCommitSha;
+  }
+
   // Simulate applying deployments (for testing UI)
   public applyPendingDeployment(deploymentId: string): { success: boolean; error?: string } {
     const deployment = this.pendingDeployments.find(d => d.id === deploymentId);
@@ -312,13 +354,83 @@ class UnifiedMockDataService {
     const now = Date.now();
     const timeSpan = hours * 60 * 60 * 1000;
 
+    // Generate GitOps commit events first (most important for tracking)
+    this.deployments.forEach(deployment => {
+      // Generate git commit event for each deployment
+      if (deployment.git_commit_sha) {
+        const commitTimestamp = deployment.applied_at 
+          ? new Date(deployment.applied_at).toISOString()
+          : new Date(now - Math.random() * timeSpan).toISOString();
+
+        events.push({
+          id: `git-commit-${deployment.git_commit_sha}`,
+          timestamp: commitTimestamp,
+          category: EventCategory.CONFIG,
+          severity: Status.INFO,
+          title: `GitOps: Deployment committed to git`,
+          description: `Committed ${deployment.name} manifest to base-infrastructure repository`,
+          source: {
+            type: 'git',
+            name: deployment.name,
+            namespace: deployment.namespace
+          },
+          impact: {
+            affected: 1,
+            total: 1,
+            unit: 'deployment'
+          },
+          duration: 0,
+          resolved: true,
+          metadata: {
+            deploymentId: deployment.id,
+            gitCommitSha: deployment.git_commit_sha,
+            manifestPath: deployment.manifest_path || `k8s/${deployment.namespace}/${deployment.name}.yaml`,
+            author: deployment.author || 'admin',
+            appliedBy: deployment.applied_by
+          }
+        });
+
+        // Generate corresponding apply event if deployment is applied
+        if (deployment.applied_at && deployment.status === DeploymentStatus.RUNNING) {
+          const applyTimestamp = new Date(new Date(deployment.applied_at).getTime() + 30000).toISOString(); // 30s after commit
+
+          events.push({
+            id: `git-apply-${deployment.git_commit_sha}`,
+            timestamp: applyTimestamp,
+            category: EventCategory.CONFIG,
+            severity: Status.SUCCESS,
+            title: `GitOps: Deployment applied to cluster`,
+            description: `Applied ${deployment.name} from git commit ${deployment.git_commit_sha?.substring(0, 7)} to Kubernetes cluster`,
+            source: {
+              type: 'kubernetes',
+              name: deployment.name,
+              namespace: deployment.namespace
+            },
+            impact: {
+              affected: deployment.replicas,
+              total: deployment.replicas,
+              unit: 'pods'
+            },
+            duration: 15000, // 15s apply time
+            resolved: true,
+            metadata: {
+              deploymentId: deployment.id,
+              gitCommitSha: deployment.git_commit_sha,
+              appliedBy: deployment.applied_by,
+              replicas: deployment.replicas
+            }
+          });
+        }
+      }
+    });
+
     // Generate events based on actual deployment data
     this.deployments.forEach(deployment => {
-      const eventCount = Math.floor(Math.random() * 3) + 1; // 1-3 events per deployment
+      const eventCount = Math.floor(Math.random() * 2) + 1; // 1-2 additional events per deployment
       
       for (let i = 0; i < eventCount; i++) {
         const timestamp = new Date(now - Math.random() * timeSpan).toISOString();
-        const categories = [EventCategory.POD, EventCategory.SERVICE, EventCategory.CONFIG, EventCategory.NETWORK];
+        const categories = [EventCategory.POD, EventCategory.SERVICE, EventCategory.NETWORK];
         const severities = [Status.INFO, Status.SUCCESS, Status.WARNING, Status.CRITICAL];
         
         // More likely to have info/success events than critical
@@ -781,6 +893,8 @@ export const getUnifiedPendingDeployments = () => unifiedMockData.getPendingDepl
 export const getUnifiedDeploymentHistory = (deploymentId?: string) => unifiedMockData.getDeploymentHistory(deploymentId);
 export const getUnifiedMetrics = () => unifiedMockData.getMetrics();
 export const generateSystemChangesTimelineData = (hours?: number) => unifiedMockData.generateSystemChangesTimelineData(hours);
+export const trackNewDeployment = (deploymentData: any) => unifiedMockData.trackNewDeployment(deploymentData);
+export const applyPendingDeployment = (deploymentId: string) => unifiedMockData.applyPendingDeployment(deploymentId);
 export const generatePodLifecycleMetrics = (timeRange?: string) => unifiedMockData.generatePodLifecycleMetrics(timeRange);
 export const generatePodLifecycleEvents = (timeRange?: string) => unifiedMockData.generatePodLifecycleEvents(timeRange);
 export const generateLifecycleTimelineEvents = (timeRange?: string) => unifiedMockData.generateLifecycleTimelineEvents(timeRange);

@@ -92,6 +92,7 @@ export {
 export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
 // Mock environment configuration
+export { trackNewDeployment, applyPendingDeployment } from './unifiedMockData';
 
 // Mock API responses wrapper - always works when called directly
 export const mockApiResponse = <T>(data: T, delay: number = 200): Promise<T> => {

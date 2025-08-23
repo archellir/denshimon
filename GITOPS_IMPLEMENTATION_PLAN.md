@@ -39,7 +39,6 @@
 - `POST /api/gitops/deploy` - Generate manifest → commit to git → apply
 - Auto-create git branches for deployments
 - Commit generated manifests to base infrastructure repo
-- Auto-sync repository after commit
 
 **Replace Deployment Flow:**
 ```
@@ -105,7 +104,6 @@ This gives you a **clean, real GitOps system** with **proper secrets management*
 ### Phase 4: Git Integration
 - [ ] Extend GitOps service for manifest commits
 - [ ] Implement git push for generated manifests
-- [ ] Add auto-sync after git commits
 - [ ] Connect deployment flow to git workflow
 
 ### Phase 5: Configuration Tab Redesign

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RegistryStatus, API_ENDPOINTS } from '@constants';
+import { RegistryStatus, API_ENDPOINTS, DeploymentStrategy } from '@constants';
 import type {
   Registry,
   ContainerImage,
@@ -10,7 +10,7 @@ import type {
 } from '@/types/deployments';
 
 // Import mock utilities  
-import { mockApiResponse, MOCK_ENABLED } from '@mocks';
+import { mockApiResponse, MOCK_ENABLED, trackNewDeployment } from '@mocks';
 import { MASTER_REGISTRIES } from '@mocks/masterData';
 import { apiService, ApiError } from '@services/api';
 
@@ -306,13 +306,59 @@ const useDeploymentStore = create<DeploymentStore>((set, get) => ({
     set(state => ({ loading: { ...state.loading, deploying: true }, error: null }));
     
     try {
-      const response = await apiService.post<Deployment>(API_ENDPOINTS.DEPLOYMENTS.BASE, request);
-      set(state => ({
-        deployments: [...state.deployments, response.data],
-        loading: { ...state.loading, deploying: false }
-      }));
-      
-      return response.data;
+      if (MOCK_ENABLED) {
+        // Track the deployment in unified mock data for GitOps integration
+        const gitCommitSha = trackNewDeployment(request);
+        
+        // Simulate API response with git commit SHA
+        const mockDeployment: Deployment = {
+          id: `dep-${request.name.toLowerCase().replace(/[^a-z0-9]/g, '')}-${Math.random().toString(36).substring(2, 8)}`,
+          name: request.name,
+          namespace: request.namespace,
+          image: request.image,
+          registryId: request.registryId || 'dockerhub',
+          replicas: request.replicas,
+          availableReplicas: 0,
+          readyReplicas: 0,
+          updatedReplicas: 0,
+          status: 'pending_apply' as any,
+          strategy: {
+            type: request.strategy?.type || DeploymentStrategy.ROLLING_UPDATE,
+            maxSurge: request.strategy?.maxSurge || 1,
+            maxUnavailable: request.strategy?.maxUnavailable || 0,
+            nodeSpread: request.strategy?.nodeSpread || true,
+            zoneSpread: request.strategy?.zoneSpread || false,
+          },
+          nodeDistribution: {},
+          resources: request.resources,
+          environment: request.environment,
+          // GitOps fields
+          source: 'denshimon-ui',
+          author: 'admin',
+          git_commit_sha: gitCommitSha,
+          manifest_path: `k8s/${request.namespace}/${request.name}.yaml`,
+          service_type: request.service_type || 'backend',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          pods: [],
+        };
+
+        const response = await mockApiResponse(mockDeployment, 1000);
+        set(state => ({
+          deployments: [...state.deployments, response],
+          loading: { ...state.loading, deploying: false }
+        }));
+        
+        return response;
+      } else {
+        const response = await apiService.post<Deployment>(API_ENDPOINTS.DEPLOYMENTS.BASE, request);
+        set(state => ({
+          deployments: [...state.deployments, response.data],
+          loading: { ...state.loading, deploying: false }
+        }));
+        
+        return response.data;
+      }
     } catch (error) {
       const errorMessage = error instanceof ApiError ? error.message : 'Failed to create deployment';
       set(state => ({
