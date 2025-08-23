@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type FC } from 'react';
+import { useState, useEffect, useCallback, useRef, type FC } from 'react';
 import { X, Container, Database, Server, Globe, Shield, Activity } from 'lucide-react';
 import { ContainerImage } from '@/types';
 import { API_ENDPOINTS } from '@constants';
@@ -31,6 +31,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
   const [editedYaml, setEditedYaml] = useState<string>('');
   const [isEditingYaml, setIsEditingYaml] = useState<boolean>(false);
   const [deploymentId, setDeploymentId] = useState<string>('');
+
+  // Refs for uncontrolled inputs (to avoid focus loss)
+  const nameRef = useRef<HTMLInputElement>(null);
+  const replicasRef = useRef<HTMLInputElement>(null);
+  const portRef = useRef<HTMLInputElement>(null);
 
   // Deployment form state
   const [deployForm, setDeployForm] = useState({
@@ -157,11 +162,32 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     }));
   }, []);
 
+  // Get current form values from refs (for uncontrolled inputs)
+  const getCurrentFormValues = useCallback(() => {
+    const name = nameRef.current?.value || '';
+    const replicas = parseInt(replicasRef.current?.value || '1');
+    const port = parseInt(portRef.current?.value || '8080');
+    
+    return {
+      ...deployForm,
+      name,
+      replicas,
+      port
+    };
+  }, [deployForm]);
+
+  // Simple validation - button is always enabled, we check at click time
+  const canSubmit = Boolean(selectedImage);
+
 
 
   // Step 1: Generate and preview YAML manifest
   const handleGeneratePreview = async () => {
-    if (!selectedImage || !deployForm.name) return;
+    const currentValues = getCurrentFormValues();
+    if (!selectedImage || !currentValues.name.trim()) {
+      alert('Please select a container image and enter an application name.');
+      return;
+    }
 
     try {
       setDeploying(true);
@@ -172,10 +198,10 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           application: {
-            name: deployForm.name,
-            namespace: deployForm.namespace,
+            name: currentValues.name,
+            namespace: currentValues.namespace,
             image: selectedImage.fullName,
-            replicas: deployForm.replicas,
+            replicas: currentValues.replicas,
             resources: deployForm.resources,
             storage: deployForm.storage,
             healthCheck: deployForm.healthCheck,
@@ -216,7 +242,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
 
   // Step 2: Commit to git (create deployment record)
   const handleCommitToGit = async () => {
-    if (!selectedImage || !deployForm.name) return;
+    const currentValues = getCurrentFormValues();
+    if (!selectedImage || !currentValues.name.trim()) {
+      alert('Please select a container image and enter an application name.');
+      return;
+    }
 
     try {
       setDeploying(true);
@@ -226,11 +256,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: deployForm.name,
-          namespace: deployForm.namespace,
+          name: currentValues.name,
+          namespace: currentValues.namespace,
           image: selectedImage.fullName,
           registry_id: selectedImage.registry || 'dockerhub',
-          replicas: deployForm.replicas,
+          replicas: currentValues.replicas,
           resources: {
             limits: {
               cpu: deployForm.resources.cpu_limit,
@@ -387,7 +417,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     isOpen,
     onClose: handleClose,
     onSubmit: handleDeploy,
-    canSubmit: Boolean(selectedImage && deployForm.name && !deploying),
+    canSubmit: Boolean(canSubmit && !deploying),
     modalId: 'deploy-modal'
   });
 
@@ -474,10 +504,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       type="text"
                       placeholder="my-app"
                       className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
-                      onInput={(e) => {
-                        const target = e.target as HTMLInputElement;
-                        updateFormField('name', target.value);
-                      }}
+                      ref={nameRef}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -503,13 +530,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                         max="100"
                         placeholder="1"
                         className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                        ref={replicasRef}
                         onInput={(e) => {
                           const target = e.target as HTMLInputElement;
                           const numericValue = target.value.replace(/[^0-9]/g, '');
                           target.value = numericValue;
-                          if (numericValue) {
-                            updateFormField('replicas', parseInt(numericValue));
-                          }
                         }}
                       />
                     </div>
@@ -522,6 +547,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       max="65535"
                       placeholder="8080"
                       className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                      ref={portRef}
                       onInput={(e) => {
                         const target = e.target as HTMLInputElement;
                         const value = target.value.replace(/[^0-9]/g, '');
@@ -531,9 +557,6 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                           target.setCustomValidity('');
                         }
                         target.value = value;
-                        if (value) {
-                          updateFormField('port', parseInt(value));
-                        }
                       }}
                     />
                   </div>
@@ -1189,7 +1212,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
           </button>
           <button
             onClick={handleDeploy}
-            disabled={(!selectedImage || !deployForm.name || deploying) && currentStep !== 'committed'}
+            disabled={(!canSubmit || deploying) && currentStep !== 'committed'}
             className="px-6 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2 tracking-wider"
           >
             {deploying && <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />}
