@@ -176,8 +176,20 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     };
   }, [deployForm]);
 
-  // Simple validation - button is always enabled, we check at click time
-  const canSubmit = Boolean(selectedImage);
+  // Button enabled when image is selected AND name field has content (check on render only)
+  const [buttonEnabled, setButtonEnabled] = useState(false);
+  
+  // Check if form is complete (called strategically to avoid focus loss)
+  const checkIfFormComplete = useCallback(() => {
+    const name = nameRef.current?.value?.trim() || '';
+    const isComplete = Boolean(selectedImage && name);
+    setButtonEnabled(isComplete);
+  }, [selectedImage]);
+
+  // Check form completion when selectedImage changes
+  useEffect(() => {
+    checkIfFormComplete();
+  }, [selectedImage, checkIfFormComplete]);
 
 
 
@@ -417,7 +429,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
     isOpen,
     onClose: handleClose,
     onSubmit: handleDeploy,
-    canSubmit: Boolean(canSubmit && !deploying),
+    canSubmit: Boolean(buttonEnabled && !deploying),
     modalId: 'deploy-modal'
   });
 
@@ -505,6 +517,13 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       placeholder="my-app"
                       className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                       ref={nameRef}
+                      onBlur={() => checkIfFormComplete()} // Check when user leaves field
+                      onKeyDown={(e) => {
+                        // Check on Enter key (common user behavior)
+                        if (e.key === 'Enter') {
+                          setTimeout(() => checkIfFormComplete(), 0);
+                        }
+                      }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1212,7 +1231,7 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
           </button>
           <button
             onClick={handleDeploy}
-            disabled={(!canSubmit || deploying) && currentStep !== 'committed'}
+            disabled={(!buttonEnabled || deploying) && currentStep !== 'committed'}
             className="px-6 py-2 border border-green-400 text-green-400 hover:bg-green-400 hover:text-black disabled:border-gray-600 disabled:text-gray-600 transition-colors font-mono text-sm flex items-center space-x-2 tracking-wider"
           >
             {deploying && <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />}
