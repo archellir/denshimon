@@ -474,6 +474,10 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                       type="text"
                       placeholder="my-app"
                       className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
+                      onInput={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        updateFormField('name', target.value);
+                      }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -501,7 +505,11 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                         className="w-full bg-black border border-gray-600 focus:border-blue-400 text-white px-3 py-2 font-mono text-sm transition-colors"
                         onInput={(e) => {
                           const target = e.target as HTMLInputElement;
-                          target.value = target.value.replace(/[^0-9]/g, '');
+                          const numericValue = target.value.replace(/[^0-9]/g, '');
+                          target.value = numericValue;
+                          if (numericValue) {
+                            updateFormField('replicas', parseInt(numericValue));
+                          }
                         }}
                       />
                     </div>
@@ -523,6 +531,9 @@ const DeploymentModal: FC<DeploymentModalProps> = ({
                           target.setCustomValidity('');
                         }
                         target.value = value;
+                        if (value) {
+                          updateFormField('port', parseInt(value));
+                        }
                       }}
                     />
                   </div>
