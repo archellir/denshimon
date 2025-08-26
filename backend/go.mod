@@ -1,8 +1,6 @@
 module github.com/archellir/denshimon
 
-go 1.24.0
-
-toolchain go1.24.6
+go 1.25.0
 
 require (
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
