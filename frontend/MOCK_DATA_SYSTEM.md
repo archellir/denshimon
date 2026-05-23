@@ -13,12 +13,12 @@ All mock data structures are defined with strict TypeScript types and Zod schema
 ```typescript
 // Example: Registry type with Zod validation
 export const RegistrySchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1),
-  type: z.nativeEnum(RegistryType),
-  status: z.nativeEnum(RegistryStatus),
-  url: z.string().url(),
-  // ... more fields
+id: z.string().uuid(),
+name: z.string().min(1),
+type: z.nativeEnum(RegistryType),
+status: z.nativeEnum(RegistryStatus),
+url: z.string().url(),
+// ... more fields
 });
 export type Registry = z.infer<typeof RegistrySchema>;
 ```
@@ -29,13 +29,13 @@ All mock data structures are created using the defined types:
 
 ```typescript
 export const TYPED_REGISTRIES: readonly Registry[] = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: 'Docker Hub',
-    type: RegistryType.DOCKERHUB,
-    status: RegistryStatus.CONNECTED,
-    // ... properly typed fields
-  }
+{
+id: '550e8400-e29b-41d4-a716-446655440001',
+name: 'Docker Hub',
+type: RegistryType.DOCKERHUB,
+status: RegistryStatus.CONNECTED,
+// ... properly typed fields
+}
 ];
 ```
 
@@ -46,8 +46,8 @@ Runtime validation ensures all mock data conforms to schemas:
 ```typescript
 // Validates all mock data and reports issues
 export function validateAllMockData() {
-  // Validates against Zod schemas
-  MASTER_REGISTRIES.forEach(registry => validateMockData.registry(registry));
+// Validates against Zod schemas
+MASTER_REGISTRIES.forEach(registry => validateMockData.registry(registry));
 }
 ```
 
@@ -62,22 +62,22 @@ export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
 ## Key Features
 
-### ✅ Type Safety
+### Type Safety
 - All data structures use explicit TypeScript types
 - Zod schemas provide runtime validation
 - Compile-time and runtime type checking
 
-### ✅ Consistency
+### Consistency
 - Single source of truth for all mock data
 - Unified data structures across components
 - No duplication between backend and frontend
 
-### ✅ Validation
+### Validation
 - Automatic validation in development mode
 - Clear error reporting for invalid data
 - Type guards for runtime checks
 
-### ✅ Environment Control
+### Environment Control
 - Mock data only enabled when explicitly requested
 - No mock data leaks to production
 - Clear separation between real and mock APIs
@@ -86,7 +86,7 @@ export const MOCK_ENABLED = import.meta.env.VITE_MOCK_DATA === 'true';
 
 ### Core Infrastructure
 - **Namespaces**: K8s namespace definitions
-- **Nodes**: Cluster node information  
+- **Nodes**: Cluster node information
 - **Applications**: Application deployments
 - **Pods**: Container pod specifications
 - **Services**: K8s service definitions
@@ -126,8 +126,8 @@ import { isValidMockData, validateMockData } from '@/mocks';
 
 // Runtime type checking
 if (isValidMockData(data, validateMockData.registry)) {
-  // data is now typed as Registry
-  console.log(data.name);
+// data is now typed as Registry
+console.log(data.name);
 }
 ```
 
@@ -136,11 +136,11 @@ if (isValidMockData(data, validateMockData.registry)) {
 import { MOCK_ENABLED } from '@/mocks';
 
 if (MOCK_ENABLED) {
-  // Use mock API
-  return mockApiResponse(MASTER_REGISTRIES);
+// Use mock API
+return mockApiResponse(MASTER_REGISTRIES);
 } else {
-  // Use real API
-  return fetch('/api/registries');
+// Use real API
+return fetch('/api/registries');
 }
 ```
 
@@ -154,10 +154,10 @@ The system automatically validates mock data in development mode and reports iss
 VITE_MOCK_DATA=true npm run dev:mock
 
 # Console output:
-✅ All mock data is valid
+All mock data is valid
 # OR
-🚨 Mock Data Validation Errors
-❌ MASTER_REGISTRIES: Invalid UUID format
+Mock Data Validation Errors
+MASTER_REGISTRIES: Invalid UUID format
 ```
 
 ### Type Checking
@@ -170,16 +170,16 @@ npm run typecheck
 
 ### Issues Resolved
 1. **Backend Mock Data Removed**:
-   - `internal/auth/service.go` - Demo users
-   - `internal/http/infrastructure.go` - Mock alerts
-   - `internal/websocket/publisher.go` - Dynamic mock data
-   - `internal/providers/backup/manager.go` - Storage stats
+ - `internal/auth/service.go` - Demo users
+ - `internal/http/infrastructure.go` - Mock alerts
+ - `internal/websocket/publisher.go` - Dynamic mock data
+ - `internal/providers/backup/manager.go` - Storage stats
 
 2. **Frontend Unified**:
-   - All mock data centralized in frontend
-   - Consistent data structures
-   - Proper type safety
-   - Runtime validation
+ - All mock data centralized in frontend
+ - Consistent data structures
+ - Proper type safety
+ - Runtime validation
 
 ### Backend Changes Needed
 The backend should be updated to:
@@ -201,15 +201,15 @@ The backend should be updated to:
 ```
 src/
 ├── types/
-│   └── mockData.ts              # Type definitions and Zod schemas
+│ └── mockData.ts # Type definitions and Zod schemas
 ├── mocks/
-│   ├── index.ts                 # Central exports
-│   ├── generateTypedMockData.ts # Type-safe mock data
-│   ├── validateMockData.ts      # Validation utilities
-│   ├── masterData.ts            # Legacy (to be phased out)
-│   └── unifiedMockData.ts       # Dynamic data generation
+│ ├── index.ts # Central exports
+│ ├── generateTypedMockData.ts # Type-safe mock data
+│ ├── validateMockData.ts # Validation utilities
+│ ├── masterData.ts # Legacy (to be phased out)
+│ └── unifiedMockData.ts # Dynamic data generation
 └── services/
-    └── mockApi.ts               # Mock API layer
+└── mockApi.ts # Mock API layer
 ```
 
 This system provides a robust, type-safe foundation for all mock data needs while ensuring consistency and preventing production issues.

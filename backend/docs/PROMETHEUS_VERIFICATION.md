@@ -4,7 +4,7 @@ This document provides verification steps and troubleshooting guidance for the d
 
 ## Quick Verification Checklist
 
-### ✅ 1. Monitoring Stack Deployed
+### 1. Monitoring Stack Deployed
 ```bash
 # Check if monitoring namespace exists
 kubectl get namespace monitoring
@@ -15,20 +15,20 @@ kubectl get all -n monitoring
 # Expected components:
 # - prometheus (deployment)
 # - node-exporter (daemonset)
-# - kube-state-metrics (deployment)  
+# - kube-state-metrics (deployment)
 # - storage-exporter (daemonset)
 ```
 
-### ✅ 2. Prometheus Connectivity
+### 2. Prometheus Connectivity
 ```bash
 # Test Prometheus health from within cluster
 kubectl run prometheus-test --rm -i --restart=Never --image=curlimages/curl -- \
-  curl -s http://prometheus-service.monitoring.svc.cluster.local:9090/-/healthy
+curl -s http://prometheus-service.monitoring.svc.cluster.local:9090/-/healthy
 
 # Should return: Prometheus is Healthy.
 ```
 
-### ✅ 3. Backend Integration
+### 3. Backend Integration
 ```bash
 # Run the integration test script
 ./scripts/test_prometheus_integration.sh
@@ -39,7 +39,7 @@ curl http://localhost:8080/api/metrics/network?duration=1h
 curl http://localhost:8080/api/metrics/storage
 ```
 
-### ✅ 4. Real Data Verification
+### 4. Real Data Verification
 Look for `"source": "prometheus"` in API responses instead of `"source": "k8s_basic"` or frontend mock data.
 
 ## Detailed Verification Steps
@@ -50,7 +50,7 @@ Look for `"source": "prometheus"` in API responses instead of `"source": "k8s_ba
 ```bash
 kubectl get namespace monitoring
 ```
-Expected: `monitoring   Active   <age>`
+Expected: `monitoring Active <age>`
 
 **Check All Pods Running:**
 ```bash
@@ -137,8 +137,8 @@ Expected: JSON with real cluster resource data
 // In browser console on denshimon frontend
 const ws = new WebSocket('ws://localhost:8080/ws');
 ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('Received:', data.type, data.data?.source);
+const data = JSON.parse(event.data);
+console.log('Received:', data.type, data.data?.source);
 };
 ```
 
@@ -149,7 +149,7 @@ Look for messages with:
 ### Step 5: Frontend Dashboard Verification
 
 **Network Dashboard:**
-- Visit `/dashboard/infrastructure/network` 
+- Visit `/dashboard/infrastructure/network`
 - Look for real-time bandwidth charts
 - Check if data updates every 5 seconds
 - Verify protocol breakdown and top talkers
@@ -185,13 +185,13 @@ kubectl logs -n monitoring deployment/prometheus
 2. **Check Service DNS:**
 ```bash
 kubectl run debug --rm -i --restart=Never --image=nicolaka/netshoot -- \
-  nslookup prometheus-service.monitoring.svc.cluster.local
+nslookup prometheus-service.monitoring.svc.cluster.local
 ```
 
 3. **Test Connectivity:**
 ```bash
 kubectl run debug --rm -i --restart=Never --image=curlimages/curl -- \
-  curl -v http://prometheus-service.monitoring.svc.cluster.local:9090/-/healthy
+curl -v http://prometheus-service.monitoring.svc.cluster.local:9090/-/healthy
 ```
 
 4. **Check Backend Configuration:**
@@ -226,7 +226,7 @@ kubectl port-forward -n monitoring svc/prometheus-service 9090:9090
 kubectl get pods -n monitoring -l app=node-exporter -o wide
 # Pick a node and test: http://NODE_IP:9100/metrics
 
-# Storage exporter  
+# Storage exporter
 kubectl get pods -n monitoring -l app=storage-exporter -o wide
 # Pick a node and test: http://NODE_IP:9101/metrics
 ```
@@ -249,23 +249,23 @@ kubectl get cm prometheus-config -n monitoring -o yaml
 ```yaml
 # In prometheus-deployment.yaml
 args:
-  - '--storage.tsdb.retention.time=7d'  # Reduce from 15d
+ - '--storage.tsdb.retention.time=7d' # Reduce from 15d
 ```
 
 2. **Adjust Scrape Intervals:**
 ```yaml
 # In prometheus-config.yaml
 global:
-  scrape_interval: 30s  # Increase from 15s
+scrape_interval: 30s # Increase from 15s
 ```
 
 3. **Scale Resources:**
 ```yaml
 # In prometheus-deployment.yaml
 resources:
-  limits:
-    memory: 4Gi  # Increase from 2Gi
-    cpu: 2000m   # Increase from 1000m
+limits:
+memory: 4Gi # Increase from 2Gi
+cpu: 2000m # Increase from 1000m
 ```
 
 ### Problem: WebSocket data not updating
@@ -300,12 +300,12 @@ kubectl logs deployment/denshimon-backend | grep -E "(network|storage) metrics"
 ### Normal Operation:
 - **API Response Time**: < 2 seconds for most queries
 - **WebSocket Updates**: Every 5-10 seconds
-- **Memory Usage**: 
-  - Prometheus: 500MB - 2GB
-  - Backend: +50MB for Prometheus client
-- **CPU Usage**: 
-  - Prometheus: 200m - 1000m
-  - Exporters: 50m - 200m each
+- **Memory Usage**:
+ - Prometheus: 500MB - 2GB
+ - Backend: +50MB for Prometheus client
+- **CPU Usage**:
+ - Prometheus: 200m - 1000m
+ - Exporters: 50m - 200m each
 
 ### Scaling Guidelines:
 - **Small clusters** (< 10 nodes): Default resources sufficient
@@ -319,21 +319,21 @@ When everything is working correctly, you should see:
 **API Responses:**
 ```json
 {
-  "data": { ... },
-  "timestamp": "2024-01-01T12:00:00Z",
-  "source": "prometheus"
+"data": { ... },
+"timestamp": "2024-01-01T12:00:00Z",
+"source": "prometheus"
 }
 ```
 
 **WebSocket Messages:**
 ```json
 {
-  "type": "network",
-  "data": {
-    "source": "prometheus",
-    "ingress_bytes": [...],
-    "egress_bytes": [...]
-  }
+"type": "network",
+"data": {
+"source": "prometheus",
+"ingress_bytes": [...],
+"egress_bytes": [...]
+}
 }
 ```
 

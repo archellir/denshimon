@@ -3,17 +3,17 @@
 ## Overview
 The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring and management functionality. This documentation verifies the functionality of the **Overview** secondary tab and its frontend-backend connections for cluster health monitoring, resource utilization tracking, and infrastructure performance visualization.
 
-## Overview Secondary Tab - Verified Functionality ✅
+## Overview Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/Dashboard.tsx:858-862` (composite view)
-**Core Components**: 
+**Core Components**:
 - `HealthDashboard` (`/frontend/src/components/metrics/HealthDashboard.tsx`)
 - `InfraOverview` (`/frontend/src/components/metrics/InfraOverview.tsx`)
 
 ### Core Functionality Verification
 
-#### 1. **Infrastructure Health Dashboard** ✅
+#### 1. **Infrastructure Health Dashboard**
 - **Four Health Categories**: Cluster, Application, Network, and Storage health monitoring
 - **Critical Alerts Banner**: Dynamic alert banner for critical system conditions
 - **Health Summary Cards**: Detailed health cards with metrics and trend indicators
@@ -21,7 +21,7 @@ The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring 
 - **Real-time Updates**: Health data refreshes every 5 seconds with live trend analysis
 - **Status**: All health dashboard features working correctly with comprehensive monitoring
 
-#### 2. **Resource Usage Visualization** ✅
+#### 2. **Resource Usage Visualization**
 - **Frontend Component**: `InfraOverview` with Recharts-powered visualizations
 - **Data Source**: WebSocket metrics store (`useWebSocketMetricsStore`)
 - **API Integration**: Uses metrics endpoints via WebSocket for real-time data
@@ -29,7 +29,7 @@ The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring 
 - **Time-series Charts**: Area charts showing CPU, memory, storage usage over time
 - **Status**: Verified working - displays real-time resource utilization with interactive charts
 
-#### 3. **Cluster Capacity Monitoring** ✅
+#### 3. **Cluster Capacity Monitoring**
 - **CPU Capacity**: Visual progress bars showing CPU usage percentage with available cores
 - **Memory Capacity**: Memory utilization with available GB calculation
 - **Pod Capacity**: Running vs total pods with available slot calculation
@@ -37,7 +37,7 @@ The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring 
 - **Real-time Updates**: Capacity metrics update automatically via WebSocket connection
 - **Status**: Complete capacity monitoring with visual progress indicators and real-time data
 
-#### 4. **Workload Distribution Analysis** ✅
+#### 4. **Workload Distribution Analysis**
 - **Pod Status Pie Chart**: Visual distribution of running, pending, and failed pods
 - **Status Legend**: Color-coded legend showing pod counts by status
 - **Interactive Tooltips**: Hover tooltips showing exact pod counts and percentages
@@ -45,7 +45,7 @@ The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring 
 - **Visual Indicators**: Green (running), Yellow (pending), Red (failed) status colors
 - **Status**: Comprehensive workload distribution with interactive pie chart visualization
 
-#### 5. **Infrastructure Metrics Integration** ✅
+#### 5. **Infrastructure Metrics Integration**
 - **WebSocket Data Stream**: Real-time metrics via WebSocket connection
 - **Metrics History**: Time-series data for trend analysis and historical comparison
 - **Store Integration**: Uses `useWebSocketMetricsStore` for state management
@@ -53,7 +53,7 @@ The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring 
 - **Loading States**: Comprehensive skeleton loading states during data fetch
 - **Status**: Full metrics integration with real-time data streaming and state management
 
-#### 6. **Health Alert System** ✅
+#### 6. **Health Alert System**
 - **Critical Alert Detection**: Automatic detection of critical system conditions
 - **Alert Thresholds**: CPU > 85%, Memory > 85%, Error rate > 5% trigger critical alerts
 - **Visual Alert Banner**: Red-bordered alert banner with detailed alert descriptions
@@ -61,51 +61,51 @@ The INFRASTRUCTURE primary tab provides comprehensive infrastructure monitoring 
 - **Real-time Monitoring**: Alerts update dynamically based on current system metrics
 - **Status**: Advanced alert system with threshold-based critical condition detection
 
-### Infrastructure Data Models ✅
+### Infrastructure Data Models
 
 #### Health Dashboard Data Structure
 **Frontend Generation**: `/frontend/src/components/metrics/HealthDashboard.tsx:16`
 
 ```typescript
 interface HealthData {
-  cluster: {
-    readyNodes: number;          // Available cluster nodes
-    totalNodes: number;          // Total cluster nodes
-    runningPods: number;         // Currently running pods
-    totalPods: number;           // Total pod capacity
-    cpuUsage: number;           // CPU usage percentage
-    cpuTrend: 'up' | 'down' | 'stable';        // CPU trend direction
-    cpuTrendValue: number;      // CPU trend change value
-    memoryUsage: number;        // Memory usage percentage
-    memoryTrend: 'up' | 'down' | 'stable';     // Memory trend direction
-    memoryTrendValue: number;   // Memory trend change value
-  };
-  application: {
-    requestRate: number;        // Requests per second
-    requestTrend: 'up' | 'down' | 'stable';    // Request rate trend
-    errorRate: number;          // Error rate percentage
-    errorTrend: 'up' | 'down' | 'stable';      // Error rate trend
-    p95Latency: number;         // 95th percentile latency
-    latencyTrend: 'up' | 'down' | 'stable';    // Latency trend
-    availability: number;       // Application availability percentage
-  };
-  network: {
-    ingressRate: number;        // Ingress traffic rate
-    ingressTrend: 'up' | 'down' | 'stable';    // Ingress trend
-    egressRate: number;         // Egress traffic rate
-    egressTrend: 'up' | 'down' | 'stable';     // Egress trend
-    connectionErrors: number;   // Connection error count
-    activeConnections: number;  // Active connection count
-  };
-  storage: {
-    volumeUsage: number;        // Storage volume usage percentage
-    volumeTrend: 'up' | 'down' | 'stable';     // Volume usage trend
-    boundPVCs: number;          // Bound persistent volume claims
-    totalPVCs: number;          // Total persistent volume claims
-    iops: number;               // Input/output operations per second
-    iopsTrend: 'up' | 'down' | 'stable';       // IOPS trend
-    throughput: number;         // Storage throughput
-  };
+cluster: {
+readyNodes: number; // Available cluster nodes
+totalNodes: number; // Total cluster nodes
+runningPods: number; // Currently running pods
+totalPods: number; // Total pod capacity
+cpuUsage: number; // CPU usage percentage
+cpuTrend: 'up' | 'down' | 'stable'; // CPU trend direction
+cpuTrendValue: number; // CPU trend change value
+memoryUsage: number; // Memory usage percentage
+memoryTrend: 'up' | 'down' | 'stable'; // Memory trend direction
+memoryTrendValue: number; // Memory trend change value
+};
+application: {
+requestRate: number; // Requests per second
+requestTrend: 'up' | 'down' | 'stable'; // Request rate trend
+errorRate: number; // Error rate percentage
+errorTrend: 'up' | 'down' | 'stable'; // Error rate trend
+p95Latency: number; // 95th percentile latency
+latencyTrend: 'up' | 'down' | 'stable'; // Latency trend
+availability: number; // Application availability percentage
+};
+network: {
+ingressRate: number; // Ingress traffic rate
+ingressTrend: 'up' | 'down' | 'stable'; // Ingress trend
+egressRate: number; // Egress traffic rate
+egressTrend: 'up' | 'down' | 'stable'; // Egress trend
+connectionErrors: number; // Connection error count
+activeConnections: number; // Active connection count
+};
+storage: {
+volumeUsage: number; // Storage volume usage percentage
+volumeTrend: 'up' | 'down' | 'stable'; // Volume usage trend
+boundPVCs: number; // Bound persistent volume claims
+totalPVCs: number; // Total persistent volume claims
+iops: number; // Input/output operations per second
+iopsTrend: 'up' | 'down' | 'stable'; // IOPS trend
+throughput: number; // Storage throughput
+};
 }
 ```
 
@@ -114,22 +114,22 @@ interface HealthData {
 
 ```typescript
 interface ChartDataPoint {
-  time: string;                 // Formatted time (HH:mm)
-  cpu: number;                 // CPU usage percentage
-  memory: number;              // Memory usage percentage  
-  storage: number;             // Storage usage percentage
-  pods: number;                // Pod count
-  nodes: number;               // Node count
+time: string; // Formatted time (HH:mm)
+cpu: number; // CPU usage percentage
+memory: number; // Memory usage percentage
+storage: number; // Storage usage percentage
+pods: number; // Pod count
+nodes: number; // Node count
 }
 
 interface PodStatusData {
-  name: 'RUNNING' | 'PENDING' | 'FAILED';  // Pod status name
-  value: number;               // Pod count for this status
-  color: string;               // Color code for visualization
+name: 'RUNNING' | 'PENDING' | 'FAILED'; // Pod status name
+value: number; // Pod count for this status
+color: string; // Color code for visualization
 }
 ```
 
-### Backend Infrastructure Provider ✅
+### Backend Infrastructure Provider
 
 #### Infrastructure Services Handler
 **Location**: `/backend/internal/http/infrastructure.go:109`
@@ -141,22 +141,22 @@ interface PodStatusData {
 - **Alert Acknowledgment**: `POST /api/infrastructure/alerts/{id}/acknowledge` for alert management
 - **Structured Response**: Returns infrastructure data in format expected by frontend
 
-#### Infrastructure Alert System ✅
+#### Infrastructure Alert System
 **Location**: `/backend/internal/http/infrastructure.go:18`
 
 ```go
 type InfrastructureAlert struct {
-    ID           string    `json:"id"`           // Unique alert identifier
-    Type         string    `json:"type"`         // Alert type classification
-    Severity     string    `json:"severity"`     // Alert severity level
-    Message      string    `json:"message"`      // Human-readable alert message
-    Timestamp    time.Time `json:"timestamp"`    // Alert creation timestamp
-    Acknowledged bool      `json:"acknowledged"` // Acknowledgment status
-    Source       string    `json:"source"`       // Alert source component
+ID string `json:"id"` // Unique alert identifier
+Type string `json:"type"` // Alert type classification
+Severity string `json:"severity"` // Alert severity level
+Message string `json:"message"` // Human-readable alert message
+Timestamp time.Time `json:"timestamp"` // Alert creation timestamp
+Acknowledged bool `json:"acknowledged"` // Acknowledgment status
+Source string `json:"source"` // Alert source component
 }
 ```
 
-#### WebSocket Metrics Integration ✅
+#### WebSocket Metrics Integration
 **Location**: `/frontend/src/stores/webSocketMetricsStore.ts`
 
 - **Real-time Metrics**: WebSocket integration for live infrastructure metrics
@@ -166,7 +166,7 @@ type InfrastructureAlert struct {
 - **Mock Integration**: Seamless fallback to mock data for development
 - **Store State**: Zustand-based state management for metrics data
 
-### Health Dashboard Features ✅
+### Health Dashboard Features
 
 #### Compact Health Overview
 **Implementation**: `/frontend/src/components/metrics/HealthDashboard.tsx:118`
@@ -195,7 +195,7 @@ type InfrastructureAlert struct {
 - **Storage Usage**: Storage volume usage percentage
 - **Color Coding**: Each statistic has distinct color coding for visual clarity
 
-### Resource Charts Integration ✅
+### Resource Charts Integration
 
 #### Time-series Resource Charts
 **Chart Implementation**: `/frontend/src/components/metrics/InfraOverview.tsx:108`
@@ -215,7 +215,7 @@ type InfrastructureAlert struct {
 - **Dynamic Updates**: Chart updates automatically as pod status changes
 - **Empty State Handling**: Graceful handling when no pod data available
 
-### Store Integration Verification ✅
+### Store Integration Verification
 
 #### WebSocket Metrics Store Usage
 **Location**: `/frontend/src/components/metrics/InfraOverview.tsx:25`
@@ -226,54 +226,54 @@ const { clusterMetrics, metricsHistory, isLoading, isLoadingHistory, fetchCluste
 
 // Initial metrics fetch
 useEffect(() => {
-  fetchClusterMetrics().catch(_error => {
-    // Error fetching cluster metrics - handle silently
-  });
+fetchClusterMetrics().catch(_error => {
+// Error fetching cluster metrics - handle silently
+});
 }, [fetchClusterMetrics]);
 
 // Chart data processing from metrics history
 const chartData = useMemo(() => {
-  if (!metricsHistory?.cpu?.length) return [];
+if (!metricsHistory?.cpu?.length) return [];
 
-  return metricsHistory.cpu.map((cpuPoint, index) => ({
-    time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
-    cpu: cpuPoint.value || 0,
-    memory: metricsHistory.memory?.[index]?.value || 0,
-    storage: metricsHistory.storage?.[index]?.value || 0,
-    pods: metricsHistory.pods?.[index]?.value || 0,
-    nodes: metricsHistory.nodes?.[index]?.value || 0,
-  }));
+return metricsHistory.cpu.map((cpuPoint, index) => ({
+time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
+cpu: cpuPoint.value || 0,
+memory: metricsHistory.memory?.[index]?.value || 0,
+storage: metricsHistory.storage?.[index]?.value || 0,
+pods: metricsHistory.pods?.[index]?.value || 0,
+nodes: metricsHistory.nodes?.[index]?.value || 0,
+}));
 }, [metricsHistory]);
 ```
 
-#### API Endpoint Constants ✅
+#### API Endpoint Constants
 **Location**: `/frontend/src/constants.ts:879`
 
 ```typescript
 INFRASTRUCTURE: {
-  BASE: '/api/infrastructure',
-  SERVICES: '/api/infrastructure/services',
-  STATUS: '/api/infrastructure/status',
-  ALERTS: '/api/infrastructure/alerts',
-  ALERT_ACKNOWLEDGE: (alertId: string) => `/api/infrastructure/alerts/${alertId}/acknowledge`,
-  REFRESH: '/api/infrastructure/refresh'
+BASE: '/api/infrastructure',
+SERVICES: '/api/infrastructure/services',
+STATUS: '/api/infrastructure/status',
+ALERTS: '/api/infrastructure/alerts',
+ALERT_ACKNOWLEDGE: (alertId: string) => `/api/infrastructure/alerts/${alertId}/acknowledge`,
+REFRESH: '/api/infrastructure/refresh'
 }
 ```
 
-#### Component Integration ✅
+#### Component Integration
 **Location**: `/frontend/src/components/Dashboard.tsx:858-862`
 
 ```typescript
 // Infrastructure Overview tab integration
 {activePrimaryTab === PrimaryTab.INFRASTRUCTURE && activeSecondaryTab === InfrastructureTab.OVERVIEW && (
-  <div className="space-y-6">
-    <HealthDashboard compact />
-    <InfraOverview timeRange={timeRange} />
-  </div>
+<div className="space-y-6">
+<HealthDashboard compact />
+<InfraOverview timeRange={timeRange} />
+</div>
 )}
 ```
 
-### Mock Data Integration ✅
+### Mock Data Integration
 
 #### Health Dashboard Mock Generation
 **Location**: `/frontend/src/components/metrics/HealthDashboard.tsx:16`
@@ -281,24 +281,24 @@ INFRASTRUCTURE: {
 ```typescript
 // Comprehensive health data generation
 const generateHealthData = () => {
-  return {
-    cluster: {
-      readyNodes: 1,                              // Single node cluster
-      totalNodes: 1,
-      runningPods: Math.floor(Math.random() * 5) + 15,  // 15-20 pods
-      totalPods: 20,
-      cpuUsage: 45 + Math.random() * 40,          // 45-85% CPU
-      memoryUsage: 50 + Math.random() * 35,       // 50-85% memory
-      // ... trend calculations and other metrics
-    },
-    application: {
-      requestRate: 1000 + Math.random() * 500,    // 1000-1500 req/sec
-      errorRate: Math.random() * 3,               // 0-3% error rate
-      p95Latency: 50 + Math.random() * 150,       // 50-200ms latency
-      availability: 99 + Math.random() * 0.95,    // 99-99.95% availability
-    },
-    // ... network and storage mock data
-  };
+return {
+cluster: {
+readyNodes: 1, // Single node cluster
+totalNodes: 1,
+runningPods: Math.floor(Math.random() * 5) + 15, // 15-20 pods
+totalPods: 20,
+cpuUsage: 45 + Math.random() * 40, // 45-85% CPU
+memoryUsage: 50 + Math.random() * 35, // 50-85% memory
+// ... trend calculations and other metrics
+},
+application: {
+requestRate: 1000 + Math.random() * 500, // 1000-1500 req/sec
+errorRate: Math.random() * 3, // 0-3% error rate
+p95Latency: 50 + Math.random() * 150, // 50-200ms latency
+availability: 99 + Math.random() * 0.95, // 99-99.95% availability
+},
+// ... network and storage mock data
+};
 };
 ```
 
@@ -311,7 +311,7 @@ const generateHealthData = () => {
 - **WebSocket Simulation**: Mock WebSocket events for development testing
 - **Status**: Complete mock ecosystem supporting all infrastructure features
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Infrastructure Overview Flow
 1. **Component Mount** → Infrastructure Overview tab loads HealthDashboard and InfraOverview
@@ -332,7 +332,7 @@ const generateHealthData = () => {
 5. **Navigation Integration** → Alert cards provide click-to-navigate functionality
 6. **Status Updates** → Health status updates based on current alert conditions
 
-### Security & Authentication ✅
+### Security & Authentication
 
 #### Access Control
 - **Route Protection**: All infrastructure endpoints protected by authService.AuthMiddleware
@@ -346,7 +346,7 @@ const generateHealthData = () => {
 - **Status Information**: Controlled access to infrastructure status data
 - **Refresh Operations**: Authenticated service refresh capabilities
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Dashboard Efficiency
 - **Memoized Calculations**: useMemo for expensive chart data processing
@@ -362,7 +362,7 @@ const generateHealthData = () => {
 - **Memory Management**: Proper cleanup of chart instances and data
 - **Error Boundaries**: Graceful error handling prevents component crashes
 
-### Integration Points ✅
+### Integration Points
 
 #### Cross-tab Navigation
 - **Health Card Navigation**: Click-to-navigate from health cards to specific infrastructure tabs
@@ -382,14 +382,14 @@ const generateHealthData = () => {
 - **Event Broadcasting**: Infrastructure events broadcast to connected clients
 - **State Synchronization**: Synchronized state across multiple dashboard components
 
-## Configuration Secondary Tab - Verified Functionality ✅
+## Configuration Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/infrastructure/ConfigurationTab.tsx`
 
 ### Core Functionality Verification
 
-#### 1. **GitOps Repository Management** ✅
+#### 1. **GitOps Repository Management**
 - **Base Infrastructure Repository Display**: Shows connected repository information with status indicators
 - **Repository Status Monitoring**: Real-time status tracking (active, syncing, error) with color-coded indicators
 - **Sync Operations**: Manual sync triggers with animated loading states and status feedback
@@ -397,17 +397,17 @@ const generateHealthData = () => {
 - **Health Monitoring**: Repository health status with degraded/healthy indicators
 - **Status**: All repository management features working correctly with live status updates
 
-#### 2. **Fetch Repository Data** ✅
+#### 2. **Fetch Repository Data**
 - **Frontend Action**: `fetchBaseRepository()` function with API calls to GitOps endpoints
-- **API Endpoints**: 
-  - `GET /api/gitops/repositories` for repository list
-  - `GET /api/gitops/sync/status` for sync metrics
+- **API Endpoints**:
+ - `GET /api/gitops/repositories` for repository list
+ - `GET /api/gitops/sync/status` for sync metrics
 - **Backend Handlers**: GitOps handlers in `/backend/internal/http/gitops.go` (routes verified)
 - **Route**: Registered in `/backend/internal/http/routes.go:324-334`
 - **Mock Support**: Uses `mockBaseInfrastructureRepo` and `mockSyncMetrics` from `/mocks/infrastructure/configuration.ts`
 - **Status**: Verified working - fetches repository status and sync metrics with error fallback
 
-#### 3. **Sync Status Information** ✅
+#### 3. **Sync Status Information**
 - **Last Sync Tracking**: Display of last synchronization timestamp with human-readable formatting
 - **Application Metrics**: Shows total applications, synced applications, and out-of-sync applications
 - **Sync Health**: Visual indicators for sync status (synced, out_of_sync, error)
@@ -415,7 +415,7 @@ const generateHealthData = () => {
 - **Real-time Updates**: Sync metrics update after manual sync operations
 - **Status**: Complete sync status monitoring with detailed application-level metrics
 
-#### 4. **Manual Deployment Management** ✅
+#### 4. **Manual Deployment Management**
 - **Pending Deployments List**: Displays deployments awaiting manual approval with detailed information
 - **Individual Apply**: Single deployment application with loading states and confirmation
 - **Batch Apply**: Multi-select deployments with batch application functionality
@@ -423,7 +423,7 @@ const generateHealthData = () => {
 - **Manual Workflow**: Enforces manual approval workflow for all deployments
 - **Status**: Advanced deployment management with manual approval workflow and batch operations
 
-#### 5. **Repository Connection Dialog** ✅
+#### 5. **Repository Connection Dialog**
 - **Connection Setup**: Modal dialog for connecting new infrastructure repositories
 - **Authentication Options**: SSH key, personal access token, and deploy key authentication methods
 - **Form Validation**: URL validation, authentication method selection, and branch name validation
@@ -431,7 +431,7 @@ const generateHealthData = () => {
 - **Documentation Links**: Integration with Kubernetes documentation for reference
 - **Status**: Complete repository connection workflow with validation and documentation
 
-#### 6. **Configuration Cards Display** ✅
+#### 6. **Configuration Cards Display**
 - **Repository Status Card**: Shows status, branch, sync status, and health with color-coded indicators
 - **Sync Information Card**: Displays last sync time and application sync statistics
 - **Manual Controls Card**: Shows pending deployments count and workflow information
@@ -439,21 +439,21 @@ const generateHealthData = () => {
 - **Responsive Design**: Cards adapt to different screen sizes with consistent styling
 - **Status**: Comprehensive configuration display with interactive status cards
 
-### Configuration Data Models ✅
+### Configuration Data Models
 
 #### Base Infrastructure Repository Structure
 **Frontend Types**: `/frontend/src/types/infrastructure.ts:1`
 
 ```typescript
 interface BaseInfrastructureRepo {
-  id: string;                           // Repository identifier
-  name: string;                         // Repository name
-  url: string;                          // Git repository URL
-  branch: string;                       // Target branch name
-  status: 'active' | 'syncing' | 'error';     // Repository status
-  last_sync?: string;                   // Last sync timestamp
-  sync_status: 'synced' | 'out_of_sync' | 'error';  // Sync status
-  health: 'healthy' | 'degraded' | 'unknown';       // Repository health
+id: string; // Repository identifier
+name: string; // Repository name
+url: string; // Git repository URL
+branch: string; // Target branch name
+status: 'active' | 'syncing' | 'error'; // Repository status
+last_sync?: string; // Last sync timestamp
+sync_status: 'synced' | 'out_of_sync' | 'error'; // Sync status
+health: 'healthy' | 'degraded' | 'unknown'; // Repository health
 }
 ```
 
@@ -462,11 +462,11 @@ interface BaseInfrastructureRepo {
 
 ```typescript
 interface SyncMetrics {
-  last_sync_time?: string;              // Last sync operation timestamp
-  total_applications: number;           // Total applications in repository
-  synced_applications: number;          // Successfully synced applications
-  out_of_sync_applications: number;     // Applications needing sync
-  recent_deployments: number;           // Recently deployed applications count
+last_sync_time?: string; // Last sync operation timestamp
+total_applications: number; // Total applications in repository
+synced_applications: number; // Successfully synced applications
+out_of_sync_applications: number; // Applications needing sync
+recent_deployments: number; // Recently deployed applications count
 }
 ```
 
@@ -475,21 +475,21 @@ interface SyncMetrics {
 
 ```typescript
 interface ConfigCardItem {
-  label: string;                        // Item label text
-  value: string | ReactNode;            // Item value (text or component)
-  valueColor?: string;                  // Color class for value styling
+label: string; // Item label text
+value: string | ReactNode; // Item value (text or component)
+valueColor?: string; // Color class for value styling
 }
 
 interface ConfigCardButton {
-  label: string;                        // Button label
-  onClick: () => void;                  // Button click handler
-  color: 'blue' | 'green' | 'white';   // Button color scheme
-  icon?: LucideIcon;                    // Optional button icon
-  variant?: 'full' | 'icon';           // Button size variant
+label: string; // Button label
+onClick: () => void; // Button click handler
+color: 'blue' | 'green' | 'white'; // Button color scheme
+icon?: LucideIcon; // Optional button icon
+variant?: 'full' | 'icon'; // Button size variant
 }
 ```
 
-### Backend GitOps Provider ✅
+### Backend GitOps Provider
 
 #### Repository Management Handler
 **Location**: `/backend/internal/http/routes.go:324-334`
@@ -501,7 +501,7 @@ interface ConfigCardButton {
 - **Repository Sync**: `POST /api/gitops/repositories/{id}/sync` for individual repository sync
 - **WebHook Support**: `POST /api/gitops/webhook` for Git webhook integration
 
-#### GitOps Handler Integration ✅
+#### GitOps Handler Integration
 **Location**: `/backend/internal/http/routes.go:64`
 
 ```go
@@ -509,11 +509,11 @@ interface ConfigCardButton {
 gitopsHandlers := NewGitOpsHandler(db.DB, baseInfraRepoURL, localRepoPath, gitopsLogger)
 
 // Environment variables for GitOps configuration
-baseInfraRepoURL := os.Getenv("GITOPS_BASE_REPO_URL")      // Base repository URL
-localRepoPath := os.Getenv("GITOPS_LOCAL_PATH")           // Local repository path
+baseInfraRepoURL := os.Getenv("GITOPS_BASE_REPO_URL") // Base repository URL
+localRepoPath := os.Getenv("GITOPS_LOCAL_PATH") // Local repository path
 ```
 
-#### Application Management ✅
+#### Application Management
 **Application Endpoints**: `/backend/internal/http/routes.go:361-377`
 
 - **Application Listing**: `GET /api/gitops/applications` for application management
@@ -522,7 +522,7 @@ localRepoPath := os.Getenv("GITOPS_LOCAL_PATH")           // Local repository pa
 - **Deployment History**: `GET /api/gitops/applications/{id}/history` for deployment history
 - **Application Sync**: `POST /api/gitops/sync/application/{id}` for individual app sync
 
-### Configuration Cards Components ✅
+### Configuration Cards Components
 
 #### Reusable ConfigCard Component
 **Location**: `/frontend/src/components/infrastructure/ConfigCard.tsx`
@@ -530,26 +530,26 @@ localRepoPath := os.Getenv("GITOPS_LOCAL_PATH")           // Local repository pa
 ```typescript
 // ConfigCard component with structured data display
 <ConfigCard
-  title="REPOSITORY STATUS"
-  icon={Eye}
-  iconColor="text-blue-400"
-  items={[
-    {
-      label: 'STATUS',
-      value: <StatusComponent />
-    },
-    {
-      label: 'BRANCH',
-      value: repository.branch.toUpperCase()
-    }
-  ]}
-  buttons={[
-    {
-      label: 'REFRESH',
-      onClick: fetchData,
-      color: 'blue'
-    }
-  ]}
+title="REPOSITORY STATUS"
+icon={Eye}
+iconColor="text-blue-400"
+items={[
+{
+label: 'STATUS',
+value: <StatusComponent />
+},
+{
+label: 'BRANCH',
+value: repository.branch.toUpperCase()
+}
+]}
+buttons={[
+{
+label: 'REFRESH',
+onClick: fetchData,
+color: 'blue'
+}
+]}
 />
 ```
 
@@ -557,10 +557,10 @@ localRepoPath := os.Getenv("GITOPS_LOCAL_PATH")           // Local repository pa
 **Status Cards**: Three main configuration cards
 
 1. **Repository Status Card**: Status, branch, sync status, health indicators
-2. **Sync Information Card**: Last sync time, application counts, sync statistics  
+2. **Sync Information Card**: Last sync time, application counts, sync statistics
 3. **Manual Controls Card**: Pending deployments, workflow mode, refresh controls
 
-### Repository Connection Workflow ✅
+### Repository Connection Workflow
 
 #### NoRepositoryConnected Component
 **Location**: `/frontend/src/components/infrastructure/NoRepositoryConnected.tsx`
@@ -577,24 +577,24 @@ localRepoPath := os.Getenv("GITOPS_LOCAL_PATH")           // Local repository pa
 ```typescript
 // Repository connection form with validation
 const handleConnect = async () => {
-  const repositoryData = {
-    url: repoUrl.trim(),
-    branch: branch.trim(),
-    auth_method: authMethod,
-  };
-  
-  const response = await apiService.post<BaseInfrastructureRepo>(
-    API_ENDPOINTS.GITOPS.REPOSITORIES,
-    repositoryData
-  );
-  
-  if (response.success && response.data) {
-    onRepositoryConnected?.(response.data);
-  }
+const repositoryData = {
+url: repoUrl.trim(),
+branch: branch.trim(),
+auth_method: authMethod,
+};
+
+const response = await apiService.post<BaseInfrastructureRepo>(
+API_ENDPOINTS.GITOPS.REPOSITORIES,
+repositoryData
+);
+
+if (response.success && response.data) {
+onRepositoryConnected?.(response.data);
+}
 };
 ```
 
-### Manual Deployment Workflow ✅
+### Manual Deployment Workflow
 
 #### Pending Deployments Management
 **Deployment List**: `/frontend/src/components/infrastructure/ConfigurationTab.tsx:382`
@@ -611,29 +611,29 @@ const handleConnect = async () => {
 ```typescript
 // Individual deployment application
 const applyDeployment = async (deploymentId: string) => {
-  const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${deploymentId}/apply`, {
-    method: 'POST',
-    body: JSON.stringify({ applied_by: 'user' })
-  });
-  
-  if (response.ok) {
-    await fetchPendingDeployments(); // Refresh list
-  }
+const response = await fetch(`${API_ENDPOINTS.DEPLOYMENTS.BASE}/${deploymentId}/apply`, {
+method: 'POST',
+body: JSON.stringify({ applied_by: 'user' })
+});
+
+if (response.ok) {
+await fetchPendingDeployments(); // Refresh list
+}
 };
 
 // Batch deployment application
 const batchApplyDeployments = async () => {
-  const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BATCH_APPLY, {
-    method: 'POST',
-    body: JSON.stringify({
-      deployment_ids: selectedDeployments,
-      applied_by: 'user'
-    })
-  });
+const response = await fetch(API_ENDPOINTS.DEPLOYMENTS.BATCH_APPLY, {
+method: 'POST',
+body: JSON.stringify({
+deployment_ids: selectedDeployments,
+applied_by: 'user'
+})
+});
 };
 ```
 
-### Mock Data Integration ✅
+### Mock Data Integration
 
 #### Development Mode Support
 **Location**: `/frontend/src/mocks/infrastructure/configuration.ts:5`
@@ -641,22 +641,22 @@ const batchApplyDeployments = async () => {
 ```typescript
 // Mock base infrastructure repository
 export const mockBaseInfrastructureRepo: BaseInfrastructureRepo = {
-  id: 'base-infra-001',
-  name: 'base-infrastructure',
-  url: 'https://git.company.com/infrastructure/base-k8s-configs.git',
-  branch: 'main',
-  status: 'active',
-  last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  sync_status: 'synced',
-  health: 'healthy'
+id: 'base-infra-001',
+name: 'base-infrastructure',
+url: 'https://git.company.com/infrastructure/base-k8s-configs.git',
+branch: 'main',
+status: 'active',
+last_sync: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+sync_status: 'synced',
+health: 'healthy'
 };
 
 // Dynamic sync metrics from unified data
 export const mockSyncMetrics: SyncMetrics = {
-  total_applications: metrics.totalDeployments,
-  synced_applications: metrics.runningDeployments,
-  out_of_sync_applications: metrics.pendingDeployments,
-  recent_deployments: Math.floor(metrics.totalDeployments * 0.6)
+total_applications: metrics.totalDeployments,
+synced_applications: metrics.runningDeployments,
+out_of_sync_applications: metrics.pendingDeployments,
+recent_deployments: Math.floor(metrics.totalDeployments * 0.6)
 };
 ```
 
@@ -668,7 +668,7 @@ export const mockSyncMetrics: SyncMetrics = {
 - **Sync Simulation**: Realistic sync operation simulation with success/failure scenarios
 - **Status**: Complete mock ecosystem supporting all configuration features
 
-### Store Integration Verification ✅
+### Store Integration Verification
 
 #### Frontend State Management
 **Location**: `/frontend/src/components/infrastructure/ConfigurationTab.tsx:22`
@@ -685,42 +685,42 @@ const [selectedDeployments, setSelectedDeployments] = useState<string[]>([]);
 
 // Data fetching with error fallback
 const fetchBaseRepository = async () => {
-  if (MOCK_ENABLED) {
-    setRepository(mockBaseInfrastructureRepo);
-    setMetrics(mockSyncMetrics);
-  } else {
-    const reposResponse = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES);
-    const syncResponse = await fetch(API_ENDPOINTS.GITOPS.SYNC_STATUS);
-    // Process real API responses
-  }
-  await fetchPendingDeployments();
+if (MOCK_ENABLED) {
+setRepository(mockBaseInfrastructureRepo);
+setMetrics(mockSyncMetrics);
+} else {
+const reposResponse = await fetch(API_ENDPOINTS.GITOPS.REPOSITORIES);
+const syncResponse = await fetch(API_ENDPOINTS.GITOPS.SYNC_STATUS);
+// Process real API responses
+}
+await fetchPendingDeployments();
 };
 ```
 
-#### API Endpoint Constants ✅
+#### API Endpoint Constants
 **Location**: `/frontend/src/constants.ts:816`
 
 ```typescript
 GITOPS: {
-  BASE: '/api/gitops',
-  REPOSITORIES: '/api/gitops/repositories',
-  SYNC_STATUS: '/api/gitops/sync/status',
-  SYNC_FORCE: '/api/gitops/sync/force',
-  // Additional GitOps endpoints...
+BASE: '/api/gitops',
+REPOSITORIES: '/api/gitops/repositories',
+SYNC_STATUS: '/api/gitops/sync/status',
+SYNC_FORCE: '/api/gitops/sync/force',
+// Additional GitOps endpoints...
 }
 ```
 
-#### Component Integration ✅
+#### Component Integration
 **Location**: `/frontend/src/components/Dashboard.tsx:864`
 
 ```typescript
 // Configuration tab integration in Dashboard
-{activePrimaryTab === PrimaryTab.INFRASTRUCTURE && 
- activeSecondaryTab === InfrastructureTab.CONFIGURATION && 
- <ConfigurationTab />}
+{activePrimaryTab === PrimaryTab.INFRASTRUCTURE &&
+activeSecondaryTab === InfrastructureTab.CONFIGURATION &&
+<ConfigurationTab />}
 ```
 
-### Configuration Features ✅
+### Configuration Features
 
 #### Repository Status Monitoring
 - **Status Indicators**: Visual status icons and colors for repository state
@@ -743,7 +743,7 @@ GITOPS: {
 - **Automatic Refresh**: Data refresh after sync operations
 - **Progress Indicators**: Visual feedback during sync operations
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Configuration Flow
 1. **Component Mount** → ConfigurationTab loads repository and sync data
@@ -772,7 +772,7 @@ GITOPS: {
 6. **List Refresh** → Pending deployments list updates after application
 7. **Status Confirmation** → Success/failure feedback to user
 
-### Security & Authentication ✅
+### Security & Authentication
 
 #### Access Control
 - **Route Protection**: All GitOps endpoints protected by authService.AuthMiddleware
@@ -786,7 +786,7 @@ GITOPS: {
 - **Manual Approval**: Manual-only workflow prevents unauthorized deployments
 - **Audit Trail**: Deployment operations tracked with user information
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Configuration Efficiency
 - **State Management**: Efficient React state management for configuration data
@@ -802,7 +802,7 @@ GITOPS: {
 - **Status Updates**: Efficient status color and icon management
 - **Form Validation**: Client-side validation for responsive user experience
 
-### Integration Points ✅
+### Integration Points
 
 #### GitOps Workflow Integration
 - **Deployment Pipeline**: Configuration integrates with deployment workflow
@@ -822,14 +822,14 @@ GITOPS: {
 - **API Integration**: Clean separation between mock and real API data
 - **State Management**: Consistent state management across configuration features
 
-## Secrets Secondary Tab - Verified Functionality ✅
+## Secrets Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/infrastructure/SecretsTab.tsx`
 
 ### Core Functionality Verification
 
-#### 1. **Kubernetes Secrets Management Without Git Storage** ✅
+#### 1. **Kubernetes Secrets Management Without Git Storage**
 - **Security Model**: Creates secrets.yaml in base_infra/k8s/namespace/ but never commits to git (gitignored)
 - **Template System**: Uses secrets.example.yaml to show structure without exposing actual values
 - **Local Management**: Secrets stored locally and applied directly to Kubernetes cluster
@@ -837,7 +837,7 @@ GITOPS: {
 - **Namespace Support**: Configurable namespace deployment with selector dropdown
 - **Status**: Complete secrets management with security-focused workflow and no git exposure
 
-#### 2. **Secret Template Loading and Management** ✅
+#### 2. **Secret Template Loading and Management**
 - **Template Loading**: `GET /api/secrets/template` loads secrets.example.yaml structure with placeholders
 - **Frontend Action**: `loadTemplate()` function fetches template and populates edit form
 - **Backend Handler**: `GetTemplate()` in `/backend/internal/http/secrets.go:99` returns template structure
@@ -845,7 +845,7 @@ GITOPS: {
 - **Validation**: Template values validated to ensure no placeholders remain before deployment
 - **Status**: Template system working correctly with placeholder management and validation
 
-#### 3. **Interactive Secret Editor** ✅
+#### 3. **Interactive Secret Editor**
 - **Key-Value Editing**: Dynamic secret key and value input fields with add/remove functionality
 - **Password Field Security**: Toggle visibility for secret values (eye/eyeoff icons)
 - **Real-time Validation**: Form marked as dirty when secrets are modified
@@ -853,7 +853,7 @@ GITOPS: {
 - **Save Functionality**: `PUT /api/secrets` saves all secrets locally with validation
 - **Status**: Complete interactive editor with security features and real-time feedback
 
-#### 4. **Kubernetes Integration and Application** ✅
+#### 4. **Kubernetes Integration and Application**
 - **Apply to Kubernetes**: `POST /api/secrets/apply` with namespace selection applies secrets to cluster
 - **Backend Service**: `ApplyToKubernetes()` in `/backend/internal/secrets/service.go:282` handles Kubernetes deployment
 - **Namespace Management**: Configurable namespace selection (default, base-infra, kube-system, production, staging)
@@ -861,7 +861,7 @@ GITOPS: {
 - **Base64 Handling**: Automatic base64 encoding for Kubernetes secret data format
 - **Status**: Full Kubernetes integration with namespace support and smart deployment logic
 
-#### 5. **Status Monitoring and Synchronization** ✅
+#### 5. **Status Monitoring and Synchronization**
 - **Dual Status Tracking**: Monitors both local file status and Kubernetes cluster status
 - **Status Indicators**: Visual color-coded status (green=synced, yellow=not deployed, orange=differs, red=error)
 - **Sync Status**: Real-time comparison between local secrets.yaml and Kubernetes secret
@@ -869,7 +869,7 @@ GITOPS: {
 - **Status Messages**: Human-readable status messages explaining current state
 - **Status**: Advanced status monitoring with visual indicators and detailed state comparison
 
-#### 6. **Security Workflow and Warning System** ✅
+#### 6. **Security Workflow and Warning System**
 - **Security Warning**: Prominent warning about secrets workflow and git exclusion
 - **Workflow Documentation**: Clear explanation of secrets never being committed to git
 - **File Structure**: Creates secrets.yaml in base_infra/k8s/namespace/ directory
@@ -877,29 +877,29 @@ GITOPS: {
 - **Direct Application**: Secrets applied directly to Kubernetes without git storage
 - **Status**: Complete security workflow with clear user guidance and safe secret handling
 
-### Secret Data Models ✅
+### Secret Data Models
 
 #### Frontend Secret Interface
 **Location**: `/frontend/src/components/infrastructure/SecretsTab.tsx:8`
 
 ```typescript
 interface Secret {
-  key: string;                          // Secret key name
-  value: string;                        // Secret value (plain text in UI)
+key: string; // Secret key name
+value: string; // Secret value (plain text in UI)
 }
 
 interface SecretStatus {
-  local: {
-    secrets_file_exists: boolean;       // Whether secrets.yaml exists locally
-    template_exists: boolean;           // Whether secrets.example.yaml exists
-    secrets_count: number;              // Number of secrets in local file
-  };
-  kubernetes: {
-    exists_in_k8s: boolean;            // Whether secret exists in Kubernetes
-    matches_local: boolean;            // Whether K8s secret matches local version
-    namespace: string;                 // Target Kubernetes namespace
-    error?: string;                    // Error message if status check failed
-  };
+local: {
+secrets_file_exists: boolean; // Whether secrets.yaml exists locally
+template_exists: boolean; // Whether secrets.example.yaml exists
+secrets_count: number; // Number of secrets in local file
+};
+kubernetes: {
+exists_in_k8s: boolean; // Whether secret exists in Kubernetes
+matches_local: boolean; // Whether K8s secret matches local version
+namespace: string; // Target Kubernetes namespace
+error?: string; // Error message if status check failed
+};
 }
 ```
 
@@ -908,20 +908,20 @@ interface SecretStatus {
 
 ```typescript
 type Secret struct {
-  Key   string `json:"key" yaml:"-"`    // Secret key name
-  Value string `json:"value" yaml:"-"`  // Secret value (decoded from base64)
+Key string `json:"key" yaml:"-"` // Secret key name
+Value string `json:"value" yaml:"-"` // Secret value (decoded from base64)
 }
 
 type SecretsData struct {
-  APIVersion string            `yaml:"apiVersion"`  // Kubernetes API version
-  Kind       string            `yaml:"kind"`        // Resource kind (Secret)
-  Metadata   map[string]any    `yaml:"metadata"`    // Kubernetes metadata
-  Type       string            `yaml:"type"`        // Secret type (Opaque)
-  Data       map[string]string `yaml:"data"`        // Base64-encoded secret data
+APIVersion string `yaml:"apiVersion"` // Kubernetes API version
+Kind string `yaml:"kind"` // Resource kind (Secret)
+Metadata map[string]any `yaml:"metadata"` // Kubernetes metadata
+Type string `yaml:"type"` // Secret type (Opaque)
+Data map[string]string `yaml:"data"` // Base64-encoded secret data
 }
 ```
 
-### Backend Secrets Provider ✅
+### Backend Secrets Provider
 
 #### Secrets Management Handler
 **Location**: `/backend/internal/http/secrets.go`
@@ -933,7 +933,7 @@ type SecretsData struct {
 - **Get Status**: `GET /api/secrets/status` returns local and Kubernetes status
 - **Namespace Support**: All operations support configurable Kubernetes namespaces
 
-#### Secrets Service Implementation ✅
+#### Secrets Service Implementation
 **Location**: `/backend/internal/secrets/service.go`
 
 - **File Management**: Manages secrets.yaml and secrets.example.yaml files
@@ -943,29 +943,29 @@ type SecretsData struct {
 - **Status Comparison**: Compares local and Kubernetes secret versions for sync status
 - **Validation**: Validates secrets to ensure no placeholder values remain
 
-#### Secret File Structure ✅
+#### Secret File Structure
 **Template Location**: `/base_infra/k8s/namespace/secrets.example.yaml`
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: base-infra-secrets
-  namespace: base-infra
-  labels:
-    app.kubernetes.io/managed-by: denshimon
-    denshimon.io/source: secrets-yaml
+name: base-infra-secrets
+namespace: base-infra
+labels:
+app.kubernetes.io/managed-by: denshimon
+denshimon.io/source: secrets-yaml
 type: Opaque
 data:
-  POSTGRES_USER: PLACEHOLDER_postgres_user
-  POSTGRES_PASSWORD: PLACEHOLDER_postgres_password
-  POSTGRES_DB: PLACEHOLDER_postgres_db
-  POSTGRES_MULTIPLE_DATABASES: PLACEHOLDER_databases_list
-  JWT_SECRET: PLACEHOLDER_jwt_secret
-  API_KEY: PLACEHOLDER_api_key
+POSTGRES_USER: PLACEHOLDER_postgres_user
+POSTGRES_PASSWORD: PLACEHOLDER_postgres_password
+POSTGRES_DB: PLACEHOLDER_postgres_db
+POSTGRES_MULTIPLE_DATABASES: PLACEHOLDER_databases_list
+JWT_SECRET: PLACEHOLDER_jwt_secret
+API_KEY: PLACEHOLDER_api_key
 ```
 
-### Security Implementation ✅
+### Security Implementation
 
 #### Git Exclusion Strategy
 **Security Approach**: `/backend/internal/secrets/service.go:42`
@@ -984,14 +984,14 @@ data:
 defaultTemplate := `apiVersion: v1
 kind: Secret
 metadata:
-  name: base-infra-secrets
-  namespace: base-infra
+name: base-infra-secrets
+namespace: base-infra
 type: Opaque
 data:
-  POSTGRES_USER: PLACEHOLDER_postgres_user
-  POSTGRES_PASSWORD: PLACEHOLDER_postgres_password
-  POSTGRES_DB: PLACEHOLDER_postgres_db
-  # Additional placeholder secrets...
+POSTGRES_USER: PLACEHOLDER_postgres_user
+POSTGRES_PASSWORD: PLACEHOLDER_postgres_password
+POSTGRES_DB: PLACEHOLDER_postgres_db
+ # Additional placeholder secrets...
 `
 ```
 
@@ -1001,31 +1001,31 @@ data:
 ```go
 // ValidateSecrets ensures no placeholder values remain
 func (s *SecretsService) ValidateSecrets(secrets []Secret) error {
-  for _, secret := range secrets {
-    if strings.HasPrefix(secret.Value, "PLACEHOLDER_") {
-      return fmt.Errorf("secret %s still contains placeholder value", secret.Key)
-    }
-  }
-  return nil
+for _, secret := range secrets {
+if strings.HasPrefix(secret.Value, "PLACEHOLDER_") {
+return fmt.Errorf("secret %s still contains placeholder value", secret.Key)
+}
+}
+return nil
 }
 ```
 
-### Kubernetes Integration ✅
+### Kubernetes Integration
 
 #### Namespace Management
 **Frontend Implementation**: `/frontend/src/components/infrastructure/SecretsTab.tsx:213`
 
 ```typescript
 <CustomSelector
-  value={namespace}
-  options={[
-    { value: 'default', label: 'DEFAULT' },
-    { value: 'base-infra', label: 'BASE-INFRA' },
-    { value: 'kube-system', label: 'KUBE-SYSTEM' },
-    { value: 'production', label: 'PRODUCTION' },
-    { value: 'staging', label: 'STAGING' }
-  ]}
-  onChange={(value) => setNamespace(value)}
+value={namespace}
+options={[
+{ value: 'default', label: 'DEFAULT' },
+{ value: 'base-infra', label: 'BASE-INFRA' },
+{ value: 'kube-system', label: 'KUBE-SYSTEM' },
+{ value: 'production', label: 'PRODUCTION' },
+{ value: 'staging', label: 'STAGING' }
+]}
+onChange={(value) => setNamespace(value)}
 />
 ```
 
@@ -1035,33 +1035,33 @@ func (s *SecretsService) ValidateSecrets(secrets []Secret) error {
 ```go
 // ApplyToKubernetes deploys local secrets to Kubernetes cluster
 func (s *SecretsService) ApplyToKubernetes(ctx context.Context, namespace string) error {
-  // Create Kubernetes secret object with proper metadata and labels
-  k8sSecret := &v1.Secret{
-    ObjectMeta: metav1.ObjectMeta{
-      Name:      secretName,
-      Namespace: namespace,
-      Labels: map[string]string{
-        "app.kubernetes.io/managed-by": "denshimon",
-        "denshimon.io/source":          "secrets-yaml",
-      },
-    },
-    Type: v1.SecretType(secretsData.Type),
-    Data: k8sData, // Base64-encoded secret values
-  }
-  
-  // Smart create or update based on existing secret
-  existing, err := secretsClient.Get(ctx, secretName, metav1.GetOptions{})
-  if err != nil {
-    // Create new secret
-    _, err = secretsClient.Create(ctx, k8sSecret, metav1.CreateOptions{})
-  } else {
-    // Update existing secret
-    _, err = secretsClient.Update(ctx, existing, metav1.UpdateOptions{})
-  }
+// Create Kubernetes secret object with proper metadata and labels
+k8sSecret := &v1.Secret{
+ObjectMeta: metav1.ObjectMeta{
+Name: secretName,
+Namespace: namespace,
+Labels: map[string]string{
+"app.kubernetes.io/managed-by": "denshimon",
+"denshimon.io/source": "secrets-yaml",
+},
+},
+Type: v1.SecretType(secretsData.Type),
+Data: k8sData, // Base64-encoded secret values
+}
+
+// Smart create or update based on existing secret
+existing, err := secretsClient.Get(ctx, secretName, metav1.GetOptions{})
+if err != nil {
+// Create new secret
+_, err = secretsClient.Create(ctx, k8sSecret, metav1.CreateOptions{})
+} else {
+// Update existing secret
+_, err = secretsClient.Update(ctx, existing, metav1.UpdateOptions{})
+}
 }
 ```
 
-### User Workflow ✅
+### User Workflow
 
 #### Complete Secrets Management Flow
 **Frontend Workflow**: `/frontend/src/components/infrastructure/SecretsTab.tsx`
@@ -1081,17 +1081,17 @@ func (s *SecretsService) ApplyToKubernetes(ctx context.Context, namespace string
 4. **Direct Deployment** → Secrets applied directly to Kubernetes without git storage
 5. **Status Verification** → System confirms successful deployment and sync status
 
-### API Endpoint Integration ✅
+### API Endpoint Integration
 
 #### Secrets API Constants
 **Location**: `/frontend/src/constants.ts` (inferred from usage)
 
 ```typescript
 SECRETS: {
-  BASE: '/api/secrets',
-  TEMPLATE: '/api/secrets/template',
-  APPLY: '/api/secrets/apply',
-  STATUS: '/api/secrets/status'
+BASE: '/api/secrets',
+TEMPLATE: '/api/secrets/template',
+APPLY: '/api/secrets/apply',
+STATUS: '/api/secrets/status'
 }
 ```
 
@@ -1107,16 +1107,16 @@ secretsGroup.HandleFunc("/apply", secretsHandlers.ApplySecrets).Methods("POST")
 secretsGroup.HandleFunc("/status", secretsHandlers.GetSecretStatus).Methods("GET")
 ```
 
-### Component Integration ✅
+### Component Integration
 
 #### Dashboard Integration
 **Location**: `/frontend/src/components/Dashboard.tsx` (inferred)
 
 ```typescript
 // Infrastructure Secrets tab integration
-{activePrimaryTab === PrimaryTab.INFRASTRUCTURE && 
- activeSecondaryTab === InfrastructureTab.SECRETS && 
- <SecretsTab />}
+{activePrimaryTab === PrimaryTab.INFRASTRUCTURE &&
+activeSecondaryTab === InfrastructureTab.SECRETS &&
+<SecretsTab />}
 ```
 
 #### State Management
@@ -1133,7 +1133,7 @@ const [namespace, setNamespace] = useState('default');
 const [isDirty, setIsDirty] = useState(false);
 ```
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Secrets Management Flow
 1. **Component Mount** → SecretsTab loads existing secrets and status from local file
@@ -1153,7 +1153,7 @@ const [isDirty, setIsDirty] = useState(false);
 5. **Status Validation** → System verifies deployment success and sync status
 6. **Git Safety** → Only template file committed to git, never actual secret values
 
-### Security & Authentication ✅
+### Security & Authentication
 
 #### Access Control
 - **Route Protection**: All secrets endpoints protected by authService.AuthMiddleware
@@ -1168,7 +1168,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Direct Kubernetes Deployment**: Secrets applied directly to cluster bypassing git
 - **Validation**: Prevents deployment of placeholder values to production
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Secrets Management Efficiency
 - **Local File Operations**: Fast local file read/write for secret management
@@ -1184,7 +1184,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Status Updates**: Real-time status indicators with minimal re-rendering
 - **Error Boundaries**: Graceful error handling with user-friendly messages
 
-### Integration Points ✅
+### Integration Points
 
 #### Infrastructure Integration
 - **GitOps Workflow**: Secrets management integrates with GitOps configuration workflow
@@ -1198,14 +1198,14 @@ const [isDirty, setIsDirty] = useState(false);
 - **Local Development**: Seamless local development with secure secret management
 - **Production Safety**: Production-safe deployment with validation and status monitoring
 
-## Certificates Secondary Tab - Verified Functionality ✅
+## Certificates Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/infrastructure/CertificateHealthDashboard.tsx`
 
 ### Core Functionality Verification
 
-#### 1. **SSL Certificate Monitoring and Status Dashboard** ✅
+#### 1. **SSL Certificate Monitoring and Status Dashboard**
 - **Multi-domain Monitoring**: Tracks SSL certificates for multiple infrastructure services (Gitea, Umami, Memos, etc.)
 - **Status Classification**: Categorizes certificates as valid, expiring soon, critical, expired, invalid, or unreachable
 - **Auto-refresh Capability**: Configurable auto-refresh every 5 minutes with manual refresh controls
@@ -1213,7 +1213,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Visual Status Indicators**: Color-coded certificate cards with status-specific styling and icons
 - **Status**: Complete SSL monitoring dashboard with comprehensive certificate lifecycle tracking
 
-#### 2. **Certificate Expiration Alerting System** ✅
+#### 2. **Certificate Expiration Alerting System**
 - **Critical Alert Detection**: Automatic detection of certificates expiring within 7 days or already expired
 - **Warning Alerts**: Early warning for certificates expiring within 30 days
 - **Alert Dashboard**: Prominent alert banner displaying active certificate alerts
@@ -1221,7 +1221,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Real-time Updates**: Alerts update automatically based on current certificate status
 - **Status**: Advanced alerting system with severity classification and acknowledgment workflow
 
-#### 3. **Interactive Certificate Grid and Details** ✅
+#### 3. **Interactive Certificate Grid and Details**
 - **Certificate Grid View**: Responsive grid layout showing all monitored certificates with key information
 - **Domain Information**: Displays domain, service, issuer, expiration date, and days until expiry
 - **Detailed Modal**: Click-to-view detailed certificate information including technical details and chain
@@ -1229,7 +1229,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Technical Information**: Serial numbers, fingerprints, algorithms, key sizes, and validity periods
 - **Status**: Complete certificate viewing with detailed technical information and chain analysis
 
-#### 4. **Domain Management and Configuration** ✅
+#### 4. **Domain Management and Configuration**
 - **Add Domain Functionality**: User can add new domains for SSL certificate monitoring
 - **Domain Configuration**: Configurable port, service name, and check intervals for each domain
 - **Remove Domain**: Ability to remove domains from monitoring with cleanup
@@ -1237,7 +1237,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Default Infrastructure**: Pre-configured monitoring for base infrastructure domains
 - **Status**: Full domain management with service integration and flexible configuration
 
-#### 5. **Real-time Certificate Checking** ✅
+#### 5. **Real-time Certificate Checking**
 - **Manual Certificate Check**: On-demand certificate verification for specific domains
 - **Bulk Refresh**: Refresh all certificates simultaneously with loading indicators
 - **Check Results**: Displays success/failure status for individual certificate checks
@@ -1245,7 +1245,7 @@ const [isDirty, setIsDirty] = useState(false);
 - **Error Handling**: Graceful error handling for unreachable domains or invalid certificates
 - **Status**: Complete real-time certificate verification with error handling and status feedback
 
-#### 6. **Certificate Store Integration** ✅
+#### 6. **Certificate Store Integration**
 - **Zustand State Management**: Uses `useCertificateStore` for centralized certificate state
 - **Persistent State**: Maintains certificate data, stats, alerts, and domain configurations
 - **API Integration**: Seamless integration with backend certificate management APIs
@@ -1253,37 +1253,37 @@ const [isDirty, setIsDirty] = useState(false);
 - **Error State Management**: Centralized error handling with user-friendly error displays
 - **Status**: Robust state management with API integration and comprehensive mock support
 
-### Certificate Data Models ✅
+### Certificate Data Models
 
 #### Frontend Certificate Interface
 **Location**: `/frontend/src/types/certificates.ts:1`
 
 ```typescript
 interface Certificate {
-  id: string;                           // Unique certificate identifier
-  domain: string;                       // Domain name for the certificate
-  service: string;                      // Associated service name
-  issuer: string;                       // Certificate issuer information
-  serialNumber: string;                 // Certificate serial number
-  subject: string;                      // Certificate subject DN
-  notBefore: string;                    // Certificate validity start date
-  notAfter: string;                     // Certificate expiration date
-  daysUntilExpiry: number;             // Days until certificate expires
-  status: CertificateStatus;            // Current certificate status
-  algorithm: string;                    // Cryptographic algorithm used
-  keySize: number;                      // Certificate key size in bits
-  fingerprint: string;                  // Certificate fingerprint (SHA1)
-  chain: CertificateChainInfo[];        // Complete certificate chain
-  lastChecked: string;                  // Last check timestamp
+id: string; // Unique certificate identifier
+domain: string; // Domain name for the certificate
+service: string; // Associated service name
+issuer: string; // Certificate issuer information
+serialNumber: string; // Certificate serial number
+subject: string; // Certificate subject DN
+notBefore: string; // Certificate validity start date
+notAfter: string; // Certificate expiration date
+daysUntilExpiry: number; // Days until certificate expires
+status: CertificateStatus; // Current certificate status
+algorithm: string; // Cryptographic algorithm used
+keySize: number; // Certificate key size in bits
+fingerprint: string; // Certificate fingerprint (SHA1)
+chain: CertificateChainInfo[]; // Complete certificate chain
+lastChecked: string; // Last check timestamp
 }
 
 enum CertificateStatus {
-  VALID = 'valid',                      // Certificate is valid and not expiring soon
-  EXPIRING_SOON = 'expiring_soon',      // Certificate expires within 30 days
-  EXPIRING_CRITICAL = 'expiring_critical', // Certificate expires within 7 days
-  EXPIRED = 'expired',                  // Certificate has already expired
-  INVALID = 'invalid',                  // Certificate is invalid or malformed
-  UNREACHABLE = 'unreachable'          // Certificate endpoint is unreachable
+VALID = 'valid', // Certificate is valid and not expiring soon
+EXPIRING_SOON = 'expiring_soon', // Certificate expires within 30 days
+EXPIRING_CRITICAL = 'expiring_critical', // Certificate expires within 7 days
+EXPIRED = 'expired', // Certificate has already expired
+INVALID = 'invalid', // Certificate is invalid or malformed
+UNREACHABLE = 'unreachable' // Certificate endpoint is unreachable
 }
 ```
 
@@ -1292,48 +1292,48 @@ enum CertificateStatus {
 
 ```typescript
 interface CertificateAlert {
-  id: string;                           // Unique alert identifier
-  domain: string;                       // Domain associated with alert
-  type: 'expiration' | 'invalid' | 'unreachable'; // Alert type classification
-  severity: 'warning' | 'critical';     // Alert severity level
-  message: string;                      // Human-readable alert message
-  timestamp: string;                    // Alert creation timestamp
-  acknowledged: boolean;                // Whether alert has been acknowledged
+id: string; // Unique alert identifier
+domain: string; // Domain associated with alert
+type: 'expiration' | 'invalid' | 'unreachable'; // Alert type classification
+severity: 'warning' | 'critical'; // Alert severity level
+message: string; // Human-readable alert message
+timestamp: string; // Alert creation timestamp
+acknowledged: boolean; // Whether alert has been acknowledged
 }
 
 interface CertificateStats {
-  total: number;                        // Total certificates monitored
-  valid: number;                        // Valid certificates count
-  expiringSoon: number;                 // Certificates expiring within 30 days
-  expiringCritical: number;             // Certificates expiring within 7 days
-  expired: number;                      // Expired certificates count
-  invalid: number;                      // Invalid certificates count
-  unreachable: number;                  // Unreachable certificates count
+total: number; // Total certificates monitored
+valid: number; // Valid certificates count
+expiringSoon: number; // Certificates expiring within 30 days
+expiringCritical: number; // Certificates expiring within 7 days
+expired: number; // Expired certificates count
+invalid: number; // Invalid certificates count
+unreachable: number; // Unreachable certificates count
 }
 
 interface DomainConfig {
-  domain: string;                       // Domain name to monitor
-  service: string;                      // Associated service name
-  port: number;                         // Port for certificate check (default 443)
-  enabled: boolean;                     // Whether monitoring is enabled
-  checkInterval: number;                // Check interval in minutes
-  lastCheck?: string;                   // Last check timestamp
+domain: string; // Domain name to monitor
+service: string; // Associated service name
+port: number; // Port for certificate check (default 443)
+enabled: boolean; // Whether monitoring is enabled
+checkInterval: number; // Check interval in minutes
+lastCheck?: string; // Last check timestamp
 }
 ```
 
-### Backend Certificate Provider ✅
+### Backend Certificate Provider
 
 #### Certificate Management Handler
 **Location**: `/backend/internal/http/certificates.go`
 
 - **Get All Certificates**: `GET /api/certificates` returns all monitored certificates
-- **Get Certificate Stats**: `GET /api/certificates/stats` returns certificate statistics  
+- **Get Certificate Stats**: `GET /api/certificates/stats` returns certificate statistics
 - **Get Certificate Alerts**: `GET /api/certificates/alerts` returns active alerts
 - **Check Certificate**: `GET /api/certificates/check` performs fresh certificate verification
 - **Refresh All Certificates**: `POST /api/certificates/refresh` triggers bulk certificate refresh
 - **Acknowledge Alert**: `POST /api/certificates/alerts/acknowledge` marks alerts as acknowledged
 
-#### Domain Configuration Management ✅
+#### Domain Configuration Management
 **Location**: `/backend/internal/http/certificates.go:88`
 
 - **Get Domain Configurations**: `GET /api/certificates/domains` returns all domain configs
@@ -1342,7 +1342,7 @@ interface DomainConfig {
 - **Domain Validation**: Validates required fields and sets defaults (port 443, 60min interval)
 - **Service Association**: Associates domains with specific infrastructure services
 
-#### Certificate Manager Service ✅
+#### Certificate Manager Service
 **Location**: `/backend/internal/providers/certificates/manager.go`
 
 - **SSL Checker Integration**: Uses dedicated SSL checker for certificate verification
@@ -1351,101 +1351,101 @@ interface DomainConfig {
 - **Concurrent Processing**: Thread-safe operations with mutex protection for concurrent access
 - **Alert Generation**: Automatic alert generation based on certificate status and expiration
 
-#### Certificate Types and Status Logic ✅
+#### Certificate Types and Status Logic
 **Location**: `/backend/internal/providers/certificates/types.go:88`
 
 ```go
 // GetStatus determines certificate status based on expiration
 func (c *Certificate) GetStatus() CertificateStatus {
-  now := time.Now()
-  daysUntilExpiry := int(c.NotAfter.Sub(now).Hours() / 24)
-  
-  if now.After(c.NotAfter) {
-    return StatusExpired
-  }
-  if daysUntilExpiry <= 7 {
-    return StatusExpiringCritical
-  }
-  if daysUntilExpiry <= 30 {
-    return StatusExpiringSoon
-  }
-  return StatusValid
+now := time.Now()
+daysUntilExpiry := int(c.NotAfter.Sub(now).Hours() / 24)
+
+if now.After(c.NotAfter) {
+return StatusExpired
+}
+if daysUntilExpiry <= 7 {
+return StatusExpiringCritical
+}
+if daysUntilExpiry <= 30 {
+return StatusExpiringSoon
+}
+return StatusValid
 }
 ```
 
-### Certificate Store Architecture ✅
+### Certificate Store Architecture
 
 #### Zustand Certificate Store
 **Location**: `/frontend/src/stores/certificateStore.ts`
 
 ```typescript
 interface CertificateStore {
-  // State Management
-  certificates: Certificate[];          // All monitored certificates
-  stats: CertificateStats | null;      // Certificate statistics
-  alerts: CertificateAlert[];          // Active certificate alerts
-  domains: DomainConfig[];             // Domain configurations
-  isLoading: boolean;                  // Loading state indicator
-  error: string | null;                // Error state management
-  lastUpdated: string | null;          // Last update timestamp
+// State Management
+certificates: Certificate[]; // All monitored certificates
+stats: CertificateStats | null; // Certificate statistics
+alerts: CertificateAlert[]; // Active certificate alerts
+domains: DomainConfig[]; // Domain configurations
+isLoading: boolean; // Loading state indicator
+error: string | null; // Error state management
+lastUpdated: string | null; // Last update timestamp
 
-  // Actions
-  fetchCertificates: () => Promise<void>;        // Load all certificates
-  fetchCertificateStats: () => Promise<void>;    // Load certificate statistics
-  fetchAlerts: () => Promise<void>;              // Load active alerts
-  fetchDomains: () => Promise<void>;             // Load domain configurations
-  checkCertificate: (domain: string, port?: number) => Promise<void>; // Check specific certificate
-  refreshAllCertificates: () => Promise<void>;   // Refresh all certificates
-  addDomain: (config: DomainConfig) => Promise<void>;    // Add new domain
-  removeDomain: (domain: string) => Promise<void>;       // Remove domain
-  acknowledgeAlert: (alertId: string) => Promise<void>;  // Acknowledge alert
+// Actions
+fetchCertificates: () => Promise<void>; // Load all certificates
+fetchCertificateStats: () => Promise<void>; // Load certificate statistics
+fetchAlerts: () => Promise<void>; // Load active alerts
+fetchDomains: () => Promise<void>; // Load domain configurations
+checkCertificate: (domain: string, port?: number) => Promise<void>; // Check specific certificate
+refreshAllCertificates: () => Promise<void>; // Refresh all certificates
+addDomain: (config: DomainConfig) => Promise<void>; // Add new domain
+removeDomain: (domain: string) => Promise<void>; // Remove domain
+acknowledgeAlert: (alertId: string) => Promise<void>; // Acknowledge alert
 }
 ```
 
-### Default Infrastructure Monitoring ✅
+### Default Infrastructure Monitoring
 
 #### Pre-configured Certificate Monitoring
 **Backend Configuration**: `/backend/internal/providers/certificates/manager.go:34`
 
 ```go
 defaultDomains := []DomainConfig{
-  {Domain: "git.arcbjorn.com", Service: "Gitea", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "analytics.arcbjorn.com", Service: "Umami", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "memos.arcbjorn.com", Service: "Memos", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "server.arcbjorn.com", Service: "Filebrowser", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "uptime.arcbjorn.com", Service: "Uptime Kuma", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "dashboard.arcbjorn.com", Service: "Dashboard", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "homepage.arcbjorn.com", Service: "Homepage", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "argentinamusic.space", Service: "Argentina Music", Port: 443, Enabled: true, CheckInterval: 60},
-  {Domain: "humansconnect.ai", Service: "Humans Connect", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "git.arcbjorn.com", Service: "Gitea", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "analytics.arcbjorn.com", Service: "Umami", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "memos.arcbjorn.com", Service: "Memos", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "server.arcbjorn.com", Service: "Filebrowser", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "uptime.arcbjorn.com", Service: "Uptime Kuma", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "dashboard.arcbjorn.com", Service: "Dashboard", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "homepage.arcbjorn.com", Service: "Homepage", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "argentinamusic.space", Service: "Argentina Music", Port: 443, Enabled: true, CheckInterval: 60},
+{Domain: "humansconnect.ai", Service: "Humans Connect", Port: 443, Enabled: true, CheckInterval: 60},
 }
 ```
 
-### Mock Data Integration ✅
+### Mock Data Integration
 
 #### Development Mode Certificate Data
 **Location**: `/frontend/src/stores/certificateStore.ts:32`
 
 ```typescript
 const mockCertificates: Certificate[] = [
-  {
-    id: 'git.arcbjorn.com-cert',
-    domain: 'git.arcbjorn.com',
-    service: 'Gitea',
-    issuer: 'Let\'s Encrypt Authority X3',
-    serialNumber: '03:b2:e1:72:5a:8b:9f:4e:12:3d:45:67:89:ab:cd:ef',
-    subject: 'CN=git.arcbjorn.com',
-    notBefore: '2024-01-15T10:30:00Z',
-    notAfter: '2024-04-15T10:30:00Z',
-    daysUntilExpiry: 45,
-    status: CertificateStatus.VALID,
-    algorithm: 'SHA256-RSA',
-    keySize: 2048,
-    fingerprint: '2f:d4:e1:6c:90:78:45:12:ab:cd:ef:90:12:34:56:78:9a:bc:de:f0',
-    chain: [/* Certificate chain data */],
-    lastChecked: '2024-01-20T14:30:00Z'
-  },
-  // Additional mock certificates with varying statuses...
+{
+id: 'git.arcbjorn.com-cert',
+domain: 'git.arcbjorn.com',
+service: 'Gitea',
+issuer: 'Let\'s Encrypt Authority X3',
+serialNumber: '03:b2:e1:72:5a:8b:9f:4e:12:3d:45:67:89:ab:cd:ef',
+subject: 'CN=git.arcbjorn.com',
+notBefore: '2024-01-15T10:30:00Z',
+notAfter: '2024-04-15T10:30:00Z',
+daysUntilExpiry: 45,
+status: CertificateStatus.VALID,
+algorithm: 'SHA256-RSA',
+keySize: 2048,
+fingerprint: '2f:d4:e1:6c:90:78:45:12:ab:cd:ef:90:12:34:56:78:9a:bc:de:f0',
+chain: [/* Certificate chain data */],
+lastChecked: '2024-01-20T14:30:00Z'
+},
+// Additional mock certificates with varying statuses...
 ];
 ```
 
@@ -1457,7 +1457,7 @@ const mockCertificates: Certificate[] = [
 - **Alert Generation**: Mock alerts for expiring and critical certificates
 - **Statistics Generation**: Realistic certificate statistics based on mock data states
 
-### User Workflow ✅
+### User Workflow
 
 #### Complete Certificate Management Flow
 **Frontend Workflow**: `/frontend/src/components/infrastructure/CertificateHealthDashboard.tsx`
@@ -1478,21 +1478,21 @@ const mockCertificates: Certificate[] = [
 4. **Alert Acknowledgment** → User acknowledges alert to mark as reviewed
 5. **Status Updates** → Acknowledged alerts updated in store and removed from active display
 
-### API Endpoint Integration ✅
+### API Endpoint Integration
 
 #### Certificate API Constants
 **Location**: `/frontend/src/constants.ts:863`
 
 ```typescript
 CERTIFICATES: {
-  BASE: '/api/certificates',
-  LIST: '/api/certificates',
-  STATS: '/api/certificates/stats',
-  ALERTS: '/api/certificates/alerts',
-  DOMAINS: '/api/certificates/domains',
-  REFRESH: '/api/certificates/refresh',
-  RENEW: (id: string) => `/api/certificates/${id}/renew`,
-  VERIFY: (id: string) => `/api/certificates/${id}/verify`
+BASE: '/api/certificates',
+LIST: '/api/certificates',
+STATS: '/api/certificates/stats',
+ALERTS: '/api/certificates/alerts',
+DOMAINS: '/api/certificates/domains',
+REFRESH: '/api/certificates/refresh',
+RENEW: (id: string) => `/api/certificates/${id}/renew`,
+VERIFY: (id: string) => `/api/certificates/${id}/verify`
 }
 ```
 
@@ -1512,26 +1512,26 @@ mux.HandleFunc("POST /api/certificates/domains", corsMiddleware(authService.Auth
 mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.AuthMiddleware(certificateHandlers.RemoveDomainConfig)))
 ```
 
-### Component Integration ✅
+### Component Integration
 
 #### Dashboard Integration
 **Location**: `/frontend/src/components/Dashboard.tsx:884`
 
 ```typescript
 // Infrastructure Certificates tab integration
-{activePrimaryTab === PrimaryTab.INFRASTRUCTURE && 
- activeSecondaryTab === InfrastructureTab.CERTIFICATES && 
- <CertificateHealthDashboard />}
+{activePrimaryTab === PrimaryTab.INFRASTRUCTURE &&
+activeSecondaryTab === InfrastructureTab.CERTIFICATES &&
+<CertificateHealthDashboard />}
 ```
 
 #### Certificate Utility Functions
 **Location**: `/frontend/src/utils/certificate.ts` (referenced in component)
 
 - **getCertificateStatusColor()**: Returns color classes based on certificate status
-- **getCertificateStatusIcon()**: Returns appropriate icon component for certificate status  
+- **getCertificateStatusIcon()**: Returns appropriate icon component for certificate status
 - **formatCertificateDate()**: Formats certificate dates for display
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Certificate Monitoring Flow
 1. **Component Initialization** → CertificateHealthDashboard initializes certificate store
@@ -1552,7 +1552,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 6. **Frontend Update** → Updated certificate data sent to frontend via API responses
 7. **UI Refresh** → Certificate store updates trigger UI re-rendering with latest data
 
-### Security & Authentication ✅
+### Security & Authentication
 
 #### Access Control
 - **Route Protection**: All certificate endpoints protected by authService.AuthMiddleware
@@ -1566,7 +1566,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Secure Data Handling**: Certificate data handled securely with proper error handling
 - **Alert Management**: Secure alert acknowledgment with user authentication
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Certificate Management Efficiency
 - **Concurrent Operations**: Thread-safe certificate operations with mutex protection
@@ -1582,7 +1582,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Auto-refresh Control**: User-controllable auto-refresh to manage resource usage
 - **Error Boundaries**: Graceful error handling with fallback to mock data
 
-### Integration Points ✅
+### Integration Points
 
 #### Infrastructure Integration
 - **Health Monitoring**: Certificate status contributes to overall infrastructure health
@@ -1602,14 +1602,14 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **API Integration**: Clean separation between mock and production certificate data
 - **State Consistency**: Consistent state management across certificate monitoring features
 
-## Network Secondary Tab - Verified Functionality ✅
+## Network Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/network/NetworkTraffic.tsx`
 
 ### Core Functionality Verification
 
-#### 1. **Real-time Network Bandwidth Monitoring** ✅
+#### 1. **Real-time Network Bandwidth Monitoring**
 - **Bandwidth Statistics Cards**: Displays current ingress, egress, peak bandwidth, and active connections
 - **Time-series Bandwidth Charts**: Interactive area charts showing ingress/egress traffic over time with customizable time ranges
 - **Data Format Conversion**: Automatically converts bytes/second to human-readable format (B, KB, MB, GB, TB)
@@ -1617,7 +1617,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Auto-refresh Capability**: Fetches updated network data based on selected time range
 - **Status**: Complete bandwidth monitoring with real-time statistics and historical trend visualization
 
-#### 2. **Protocol Traffic Breakdown Analysis** ✅
+#### 2. **Protocol Traffic Breakdown Analysis**
 - **Protocol Pie Chart**: Visual breakdown of network traffic by protocol (HTTP/HTTPS, gRPC, TCP, UDP, Other)
 - **Protocol Statistics**: Shows bytes and percentage distribution for each protocol type
 - **Color-coded Visualization**: Each protocol has distinct color coding for easy identification
@@ -1625,7 +1625,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Legend Display**: Protocol legend with color indicators and percentage breakdowns
 - **Status**: Complete protocol analysis with visual distribution and statistical breakdown
 
-#### 3. **Top Network Talkers Identification** ✅
+#### 3. **Top Network Talkers Identification**
 - **High-traffic Pod Identification**: Table showing pods with highest network usage ranked by total traffic
 - **Comprehensive Pod Information**: Displays pod name, namespace, ingress/egress bytes, total bytes, and connection count
 - **Kubernetes Integration**: Shows realistic pod names following Kubernetes naming conventions
@@ -1633,7 +1633,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Traffic Ranking**: Ranks pods by total network traffic with exponential decay simulation
 - **Status**: Advanced network talker analysis with pod-level traffic identification and ranking
 
-#### 4. **Intelligent Mock Data Generation** ✅
+#### 4. **Intelligent Mock Data Generation**
 - **Realistic Traffic Patterns**: Generates traffic patterns based on time ranges (spike, gradual, business hours, daily cycle)
 - **Business Hours Simulation**: Simulates higher traffic during business hours (9 AM - 5 PM) with lunch dip
 - **DDoS Attack Simulation**: 15-minute pattern includes traffic spikes simulating DDoS scenarios
@@ -1641,7 +1641,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Consistent Data Caching**: Caches generated data to prevent flickering during re-renders
 - **Status**: Advanced mock data system with realistic network behavior patterns and consistent generation
 
-#### 5. **Time-aware Traffic Analysis** ✅
+#### 5. **Time-aware Traffic Analysis**
 - **Multiple Time Patterns**: Different traffic patterns for different time ranges (15m spike, 1h gradual, 6h business, 24h daily)
 - **Daily Cycle Simulation**: Full 24-hour traffic cycle with peak hours, business hours, and off-hours patterns
 - **Real-time Timestamp Processing**: Processes timestamps for chart display in HH:mm format
@@ -1649,7 +1649,7 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Dynamic Interval Calculation**: Calculates appropriate time intervals based on selected duration
 - **Status**: Complete time-aware traffic analysis with realistic daily and business patterns
 
-#### 6. **Interactive Network Visualization** ✅
+#### 6. **Interactive Network Visualization**
 - **Custom Chart Tooltips**: Interactive tooltips showing detailed traffic information on hover
 - **Responsive Chart Design**: Charts adapt to container size with ResponsiveContainer integration
 - **Color-coded Traffic Types**: Distinct colors for ingress (green) and egress (cyan) traffic
@@ -1657,39 +1657,39 @@ mux.HandleFunc("DELETE /api/certificates/domains", corsMiddleware(authService.Au
 - **Error State Handling**: Graceful handling of no-data scenarios with informative messages
 - **Status**: Complete interactive visualization with responsive design and comprehensive state management
 
-### Network Data Models ✅
+### Network Data Models
 
 #### Frontend Network Interface
 **Location**: `/frontend/src/types/network.ts:1`
 
 ```typescript
 interface NetworkMetrics {
-  trafficData: NetworkTrafficData;        // Time-series traffic data
-  protocolBreakdown: ProtocolBreakdown[];  // Traffic by protocol
-  topTalkers: TopTalker[];               // High-traffic pods
-  totalBandwidth: {
-    ingress: number;                     // Current ingress bandwidth (bytes/sec)
-    egress: number;                      // Current egress bandwidth (bytes/sec)
-    peak: number;                        // Peak bandwidth recorded
-    average: number;                     // Average bandwidth over time
-  };
-  connectionCount: {
-    active: number;                      // Currently active connections
-    established: number;                 // Established connections
-    timeWait: number;                    // Connections in TIME_WAIT state
-  };
-  lastUpdated: string;                   // Last update timestamp
+trafficData: NetworkTrafficData; // Time-series traffic data
+protocolBreakdown: ProtocolBreakdown[]; // Traffic by protocol
+topTalkers: TopTalker[]; // High-traffic pods
+totalBandwidth: {
+ingress: number; // Current ingress bandwidth (bytes/sec)
+egress: number; // Current egress bandwidth (bytes/sec)
+peak: number; // Peak bandwidth recorded
+average: number; // Average bandwidth over time
+};
+connectionCount: {
+active: number; // Currently active connections
+established: number; // Established connections
+timeWait: number; // Connections in TIME_WAIT state
+};
+lastUpdated: string; // Last update timestamp
 }
 
 interface NetworkTrafficData {
-  ingress: NetworkMetricPoint[];         // Ingress traffic time series
-  egress: NetworkMetricPoint[];          // Egress traffic time series
-  total: NetworkMetricPoint[];           // Total traffic time series
+ingress: NetworkMetricPoint[]; // Ingress traffic time series
+egress: NetworkMetricPoint[]; // Egress traffic time series
+total: NetworkMetricPoint[]; // Total traffic time series
 }
 
 interface NetworkMetricPoint {
-  timestamp: string;                     // Data point timestamp
-  value: number;                         // Bandwidth value in bytes/second
+timestamp: string; // Data point timestamp
+value: number; // Bandwidth value in bytes/second
 }
 ```
 
@@ -1698,24 +1698,24 @@ interface NetworkMetricPoint {
 
 ```typescript
 interface ProtocolBreakdown {
-  protocol: string;                      // Protocol name (HTTP/HTTPS, gRPC, TCP, UDP)
-  bytes: number;                         // Total bytes for this protocol
-  percentage: number;                    // Percentage of total traffic
-  color: string;                         // Color for visualization
+protocol: string; // Protocol name (HTTP/HTTPS, gRPC, TCP, UDP)
+bytes: number; // Total bytes for this protocol
+percentage: number; // Percentage of total traffic
+color: string; // Color for visualization
 }
 
 interface TopTalker {
-  podName: string;                       // Kubernetes pod name
-  namespace: string;                     // Pod namespace
-  ingressBytes: number;                  // Ingress traffic in bytes
-  egressBytes: number;                   // Egress traffic in bytes
-  totalBytes: number;                    // Total traffic in bytes
-  connections: number;                   // Number of connections
-  rank: number;                          // Traffic rank (1-based)
+podName: string; // Kubernetes pod name
+namespace: string; // Pod namespace
+ingressBytes: number; // Ingress traffic in bytes
+egressBytes: number; // Egress traffic in bytes
+totalBytes: number; // Total traffic in bytes
+connections: number; // Number of connections
+rank: number; // Traffic rank (1-based)
 }
 ```
 
-### Backend Network Provider ✅
+### Backend Network Provider
 
 #### Network Metrics Handler
 **Location**: `/backend/internal/http/metrics.go:96`
@@ -1723,51 +1723,51 @@ interface TopTalker {
 ```go
 // GET /api/metrics/network - Get network metrics
 func (h *MetricsHandlers) GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-  // Parse duration parameter (default to 1 hour)
-  durationStr := r.URL.Query().Get("duration")
-  duration := time.Hour
-  if durationStr != "" {
-    if d, err := time.ParseDuration(durationStr); err == nil {
-      duration = d
-    }
-  }
-  
-  // Try to get detailed network metrics from Prometheus
-  networkMetrics, err := h.metricsService.GetNetworkMetrics(r.Context(), duration)
-  if err != nil {
-    // Fallback to basic cluster network metrics
-    clusterMetrics, clusterErr := h.metricsService.GetClusterMetrics(r.Context())
-    if clusterErr != nil {
-      // Return error if both detailed and basic metrics fail
-      return
-    }
-    
-    fallbackMetrics := map[string]interface{}{
-      "network":   clusterMetrics.NetworkMetrics,
-      "timestamp": time.Now().UTC().Format(time.RFC3339),
-      "source":    "cluster_basic",
-    }
-    return fallbackMetrics
-  }
-  
-  // Return detailed Prometheus network metrics
-  return networkMetrics
+// Parse duration parameter (default to 1 hour)
+durationStr := r.URL.Query().Get("duration")
+duration := time.Hour
+if durationStr != "" {
+if d, err := time.ParseDuration(durationStr); err == nil {
+duration = d
+}
+}
+
+// Try to get detailed network metrics from Prometheus
+networkMetrics, err := h.metricsService.GetNetworkMetrics(r.Context(), duration)
+if err != nil {
+// Fallback to basic cluster network metrics
+clusterMetrics, clusterErr := h.metricsService.GetClusterMetrics(r.Context())
+if clusterErr != nil {
+// Return error if both detailed and basic metrics fail
+return
+}
+
+fallbackMetrics := map[string]interface{}{
+"network": clusterMetrics.NetworkMetrics,
+"timestamp": time.Now().UTC().Format(time.RFC3339),
+"source": "cluster_basic",
+}
+return fallbackMetrics
+}
+
+// Return detailed Prometheus network metrics
+return networkMetrics
 }
 ```
 
-#### Metrics Service Integration ✅
+#### Metrics Service Integration
 **Location**: `/backend/internal/metrics/service.go:384`
 
 ```go
 func (s *Service) GetNetworkMetrics(ctx context.Context, duration time.Duration) (*prometheus.NetworkMetrics, error) {
-  if s.prometheusService == nil || !s.prometheusService.IsHealthy(ctx) {
-    return nil, errors.New("prometheus not available - use frontend mock data")
-  }
-  return s.prometheusService.GetNetworkMetrics(ctx, duration)
+if s.prometheusService == nil || !s.prometheusService.IsHealthy(ctx) {
+return nil, errors.New("prometheus not available - use frontend mock data")
+}
+return s.prometheusService.GetNetworkMetrics(ctx, duration)
 }
 ```
 
-#### Prometheus Network Service ✅
+#### Prometheus Network Service
 **Location**: `/backend/internal/prometheus/service.go:36`
 
 ```go
@@ -1775,92 +1775,92 @@ func (s *Service) GetNetworkMetrics(ctx context.Context, duration time.Duration)
 // This data powers the network dashboard showing bandwidth usage, top talkers,
 // and protocol breakdown charts.
 type NetworkMetrics struct {
-  IngressBytes  []MetricPoint `json:"ingress_bytes"`  // Incoming traffic over time
-  EgressBytes   []MetricPoint `json:"egress_bytes"`   // Outgoing traffic over time
-  Connections   int64         `json:"connections"`    // Current active connections
-  TopTalkers    []TopTalker   `json:"top_talkers"`    // Pods with highest traffic
-  ProtocolStats []Protocol    `json:"protocol_stats"` // Traffic breakdown by protocol
+IngressBytes []MetricPoint `json:"ingress_bytes"` // Incoming traffic over time
+EgressBytes []MetricPoint `json:"egress_bytes"` // Outgoing traffic over time
+Connections int64 `json:"connections"` // Current active connections
+TopTalkers []TopTalker `json:"top_talkers"` // Pods with highest traffic
+ProtocolStats []Protocol `json:"protocol_stats"` // Traffic breakdown by protocol
 }
 
 // TopTalker represents a pod with significant network traffic.
 // Used in the network dashboard to identify high-traffic workloads.
 type TopTalker struct {
-  PodName       string  `json:"pod_name"`
-  Namespace     string  `json:"namespace"`
-  IngressBytes  int64   `json:"ingress_bytes"`
-  EgressBytes   int64   `json:"egress_bytes"`
-  TotalBytes    int64   `json:"total_bytes"`
-  Connections   int     `json:"connections"`
+PodName string `json:"pod_name"`
+Namespace string `json:"namespace"`
+IngressBytes int64 `json:"ingress_bytes"`
+EgressBytes int64 `json:"egress_bytes"`
+TotalBytes int64 `json:"total_bytes"`
+Connections int `json:"connections"`
 }
 
 // Protocol represents network traffic statistics for a specific protocol.
 // Used to show traffic breakdown (HTTP/HTTPS, gRPC, TCP, UDP) in pie charts.
 type Protocol struct {
-  Name       string  `json:"protocol"`
-  Bytes      int64   `json:"bytes"`
-  Percentage float64 `json:"percentage"`
+Name string `json:"protocol"`
+Bytes int64 `json:"bytes"`
+Percentage float64 `json:"percentage"`
 }
 ```
 
-### Network Mock Data System ✅
+### Network Mock Data System
 
 #### Advanced Traffic Pattern Generation
 **Location**: `/frontend/src/mocks/network/traffic.ts:32`
 
 ```typescript
 const generateTrafficSeries = (baseValue: number, variance: number, trafficType: 'ingress' | 'egress', pattern?: string) => {
-  return Array.from({ length: points }, (_, i) => {
-    const progress = i / (points - 1);
-    let value = baseValue;
+return Array.from({ length: points }, (_, i) => {
+const progress = i / (points - 1);
+let value = baseValue;
 
-    // Apply realistic network patterns
-    switch (pattern) {
-      case 'spike': // 15m - DDoS attack or sudden traffic spike
-        if (trafficType === 'ingress') {
-          value = baseValue + Math.sin(progress * Math.PI * 4) * variance * 2;
-          if (progress > 0.6) value += baseValue * 3; // Major spike
-        }
-        break;
+// Apply realistic network patterns
+switch (pattern) {
+case 'spike': // 15m - DDoS attack or sudden traffic spike
+if (trafficType === 'ingress') {
+value = baseValue + Math.sin(progress * Math.PI * 4) * variance * 2;
+if (progress > 0.6) value += baseValue * 3; // Major spike
+}
+break;
 
-      case 'gradual': // 1h - Normal business traffic growth
-        if (trafficType === 'ingress') {
-          value = baseValue + progress * variance * 1.5 + Math.sin(progress * Math.PI * 3) * variance * 0.5;
-        }
-        break;
+case 'gradual': // 1h - Normal business traffic growth
+if (trafficType === 'ingress') {
+value = baseValue + progress * variance * 1.5 + Math.sin(progress * Math.PI * 3) * variance * 0.5;
+}
+break;
 
-      case 'business': // 6h - Business hours pattern
-        const hourOfDay = (progress * 6 + new Date().getHours() - 6) % 24;
-        const isBusinessHours = hourOfDay >= 9 && hourOfDay <= 17;
-        const multiplier = isBusinessHours ? (trafficType === 'ingress' ? 2.5 : 1.8) : 0.6;
-        value = baseValue * multiplier + Math.sin(progress * Math.PI * 2) * variance;
-        break;
+case 'business': // 6h - Business hours pattern
+const hourOfDay = (progress * 6 + new Date().getHours() - 6) % 24;
+const isBusinessHours = hourOfDay >= 9 && hourOfDay <= 17;
+const multiplier = isBusinessHours ? (trafficType === 'ingress' ? 2.5 : 1.8) : 0.6;
+value = baseValue * multiplier + Math.sin(progress * Math.PI * 2) * variance;
+break;
 
-      case 'daily': // 24h - Full daily cycle
-        const dailyHour = (progress * 24) % 24;
-        let dailyMultiplier = 0.3;
-        if (dailyHour >= 8 && dailyHour <= 18) dailyMultiplier = 1.0;
-        if (dailyHour >= 10 && dailyHour <= 16) dailyMultiplier = 1.5; // Peak hours
-        
-        value = baseValue * dailyMultiplier + 
-                Math.sin(progress * Math.PI * 2) * variance * 0.8 + 
-                Math.cos(progress * Math.PI * 4) * variance * 0.3;
-        
-        // Add lunch dip for ingress
-        if (trafficType === 'ingress' && dailyHour >= 12 && dailyHour <= 13) {
-          value *= 0.7;
-        }
-        break;
-    }
+case 'daily': // 24h - Full daily cycle
+const dailyHour = (progress * 24) % 24;
+let dailyMultiplier = 0.3;
+if (dailyHour >= 8 && dailyHour <= 18) dailyMultiplier = 1.0;
+if (dailyHour >= 10 && dailyHour <= 16) dailyMultiplier = 1.5; // Peak hours
 
-    // Add realistic network variance and convert to bytes/second
-    const networkNoise = (Math.random() - 0.5) * variance * 0.2;
-    const finalValue = Math.max(0, (value + networkNoise) * 1024 * 1024); // Convert MB/s to bytes/s
+value = baseValue * dailyMultiplier +
+Math.sin(progress * Math.PI * 2) * variance * 0.8 +
+Math.cos(progress * Math.PI * 4) * variance * 0.3;
 
-    return {
-      timestamp: new Date(now - (points - 1 - i) * intervalMs).toISOString(),
-      value: Math.round(finalValue)
-    };
-  });
+// Add lunch dip for ingress
+if (trafficType === 'ingress' && dailyHour >= 12 && dailyHour <= 13) {
+value *= 0.7;
+}
+break;
+}
+
+// Add realistic network variance and convert to bytes/second
+const networkNoise = (Math.random() - 0.5) * variance * 0.2;
+const finalValue = Math.max(0, (value + networkNoise) * 1024 * 1024); // Convert MB/s to bytes/s
+
+return {
+timestamp: new Date(now - (points - 1 - i) * intervalMs).toISOString(),
+value: Math.round(finalValue)
+};
+});
 };
 ```
 
@@ -1870,56 +1870,56 @@ const generateTrafficSeries = (baseValue: number, variance: number, trafficType:
 ```typescript
 // Realistic pod names for top talkers
 const podNames = [
-  'nginx-deployment-7c79c4bf97-xk9mn',
-  'api-gateway-5d9f8c8b4d-jh8zt',
-  'redis-master-0', 
-  'postgres-primary-0',
-  'elasticsearch-0',
-  'kafka-broker-1',
-  'prometheus-server-6b7f9c8d5e-wr4kp',
-  'grafana-5c8d7b9f4e-mp3vx',
-  'ingress-nginx-controller-xyz',
-  'cert-manager-webhook-abc'
+'nginx-deployment-7c79c4bf97-xk9mn',
+'api-gateway-5d9f8c8b4d-jh8zt',
+'redis-master-0',
+'postgres-primary-0',
+'elasticsearch-0',
+'kafka-broker-1',
+'prometheus-server-6b7f9c8d5e-wr4kp',
+'grafana-5c8d7b9f4e-mp3vx',
+'ingress-nginx-controller-xyz',
+'cert-manager-webhook-abc'
 ];
 
 // Generate protocol breakdown data
 export const generateProtocolBreakdown = (): ProtocolBreakdown[] => {
-  return [
-    {
-      protocol: 'HTTP/HTTPS',
-      bytes: 2847291840, // ~2.65 GB
-      percentage: 65.4,
-      color: '#00FF00'
-    },
-    {
-      protocol: 'gRPC',
-      bytes: 847291840, // ~789 MB
-      percentage: 19.5,
-      color: '#00FFFF'
-    },
-    {
-      protocol: 'TCP',
-      bytes: 423645920, // ~394 MB  
-      percentage: 9.7,
-      color: '#FFFF00'
-    },
-    {
-      protocol: 'UDP',
-      bytes: 152387584, // ~145 MB
-      percentage: 3.5,
-      color: '#FF00FF'
-    },
-    {
-      protocol: 'Other',
-      bytes: 82387584, // ~78 MB
-      percentage: 1.9,
-      color: '#FF6600'
-    }
-  ];
+return [
+{
+protocol: 'HTTP/HTTPS',
+bytes: 2847291840, // ~2.65 GB
+percentage: 65.4,
+color: '#00FF00'
+},
+{
+protocol: 'gRPC',
+bytes: 847291840, // ~789 MB
+percentage: 19.5,
+color: '#00FFFF'
+},
+{
+protocol: 'TCP',
+bytes: 423645920, // ~394 MB
+percentage: 9.7,
+color: '#FFFF00'
+},
+{
+protocol: 'UDP',
+bytes: 152387584, // ~145 MB
+percentage: 3.5,
+color: '#FF00FF'
+},
+{
+protocol: 'Other',
+bytes: 82387584, // ~78 MB
+percentage: 1.9,
+color: '#FF6600'
+}
+];
 };
 ```
 
-### User Workflow ✅
+### User Workflow
 
 #### Complete Network Monitoring Flow
 **Frontend Workflow**: `/frontend/src/components/network/NetworkTraffic.tsx`
@@ -1940,16 +1940,16 @@ export const generateProtocolBreakdown = (): ProtocolBreakdown[] => {
 4. **Pod Ranking** → Ranks pods by total traffic volume with connection count analysis
 5. **Visual Representation** → Renders charts, tables, and statistics for comprehensive network view
 
-### Component Integration ✅
+### Component Integration
 
 #### Dashboard Integration
 **Location**: `/frontend/src/components/Dashboard.tsx:884`
 
 ```typescript
 // Infrastructure Network tab integration
-{activePrimaryTab === PrimaryTab.INFRASTRUCTURE && 
- activeSecondaryTab === InfrastructureTab.NETWORK && 
- <NetworkTraffic timeRange={timeRange} />}
+{activePrimaryTab === PrimaryTab.INFRASTRUCTURE &&
+activeSecondaryTab === InfrastructureTab.NETWORK &&
+<NetworkTraffic timeRange={timeRange} />}
 ```
 
 #### Time Range Integration
@@ -1957,16 +1957,16 @@ export const generateProtocolBreakdown = (): ProtocolBreakdown[] => {
 
 ```typescript
 interface NetworkTrafficProps {
-  timeRange?: string;                    // Time range from parent component
+timeRange?: string; // Time range from parent component
 }
 
 const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
-  // Component uses timeRange prop to determine data generation pattern
-  // and automatically refreshes when timeRange changes
+// Component uses timeRange prop to determine data generation pattern
+// and automatically refreshes when timeRange changes
 };
 ```
 
-### Mock Data Features ✅
+### Mock Data Features
 
 #### Traffic Pattern Simulation
 **Pattern Types**:
@@ -1977,11 +1977,11 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 
 #### Data Consistency Features
 - **Caching System**: Generated data cached by time range to prevent flickering during re-renders
-- **Realistic Values**: Traffic values in MB/s converted to bytes/second for backend compatibility  
+- **Realistic Values**: Traffic values in MB/s converted to bytes/second for backend compatibility
 - **Network Variance**: Adds realistic network noise and variance to traffic patterns
 - **Connection Simulation**: Realistic connection counts with active, established, and TIME_WAIT states
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Network Monitoring Flow
 1. **Component Mount** → NetworkTraffic component initializes with time range parameter
@@ -2001,7 +2001,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 5. **Frontend Processing** → Frontend processes API response or falls back to mock data
 6. **Chart Updates** → Network charts and statistics update based on received data
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Network Data Efficiency
 - **Caching Strategy**: Network data cached by time range to prevent repeated generation
@@ -2017,7 +2017,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Time-based Updates**: Component only re-renders when time range actually changes
 - **Error Boundaries**: Graceful error handling with fallback to no-data states
 
-### Integration Points ✅
+### Integration Points
 
 #### Infrastructure Integration
 - **Health Monitoring**: Network metrics contribute to overall infrastructure health assessment
@@ -2037,14 +2037,14 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Error Handling**: Robust error handling ensures development continuity when backend unavailable
 - **State Consistency**: Consistent state management across network monitoring features
 
-## Resources Secondary Tab - Verified Functionality ✅
+## Resources Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/metrics/ResourceCharts.tsx`
 
 ### Core Functionality Verification
 
-#### 1. **Historical Resource Trends Visualization** ✅
+#### 1. **Historical Resource Trends Visualization**
 - **CPU & Memory Trends Chart**: Line chart showing historical CPU and memory usage percentages over time
 - **Workload Trends Chart**: Line chart displaying pod count trends and workload distribution
 - **Time-series Data Integration**: Uses WebSocket metrics store for real-time historical data
@@ -2052,7 +2052,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Color-coded Metrics**: Green for CPU, Yellow for Memory, Cyan for Pods with distinct visual styling
 - **Status**: Complete historical trend visualization with real-time data integration and interactive charts
 
-#### 2. **Deployment Capacity Planning Analysis** ✅
+#### 2. **Deployment Capacity Planning Analysis**
 - **Current Usage Display**: Shows current CPU percentage, memory percentage, and running pod count
 - **Available Capacity Calculation**: Calculates available CPU cores, memory GB, and pod slots
 - **New Deployment Estimation**: Estimates capacity for Small (~10% CPU), Medium (~25% CPU), and Large (~50% CPU) applications
@@ -2060,7 +2060,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Dynamic Calculations**: Real-time capacity calculations based on current cluster metrics
 - **Status**: Advanced capacity planning with deployment size estimation and resource availability analysis
 
-#### 3. **Comprehensive Resource Summary Table** ✅
+#### 3. **Comprehensive Resource Summary Table**
 - **Multi-resource Overview**: Table showing CPU, Memory, and Storage usage with used/total/available breakdown
 - **Human-readable Formatting**: Automatic byte formatting (B, KB, MB, GB, TB) for memory and storage
 - **Color-coded Usage Indicators**: Red (>80%), Yellow (>60%), Green (≤60%) usage percentage indicators
@@ -2068,7 +2068,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Real-time Updates**: Table updates with live cluster metrics from WebSocket integration
 - **Status**: Complete resource overview with color-coded alerts and comprehensive usage breakdown
 
-#### 4. **WebSocket Metrics Store Integration** ✅
+#### 4. **WebSocket Metrics Store Integration**
 - **Real-time Data Connection**: Uses `useWebSocketMetricsStore` for live cluster metrics and historical data
 - **Metrics History Processing**: Processes time-series data from metrics history for chart visualization
 - **Cluster Metrics Display**: Real-time cluster metrics for current usage and capacity calculations
@@ -2076,7 +2076,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Data Synchronization**: Synchronized data across multiple dashboard components
 - **Status**: Complete WebSocket integration with real-time metrics and historical data processing
 
-#### 5. **Time-aware Data Processing** ✅
+#### 5. **Time-aware Data Processing**
 - **Historical Data Formatting**: Processes metrics history into chart-friendly format with HH:mm timestamps
 - **Time Range Support**: Supports configurable time ranges through timeRange prop (though currently uses store data)
 - **Data Point Correlation**: Correlates CPU, memory, pod, and node data points by timestamp index
@@ -2084,7 +2084,7 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Chart Data Optimization**: Optimized data processing for smooth chart rendering and interaction
 - **Status**: Advanced time-aware data processing with correlation and optimization for chart display
 
-#### 6. **Resource Calculation and Analysis** ✅
+#### 6. **Resource Calculation and Analysis**
 - **Capacity Planning Logic**: Sophisticated logic for estimating deployment capacity based on current usage
 - **Resource Availability Math**: Calculates available resources using percentage-based formulas
 - **Application Size Modeling**: Models small, medium, and large application resource requirements
@@ -2092,35 +2092,35 @@ const NetworkTraffic: FC<NetworkTrafficProps> = ({ timeRange = TimeRange.ONE_HOU
 - **Real-time Calculations**: Dynamic calculations update with live cluster metrics
 - **Status**: Complete resource analysis with capacity planning and threshold-based alerting
 
-### Resource Data Models ✅
+### Resource Data Models
 
 #### Frontend Resource Interfaces
 **Location**: `/frontend/src/types/metrics.ts:1`
 
 ```typescript
 interface ResourceUsage {
-  usage: number;                        // Current usage value
-  used: number;                         // Used resource amount
-  total: number;                        // Total available resource
-  available: number;                    // Available resource amount
-  usage_percent: number;                // Usage percentage (0-100)
-  unit: string;                         // Resource unit (millicores, bytes)
+usage: number; // Current usage value
+used: number; // Used resource amount
+total: number; // Total available resource
+available: number; // Available resource amount
+usage_percent: number; // Usage percentage (0-100)
+unit: string; // Resource unit (millicores, bytes)
 }
 
 interface ClusterMetrics {
-  total_nodes: number;                  // Total nodes in cluster
-  ready_nodes: number;                  // Ready/healthy nodes
-  total_pods: number;                   // Total pod capacity
-  running_pods: number;                 // Currently running pods
-  pending_pods: number;                 // Pods in pending state
-  failed_pods: number;                  // Failed/error pods
-  total_namespaces: number;             // Total namespaces
-  cpu_usage: ResourceUsage;             // Cluster CPU usage
-  memory_usage: ResourceUsage;          // Cluster memory usage
-  storage_usage: ResourceUsage;         // Cluster storage usage
-  healthy_pods: number;                 // Healthy pod count
-  unhealthy_pods: number;               // Unhealthy pod count
-  last_updated: string;                 // Last update timestamp
+total_nodes: number; // Total nodes in cluster
+ready_nodes: number; // Ready/healthy nodes
+total_pods: number; // Total pod capacity
+running_pods: number; // Currently running pods
+pending_pods: number; // Pods in pending state
+failed_pods: number; // Failed/error pods
+total_namespaces: number; // Total namespaces
+cpu_usage: ResourceUsage; // Cluster CPU usage
+memory_usage: ResourceUsage; // Cluster memory usage
+storage_usage: ResourceUsage; // Cluster storage usage
+healthy_pods: number; // Healthy pod count
+unhealthy_pods: number; // Unhealthy pod count
+last_updated: string; // Last update timestamp
 }
 ```
 
@@ -2129,20 +2129,20 @@ interface ClusterMetrics {
 
 ```typescript
 interface MetricPoint {
-  timestamp: string;                    // Data point timestamp
-  value: number;                        // Metric value
+timestamp: string; // Data point timestamp
+value: number; // Metric value
 }
 
 interface MetricsHistory {
-  cpu: MetricPoint[];                   // CPU usage history
-  memory: MetricPoint[];                // Memory usage history
-  storage: MetricPoint[];               // Storage usage history
-  pods: MetricPoint[];                  // Pod count history
-  nodes: MetricPoint[];                 // Node count history
+cpu: MetricPoint[]; // CPU usage history
+memory: MetricPoint[]; // Memory usage history
+storage: MetricPoint[]; // Storage usage history
+pods: MetricPoint[]; // Pod count history
+nodes: MetricPoint[]; // Node count history
 }
 ```
 
-### Backend Metrics Provider ✅
+### Backend Metrics Provider
 
 #### Cluster Metrics Handler
 **Location**: `/backend/internal/http/metrics.go:47`
@@ -2150,28 +2150,28 @@ interface MetricsHistory {
 ```go
 // GET /api/metrics/cluster - Get cluster-wide resource metrics
 func (h *MetricsHandlers) GetClusterMetrics(w http.ResponseWriter, r *http.Request) {
-  if h.metricsService == nil {
-    // Return service unavailable if metrics service not available
-    w.WriteHeader(http.StatusServiceUnavailable)
-    json.NewEncoder(w).Encode(map[string]interface{}{
-      "status":     "unavailable",
-      "message":    "Metrics service not available",
-      "k8s_client": false,
-      "timestamp":  time.Now(),
-    })
-    return
-  }
+if h.metricsService == nil {
+// Return service unavailable if metrics service not available
+w.WriteHeader(http.StatusServiceUnavailable)
+json.NewEncoder(w).Encode(map[string]interface{}{
+"status": "unavailable",
+"message": "Metrics service not available",
+"k8s_client": false,
+"timestamp": time.Now(),
+})
+return
+}
 
-  // Get cluster metrics from Kubernetes
-  clusterMetrics, err := h.metricsService.GetClusterMetrics(r.Context())
-  if err != nil {
-    http.Error(w, "Failed to get cluster metrics", http.StatusInternalServerError)
-    return
-  }
+// Get cluster metrics from Kubernetes
+clusterMetrics, err := h.metricsService.GetClusterMetrics(r.Context())
+if err != nil {
+http.Error(w, "Failed to get cluster metrics", http.StatusInternalServerError)
+return
+}
 
-  // Return structured cluster metrics
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(clusterMetrics)
+// Return structured cluster metrics
+w.Header().Set("Content-Type", "application/json")
+json.NewEncoder(w).Encode(clusterMetrics)
 }
 ```
 
@@ -2183,123 +2183,123 @@ func (h *MetricsHandlers) GetClusterMetrics(w http.ResponseWriter, r *http.Reque
 - **Resource Correlation**: Returns correlated CPU, memory, storage, pod, and node metrics
 - **Data Aggregation**: Aggregates metrics data into appropriate time intervals for chart display
 
-#### Kubernetes Metrics Service ✅
+#### Kubernetes Metrics Service
 **Location**: `/backend/internal/metrics/service.go:121`
 
 ```go
 func (s *Service) GetClusterMetrics(ctx context.Context) (*ClusterMetrics, error) {
-  if s.k8sClient == nil {
-    // Frontend handles mock data
-    return nil, errors.New("kubernetes client not available - use frontend mock data")
-  }
+if s.k8sClient == nil {
+// Frontend handles mock data
+return nil, errors.New("kubernetes client not available - use frontend mock data")
+}
 
-  metrics := &ClusterMetrics{
-    Timestamp: time.Now(),
-  }
+metrics := &ClusterMetrics{
+Timestamp: time.Now(),
+}
 
-  // Get nodes for capacity calculation
-  nodes, err := s.k8sClient.ListNodes(ctx)
-  if err != nil {
-    return nil, fmt.Errorf("failed to list nodes: %w", err)
-  }
+// Get nodes for capacity calculation
+nodes, err := s.k8sClient.ListNodes(ctx)
+if err != nil {
+return nil, fmt.Errorf("failed to list nodes: %w", err)
+}
 
-  // Calculate node metrics
-  metrics.TotalNodes = len(nodes.Items)
-  readyNodes := 0
-  for _, node := range nodes.Items {
-    if s.isNodeReady(node) {
-      readyNodes++
-    }
-  }
-  metrics.ReadyNodes = readyNodes
+// Calculate node metrics
+metrics.TotalNodes = len(nodes.Items)
+readyNodes := 0
+for _, node := range nodes.Items {
+if s.isNodeReady(node) {
+readyNodes++
+}
+}
+metrics.ReadyNodes = readyNodes
 
-  // Get pods for workload metrics
-  pods, err := s.k8sClient.ListPods(ctx, "")
-  if err != nil {
-    return nil, fmt.Errorf("failed to list pods: %w", err)
-  }
+// Get pods for workload metrics
+pods, err := s.k8sClient.ListPods(ctx, "")
+if err != nil {
+return nil, fmt.Errorf("failed to list pods: %w", err)
+}
 
-  // Calculate pod metrics
-  metrics.TotalPods = len(pods.Items)
-  runningPods := 0
-  pendingPods := 0
-  failedPods := 0
-  
-  for _, pod := range pods.Items {
-    switch pod.Status.Phase {
-    case corev1.PodRunning:
-      runningPods++
-    case corev1.PodPending:
-      pendingPods++
-    case corev1.PodFailed:
-      failedPods++
-    }
-  }
-  
-  metrics.RunningPods = runningPods
-  metrics.PendingPods = pendingPods
-  metrics.FailedPods = failedPods
+// Calculate pod metrics
+metrics.TotalPods = len(pods.Items)
+runningPods := 0
+pendingPods := 0
+failedPods := 0
 
-  // Calculate resource usage from Kubernetes metrics
-  metrics.CPUUsage = s.calculateClusterCPU(nodes.Items)
-  metrics.MemoryUsage = s.calculateClusterMemory(nodes.Items)
-  metrics.StorageUsage = s.calculateClusterStorage(nodes.Items)
+for _, pod := range pods.Items {
+switch pod.Status.Phase {
+case corev1.PodRunning:
+runningPods++
+case corev1.PodPending:
+pendingPods++
+case corev1.PodFailed:
+failedPods++
+}
+}
 
-  return metrics, nil
+metrics.RunningPods = runningPods
+metrics.PendingPods = pendingPods
+metrics.FailedPods = failedPods
+
+// Calculate resource usage from Kubernetes metrics
+metrics.CPUUsage = s.calculateClusterCPU(nodes.Items)
+metrics.MemoryUsage = s.calculateClusterMemory(nodes.Items)
+metrics.StorageUsage = s.calculateClusterStorage(nodes.Items)
+
+return metrics, nil
 }
 ```
 
-### WebSocket Metrics Store Architecture ✅
+### WebSocket Metrics Store Architecture
 
 #### Store Integration and State Management
 **Location**: `/frontend/src/stores/webSocketMetricsStore.ts:23`
 
 ```typescript
 interface WebSocketMetricsStore extends MetricsStore {
-  // WebSocket connection state
-  isConnected: boolean;
-  connectionError: string | null;
-  
-  // WebSocket actions
-  initializeWebSocketMetrics: () => void;
-  cleanupWebSocketMetrics: () => void;
-  
-  // Metrics fetching
-  fetchClusterMetrics: () => Promise<void>;
-  fetchMetricsHistory: (timeRange?: string) => Promise<void>;
-  fetchAllMetrics: () => Promise<void>;
+// WebSocket connection state
+isConnected: boolean;
+connectionError: string | null;
+
+// WebSocket actions
+initializeWebSocketMetrics: () => void;
+cleanupWebSocketMetrics: () => void;
+
+// Metrics fetching
+fetchClusterMetrics: () => Promise<void>;
+fetchMetricsHistory: (timeRange?: string) => Promise<void>;
+fetchAllMetrics: () => Promise<void>;
 }
 
 const useWebSocketMetricsStore = create<WebSocketMetricsStore>()((set, get) => ({
-  // Cluster metrics state
-  clusterMetrics: null,
-  nodeMetrics: [],
-  podMetrics: [],
-  namespaceMetrics: [],
-  metricsHistory: null,
-  
-  // Loading states
-  isLoading: false,
-  isLoadingHistory: false,
-  error: null,
-  
-  // WebSocket connection management
-  initializeWebSocketMetrics: () => {
-    const ws = getWebSocketInstance();
-    if (!ws) return;
+// Cluster metrics state
+clusterMetrics: null,
+nodeMetrics: [],
+podMetrics: [],
+namespaceMetrics: [],
+metricsHistory: null,
 
-    // Subscribe to real-time metrics updates
-    metricsSubscriptionId = ws.subscribe(WebSocketEventType.METRICS, (data: WebSocketMetricsData) => {
-      set({ 
-        clusterMetrics: data.cluster || null,
-        nodeMetrics: data.nodes || [],
-        podMetrics: data.pods || [],
-        namespaceMetrics: data.namespaces || [],
-        error: null,
-        isLoading: false
-      });
-    });
-  }
+// Loading states
+isLoading: false,
+isLoadingHistory: false,
+error: null,
+
+// WebSocket connection management
+initializeWebSocketMetrics: () => {
+const ws = getWebSocketInstance();
+if (!ws) return;
+
+// Subscribe to real-time metrics updates
+metricsSubscriptionId = ws.subscribe(WebSocketEventType.METRICS, (data: WebSocketMetricsData) => {
+set({
+clusterMetrics: data.cluster || null,
+nodeMetrics: data.nodes || [],
+podMetrics: data.pods || [],
+namespaceMetrics: data.namespaces || [],
+error: null,
+isLoading: false
+});
+});
+}
 }));
 ```
 
@@ -2309,20 +2309,20 @@ const useWebSocketMetricsStore = create<WebSocketMetricsStore>()((set, get) => (
 ```typescript
 // Historical data processing for charts
 const historicalData = useMemo(() => {
-  if (!metricsHistory) return [];
+if (!metricsHistory) return [];
 
-  return metricsHistory.cpu.map((cpuPoint, index) => ({
-    time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
-    timestamp: cpuPoint.timestamp,
-    cpu: cpuPoint.value,
-    memory: metricsHistory.memory[index]?.value || 0,
-    pods: metricsHistory.pods[index]?.value || 0,
-    nodes: metricsHistory.nodes[index]?.value || 0,
-  }));
+return metricsHistory.cpu.map((cpuPoint, index) => ({
+time: format(new Date(cpuPoint.timestamp), 'HH:mm'),
+timestamp: cpuPoint.timestamp,
+cpu: cpuPoint.value,
+memory: metricsHistory.memory[index]?.value || 0,
+pods: metricsHistory.pods[index]?.value || 0,
+nodes: metricsHistory.nodes[index]?.value || 0,
+}));
 }, [metricsHistory]);
 ```
 
-### Mock Data System ✅
+### Mock Data System
 
 #### Advanced Pattern Generation
 **Location**: `/frontend/src/mocks/metrics/cluster.ts:44`
@@ -2330,65 +2330,65 @@ const historicalData = useMemo(() => {
 ```typescript
 // Generate historical metrics with timeframe-specific patterns
 export const generateMockMetricsHistory = (duration: string = '1h'): MetricsHistory => {
-  // Return cached data if available to prevent re-rendering
-  if (mockDataCache.has(duration)) {
-    return mockDataCache.get(duration)!;
-  }
+// Return cached data if available to prevent re-rendering
+if (mockDataCache.has(duration)) {
+return mockDataCache.get(duration)!;
+}
 
-  const now = Date.now();
-  const intervals = duration === '15m' ? 15 : duration === '1h' ? 60 : duration === '6h' ? 360 : 1440;
-  const points = Math.min(60, intervals);
-  const intervalMs = (intervals * 60 * 1000) / points;
+const now = Date.now();
+const intervals = duration === '15m' ? 15 : duration === '1h' ? 60 : duration === '6h' ? 360 : 1440;
+const points = Math.min(60, intervals);
+const intervalMs = (intervals * 60 * 1000) / points;
 
-  const generateTimeSeries = (metricType: 'cpu' | 'memory' | 'storage' | 'pods' | 'nodes', baseValue: number, variance: number = 10, pattern?: 'spike' | 'gradual' | 'business' | 'daily') => {
-    return Array.from({ length: points }, (_, i) => {
-      const progress = i / (points - 1);
-      let value = baseValue;
-      
-      // Apply timeframe-specific patterns with metric-specific behavior
-      switch (pattern) {
-        case 'spike': // 15m - recent spike pattern
-          switch (metricType) {
-            case 'cpu':
-              value = baseValue + Math.sin(progress * Math.PI * 3) * 20 + (Math.random() - 0.5) * variance;
-              if (progress > 0.7) value += 25; // CPU spike
-              break;
-            case 'memory':
-              value = baseValue + Math.sin(progress * Math.PI * 2) * 10 + (Math.random() - 0.5) * variance;
-              if (progress > 0.8) value += 15; // Memory leak pattern
-              break;
-            // ... other metric patterns
-          }
-          break;
-        
-        case 'gradual': // 1h - gradual increase
-        case 'business': // 6h - business hours pattern  
-        case 'daily': // 24h - daily cycle
-          // Pattern-specific logic for each metric type
-          break;
-      }
+const generateTimeSeries = (metricType: 'cpu' | 'memory' | 'storage' | 'pods' | 'nodes', baseValue: number, variance: number = 10, pattern?: 'spike' | 'gradual' | 'business' | 'daily') => {
+return Array.from({ length: points }, (_, i) => {
+const progress = i / (points - 1);
+let value = baseValue;
 
-      return {
-        timestamp: new Date(now - (points - 1 - i) * intervalMs).toISOString(),
-        value: Math.max(0, value)
-      };
-    });
-  };
+// Apply timeframe-specific patterns with metric-specific behavior
+switch (pattern) {
+case 'spike': // 15m - recent spike pattern
+switch (metricType) {
+case 'cpu':
+value = baseValue + Math.sin(progress * Math.PI * 3) * 20 + (Math.random() - 0.5) * variance;
+if (progress > 0.7) value += 25; // CPU spike
+break;
+case 'memory':
+value = baseValue + Math.sin(progress * Math.PI * 2) * 10 + (Math.random() - 0.5) * variance;
+if (progress > 0.8) value += 15; // Memory leak pattern
+break;
+// ... other metric patterns
+}
+break;
 
-  // Generate correlated time series for all metrics
-  const pattern = duration === '15m' ? 'spike' : duration === '1h' ? 'gradual' : duration === '6h' ? 'business' : 'daily';
-  
-  const history = {
-    cpu: generateTimeSeries('cpu', 45, 15, pattern),
-    memory: generateTimeSeries('memory', 65, 12, pattern),
-    storage: generateTimeSeries('storage', 32, 8, pattern),
-    pods: generateTimeSeries('pods', 8, 3, pattern),
-    nodes: generateTimeSeries('nodes', 3, 0, pattern)
-  };
+case 'gradual': // 1h - gradual increase
+case 'business': // 6h - business hours pattern
+case 'daily': // 24h - daily cycle
+// Pattern-specific logic for each metric type
+break;
+}
 
-  // Cache the generated data
-  mockDataCache.set(duration, history);
-  return history;
+return {
+timestamp: new Date(now - (points - 1 - i) * intervalMs).toISOString(),
+value: Math.max(0, value)
+};
+});
+};
+
+// Generate correlated time series for all metrics
+const pattern = duration === '15m' ? 'spike' : duration === '1h' ? 'gradual' : duration === '6h' ? 'business' : 'daily';
+
+const history = {
+cpu: generateTimeSeries('cpu', 45, 15, pattern),
+memory: generateTimeSeries('memory', 65, 12, pattern),
+storage: generateTimeSeries('storage', 32, 8, pattern),
+pods: generateTimeSeries('pods', 8, 3, pattern),
+nodes: generateTimeSeries('nodes', 3, 0, pattern)
+};
+
+// Cache the generated data
+mockDataCache.set(duration, history);
+return history;
 };
 ```
 
@@ -2397,44 +2397,44 @@ export const generateMockMetricsHistory = (duration: string = '1h'): MetricsHist
 
 ```typescript
 export const mockClusterMetrics: ClusterMetrics = {
-  total_nodes: 3,
-  ready_nodes: 3,
-  total_pods: 10,
-  running_pods: 8,
-  pending_pods: 1,
-  failed_pods: 1,
-  total_namespaces: 5,
-  cpu_usage: {
-    usage: 7.25, // In cores
-    used: 7250, // Total CPU usage in millicores
-    total: 12000, // Total CPU capacity in millicores  
-    available: 4750,
-    usage_percent: 60.4, // High CPU usage to show warnings
-    unit: 'millicores'
-  },
-  memory_usage: {
-    usage: 17179869184, // ~16GB used
-    used: 17179869184, // ~16GB used
-    total: 21474836480, // ~20GB total
-    available: 4294967296, // ~4GB available
-    usage_percent: 80.0, // High memory usage
-    unit: 'bytes'
-  },
-  storage_usage: {
-    usage: 85899345920, // ~80GB used
-    used: 85899345920, // ~80GB used  
-    total: 268435456000, // ~250GB total
-    available: 182536110080, // ~170GB available
-    usage_percent: 32.0, // Moderate storage usage
-    unit: 'bytes'
-  },
-  healthy_pods: 8,
-  unhealthy_pods: 2,
-  last_updated: new Date().toISOString()
+total_nodes: 3,
+ready_nodes: 3,
+total_pods: 10,
+running_pods: 8,
+pending_pods: 1,
+failed_pods: 1,
+total_namespaces: 5,
+cpu_usage: {
+usage: 7.25, // In cores
+used: 7250, // Total CPU usage in millicores
+total: 12000, // Total CPU capacity in millicores
+available: 4750,
+usage_percent: 60.4, // High CPU usage to show warnings
+unit: 'millicores'
+},
+memory_usage: {
+usage: 17179869184, // ~16GB used
+used: 17179869184, // ~16GB used
+total: 21474836480, // ~20GB total
+available: 4294967296, // ~4GB available
+usage_percent: 80.0, // High memory usage
+unit: 'bytes'
+},
+storage_usage: {
+usage: 85899345920, // ~80GB used
+used: 85899345920, // ~80GB used
+total: 268435456000, // ~250GB total
+available: 182536110080, // ~170GB available
+usage_percent: 32.0, // Moderate storage usage
+unit: 'bytes'
+},
+healthy_pods: 8,
+unhealthy_pods: 2,
+last_updated: new Date().toISOString()
 };
 ```
 
-### User Workflow ✅
+### User Workflow
 
 #### Complete Resource Monitoring Flow
 **Frontend Workflow**: `/frontend/src/components/metrics/ResourceCharts.tsx`
@@ -2452,22 +2452,22 @@ export const mockClusterMetrics: ClusterMetrics = {
 1. **Current State Assessment** → Analyzes current CPU, memory, and pod usage
 2. **Available Capacity Calculation** → Calculates remaining resources based on current utilization
 3. **Deployment Size Estimation** → Estimates capacity for different application sizes:
-   - Small Apps: ~10% CPU usage each
-   - Medium Apps: ~25% CPU usage each  
-   - Large Apps: ~50% CPU usage each
+ - Small Apps: ~10% CPU usage each
+ - Medium Apps: ~25% CPU usage each
+ - Large Apps: ~50% CPU usage each
 4. **Visual Indicators** → Color-codes deployment estimates based on available capacity
 5. **Planning Insights** → Provides actionable capacity planning information
 
-### Component Integration ✅
+### Component Integration
 
 #### Dashboard Integration
 **Location**: `/frontend/src/components/Dashboard.tsx:881`
 
 ```typescript
 // Infrastructure Resources tab integration
-{activePrimaryTab === PrimaryTab.INFRASTRUCTURE && 
- activeSecondaryTab === InfrastructureTab.RESOURCES && 
- <ResourceCharts timeRange={timeRange} />}
+{activePrimaryTab === PrimaryTab.INFRASTRUCTURE &&
+activeSecondaryTab === InfrastructureTab.RESOURCES &&
+<ResourceCharts timeRange={timeRange} />}
 ```
 
 #### WebSocket Store Integration
@@ -2475,27 +2475,27 @@ export const mockClusterMetrics: ClusterMetrics = {
 
 ```typescript
 const ResourceCharts: FC<ResourceChartsProps> = ({ timeRange = '1h' }) => {
-  const { clusterMetrics, metricsHistory } = useWebSocketMetricsStore();
-  
-  // Component automatically receives real-time updates from WebSocket store
-  // and processes both current metrics and historical data for charts
+const { clusterMetrics, metricsHistory } = useWebSocketMetricsStore();
+
+// Component automatically receives real-time updates from WebSocket store
+// and processes both current metrics and historical data for charts
 };
 ```
 
-### API Integration ✅
+### API Integration
 
 #### Metrics API Endpoints
 **Location**: `/frontend/src/constants.ts:802`
 
 ```typescript
 METRICS: {
-  CLUSTER: '/api/metrics/cluster',
-  NODES: '/api/metrics/nodes',
-  PODS: '/api/metrics/pods',
-  NAMESPACES: '/api/metrics/namespaces',
-  HISTORY: '/api/metrics/history',
-  RESOURCES: '/api/metrics/resources',
-  HEALTH: '/api/metrics/health'
+CLUSTER: '/api/metrics/cluster',
+NODES: '/api/metrics/nodes',
+PODS: '/api/metrics/pods',
+NAMESPACES: '/api/metrics/namespaces',
+HISTORY: '/api/metrics/history',
+RESOURCES: '/api/metrics/resources',
+HEALTH: '/api/metrics/health'
 }
 ```
 
@@ -2510,7 +2510,7 @@ mux.HandleFunc("GET /api/metrics/nodes", corsMiddleware(authService.AuthMiddlewa
 mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddleware(metricsHandlers.GetPodMetrics)))
 ```
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Resource Monitoring Flow
 1. **WebSocket Initialization** → Store initializes WebSocket connection for real-time metrics
@@ -2531,7 +2531,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 6. **Historical Data** → Separate endpoint provides time-series data for trend analysis
 7. **WebSocket Broadcasting** → Real-time metrics broadcast to connected clients
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Resource Data Efficiency
 - **Memoized Processing**: useMemo for expensive chart data transformation
@@ -2540,14 +2540,14 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **WebSocket Efficiency**: Real-time updates without polling overhead
 - **Data Correlation**: Efficient correlation of multiple time series by index
 
-#### Chart Performance  
+#### Chart Performance
 - **Responsive Charts**: Recharts with optimized responsive containers
 - **Limited Data Points**: Optimal data point limits for smooth chart rendering
 - **Efficient Tooltips**: Lightweight custom tooltips with minimal re-rendering
 - **Chart Optimization**: Proper chart configuration for performance
 - **Memory Management**: Proper cleanup of chart instances and subscriptions
 
-### Integration Points ✅
+### Integration Points
 
 #### Infrastructure Integration
 - **Capacity Planning**: Resource metrics inform infrastructure capacity planning
@@ -2557,7 +2557,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 
 #### WebSocket Architecture
 - **Real-time Metrics**: Live metrics updates through WebSocket connection
-- **State Synchronization**: Synchronized metrics across multiple dashboard components  
+- **State Synchronization**: Synchronized metrics across multiple dashboard components
 - **Connection Management**: Robust WebSocket connection with error handling
 - **Event Broadcasting**: Metrics events broadcast to all connected components
 
@@ -2567,14 +2567,14 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **Pattern Testing**: Different time patterns for testing resource scenarios
 - **State Consistency**: Consistent state management across resource monitoring features
 
-## Storage Secondary Tab - Verified Functionality ✅
+## Storage Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
 **Location**: `/frontend/src/components/storage/StorageIOMetrics.tsx`
 
 ### Core Functionality Verification
 
-#### 1. **Comprehensive Storage Overview Statistics** ✅
+#### 1. **Comprehensive Storage Overview Statistics**
 - **Total Storage Usage**: Displays aggregate storage usage across all persistent volumes with capacity breakdown
 - **Total IOPS Monitoring**: Shows combined read/write IOPS across all volumes for performance assessment
 - **Average Latency Tracking**: Calculates and displays average read/write latency across storage subsystem
@@ -2582,7 +2582,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **StatCard Integration**: Uses StatCard components with appropriate icons and status indicators
 - **Status**: Complete storage overview with aggregated metrics and performance indicators
 
-#### 2. **Real-time Storage Performance Charts** ✅
+#### 2. **Real-time Storage Performance Charts**
 - **IOPS Over Time Chart**: Area chart showing read/write IOPS trends with stacked visualization
 - **Throughput Performance Chart**: Line chart displaying read/write throughput (MB/s) over time
 - **Time Range Integration**: Charts update based on timeRange prop for different monitoring periods
@@ -2590,7 +2590,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **Responsive Design**: Charts adapt to container size with ResponsiveContainer integration
 - **Status**: Complete performance visualization with real-time IOPS and throughput monitoring
 
-#### 3. **Detailed Persistent Volumes Table** ✅
+#### 3. **Detailed Persistent Volumes Table**
 - **Volume Information Display**: Shows name, namespace, type, capacity, usage, and performance metrics
 - **Storage Type Classification**: Displays storage types (SSD, HDD, NVMe) with appropriate icons
 - **Performance Metrics Breakdown**: Detailed IOPS, throughput, and latency for each volume
@@ -2598,7 +2598,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **Health Status Indicators**: Color-coded status display (healthy, degraded, critical)
 - **Status**: Comprehensive volume management with detailed performance and health monitoring
 
-#### 4. **Storage Volume Detail Panel** ✅
+#### 4. **Storage Volume Detail Panel**
 - **Selected Volume Deep Dive**: Detailed performance metrics, capacity analysis, and health status
 - **Performance Metrics Section**: Read/write IOPS, throughput, and latency breakdown
 - **Capacity Analysis**: Visual capacity bar with color-coded usage thresholds (90% red, 70% yellow, <70% green)
@@ -2606,7 +2606,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **Dynamic Updates**: Detail panel updates when different volumes are selected
 - **Status**: Advanced volume analysis with comprehensive metrics and visual capacity indicators
 
-#### 5. **Storage Classes Management Display** ✅
+#### 5. **Storage Classes Management Display**
 - **Storage Class Overview**: Grid display of available storage classes with provisioner information
 - **Capacity Management**: Shows volume count, total capacity, and used capacity per storage class
 - **Provisioner Information**: Displays Kubernetes storage provisioners (AWS EBS, etc.)
@@ -2614,7 +2614,7 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **Resource Allocation**: Visual breakdown of storage allocation across different classes
 - **Status**: Complete storage class management with provisioner and policy information
 
-#### 6. **Advanced Mock Storage Data Generation** ✅
+#### 6. **Advanced Mock Storage Data Generation**
 - **Realistic Volume Profiles**: Generates diverse storage profiles (database, cache, logs, backup, media)
 - **Performance-based Storage Types**: Accurate IOPS, throughput, and latency based on storage type (NVMe, SSD, HDD)
 - **Dynamic I/O History Generation**: Creates time-series performance data based on configurable time ranges
@@ -2622,41 +2622,41 @@ mux.HandleFunc("GET /api/metrics/pods", corsMiddleware(authService.AuthMiddlewar
 - **Namespace Distribution**: Distributes volumes across realistic namespaces (production, monitoring, backup, frontend)
 - **Status**: Advanced mock data system with realistic storage performance and usage patterns
 
-### Storage Data Models ✅
+### Storage Data Models
 
 #### Frontend Storage Interfaces
 **Location**: `/frontend/src/components/storage/StorageIOMetrics.tsx:9`
 
 ```typescript
 interface VolumeMetrics {
-  name: string;                         // Volume name (PVC name)
-  namespace: string;                    // Kubernetes namespace
-  type: 'ssd' | 'hdd' | 'nvme';        // Storage type classification
-  capacity: number;                     // Total capacity in GB
-  used: number;                         // Used capacity in GB
-  available: number;                    // Available capacity in GB
-  iops: {
-    read: number;                       // Read operations per second
-    write: number;                      // Write operations per second
-  };
-  throughput: {
-    read: number;                       // Read throughput in MB/s
-    write: number;                      // Write throughput in MB/s
-  };
-  latency: {
-    read: number;                       // Read latency in milliseconds
-    write: number;                      // Write latency in milliseconds
-  };
-  status: 'healthy' | 'degraded' | 'critical';  // Volume health status
+name: string; // Volume name (PVC name)
+namespace: string; // Kubernetes namespace
+type: 'ssd' | 'hdd' | 'nvme'; // Storage type classification
+capacity: number; // Total capacity in GB
+used: number; // Used capacity in GB
+available: number; // Available capacity in GB
+iops: {
+read: number; // Read operations per second
+write: number; // Write operations per second
+};
+throughput: {
+read: number; // Read throughput in MB/s
+write: number; // Write throughput in MB/s
+};
+latency: {
+read: number; // Read latency in milliseconds
+write: number; // Write latency in milliseconds
+};
+status: 'healthy' | 'degraded' | 'critical'; // Volume health status
 }
 
 interface StorageClass {
-  name: string;                         // Storage class name
-  provisioner: string;                  // Kubernetes provisioner
-  volumeCount: number;                  // Number of volumes using this class
-  totalCapacity: number;                // Total capacity in GB
-  usedCapacity: number;                 // Used capacity in GB
-  reclaimPolicy: 'Delete' | 'Retain' | 'Recycle';  // Volume reclaim policy
+name: string; // Storage class name
+provisioner: string; // Kubernetes provisioner
+volumeCount: number; // Number of volumes using this class
+totalCapacity: number; // Total capacity in GB
+usedCapacity: number; // Used capacity in GB
+reclaimPolicy: 'Delete' | 'Retain' | 'Recycle'; // Volume reclaim policy
 }
 ```
 
@@ -2665,17 +2665,17 @@ interface StorageClass {
 
 ```typescript
 interface HistoryDataPoint {
-  time: number;                         // Time point index
-  readIOPS: number;                     // Read IOPS at this time
-  writeIOPS: number;                    // Write IOPS at this time
-  readThroughput: number;               // Read throughput in MB/s
-  writeThroughput: number;              // Write throughput in MB/s
-  readLatency: number;                  // Read latency in ms
-  writeLatency: number;                 // Write latency in ms
+time: number; // Time point index
+readIOPS: number; // Read IOPS at this time
+writeIOPS: number; // Write IOPS at this time
+readThroughput: number; // Read throughput in MB/s
+writeThroughput: number; // Write throughput in MB/s
+readLatency: number; // Read latency in ms
+writeLatency: number; // Write latency in ms
 }
 ```
 
-### Backend Storage Provider ✅
+### Backend Storage Provider
 
 #### Storage Metrics Handler
 **Location**: `/backend/internal/http/metrics.go:145`
@@ -2683,46 +2683,46 @@ interface HistoryDataPoint {
 ```go
 // GET /api/metrics/storage - Get storage metrics
 func (h *MetricsHandlers) GetStorageMetrics(w http.ResponseWriter, r *http.Request) {
-  if h.metricsService == nil {
-    w.WriteHeader(http.StatusServiceUnavailable)
-    json.NewEncoder(w).Encode(map[string]string{
-      "error": "Metrics service not available",
-    })
-    return
-  }
-  
-  // Try to get detailed storage metrics from Prometheus
-  storageMetrics, err := h.metricsService.GetStorageMetrics(r.Context())
-  if err != nil {
-    // Fallback to basic cluster storage metrics
-    clusterMetrics, clusterErr := h.metricsService.GetClusterMetrics(r.Context())
-    if clusterErr != nil {
-      w.WriteHeader(http.StatusInternalServerError)
-      json.NewEncoder(w).Encode(map[string]string{
-        "error": "Failed to get storage metrics",
-      })
-      return
-    }
-    
-    fallbackMetrics := map[string]interface{}{
-      "storage":   clusterMetrics.StorageUsage,
-      "timestamp": time.Now().UTC().Format(time.RFC3339),
-      "source":    "cluster_basic",
-    }
-    return fallbackMetrics
-  }
-  
-  // Return detailed Prometheus storage metrics
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(map[string]interface{}{
-    "data":      storageMetrics,
-    "timestamp": time.Now().UTC().Format(time.RFC3339),
-    "source":    "prometheus",
-  })
+if h.metricsService == nil {
+w.WriteHeader(http.StatusServiceUnavailable)
+json.NewEncoder(w).Encode(map[string]string{
+"error": "Metrics service not available",
+})
+return
+}
+
+// Try to get detailed storage metrics from Prometheus
+storageMetrics, err := h.metricsService.GetStorageMetrics(r.Context())
+if err != nil {
+// Fallback to basic cluster storage metrics
+clusterMetrics, clusterErr := h.metricsService.GetClusterMetrics(r.Context())
+if clusterErr != nil {
+w.WriteHeader(http.StatusInternalServerError)
+json.NewEncoder(w).Encode(map[string]string{
+"error": "Failed to get storage metrics",
+})
+return
+}
+
+fallbackMetrics := map[string]interface{}{
+"storage": clusterMetrics.StorageUsage,
+"timestamp": time.Now().UTC().Format(time.RFC3339),
+"source": "cluster_basic",
+}
+return fallbackMetrics
+}
+
+// Return detailed Prometheus storage metrics
+w.Header().Set("Content-Type", "application/json")
+json.NewEncoder(w).Encode(map[string]interface{}{
+"data": storageMetrics,
+"timestamp": time.Now().UTC().Format(time.RFC3339),
+"source": "prometheus",
+})
 }
 ```
 
-#### Prometheus Storage Service ✅
+#### Prometheus Storage Service
 **Location**: `/backend/internal/prometheus/service.go:191`
 
 ```go
@@ -2735,66 +2735,66 @@ func (h *MetricsHandlers) GetStorageMetrics(w http.ResponseWriter, r *http.Reque
 //
 // Returns StorageMetrics with per-volume performance data for the storage dashboard.
 func (s *Service) GetStorageMetrics(ctx context.Context) (*StorageMetrics, error) {
-  // Query storage metrics from our custom exporter
-  volumeQuery := `{__name__=~"storage_volume_.*"}`
-  result, err := s.client.Query(ctx, volumeQuery)
-  if err != nil {
-    return nil, fmt.Errorf("failed to query storage metrics: %w", err)
-  }
-  
-  volumes := make(map[string]*VolumeMetrics)
-  
-  for _, metric := range result.Data.Result {
-    volumeName := metric.Metric["volume"]
-    if volumeName == "" {
-      continue
-    }
-    
-    if volumes[volumeName] == nil {
-      volumes[volumeName] = &VolumeMetrics{
-        Name:      volumeName,
-        Namespace: metric.Metric["namespace"],
-        Type:      metric.Metric["type"],
-        Status:    metric.Metric["status"],
-      }
-    }
-    
-    value := parseMetricValue(metric.Value)
-    
-    // Map metrics based on metric name
-    switch metric.Metric["__name__"] {
-    case "storage_volume_capacity_bytes":
-      volumes[volumeName].CapacityBytes = int64(value)
-    case "storage_volume_used_bytes":
-      volumes[volumeName].UsedBytes = int64(value)
-    case "storage_volume_available_bytes":
-      volumes[volumeName].AvailableBytes = int64(value)
-    case "storage_volume_usage_percent":
-      volumes[volumeName].UsagePercent = value
-    case "storage_volume_read_iops":
-      volumes[volumeName].ReadIOPS = value
-    case "storage_volume_write_iops":
-      volumes[volumeName].WriteIOPS = value
-    case "storage_volume_read_throughput_bytes":
-      volumes[volumeName].ReadThroughputBytes = value
-    case "storage_volume_write_throughput_bytes":
-      volumes[volumeName].WriteThroughputBytes = value
-    case "storage_volume_read_latency_seconds":
-      volumes[volumeName].ReadLatencySeconds = value
-    case "storage_volume_write_latency_seconds":
-      volumes[volumeName].WriteLatencySeconds = value
-    }
-  }
-  
-  // Convert map to slice
-  var volumeList []VolumeMetrics
-  for _, volume := range volumes {
-    volumeList = append(volumeList, *volume)
-  }
-  
-  return &StorageMetrics{
-    Volumes: volumeList,
-  }, nil
+// Query storage metrics from our custom exporter
+volumeQuery := `{__name__=~"storage_volume_.*"}`
+result, err := s.client.Query(ctx, volumeQuery)
+if err != nil {
+return nil, fmt.Errorf("failed to query storage metrics: %w", err)
+}
+
+volumes := make(map[string]*VolumeMetrics)
+
+for _, metric := range result.Data.Result {
+volumeName := metric.Metric["volume"]
+if volumeName == "" {
+continue
+}
+
+if volumes[volumeName] == nil {
+volumes[volumeName] = &VolumeMetrics{
+Name: volumeName,
+Namespace: metric.Metric["namespace"],
+Type: metric.Metric["type"],
+Status: metric.Metric["status"],
+}
+}
+
+value := parseMetricValue(metric.Value)
+
+// Map metrics based on metric name
+switch metric.Metric["__name__"] {
+case "storage_volume_capacity_bytes":
+volumes[volumeName].CapacityBytes = int64(value)
+case "storage_volume_used_bytes":
+volumes[volumeName].UsedBytes = int64(value)
+case "storage_volume_available_bytes":
+volumes[volumeName].AvailableBytes = int64(value)
+case "storage_volume_usage_percent":
+volumes[volumeName].UsagePercent = value
+case "storage_volume_read_iops":
+volumes[volumeName].ReadIOPS = value
+case "storage_volume_write_iops":
+volumes[volumeName].WriteIOPS = value
+case "storage_volume_read_throughput_bytes":
+volumes[volumeName].ReadThroughputBytes = value
+case "storage_volume_write_throughput_bytes":
+volumes[volumeName].WriteThroughputBytes = value
+case "storage_volume_read_latency_seconds":
+volumes[volumeName].ReadLatencySeconds = value
+case "storage_volume_write_latency_seconds":
+volumes[volumeName].WriteLatencySeconds = value
+}
+}
+
+// Convert map to slice
+var volumeList []VolumeMetrics
+for _, volume := range volumes {
+volumeList = append(volumeList, *volume)
+}
+
+return &StorageMetrics{
+Volumes: volumeList,
+}, nil
 }
 ```
 
@@ -2806,31 +2806,31 @@ func (s *Service) GetStorageMetrics(ctx context.Context) (*StorageMetrics, error
 // This powers the storage dashboard with I/O metrics, capacity usage, and
 // performance analysis for persistent volumes.
 type StorageMetrics struct {
-  Volumes []VolumeMetrics `json:"volumes"`
+Volumes []VolumeMetrics `json:"volumes"`
 }
 
 // VolumeMetrics represents comprehensive storage metrics for a single volume.
 // Includes capacity, performance (IOPS, throughput, latency), and health status.
 // This data is collected by the custom storage-exporter DaemonSet.
 type VolumeMetrics struct {
-  Name                string  `json:"name"`                  // PVC name
-  Namespace           string  `json:"namespace"`             // Kubernetes namespace
-  Type                string  `json:"type"`                  // Storage type (ssd, hdd, nvme)
-  CapacityBytes       int64   `json:"capacity_bytes"`        // Total volume capacity
-  UsedBytes           int64   `json:"used_bytes"`            // Currently used space
-  AvailableBytes      int64   `json:"available_bytes"`       // Available space
-  UsagePercent        float64 `json:"usage_percent"`         // Usage percentage
-  ReadIOPS            float64 `json:"read_iops"`             // Read operations per second
-  WriteIOPS           float64 `json:"write_iops"`            // Write operations per second
-  ReadThroughputBytes float64 `json:"read_throughput_bytes"` // Read bandwidth (bytes/sec)
-  WriteThroughputBytes float64 `json:"write_throughput_bytes"` // Write bandwidth (bytes/sec)
-  ReadLatencySeconds  float64 `json:"read_latency_seconds"`  // Average read latency
-  WriteLatencySeconds float64 `json:"write_latency_seconds"` // Average write latency
-  Status              string  `json:"status"`                // Health status (healthy, degraded, critical)
+Name string `json:"name"` // PVC name
+Namespace string `json:"namespace"` // Kubernetes namespace
+Type string `json:"type"` // Storage type (ssd, hdd, nvme)
+CapacityBytes int64 `json:"capacity_bytes"` // Total volume capacity
+UsedBytes int64 `json:"used_bytes"` // Currently used space
+AvailableBytes int64 `json:"available_bytes"` // Available space
+UsagePercent float64 `json:"usage_percent"` // Usage percentage
+ReadIOPS float64 `json:"read_iops"` // Read operations per second
+WriteIOPS float64 `json:"write_iops"` // Write operations per second
+ReadThroughputBytes float64 `json:"read_throughput_bytes"` // Read bandwidth (bytes/sec)
+WriteThroughputBytes float64 `json:"write_throughput_bytes"` // Write bandwidth (bytes/sec)
+ReadLatencySeconds float64 `json:"read_latency_seconds"` // Average read latency
+WriteLatencySeconds float64 `json:"write_latency_seconds"` // Average write latency
+Status string `json:"status"` // Health status (healthy, degraded, critical)
 }
 ```
 
-### Advanced Mock Data System ✅
+### Advanced Mock Data System
 
 #### Realistic Storage Profiles
 **Location**: `/frontend/src/components/storage/StorageIOMetrics.tsx:54`
@@ -2838,82 +2838,82 @@ type VolumeMetrics struct {
 ```typescript
 // Generate realistic storage volumes with performance characteristics
 const mockVolumes: VolumeMetrics[] = [
-  {
-    name: 'pvc-database-primary',
-    namespace: 'production',
-    type: 'ssd',
-    capacity: 500,
-    used: 342,
-    available: 158,
-    iops: { read: 2500, write: 1800 },          // Database workload pattern
-    throughput: { read: 125, write: 95 },       // High throughput for DB
-    latency: { read: 0.5, write: 0.8 },         // Low latency SSD
-    status: 'healthy'
-  },
-  {
-    name: 'pvc-cache-redis',
-    namespace: 'production',
-    type: 'nvme',
-    capacity: 100,
-    used: 45,
-    available: 55,
-    iops: { read: 8500, write: 6200 },          // Ultra-high IOPS for cache
-    throughput: { read: 450, write: 380 },      // Very high throughput
-    latency: { read: 0.2, write: 0.3 },         // Ultra-low latency NVMe
-    status: 'healthy'
-  },
-  {
-    name: 'pvc-logs-elasticsearch',
-    namespace: 'monitoring',
-    type: 'hdd',
-    capacity: 2000,
-    used: 1650,
-    available: 350,
-    iops: { read: 150, write: 100 },            // Log storage pattern
-    throughput: { read: 80, write: 60 },        // Moderate throughput
-    latency: { read: 5, write: 8 },             // Higher latency HDD
-    status: 'degraded'                          // High usage triggers degraded
-  },
-  {
-    name: 'pvc-backup-storage',
-    namespace: 'backup',
-    type: 'hdd',
-    capacity: 5000,
-    used: 4200,
-    available: 800,
-    iops: { read: 100, write: 80 },             // Backup storage pattern
-    throughput: { read: 50, write: 40 },        // Lower throughput
-    latency: { read: 10, write: 15 },           // Acceptable for backups
-    status: 'critical'                          // Very high usage (84%)
-  }
+{
+name: 'pvc-database-primary',
+namespace: 'production',
+type: 'ssd',
+capacity: 500,
+used: 342,
+available: 158,
+iops: { read: 2500, write: 1800 }, // Database workload pattern
+throughput: { read: 125, write: 95 }, // High throughput for DB
+latency: { read: 0.5, write: 0.8 }, // Low latency SSD
+status: 'healthy'
+},
+{
+name: 'pvc-cache-redis',
+namespace: 'production',
+type: 'nvme',
+capacity: 100,
+used: 45,
+available: 55,
+iops: { read: 8500, write: 6200 }, // Ultra-high IOPS for cache
+throughput: { read: 450, write: 380 }, // Very high throughput
+latency: { read: 0.2, write: 0.3 }, // Ultra-low latency NVMe
+status: 'healthy'
+},
+{
+name: 'pvc-logs-elasticsearch',
+namespace: 'monitoring',
+type: 'hdd',
+capacity: 2000,
+used: 1650,
+available: 350,
+iops: { read: 150, write: 100 }, // Log storage pattern
+throughput: { read: 80, write: 60 }, // Moderate throughput
+latency: { read: 5, write: 8 }, // Higher latency HDD
+status: 'degraded' // High usage triggers degraded
+},
+{
+name: 'pvc-backup-storage',
+namespace: 'backup',
+type: 'hdd',
+capacity: 5000,
+used: 4200,
+available: 800,
+iops: { read: 100, write: 80 }, // Backup storage pattern
+throughput: { read: 50, write: 40 }, // Lower throughput
+latency: { read: 10, write: 15 }, // Acceptable for backups
+status: 'critical' // Very high usage (84%)
+}
 ];
 
 // Generate realistic storage classes
 const mockStorageClasses: StorageClass[] = [
-  {
-    name: 'fast-ssd',
-    provisioner: 'kubernetes.io/aws-ebs',
-    volumeCount: 12,
-    totalCapacity: 1500,
-    usedCapacity: 890,
-    reclaimPolicy: 'Delete'
-  },
-  {
-    name: 'standard',
-    provisioner: 'kubernetes.io/aws-ebs',
-    volumeCount: 25,
-    totalCapacity: 8000,
-    usedCapacity: 5850,
-    reclaimPolicy: 'Delete'
-  },
-  {
-    name: 'ultra-fast-nvme',
-    provisioner: 'kubernetes.io/aws-ebs',
-    volumeCount: 3,
-    totalCapacity: 300,
-    usedCapacity: 145,
-    reclaimPolicy: 'Retain'                     // Retain for NVMe volumes
-  }
+{
+name: 'fast-ssd',
+provisioner: 'kubernetes.io/aws-ebs',
+volumeCount: 12,
+totalCapacity: 1500,
+usedCapacity: 890,
+reclaimPolicy: 'Delete'
+},
+{
+name: 'standard',
+provisioner: 'kubernetes.io/aws-ebs',
+volumeCount: 25,
+totalCapacity: 8000,
+usedCapacity: 5850,
+reclaimPolicy: 'Delete'
+},
+{
+name: 'ultra-fast-nvme',
+provisioner: 'kubernetes.io/aws-ebs',
+volumeCount: 3,
+totalCapacity: 300,
+usedCapacity: 145,
+reclaimPolicy: 'Retain' // Retain for NVMe volumes
+}
 ];
 ```
 
@@ -2923,22 +2923,22 @@ const mockStorageClasses: StorageClass[] = [
 ```typescript
 // Generate realistic I/O performance history
 const history: HistoryDataPoint[] = [];
-const points = getDataPointsForTimeRange(timeRange, 5);  // 5-minute intervals
+const points = getDataPointsForTimeRange(timeRange, 5); // 5-minute intervals
 
 for (let i = 0; i < points; i++) {
-  history.push({
-    time: i,
-    readIOPS: 3000 + Math.random() * 2000 - 1000,        // 2000-4000 read IOPS
-    writeIOPS: 2000 + Math.random() * 1500 - 750,        // 1250-2750 write IOPS
-    readThroughput: 150 + Math.random() * 100 - 50,      // 100-200 MB/s read
-    writeThroughput: 100 + Math.random() * 80 - 40,      // 60-140 MB/s write
-    readLatency: 0.5 + Math.random() * 0.5,              // 0.5-1.0ms read latency
-    writeLatency: 0.8 + Math.random() * 0.7               // 0.8-1.5ms write latency
-  });
+history.push({
+time: i,
+readIOPS: 3000 + Math.random() * 2000 - 1000, // 2000-4000 read IOPS
+writeIOPS: 2000 + Math.random() * 1500 - 750, // 1250-2750 write IOPS
+readThroughput: 150 + Math.random() * 100 - 50, // 100-200 MB/s read
+writeThroughput: 100 + Math.random() * 80 - 40, // 60-140 MB/s write
+readLatency: 0.5 + Math.random() * 0.5, // 0.5-1.0ms read latency
+writeLatency: 0.8 + Math.random() * 0.7 // 0.8-1.5ms write latency
+});
 }
 ```
 
-### User Workflow ✅
+### User Workflow
 
 #### Complete Storage Monitoring Flow
 **Frontend Workflow**: `/frontend/src/components/storage/StorageIOMetrics.tsx`
@@ -2959,16 +2959,16 @@ for (let i = 0; i < points; i++) {
 4. **Storage Class Analysis** → Reviews storage class utilization and provisioner distribution
 5. **Issue Identification** → Identifies volumes with high usage, poor performance, or health issues
 
-### Component Integration ✅
+### Component Integration
 
 #### Dashboard Integration
 **Location**: `/frontend/src/components/Dashboard.tsx:883`
 
 ```typescript
 // Infrastructure Storage tab integration
-{activePrimaryTab === PrimaryTab.INFRASTRUCTURE && 
- activeSecondaryTab === InfrastructureTab.STORAGE && 
- <StorageIOMetrics timeRange={timeRange} />}
+{activePrimaryTab === PrimaryTab.INFRASTRUCTURE &&
+activeSecondaryTab === InfrastructureTab.STORAGE &&
+<StorageIOMetrics timeRange={timeRange} />}
 ```
 
 #### Time Range Integration
@@ -2976,37 +2976,37 @@ for (let i = 0; i < points; i++) {
 
 ```typescript
 interface StorageIOMetricsProps {
-  timeRange?: string;                   // Time range from parent Dashboard component
+timeRange?: string; // Time range from parent Dashboard component
 }
 
 const StorageIOMetrics: React.FC<StorageIOMetricsProps> = ({ timeRange = TimeRange.ONE_HOUR }) => {
-  // Component uses timeRange prop to determine data generation patterns
-  // and automatically refreshes when timeRange changes
+// Component uses timeRange prop to determine data generation patterns
+// and automatically refreshes when timeRange changes
 };
 ```
 
-### Storage Performance Features ✅
+### Storage Performance Features
 
 #### Storage Type Classification
 **Location**: `/frontend/src/components/storage/StorageIOMetrics.tsx:189`
 
 ```typescript
 const getDriveTypeIcon = (type: string) => {
-  switch (type) {
-    case 'nvme': return '⚡';            // Ultra-fast NVMe (>8000 IOPS, <0.5ms latency)
-    case 'ssd': return '💾';             // Fast SSD (2000-5000 IOPS, 0.5-2ms latency)
-    case 'hdd': return '💿';             // Standard HDD (100-500 IOPS, 5-15ms latency)
-    default: return '📦';                // Generic storage
-  }
+switch (type) {
+case 'nvme': return ''; // Ultra-fast NVMe (>8000 IOPS, <0.5ms latency)
+case 'ssd': return ''; // Fast SSD (2000-5000 IOPS, 0.5-2ms latency)
+case 'hdd': return ''; // Standard HDD (100-500 IOPS, 5-15ms latency)
+default: return ''; // Generic storage
+}
 };
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'healthy': return 'text-green-500 border-green-500';    // <70% usage
-    case 'degraded': return 'text-yellow-500 border-yellow-500';  // 70-90% usage
-    case 'critical': return 'text-red-500 border-red-500';       // >90% usage
-    default: return 'text-gray-500 border-gray-500';
-  }
+switch (status) {
+case 'healthy': return 'text-green-500 border-green-500'; // <70% usage
+case 'degraded': return 'text-yellow-500 border-yellow-500'; // 70-90% usage
+case 'critical': return 'text-red-500 border-red-500'; // >90% usage
+default: return 'text-gray-500 border-gray-500';
+}
 };
 ```
 
@@ -3016,20 +3016,20 @@ const getStatusColor = (status: string) => {
 ```typescript
 // Visual capacity bar with threshold-based coloring
 <div className="w-full bg-gray-800 h-2">
-  <div 
-    className={`h-full transition-all ${
-      (selectedVolumeData.used / selectedVolumeData.capacity) > 0.9 
-        ? 'bg-red-500'                  // Critical: >90% usage
-        : (selectedVolumeData.used / selectedVolumeData.capacity) > 0.7 
-        ? 'bg-yellow-500'               // Warning: 70-90% usage
-        : 'bg-green-500'                // Healthy: <70% usage
-    }`}
-    style={{ width: `${(selectedVolumeData.used / selectedVolumeData.capacity) * 100}%` }}
-  />
+<div
+className={`h-full transition-all ${
+(selectedVolumeData.used / selectedVolumeData.capacity) > 0.9
+? 'bg-red-500' // Critical: >90% usage
+: (selectedVolumeData.used / selectedVolumeData.capacity) > 0.7
+? 'bg-yellow-500' // Warning: 70-90% usage
+: 'bg-green-500' // Healthy: <70% usage
+}`}
+style={{ width: `${(selectedVolumeData.used / selectedVolumeData.capacity) * 100}%` }}
+/>
 </div>
 ```
 
-### Data Flow Verification ✅
+### Data Flow Verification
 
 #### Complete Storage Monitoring Flow
 1. **Component Mount** → StorageIOMetrics initializes with timeRange parameter
@@ -3050,7 +3050,7 @@ const getStatusColor = (status: string) => {
 6. **Structured Response** → Returns StorageMetrics with comprehensive volume data
 7. **Frontend Processing** → Frontend processes API response or falls back to mock data
 
-### Performance Optimizations ✅
+### Performance Optimizations
 
 #### Storage Data Efficiency
 - **Time Range Optimization**: Adjusts data point generation based on selected time range
@@ -3066,7 +3066,7 @@ const getStatusColor = (status: string) => {
 - **Chart Optimization**: Proper chart configuration for IOPS and throughput visualization
 - **Color Coding**: Efficient color management for different storage types and statuses
 
-### Integration Points ✅
+### Integration Points
 
 #### Infrastructure Integration
 - **Capacity Planning**: Storage metrics inform infrastructure capacity planning decisions
@@ -3088,16 +3088,16 @@ const getStatusColor = (status: string) => {
 
 ---
 
-## Nodes Secondary Tab - Verified Functionality ✅
+## Nodes Secondary Tab - Verified Functionality
 
 ### Frontend Component Structure
-**Location**: `/frontend/src/components/metrics/NodeList.tsx`  
-**Data Source**: WebSocket metrics store (`useWebSocketMetricsStore`)  
+**Location**: `/frontend/src/components/metrics/NodeList.tsx`
+**Data Source**: WebSocket metrics store (`useWebSocketMetricsStore`)
 **Mock Data**: `/frontend/src/mocks/k8s/nodes.ts`
 
 ### Core Functionality Verification
 
-#### 1. **Kubernetes Node Management Dashboard** ✅
+#### 1. **Kubernetes Node Management Dashboard**
 - **Node List Display**: Comprehensive grid-based node list with detailed resource monitoring
 - **Real-time Node Status**: Live node status with Ready/NotReady indicators using CheckCircle/AlertCircle icons
 - **Resource Usage Visualization**: Visual progress bars for CPU, memory, and storage usage per node
@@ -3105,7 +3105,7 @@ const getStatusColor = (status: string) => {
 - **Node Information**: Complete node details including version, OS, architecture, and age
 - **Status**: Full node monitoring dashboard with comprehensive resource tracking
 
-#### 2. **Advanced Search and Filtering** ✅
+#### 2. **Advanced Search and Filtering**
 - **Multi-field Search**: Search across node name, status, and architecture fields
 - **Global Search Integration**: Responds to global search navigation events with type filtering
 - **Real-time Filter**: Instant filtering with `useMemo` optimization for performance
@@ -3113,7 +3113,7 @@ const getStatusColor = (status: string) => {
 - **Search State Management**: Persistent search state with visual query display
 - **Status**: Advanced search functionality with multi-criteria filtering and state management
 
-#### 3. **Resource Usage Monitoring** ✅
+#### 3. **Resource Usage Monitoring**
 - **CPU Usage Tracking**: Real-time CPU utilization with millicores to cores conversion
 - **Memory Usage Monitoring**: Memory usage with byte formatting (B/KB/MB/GB/TB)
 - **Storage Usage Analysis**: Storage utilization with capacity and usage percentage
@@ -3121,7 +3121,7 @@ const getStatusColor = (status: string) => {
 - **Usage Percentage Display**: Precise usage percentages with decimal precision
 - **Status**: Complete resource monitoring with visual indicators and formatted displays
 
-#### 4. **Node Status Management** ✅
+#### 4. **Node Status Management**
 - **Status Color Coding**: Dynamic status colors (green for Ready, red for NotReady, yellow for others)
 - **Status Icons**: Visual status indicators using Lucide icons for immediate recognition
 - **Status Text Display**: Uppercase status text with consistent formatting
@@ -3129,7 +3129,7 @@ const getStatusColor = (status: string) => {
 - **Multi-state Support**: Handles Ready, NotReady, and unknown status states
 - **Status**: Comprehensive status management with visual and textual indicators
 
-#### 5. **Node Information Display** ✅
+#### 5. **Node Information Display**
 - **Node Identification**: Clear node name display with Server icon for visual recognition
 - **System Information**: Kubernetes version, OS details, and system architecture
 - **Node Age Tracking**: Node uptime display showing how long nodes have been running
@@ -3137,7 +3137,7 @@ const getStatusColor = (status: string) => {
 - **Formatted Layout**: Organized information display with consistent typography
 - **Status**: Complete node information with all system details properly formatted
 
-#### 6. **WebSocket Integration** ✅
+#### 6. **WebSocket Integration**
 - **Real-time Data**: Live node metrics via WebSocket connection through `useWebSocketMetricsStore`
 - **Automatic Updates**: Node data refreshes automatically without manual intervention
 - **Loading States**: Skeleton loader integration during data loading
@@ -3145,7 +3145,7 @@ const getStatusColor = (status: string) => {
 - **Connection Management**: Handles WebSocket connection states and data availability
 - **Status**: Full WebSocket integration with real-time data streaming
 
-#### 7. **User Experience Optimization** ✅
+#### 7. **User Experience Optimization**
 - **Skeleton Loading**: Infrastructure-specific skeleton loader (`infra-nodes` variant) during data fetch
 - **Empty State Handling**: Proper empty state display with helpful messages
 - **Responsive Design**: Grid layout adapts to different screen sizes (1 column on mobile, 3 on desktop)
@@ -3165,16 +3165,16 @@ const getStatusColor = (status: string) => {
 // Processes node-exporter metrics for resource utilization
 
 type NodeMetrics struct {
-    Name         string `json:"name"`
-    Status       string `json:"status"`
-    Version      string `json:"version"`
-    OS           string `json:"os"`
-    Architecture string `json:"architecture"`
-    Age          string `json:"age"`
-    PodCount     int    `json:"pod_count"`
-    CPUUsage     ResourceUsage `json:"cpu_usage"`
-    MemoryUsage  ResourceUsage `json:"memory_usage"`
-    StorageUsage ResourceUsage `json:"storage_usage"`
+Name string `json:"name"`
+Status string `json:"status"`
+Version string `json:"version"`
+OS string `json:"os"`
+Architecture string `json:"architecture"`
+Age string `json:"age"`
+PodCount int `json:"pod_count"`
+CPUUsage ResourceUsage `json:"cpu_usage"`
+MemoryUsage ResourceUsage `json:"memory_usage"`
+StorageUsage ResourceUsage `json:"storage_usage"`
 }
 ```
 
@@ -3191,38 +3191,38 @@ type NodeMetrics struct {
 ```typescript
 // Frontend type integration
 interface NodeMetrics {
-  name: string;
-  status: 'Ready' | 'NotReady';
-  version: string;
-  os: string;
-  architecture: string;
-  age: string;
-  pod_count: number;
-  cpu_usage: {
-    used: number;
-    total: number;
-    available: number;
-    usage_percent: number;
-    usage: number;
-    unit: 'm';
-  };
-  memory_usage: {
-    used: number;
-    total: number;
-    available: number;
-    usage_percent: number;
-    usage: number;
-    unit: 'bytes';
-  };
-  storage_usage: {
-    used: number;
-    total: number;
-    available: number;
-    usage_percent: number;
-    usage: number;
-    unit: 'bytes';
-  };
-  last_updated: string;
+name: string;
+status: 'Ready' | 'NotReady';
+version: string;
+os: string;
+architecture: string;
+age: string;
+pod_count: number;
+cpu_usage: {
+used: number;
+total: number;
+available: number;
+usage_percent: number;
+usage: number;
+unit: 'm';
+};
+memory_usage: {
+used: number;
+total: number;
+available: number;
+usage_percent: number;
+usage: number;
+unit: 'bytes';
+};
+storage_usage: {
+used: number;
+total: number;
+available: number;
+usage_percent: number;
+usage: number;
+unit: 'bytes';
+};
+last_updated: string;
 }
 ```
 

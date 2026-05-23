@@ -19,7 +19,7 @@ GitHub/Gitea → Denshimon → Kubernetes → GitOps Sync → base_infrastructur
 
 ## Features Implemented
 
-### ✅ Core GitOps Functionality
+### Core GitOps Functionality
 - **Git Client Wrapper**: Clone, commit, push operations
 - **Repository Management**: Track and sync GitOps repositories
 - **Application Management**: Kubernetes application definitions
@@ -27,14 +27,14 @@ GitHub/Gitea → Denshimon → Kubernetes → GitOps Sync → base_infrastructur
 - **Sync Engine**: Manual and automatic synchronization
 - **Deployment History**: Track all GitOps deployments
 
-### ✅ Kubernetes Manifest Templates
+### Kubernetes Manifest Templates
 - **Deployment**: Application containers with resources, env vars
 - **Service**: ClusterIP services for application access
 - **Ingress**: HTTP routing (optional)
 - **ConfigMap**: Environment variable management
 - **HorizontalPodAutoscaler**: Auto-scaling (optional)
 
-### ✅ API Endpoints
+### API Endpoints
 - `GET /api/gitops/repositories` - List GitOps repositories
 - `POST /api/gitops/repositories` - Create new repository
 - `POST /api/gitops/repositories/init` - Initialize base repository
@@ -44,7 +44,7 @@ GitHub/Gitea → Denshimon → Kubernetes → GitOps Sync → base_infrastructur
 - `GET /api/gitops/sync/status` - Current sync status
 - `POST /api/gitops/sync/force` - Force synchronization
 
-### ✅ Frontend UI
+### Frontend UI
 - **GitOps Tab**: Added to Deployments section
 - **Repository Management**: View and manage GitOps repositories
 - **Application Overview**: Monitor GitOps applications and health
@@ -96,7 +96,7 @@ Navigate to Deployments → GitOps → Initialize Repository
 
 GitOps sync is **automatically triggered** when:
 - Creating new deployments
-- Updating existing deployments  
+- Updating existing deployments
 - Scaling deployments
 - Any successful deployment operation
 
@@ -105,36 +105,36 @@ GitOps sync is **automatically triggered** when:
 ```bash
 # Force sync all applications
 curl -X POST http://localhost:8080/api/gitops/sync/force \
-  -H "Content-Type: application/json" \
-  -d '{"config": {"auto_sync": true}}'
+ -H "Content-Type: application/json" \
+ -d '{"config": {"auto_sync": true}}'
 
 # Sync specific application
 curl -X POST http://localhost:8080/api/gitops/sync/application/app-id \
-  -H "Content-Type: application/json" \
-  -d '{"config": {"commit_message": "manual sync"}}'
+ -H "Content-Type: application/json" \
+ -d '{"config": {"commit_message": "manual sync"}}'
 ```
 
 ### 4. Generate Kubernetes Manifests
 
 ```bash
 curl -X POST http://localhost:8080/api/gitops/manifests/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "application": {
-      "name": "my-app",
-      "namespace": "production",
-      "image": "my-app:v1.0.0",
-      "replicas": 3,
-      "environment": {"ENV": "production"},
-      "resources": {"cpu": "500m", "memory": "512Mi"}
-    },
-    "resource_type": "Full",
-    "options": {
-      "service": true,
-      "ingress": true,
-      "autoscaling": false
-    }
-  }'
+ -H "Content-Type: application/json" \
+ -d '{
+"application": {
+"name": "my-app",
+"namespace": "production",
+"image": "my-app:v1.0.0",
+"replicas": 3,
+"environment": {"ENV": "production"},
+"resources": {"cpu": "500m", "memory": "512Mi"}
+},
+"resource_type": "Full",
+"options": {
+"service": true,
+"ingress": true,
+"autoscaling": false
+}
+}'
 ```
 
 ## Repository Structure
@@ -144,14 +144,14 @@ GitOps operations create the following structure in your base infrastructure rep
 ```
 base_infrastructure/
 ├── k8s/
-│   ├── default/
-│   │   ├── app1.yaml
-│   │   └── app2.yaml
-│   ├── production/
-│   │   ├── api.yaml
-│   │   └── frontend.yaml
-│   └── staging/
-│       └── test-app.yaml
+│ ├── default/
+│ │ ├── app1.yaml
+│ │ └── app2.yaml
+│ ├── production/
+│ │ ├── api.yaml
+│ │ └── frontend.yaml
+│ └── staging/
+│ └── test-app.yaml
 ```
 
 ## Database Schema
@@ -162,7 +162,7 @@ GitOps functionality adds these tables:
 - Repository configuration and sync status
 - Tracks base infrastructure repositories
 
-### `gitops_applications` 
+### `gitops_applications`
 - Application definitions and health status
 - Links to Kubernetes deployments
 
@@ -197,11 +197,11 @@ cd backend
 ```
 
 This tests:
-- ✅ API endpoint availability
-- ✅ Manifest generation
-- ✅ Application creation
-- ✅ Sync functionality
-- ✅ Resource type support
+- API endpoint availability
+- Manifest generation
+- Application creation
+- Sync functionality
+- Resource type support
 
 ## Monitoring
 
@@ -256,7 +256,7 @@ curl http://localhost:8080/api/gitops/sync/status
 
 # Validate manifest generation
 curl -X POST http://localhost:8080/api/gitops/manifests/validate \
-  -d '{"manifest": "apiVersion: apps/v1\nkind: Deployment..."}'
+ -d '{"manifest": "apiVersion: apps/v1\nkind: Deployment..."}'
 
 # List supported resource types
 curl http://localhost:8080/api/gitops/manifests/types
@@ -264,21 +264,21 @@ curl http://localhost:8080/api/gitops/manifests/types
 
 ## Roadmap
 
-### 🔄 In Progress
+### In Progress
 - End-to-end workflow testing with real repositories
 
-### ✅ Completed Features (Current Version)
-- **Rollback Functionality**: ✅ Revert to previous Git commits via UI
-- **Webhook Integration**: ✅ Auto-sync on Git repository changes
-- **Advanced Monitoring**: ✅ GitOps-specific metrics and alerts dashboard
-- **Template Customization**: ✅ Custom manifest templates per application type
-- **Deploy from Registry**: ✅ Template-based deployment from container images
-- **Manifest Editor**: ✅ In-browser Kubernetes configuration editing
-- **Git Sync UI**: ✅ Manual sync controls for applications
+### Completed Features (Current Version)
+- **Rollback Functionality**: Revert to previous Git commits via UI
+- **Webhook Integration**: Auto-sync on Git repository changes
+- **Advanced Monitoring**: GitOps-specific metrics and alerts dashboard
+- **Template Customization**: Custom manifest templates per application type
+- **Deploy from Registry**: Template-based deployment from container images
+- **Manifest Editor**: In-browser Kubernetes configuration editing
+- **Git Sync UI**: Manual sync controls for applications
 
-### 🚀 Future Enhancements
+### Future Enhancements
 - Performance optimization for Git operations with large repositories
-- Enhanced error handling and retry logic for network failures  
+- Enhanced error handling and retry logic for network failures
 - Multi-Repository Support for complex deployment scenarios
 
 ## Contributing
@@ -301,6 +301,6 @@ When contributing to GitOps functionality:
 
 ---
 
-**Status: ✅ Production Ready**
+**Status: Production Ready**
 
 The GitOps implementation is complete and ready for production use. The core workflow of automatic synchronization from Kubernetes deployments to base infrastructure repositories is fully functional.

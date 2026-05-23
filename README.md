@@ -1,14 +1,14 @@
 # Denshimon
 
-🚀 Kubernetes and GitOps management platform with integrated monitoring, PASETO authentication, and single binary deployment.
+Kubernetes and GitOps management platform with integrated monitoring, PASETO authentication, and single binary deployment.
 
-## 🎯 Overview
+## Overview
 
 A comprehensive web-based platform for managing Kubernetes clusters and GitOps workflows. Provides real-time cluster monitoring, automated deployments, and integrated observability with a single binary deployment model.
 
 ### Key Capabilities
 - **Kubernetes Management**: Pods, deployments, nodes, scaling, logs with virtualized tables
-- **GitOps Operations**: Full Gitea API integration, repository sync, CI/CD workflows  
+- **GitOps Operations**: Full Gitea API integration, repository sync, CI/CD workflows
 - **Monitoring & Metrics**: Real-time metrics, historical trends, live log streaming
 - **Performance Optimized**: Handles 50,000+ rows with smooth scrolling and filtering
 - **Customizable Dashboard**: Hide/show UI sections, multiple view modes
@@ -18,19 +18,19 @@ A comprehensive web-based platform for managing Kubernetes clusters and GitOps w
 <img width="1678" height="966" alt="Screenshot 2025-08-10 at 19 28 49" src="https://github.com/user-attachments/assets/8a4e0abb-66bc-44a5-a952-5ffc9eb27bb8" />
 
 <details>
-  <summary>Click to expand: more Screenshots</summary>
-  <img width="1678" height="965" alt="Screenshot 2025-08-10 at 19 29 07" src="https://github.com/user-attachments/assets/f8bc5c65-52d4-4d13-baff-15e5cc2a9cdd" />
-  <img width="1675" height="965" alt="Screenshot 2025-08-10 at 19 29 18" src="https://github.com/user-attachments/assets/90585516-256f-455d-88e1-5dd084b5eb34" />
-  <img width="1675" height="965" alt="Screenshot 2025-08-10 at 19 29 28" src="https://github.com/user-attachments/assets/4b820c1a-f98d-4929-8180-e3f693be6f56" />
-  <img width="1677" height="959" alt="Screenshot 2025-08-10 at 19 29 52" src="https://github.com/user-attachments/assets/f1af8e8d-ca95-4ffc-9ef1-eb5b0703e0bc" />
-  <img width="1679" height="968" alt="Screenshot 2025-08-10 at 19 30 17" src="https://github.com/user-attachments/assets/208af2e8-2e57-442e-b807-dc366f5cf547" />
-  <img width="1677" height="966" alt="Screenshot 2025-08-10 at 19 30 25" src="https://github.com/user-attachments/assets/b6636092-0cf0-4549-ad84-08f7f1faa6c3" />
-  <img width="1676" height="965" alt="Screenshot 2025-08-10 at 19 30 47" src="https://github.com/user-attachments/assets/64044154-bf60-4f80-9c1e-ba8167cfa207" />
-  <img width="1677" height="965" alt="Screenshot 2025-08-10 at 19 30 58" src="https://github.com/user-attachments/assets/d60df044-80aa-4fea-8d38-c660f105f0d4" />
-  <img width="1678" height="965" alt="Screenshot 2025-08-10 at 19 31 14" src="https://github.com/user-attachments/assets/1495e98a-8abc-4687-b296-afb17fd2583a" />
+<summary>Click to expand: more Screenshots</summary>
+<img width="1678" height="965" alt="Screenshot 2025-08-10 at 19 29 07" src="https://github.com/user-attachments/assets/f8bc5c65-52d4-4d13-baff-15e5cc2a9cdd" />
+<img width="1675" height="965" alt="Screenshot 2025-08-10 at 19 29 18" src="https://github.com/user-attachments/assets/90585516-256f-455d-88e1-5dd084b5eb34" />
+<img width="1675" height="965" alt="Screenshot 2025-08-10 at 19 29 28" src="https://github.com/user-attachments/assets/4b820c1a-f98d-4929-8180-e3f693be6f56" />
+<img width="1677" height="959" alt="Screenshot 2025-08-10 at 19 29 52" src="https://github.com/user-attachments/assets/f1af8e8d-ca95-4ffc-9ef1-eb5b0703e0bc" />
+<img width="1679" height="968" alt="Screenshot 2025-08-10 at 19 30 17" src="https://github.com/user-attachments/assets/208af2e8-2e57-442e-b807-dc366f5cf547" />
+<img width="1677" height="966" alt="Screenshot 2025-08-10 at 19 30 25" src="https://github.com/user-attachments/assets/b6636092-0cf0-4549-ad84-08f7f1faa6c3" />
+<img width="1676" height="965" alt="Screenshot 2025-08-10 at 19 30 47" src="https://github.com/user-attachments/assets/64044154-bf60-4f80-9c1e-ba8167cfa207" />
+<img width="1677" height="965" alt="Screenshot 2025-08-10 at 19 30 58" src="https://github.com/user-attachments/assets/d60df044-80aa-4fea-8d38-c660f105f0d4" />
+<img width="1678" height="965" alt="Screenshot 2025-08-10 at 19 31 14" src="https://github.com/user-attachments/assets/1495e98a-8abc-4687-b296-afb17fd2583a" />
 </details>
 
-## 🏗️ Architecture
+## Architecture
 
 ### Tech Stack
 - **Backend**: Go 1.24 + SQLite + PASETO auth
@@ -41,32 +41,32 @@ A comprehensive web-based platform for managing Kubernetes clusters and GitOps w
 ### Project Structure
 ```
 denshimon/
-├── backend/           # Go REST API server
-│   ├── cmd/server/    # Main application entry
-│   ├── internal/      # Business logic
-│   │   ├── api/       # HTTP handlers
-│   │   ├── auth/      # Authentication service
-│   │   ├── database/  # SQLite operations
-│   │   ├── gitops/    # GitOps management
-│   │   ├── k8s/       # Kubernetes client
-│   │   └── metrics/   # Monitoring service
-│   └── pkg/config/    # Configuration
-├── frontend/          # React SPA
-│   ├── src/
-│   │   ├── components/ # UI components
-│   │   ├── stores/     # State management
-│   │   └── types/      # TypeScript definitions
-│   └── dist/          # Build output (embedded in Go)
+├── backend/ # Go REST API server
+│ ├── cmd/server/ # Main application entry
+│ ├── internal/ # Business logic
+│ │ ├── api/ # HTTP handlers
+│ │ ├── auth/ # Authentication service
+│ │ ├── database/ # SQLite operations
+│ │ ├── gitops/ # GitOps management
+│ │ ├── k8s/ # Kubernetes client
+│ │ └── metrics/ # Monitoring service
+│ └── pkg/config/ # Configuration
+├── frontend/ # React SPA
+│ ├── src/
+│ │ ├── components/ # UI components
+│ │ ├── stores/ # State management
+│ │ └── types/ # TypeScript definitions
+│ └── dist/ # Build output (embedded in Go)
 ├── docker-compose.yml # Development setup
-├── Dockerfile         # Production image
-└── build.sh          # Local build script
+├── Dockerfile # Production image
+└── build.sh # Local build script
 ```
 
-## 🎨 UI Features
+## UI Features
 
 ### Cyberpunk Design System
 - **Colors**: Matrix green (#00FF00), yellow (#FFFF00), cyan (#00FFFF) on black
-- **Typography**: Monospace fonts for terminal aesthetic  
+- **Typography**: Monospace fonts for terminal aesthetic
 - **Layout**: Responsive grid system with border outlines
 - **Components**: Custom charts, tables, modals with cyberpunk styling
 
@@ -77,70 +77,70 @@ denshimon/
 - **GitOps Dashboard**: Repository sync status, application deployments
 - **Resource Analytics**: CPU/memory/storage trends with interactive charts
 
-## 🔧 Core Functionalities
+## Core Functionalities
 
 ### Kubernetes Management
 ```bash
 # Pod Operations
-GET    /api/k8s/pods              # List all pods (virtualized tables)
-DELETE /api/k8s/pods/{name}       # Delete specific pod
-POST   /api/k8s/pods/{name}/restart # Restart pod
-GET    /api/k8s/pods/{name}/logs  # Stream logs
+GET /api/k8s/pods # List all pods (virtualized tables)
+DELETE /api/k8s/pods/{name} # Delete specific pod
+POST /api/k8s/pods/{name}/restart # Restart pod
+GET /api/k8s/pods/{name}/logs # Stream logs
 
-# Deployment Control  
-GET   /api/k8s/deployments        # List deployments
+# Deployment Control
+GET /api/k8s/deployments # List deployments
 PATCH /api/k8s/deployments/{name}/scale # Scale replicas
 
 # Cluster Monitoring
-GET /api/k8s/nodes                # List nodes with metrics
-GET /api/k8s/health               # Cluster health check
-GET /ws                           # WebSocket for real-time updates
+GET /api/k8s/nodes # List nodes with metrics
+GET /api/k8s/health # Cluster health check
+GET /ws # WebSocket for real-time updates
 ```
 
 ### Gitea Integration (Optional)
 ```bash
 # Repository Management
-GET  /api/gitea/repositories      # List repositories
-GET  /api/gitea/repositories/{owner}/{repo} # Get repository details
-GET  /api/gitea/repositories/{owner}/{repo}/commits # List commits
-GET  /api/gitea/repositories/{owner}/{repo}/branches # List branches
-GET  /api/gitea/repositories/{owner}/{repo}/pulls # List pull requests
-GET  /api/gitea/repositories/{owner}/{repo}/releases # List releases
-GET  /api/gitea/repositories/{owner}/{repo}/actions/runs # List workflow runs
+GET /api/gitea/repositories # List repositories
+GET /api/gitea/repositories/{owner}/{repo} # Get repository details
+GET /api/gitea/repositories/{owner}/{repo}/commits # List commits
+GET /api/gitea/repositories/{owner}/{repo}/branches # List branches
+GET /api/gitea/repositories/{owner}/{repo}/pulls # List pull requests
+GET /api/gitea/repositories/{owner}/{repo}/releases # List releases
+GET /api/gitea/repositories/{owner}/{repo}/actions/runs # List workflow runs
 
 # Deployment Operations
 POST /api/gitea/repositories/{owner}/{repo}/deploy # Trigger deployment
-POST /api/gitea/webhook           # Webhook receiver (no auth)
+POST /api/gitea/webhook # Webhook receiver (no auth)
 ```
 
-### Metrics & Monitoring  
+### Metrics & Monitoring
 ```bash
 # Resource Metrics
-GET /api/metrics/cluster          # Cluster-wide usage
-GET /api/metrics/nodes            # Per-node metrics
-GET /api/metrics/pods             # Pod resource usage
-GET /api/metrics/history          # Historical trends
+GET /api/metrics/cluster # Cluster-wide usage
+GET /api/metrics/nodes # Per-node metrics
+GET /api/metrics/pods # Pod resource usage
+GET /api/metrics/history # Historical trends
 
 # Authentication
-POST /api/auth/login              # Login with credentials
-GET  /api/auth/me                 # Get current user
-POST /api/auth/logout             # Logout
+POST /api/auth/login # Login with credentials
+GET /api/auth/me # Get current user
+POST /api/auth/logout # Logout
 ```
 
-## 🚀 Use Cases
+## Use Cases
 
 ### 1. **GitOps CI/CD Pipeline**
 Perfect for teams using GitHub Actions → Gitea Registry → Kubernetes:
 
 ```mermaid
 graph LR
-    A[GitHub Repo] --> B[GitHub Actions]
-    B --> C[Gitea Registry]  
-    C --> D[Denshimon]
-    D --> E[Kubernetes Cluster]
-    
-    B -.->|Build & Push| C
-    D -.->|Deploy & Manage| E
+A[GitHub Repo] --> B[GitHub Actions]
+B --> C[Gitea Registry]
+C --> D[Denshimon]
+D --> E[Kubernetes Cluster]
+
+B -.->|Build & Push| C
+D -.->|Deploy & Manage| E
 ```
 
 **Workflow:**
@@ -182,38 +182,38 @@ Centralized management of infrastructure as code:
 - **Configuration Management**: Manage ConfigMaps and Secrets
 - **Compliance**: Track changes and maintain audit trail
 
-## 🔐 Authentication & Authorization
+## Authentication & Authorization
 
 ### User Roles
 - **Admin**: Full cluster access (create, read, update, delete)
-- **Operator**: Deploy and manage applications (read, update, scale, sync)  
+- **Operator**: Deploy and manage applications (read, update, scale, sync)
 - **Viewer**: Read-only access to resources and metrics
 
 ### Default Credentials (Demo)
 ```bash
-Username: admin     Password: password  # Full access
-Username: operator  Password: password  # Limited admin  
-Username: viewer    Password: password  # Read-only
+Username: admin Password: password # Full access
+Username: operator Password: password # Limited admin
+Username: viewer Password: password # Read-only
 ```
 
 ### Security Features
 - PASETO v4 token authentication
-- SQLite-based session management  
+- SQLite-based session management
 - Role-based API endpoint protection
 - Kubernetes RBAC integration
 - Audit logging for all operations
 
-## 🐳 Deployment
+## Deployment
 
 ### Quick Start (Docker)
 ```bash
 # Run with Docker
 docker run -d \
-  -p 8080:8080 \
-  -v denshimon-data:/app/data \
-  -v ~/.kube:/home/denshimon/.kube:ro \
-  --name denshimon \
-  denshimon:latest
+ -p 8080:8080 \
+ -v denshimon-data:/app/data \
+ -v ~/.kube:/home/denshimon/.kube:ro \
+ --name denshimon \
+denshimon:latest
 ```
 
 ### Production (Kubernetes)
@@ -221,7 +221,7 @@ docker run -d \
 # Deploy with persistent volume
 kubectl apply -f k8s-deployment.yaml
 
-# Access via port-forward  
+# Access via port-forward
 kubectl port-forward svc/denshimon 8080:80
 ```
 
@@ -250,21 +250,21 @@ cd frontend && pnpm run build && cp -r dist/* ../backend/cmd/server/spa/
 cd ../backend && DATABASE_PATH=./test-app.db go run cmd/server/main.go
 ```
 
-## 📊 Configuration
+## Configuration
 
 ### Environment Variables
 ```bash
 # Core Configuration
-PORT=8080                           # Server port
+PORT=8080 # Server port
 DATABASE_PATH=/app/data/denshimon.db # SQLite database
-PASETO_SECRET_KEY=your-32-byte-key  # Auth signing key
-TOKEN_DURATION=24h                  # Token expiration
-LOG_LEVEL=info                      # Logging level
-ENVIRONMENT=production              # Runtime environment
+PASETO_SECRET_KEY=your-32-byte-key # Auth signing key
+TOKEN_DURATION=24h # Token expiration
+LOG_LEVEL=info # Logging level
+ENVIRONMENT=production # Runtime environment
 
 # Gitea Integration (Optional)
 GITEA_URL=https://gitea.example.com # Gitea server URL
-GITEA_TOKEN=your-api-token          # Gitea API token
+GITEA_TOKEN=your-api-token # Gitea API token
 GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 ```
 
@@ -277,28 +277,28 @@ GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 # Automatically detected when running in K8s pod
 ```
 
-## 🔍 Monitoring & Observability
+## Monitoring & Observability
 
 ### Built-in Metrics
 - **Cluster Resources**: CPU, memory, storage utilization
-- **Node Health**: Status, capacity, resource pressure  
+- **Node Health**: Status, capacity, resource pressure
 - **Pod Metrics**: Resource usage, restart counts, status
 - **Application Health**: Deployment status, replica counts
 - **GitOps Sync**: Repository sync status, last sync times
 
-### Integration Points  
+### Integration Points
 - **Prometheus**: Metrics scraping endpoints
 - **Grafana**: Custom dashboards for Denshimon metrics
 - **Alerting**: Webhook integration for notifications
 - **Audit Logs**: SQLite-based audit trail for compliance
 
-## 🎯 Roadmap
+## Roadmap
 
-### Phase 1: Core Platform ✅
+### Phase 1: Core Platform
 - [x] React SPA with cyberpunk UI and proper routing
 - [x] PASETO v4 authentication with role-based access
 - [x] SQLite database with proper schema
-- [x] Kubernetes mock data and interfaces  
+- [x] Kubernetes mock data and interfaces
 - [x] GitOps service structure
 - [x] Development mode with hot reload
 - [x] Single binary deployment capability
@@ -307,7 +307,7 @@ GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 - [x] Dashboard with metrics tabs (overview, nodes, pods, etc.)
 - [x] Comprehensive mock data for testing
 
-### Phase 2: Performance & Integration ✅
+### Phase 2: Performance & Integration
 - [x] Virtualized tables for 50,000+ rows with smooth scrolling
 - [x] Live log streaming with search and filtering
 - [x] Full Gitea API integration with secure backend architecture
@@ -317,7 +317,7 @@ GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 - [x] Card/table view toggles for different screen sizes
 - [x] TypeScript strict mode with comprehensive typing
 
-### Phase 3: Advanced Features 🚧
+### Phase 3: Advanced Features
 - [ ] Pod exec terminal (WebSocket)
 - [ ] Real Kubernetes cluster integration
 - [ ] Port forwarding through web interface
@@ -325,21 +325,21 @@ GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 - [ ] Helm chart management
 - [ ] Custom metrics dashboard builder
 
-### Phase 4: Enterprise Features 📋
+### Phase 4: Enterprise Features
 - [ ] Multi-cluster management
-- [ ] LDAP/OAuth integration  
+- [ ] LDAP/OAuth integration
 - [ ] Advanced RBAC policies
 - [ ] Backup and restore
 - [ ] High availability setup
 
-## 📚 Documentation
+## Documentation
 
 - [Backend Documentation](./backend/README.md) - Go API server details
-- [Frontend Documentation](./frontend/README.md) - React SPA development  
+- [Frontend Documentation](./frontend/README.md) - React SPA development
 - [API Reference](./docs/api.md) - Complete endpoint documentation
 - [Deployment Guide](./docs/deployment.md) - Production setup instructions
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -347,13 +347,13 @@ GITEA_WEBHOOK_SECRET=webhook-secret # Optional webhook verification
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 
 ---
 
-**Made with ❤️ for the Kubernetes community**
+**Made for the Kubernetes community**
 
 *A modern, secure, and intuitive way to manage your Kubernetes infrastructure with GitOps workflows.*
